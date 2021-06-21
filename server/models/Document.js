@@ -1,21 +1,23 @@
 const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
 
 const documentSchema = mongoose.Schema({
-    uid: {
-        type: String,
-        maxlength: 50
+    user: {
+        // type: String,
+        // maxlength: 50
+        type: Schema.Types.ObjectId,
+        ref: 'User'
     },
     email: {
         type: String,
         trim: true    
     },
+    docTitle: {
+        type: String
+    },
     docRef: {
         type: String
     },
-    // emails: [{
-    //     email : String,
-    //     _id : String
-    // }], 
     emails: { type: Array },
     xfdf: {
         type: Array

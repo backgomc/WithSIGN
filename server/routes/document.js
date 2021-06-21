@@ -5,7 +5,7 @@ const { Document } = require("../models/Document");
 // 신규 문서 등록
 router.post('/addDocumentToSign', (req, res) => {
 
-    if (!req.body.uid || !req.body.email || !req.body.docRef) {
+    if (!req.body.user || !req.body.email || !req.body.docRef) {
         return res.json({ success: false, message: "input value not enough!" })
     } 
 
@@ -133,7 +133,9 @@ router.post('/searchForDocumentToSign', (req, res) => {
       .sort({[order] : dir})    //asc:오름차순 desc:내림차순
       .skip(Number(start))
       .limit(Number(pageSize))
+      .populate("user", {name: 1, email: 2})
       .exec((err, documents) => {
+          console.log(documents);
           if (err) return res.json({success: false, error: err});
           return res.json({ success: true, documents: documents, total:recordsTotal })
       })

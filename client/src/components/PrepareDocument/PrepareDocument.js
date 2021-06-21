@@ -23,6 +23,7 @@ import './PrepareDocument.css';
 const PrepareDocument = () => {
   const [instance, setInstance] = useState(null);
   const [dropPoint, setDropPoint] = useState(null);
+  const [fileName, setFileName] = useState(null);
 
   const dispatch = useDispatch();
 
@@ -70,6 +71,7 @@ const PrepareDocument = () => {
       filePicker.current.onchange = e => {
         const file = e.target.files[0];
         if (file) {
+          setFileName(file.name.split('.')[0]);
           instance.loadDocument(file);
         }
       };
@@ -277,8 +279,7 @@ const PrepareDocument = () => {
     const emails = assignees.map(assignee => {
       return assignee.email;
     });
-    await addDocumentToSign(_id, email, referenceString, emails);
-
+    // await addDocumentToSign(_id, email, referenceString, emails);
 
     // TO-BE
     // 1.FILE SAVE
@@ -295,7 +296,8 @@ const PrepareDocument = () => {
     const signedTime = '';
 
     let body = {
-      uid: _id,
+      user: _id,
+      docTitle: fileName,
       email: email,
       docRef: referenceString,
       emails: emails,
@@ -379,9 +381,9 @@ const PrepareDocument = () => {
     <div className={'prepareDocument'}>
       <Box display="flex" direction="row" flex="grow">
         <Column span={2}>
-          <Box padding={3}>
+          {/* <Box padding={3}>
             <Heading size="md">Prepare Document</Heading>
-          </Box>
+          </Box> */}
           <Box padding={3}>
             <Row gap={1}>
               <Stack>

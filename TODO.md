@@ -9,4 +9,14 @@
 # 문서 목록 - 게시판 페이징
 # Loading 바 처리 및 통신 모음 
 # 사이드메뉴 모바일 지원
-# 게시판 페이지 셋팅 https://github.com/Leonard-Li777/antd-table-infinity/blob/master/README_en.md
+# 테이블 페이징 참조 https://codesandbox.io/s/ydt04?file=/index.js:622-632 (O)
+# email 기반 로직을 uid기반으로 변경하기??? => 고민 필요 .. 외부 이용자도 사용할려면 email을 key값으로 하는게 맞다...
+# 사인 목록에서 유저 정보 조인하기 populate ....  (O)
+# 서명한 목록 조회 버튼 넣기 (O)
+# 날짜처리 (O)
+# 문서 제목 필드 추가하기
+# 서명 진행정보 조회 
+# 문서 메뉴를 2개로 구성하는게 나을지, 한개로 구성하는게 나을지
+# 문서 타이틀 클릭시 테이블 확장 - 문서조회, 서명이력조회
+
+# 서명 요청 | 서명할 문서 | 내 문서 

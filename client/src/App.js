@@ -96,8 +96,8 @@ const App = () => {
         <Assign path="/assign" />
         <Preparation path="/prepareDocument" />
         <SignedList path="/signedList" />
-        {/* <Sign path="/home/signDocument" />
-        <View path="/home/viewDocument" /> */}
+        <Sign path="/signDocument" />
+        <View path="/viewDocument" />
       </Router>
 
     </div>
