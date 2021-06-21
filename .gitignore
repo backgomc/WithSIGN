@@ -1,0 +1,7 @@
+*.out
+*.swp
+*.pdf
+.well-known/
+test.html
+client/node_modules
+server/sessions/*
