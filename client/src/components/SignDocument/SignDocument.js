@@ -20,7 +20,7 @@ const SignDocument = () => {
   const doc = useSelector(selectDocToSign);
   const user = useSelector(selectUser);
   const { docRef, docId } = doc;
-  const { email } = user;
+  const { email, _id } = user;
 
   const viewer = useRef(null);
 
@@ -75,7 +75,7 @@ const SignDocument = () => {
           annotations.forEach(function(annot) {
             if (annot instanceof Annotations.WidgetAnnotation) {
               Annotations.WidgetAnnotation.getCustomStyles = normalStyles;
-              if (!annot.fieldName.startsWith(email)) {
+              if (!annot.fieldName.startsWith(email)) { // TODO: 변경해야할듯 email -> _id 06/22
                 annot.Hidden = true;
                 annot.Listable = false;
               }
@@ -84,7 +84,7 @@ const SignDocument = () => {
         }
       });
     });
-  }, [docRef, email]);
+  }, [docRef, _id]);
 
   const nextField = () => {
     let annots = annotManager.getAnnotationsList();
@@ -112,10 +112,11 @@ const SignDocument = () => {
 
     let param = {
       docId: docId,
-      email: email,
+      // email: email,
+      uid: _id,
       xfdf: xfdf
     }
-    console.log(param)
+    console.log("paramS:"+param)
     await axios.post('/api/document/updateDocumentToSign', param).then(response => {
       if (response.data.success) {
         // merge (pdf + annotaion)

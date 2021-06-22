@@ -25,6 +25,7 @@
 	"document.assign": "서명 요청",
 	"document.sign": "서명할 문서",
 	"document.signed": "서명한 문서",
+	"document.list": "내 문서",
 	"document.template": "템플릿",
 	"Login": "로그인",
 	"RememberMe": "기억하기",

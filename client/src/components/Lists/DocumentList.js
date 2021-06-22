@@ -1,34 +1,20 @@
 import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
-// import { Button, Text, Spinner } from 'gestalt';
 import { Table, Input, Space, Button } from "antd";
 import Highlighter from 'react-highlight-words';
 import { SearchOutlined } from '@ant-design/icons';
-// import 'gestalt/dist/gestalt.css';
 import { useSelector, useDispatch } from 'react-redux';
-// import { searchForDocumentsSigned } from '../../firebase/firebase';
-// import { selectUser } from '../../firebase/firebaseSlice';
 import { selectUser } from '../../app/infoSlice';
 import { navigate } from '@reach/router';
 import { setDocToView } from '../ViewDocument/ViewDocumentSlice';
 import Moment from 'react-moment';
-// import * as API from './api';
-// import { useFetch, useTable } from '../hooks';
-// import useColumn from './useColumn';
-// import * as ActionTypes from './actionTypes';
 
-// import request from 'umi-request';
-// import ProTable, { ProColumns, ActionType } from '@ant-design/pro-table';
-
-
-
-const SignedList = () => {
+const DocumentList = () => {
 
   const dispatch = useDispatch();
   const user = useSelector(selectUser);
+
   const { _id } = user;
-  // const [docs, setDocs] = useState([]);
-  // const [show, setShow] = useState(true);
   const [searchText, setSearchText] = useState('');
   const [searchedColumn, setSearchedColumn] = useState('');
   const [data, setData] = useState([]);
@@ -51,7 +37,7 @@ const SignedList = () => {
   const fetch = (params = {}) => {
     setLoading(true);
 
-    axios.post('/api/document/searchForDocumentsSigned', params).then(response => {
+    axios.post('/api/document/documents', params).then(response => {
 
       console.log(response)
       if (response.data.success) {
@@ -145,15 +131,28 @@ const SignedList = () => {
     setSearchText('');
   }
   
-
   const columns = [
     {
       title: '상태',
-      dataIndex: 'state',
+    //   dataIndex: 'state',
       sorter: true,
       key: 'state',
       ...getColumnSearchProps('state'),
-      // render: (text,row) => <div>{text} {row["email"]} </div>, // 완료된 문서 | 취소된 문서
+      render: (_,row) => {
+          if (row["signed"] == true) { // 서명 완료된 문서
+              return (<font color='gray'>서명 종료 문서</font>);
+          } else {
+              if (row["canceled"] == true) {
+                return (<font color='red'>취소된 문서</font>);
+              } else {
+                  if (row["users"].includes[_id]) {
+                    return (<font color='blue'>서명 할 문서</font>);
+                  } else {
+                    return (<font color='green'>서명 진행중 문서</font>);
+                  }
+              }
+          }
+        }, // 완료된 문서 | 취소된 문서
     },
     {
       title: '문서 이름',
@@ -171,13 +170,6 @@ const SignedList = () => {
       ...getColumnSearchProps('name'),
       // render: (text,row) => <div>{text} {row["email"]} </div>, // 여러 필드 동시 표시에 사용
     },
-    // {
-    //   title: 'Email',
-    //   dataIndex: 'email',
-    //   sorter: true,
-    //   key: 'email',
-    //   ...getColumnSearchProps('email')
-    // },
     {
       title: '서명 시간',
       dataIndex: 'signedTime',
@@ -200,6 +192,7 @@ const SignedList = () => {
 
   useEffect(() => {
 
+    console.log("uid:"+_id)
     fetch({
       uid: _id,
       pagination,
@@ -222,4 +215,4 @@ const SignedList = () => {
   );
 };
 
-export default SignedList;
+export default DocumentList;

@@ -12,7 +12,9 @@ import Assign from './components/Assign/Assign';
 import SignIn from './components/SignIn/SignIn';
 import SignUp from './components/SignUp/SignUp';
 import Preparation from './components/Preparation';
+import SignList from './components/Lists/SignList';
 import SignedList from './components/Lists/SignedList';
+import DocumentList from './components/Lists/DocumentList';
 import Sign from './components/Sign';
 import View from './components/View';
 // import Header from './components/Header';
@@ -95,7 +97,9 @@ const App = () => {
         <Welcome path="/" />
         <Assign path="/assign" />
         <Preparation path="/prepareDocument" />
+        <SignList path="/signList" />
         <SignedList path="/signedList" />
+        <DocumentList path="/documentList" />
         <Sign path="/signDocument" />
         <View path="/viewDocument" />
       </Router>

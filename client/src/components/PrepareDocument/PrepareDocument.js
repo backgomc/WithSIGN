@@ -276,8 +276,12 @@ const PrepareDocument = () => {
     // });
 
     // create an entry in the database
-    const emails = assignees.map(assignee => {
-      return assignee.email;
+    // const emails = assignees.map(assignee => {
+    //   return assignee.email;
+    // });
+
+    const users = assignees.map(assignee => {
+      return assignee.key;
     });
     // await addDocumentToSign(_id, email, referenceString, emails);
 
@@ -300,7 +304,8 @@ const PrepareDocument = () => {
       docTitle: fileName,
       email: email,
       docRef: referenceString,
-      emails: emails,
+      // emails: emails,
+      users: users,
       xfdf: xfdf, 
       signedBy: signedBy,
       signed: signed,

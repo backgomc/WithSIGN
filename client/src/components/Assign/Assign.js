@@ -1,130 +1,106 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
+import axios from 'axios';
 import { navigate, Link } from '@reach/router';
-import {
-  Box,
-  Button,
-  Container,
-  Heading,
-  TextField,
-  Table,
-  Text,
-  Toast,
-} from 'gestalt';
-import 'gestalt/dist/gestalt.css';
-import { addSignee, selectAssignees } from './AssignSlice';
+import { Transfer, Button } from 'antd';
+import { selectUser } from '../../app/infoSlice';
+import { addSignee, resetSignee, selectAssignees } from './AssignSlice';
 
 const Assign = () => {
-  const [email, setEmail] = useState('');
-  const [displayName, setDisplayName] = useState('');
+
+  const dispatch = useDispatch();
+  const user = useSelector(selectUser);
+  const { _id } = user;
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const assignees = useSelector(selectAssignees);
-  const dispatch = useDispatch();
+  const [targetKeys, setTargetKeys] = useState([]);
 
-  const prepare = () => {
+  const fetch = (params = {}) => {
+    setLoading(true);
+
+    axios.post('/api/users/list', params).then(response => {
+
+      console.log(response)
+      if (response.data.success) {
+        const users = response.data.users;
+
+        var datas = [];
+        for (let i=0; i<users.length; i++) {
+          const temp = {
+            key: users[i]._id,
+            name: users[i].name,
+            email: users[i].email
+          }
+          datas.push(temp);
+        }
+
+        setData(datas);
+        // assignees 에 값이 있으면 키 추가
+        if (assignees.length > 0) {
+          assignees.map(user => (
+            targetKeys.push(user.key)
+          ))
+        }
+        setLoading(false);
+
+      } else {
+          setLoading(false);
+          alert(response.data.error)
+      }
+
+    });
+  };
+
+  const handleChange = targetKeys => {
+    setTargetKeys(targetKeys)
+    dispatch(resetSignee());
+
+    for(let i=0; i<targetKeys.length; i++){
+
+      const temp = data.find(element => element.key == targetKeys[i])
+      
+      const key = temp.key
+      const name = temp.name
+      const email = temp.email
+
+      dispatch(addSignee({ key, name, email }));
+    }
+  };
+
+  const handlePrepare = () => {
     if (assignees.length > 0) {
       navigate(`/prepareDocument`);
     } else {
-      setShowToast(true);
-      setTimeout(() => setShowToast(false), 1000);
+      // setShowToast(true);
+      // setTimeout(() => setShowToast(false), 1000);
     }
-  };
+  }
 
-  const addUser = (name, email) => {
-    const key = `${new Date().getTime()}${email}`;
-    if (name !== '' && email !== '') {
-      dispatch(addSignee({ key, name, email }));
-      setEmail('');
-      setDisplayName('');
-    }
-  };
+  useEffect(() => {
+
+    fetch({
+      uid: _id
+    });
+
+  }, [_id]);
 
   return (
     <div>
-      <Box padding={3}>
-        <Container>
-          <Box padding={3}>
-            <Heading size="md">Who needs to sign?</Heading>
-          </Box>
-          <Box padding={2}>
-            <TextField
-              id="displayName"
-              onChange={event => setDisplayName(event.value)}
-              placeholder="Enter recipient's name"
-              label="Name"
-              value={displayName}
-              type="text"
-            />
-          </Box>
-          <Box padding={2}>
-            <TextField
-              id="email"
-              onChange={event => setEmail(event.value)}
-              placeholder="Enter recipient's email"
-              label="Email"
-              value={email}
-              type="email"
-            />
-          </Box>
-          <Box padding={2}>
-            <Button
-              onClick={event => {
-                addUser(displayName, email);
-              }}
-              text="Add user"
-              color="blue"
-              inline
-            />
-          </Box>
-          <Box padding={2}>
-            <Table>
-              <Table.Header>
-                <Table.Row>
-                  <Table.HeaderCell>
-                    <Text weight="bold">Name</Text>
-                  </Table.HeaderCell>
-                  <Table.HeaderCell>
-                    <Text weight="bold">Email</Text>
-                  </Table.HeaderCell>
-                </Table.Row>
-              </Table.Header>
-              <Table.Body>
-                {assignees.map(user => (
-                  <Table.Row key={user.key}>
-                    <Table.Cell>
-                      <Text>{user.name}</Text>
-                    </Table.Cell>
-                    <Table.Cell>
-                      <Text>{user.email}</Text>
-                    </Table.Cell>
-                  </Table.Row>
-                ))}
-              </Table.Body>
-            </Table>
-          </Box>
-          <Box padding={2}>
-            {/* <Link to='/home/prepareDocument'> */}
-              <Button onClick={prepare} text="Continue" color="blue" inline />
-            {/* </Link> */}
-          </Box>
-          <Box
-            fit
-            dangerouslySetInlineStyle={{
-              __style: {
-                bottom: 50,
-                left: '50%',
-                transform: 'translateX(-50%)',
-              },
-            }}
-            paddingX={1}
-            position="fixed"
-          >
-            {showToast && (
-              <Toast color="red" text={<>Please add at least one user</>} />
-            )}
-          </Box>
-        </Container>
-      </Box>
+      <Transfer
+        dataSource={data}
+        showSearch
+        listStyle={{
+          width: 250,
+          height: 300,
+        }}
+        operations={['to right', 'to left']}
+        targetKeys={targetKeys}
+        onChange={handleChange}
+        render={item => `${item.name} ${item.email}`}
+      />
+      <Button type="primary" onClick={() => handlePrepare()}>다음</Button>
     </div>
   );
 };

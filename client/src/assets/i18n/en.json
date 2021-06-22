@@ -25,6 +25,7 @@
 	"document.assign": "Prepare Document",
 	"document.sign": "Sign Documents",
 	"document.signed": "Signed Documents",
+	"document.list": "My Documents",
 	"document.template": "template",
 	"Login": "Login",
 	"RememberMe": "Remember me",

@@ -18,7 +18,8 @@ const documentSchema = mongoose.Schema({
     docRef: {
         type: String
     },
-    emails: { type: Array },
+    users: { type: Array },
+    // emails: { type: Array },
     xfdf: {
         type: Array
     },

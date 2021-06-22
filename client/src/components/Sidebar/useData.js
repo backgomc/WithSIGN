@@ -13,12 +13,17 @@ export default function useData() {
     "icon": FileTextOutlined,
     "key": "sign",
     "label": formatMessage({id: 'document.sign'}),
-    "url": "/"
+    "url": "/signList"
   }, {
     "icon": FileDoneOutlined,
     "key": "signedList",
     "label": formatMessage({id: 'document.signed'}),
     "url": "/signedList"
+  }, {
+    "icon": FileTextOutlined,
+    "key": "documentList",
+    "label": formatMessage({id: 'document.list'}),
+    "url": "/documentList"
   }, {
     "icon": "area-chart",
     "key": "sub-res",
