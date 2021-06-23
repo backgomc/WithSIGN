@@ -96,8 +96,8 @@ router.post('/searchForDocumentToSign', (req, res) => {
   const uid = req.body.uid
   if (!uid) {
       return res.json({ success: false, message: "input value not enough!" })
-  } 
-
+  }
+  
   const current = req.body.pagination.current
   const pageSize = req.body.pagination.pageSize
   var start = 0
@@ -120,12 +120,12 @@ router.post('/searchForDocumentToSign', (req, res) => {
 
   var recordsTotal = 0;
 
-  Document.countDocuments({ "users": [uid], "signed": false }).exec(function(err, count) {
+  Document.countDocuments({ "users": {$in:[uid]}, "signed": false, "signedBy": {$nin:[uid]} }).exec(function(err, count) {
     recordsTotal = count;
     console.log("recordsTotal:"+recordsTotal)
     
     Document
-    .find({ "users": [uid], "signed": false })
+    .find({ "users": {$in:[uid]}, "signed": false, "signedBy": {$nin:[uid]} })
     .sort({[order] : dir})    //asc:오름차순 desc:내림차순
     .skip(Number(start))
     .limit(Number(pageSize))
@@ -170,12 +170,12 @@ router.post('/searchForDocumentToSign', (req, res) => {
 
     var recordsTotal = 0;
 
-    Document.countDocuments({ "users": [uid], "signed": true }).exec(function(err, count) {
+    Document.countDocuments({ "users": {$in:[uid]}, "signed": true }).exec(function(err, count) {
       recordsTotal = count;
       console.log("recordsTotal:"+recordsTotal)
       
       Document
-      .find({ "users": [uid], "signed": true })
+      .find({ "users": {$in:[uid]}, "signed": true })
       .sort({[order] : dir})    //asc:오름차순 desc:내림차순
       .skip(Number(start))
       .limit(Number(pageSize))
@@ -224,12 +224,12 @@ router.post('/searchForDocumentToSign', (req, res) => {
 
     var recordsTotal = 0;
 
-    Document.countDocuments().or([{ "users": [uid] }, { "user": uid}]).exec(function(err, count) {
+    Document.countDocuments().or([{ "users": {$in:[uid]} }, {"user": uid}]).exec(function(err, count) {
       recordsTotal = count;
       console.log("recordsTotal:"+recordsTotal)
       
       Document
-      .find().or([{ "users": [uid] }, { "user": uid}])
+      .find().or([{ "users": {$in:[uid]} }, {"user": uid}])
       .sort({[order] : dir})    //asc:오름차순 desc:내림차순
       .skip(Number(start))
       .limit(Number(pageSize))

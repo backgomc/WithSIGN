@@ -7,7 +7,9 @@ import { useSelector, useDispatch } from 'react-redux';
 import { selectUser } from '../../app/infoSlice';
 import { navigate } from '@reach/router';
 import { setDocToView } from '../ViewDocument/ViewDocumentSlice';
+import { setDocToSign } from '../SignDocument/SignDocumentSlice';
 import Moment from 'react-moment';
+import { DocumentType, DocumentTypeText, DOCUMENT_SIGNED, DOCUMENT_TOSIGN, DOCUMENT_SIGNING, DOCUMENT_CANCELED } from './DocumentType';
 
 const DocumentList = () => {
 
@@ -139,19 +141,20 @@ const DocumentList = () => {
       key: 'state',
       ...getColumnSearchProps('state'),
       render: (_,row) => {
-          if (row["signed"] == true) { // 서명 완료된 문서
-              return (<font color='gray'>서명 종료 문서</font>);
-          } else {
-              if (row["canceled"] == true) {
-                return (<font color='red'>취소된 문서</font>);
-              } else {
-                  if (row["users"].includes[_id]) {
-                    return (<font color='blue'>서명 할 문서</font>);
-                  } else {
-                    return (<font color='green'>서명 진행중 문서</font>);
-                  }
-              }
-          }
+        return <DocumentTypeText uid={_id} document={row} />
+          // if (row["signed"] == true) { // 서명 완료된 문서
+          //     return (<font color='gray'>서명 종료 문서</font>);
+          // } else {
+          //     if (row["canceled"] == true) {
+          //       return (<font color='red'>취소된 문서</font>);
+          //     } else {
+          //         if (row["users"].includes(_id)) {
+          //           return (<font color='blue'>서명 할 문서</font>);
+          //         } else {
+          //           return (<font color='green'>서명 진행중 문서</font>);
+          //         }
+          //     }
+          // }
         }, // 완료된 문서 | 취소된 문서
     },
     {
@@ -171,22 +174,61 @@ const DocumentList = () => {
       // render: (text,row) => <div>{text} {row["email"]} </div>, // 여러 필드 동시 표시에 사용
     },
     {
-      title: '서명 시간',
+      title: '최근 활동',
       dataIndex: 'signedTime',
       sorter: true,
       key: 'signedTime',
-      render: (text, row) => <Moment format='YYYY/MM/DD HH:mm'>{text}</Moment>
+      render: (text, row) => {
+        if (text){
+          return <Moment format='YYYY/MM/DD HH:mm'>{text}</Moment>
+        } else {
+          return <Moment format='YYYY/MM/DD HH:mm'>{row["requestedTime"]}</Moment>
+        }
+      } 
     },
     {
-      title: '내용 확인',
+      title: 'Action',
       // dataIndex: 'docRef',
       key: 'View',
-      render: (_,row) => <Button onClick={() => {
-        const docId = row["_id"]
-        const docRef = row["docRef"]
-        dispatch(setDocToView({ docRef, docId }));
-        navigate(`/viewDocument`);
-      }}>View</Button>, 
+      render: (_,row) => {
+
+        switch (DocumentType({uid: _id, document: row})) {
+          case DOCUMENT_CANCELED:
+            return (<div>cancel</div>) 
+          case DOCUMENT_SIGNED:
+            return (
+              <Button onClick={() => {        
+                const docId = row["_id"]
+                const docRef = row["docRef"]
+                dispatch(setDocToView({ docRef, docId }));
+                navigate(`/viewDocument`);
+              }}>문서보기</Button>
+            )
+          case DOCUMENT_TOSIGN:
+            return (
+              <Button onClick={() => {
+                const docId = row["_id"]
+                const docRef = row["docRef"]
+                dispatch(setDocToSign({ docRef, docId }));
+                navigate(`/signDocument`);
+              }}>서명하기</Button>
+            );
+          case DOCUMENT_SIGNING:
+            return (
+              <Button onClick={() => {        
+                const docId = row["_id"]
+                const docRef = row["docRef"]
+                dispatch(setDocToView({ docRef, docId }));
+                navigate(`/viewDocument`);
+              }}>문서보기</Button>
+            );
+          default:
+            return (
+              <div></div>
+            )
+        }
+
+      }, 
     },
   ];
 
