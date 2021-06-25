@@ -189,7 +189,7 @@ router.post('/searchForDocumentToSign', (req, res) => {
 
   })
 
-  // TODO: 문서전체 
+  // 문서전체 
   // 조건1: users 에 내가 포함 + 작성자 user정보가 나인 문서
   // [서명종료된 문서: signed = true]
   // [서명진행중 문서: signed = false]
@@ -201,6 +201,24 @@ router.post('/searchForDocumentToSign', (req, res) => {
     if (!uid) {
         return res.json({ success: false, message: "input value not enough!" })
     } 
+
+    // 단어검색 
+    // ISSUE1: 이름 검색의 경우 populate 의 match 함수를 사용해야 하는데 전체 글 수와 매치가 어려움 
+    // ISSUE2: 같은 단어를 넣어도 조회됬다가 안됬다가 하는 현상 발생 
+    var searchStr;
+    // var searchName;
+    console.log("docTitle:"+req.body.docTitle)
+    console.log("name:"+req.body.name)
+    if (req.body.docTitle) {
+      var regex = new RegExp(req.body.docTitle[0], "i")
+      searchStr = { $and: [{'docTitle': regex}] };
+    // } else if (req.body.name) {
+    //   var regex = new RegExp(req.body.name[0], "i")
+    //   searchStr = req.body.name[0];
+    //   searchName = req.body.name[0]
+    } else {
+        searchStr = {};
+    }
 
     const current = req.body.pagination.current
     const pageSize = req.body.pagination.pageSize
@@ -224,18 +242,26 @@ router.post('/searchForDocumentToSign', (req, res) => {
 
     var recordsTotal = 0;
 
-    Document.countDocuments().or([{ "users": {$in:[uid]} }, {"user": uid}]).exec(function(err, count) {
+    Document.countDocuments(searchStr).or([{ "users": {$in:[uid]} }, {"user": uid}]).exec(function(err, count) {
       recordsTotal = count;
       console.log("recordsTotal:"+recordsTotal)
       
       Document
-      .find().or([{ "users": {$in:[uid]} }, {"user": uid}])
+      .find(searchStr).or([{ "users": {$in:[uid]} }, {"user": uid}])
       .sort({[order] : dir})    //asc:오름차순 desc:내림차순
       .skip(Number(start))
       .limit(Number(pageSize))
-      .populate("user", {name: 1, email: 2})
+      // .populate("user", {name: 1, email: 2})
+      .populate({
+        path: "user", 
+        select: {name: 1, email: 2},
+        // match: { name : searchName? searchName : !'' }
+      })
       .exec((err, documents) => {
           console.log(documents);
+          // documents = documents.filter(function(document) {
+          //   return document.user
+          // });
           if (err) return res.json({success: false, error: err});
           return res.json({ success: true, documents: documents, total:recordsTotal })
       })

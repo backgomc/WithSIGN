@@ -97,10 +97,11 @@ const DocumentList = () => {
       </div>
     ),
     filterIcon: filtered => <SearchOutlined style={{ color: filtered ? '#1890ff' : undefined }} />,
-    onFilter: (value, record) =>
-      record[dataIndex]
-        ? record[dataIndex].toString().toLowerCase().includes(value.toLowerCase())
-        : '',
+    // DB 필터링 사용 시는 주석처리
+    // onFilter: (value, record) =>
+    //   record[dataIndex]
+    //     ? record[dataIndex].toString().toLowerCase().includes(value.toLowerCase())
+    //     : '',
     onFilterDropdownVisibleChange: visible => {
       if (visible) {
         // setTimeout(() => searchInput.select(), 100);
@@ -136,10 +137,29 @@ const DocumentList = () => {
   const columns = [
     {
       title: '상태',
-    //   dataIndex: 'state',
-      sorter: true,
+      dataIndex: 'state',
+      sorter: false,
       key: 'state',
-      ...getColumnSearchProps('state'),
+      filters: [
+        {
+          text: DOCUMENT_SIGNED,
+          value: DOCUMENT_SIGNED,
+        },
+        {
+          text: DOCUMENT_TOSIGN,
+          value: DOCUMENT_TOSIGN,
+        },
+        {
+          text: DOCUMENT_SIGNING,
+          value: DOCUMENT_SIGNING,
+        },
+        {
+          text: DOCUMENT_CANCELED,
+          value: DOCUMENT_CANCELED,
+        },
+      ],
+      onFilter: (value, record) => DocumentType({uid: _id, document: record}).indexOf(value) === 0,
+      // ...getColumnSearchProps('state'),
       render: (_,row) => {
         return <DocumentTypeText uid={_id} document={row} />
           // if (row["signed"] == true) { // 서명 완료된 문서
@@ -168,11 +188,25 @@ const DocumentList = () => {
     {
       title: '요청자',
       dataIndex: ['user', 'name'],
-      sorter: true,
+      sorter: (a, b) => a.user.name.localeCompare(b.user.name),
       key: 'name',
       ...getColumnSearchProps('name'),
-      // render: (text,row) => <div>{text} {row["email"]} </div>, // 여러 필드 동시 표시에 사용
+      onFilter: (value, record) =>
+      record['user']['name']
+        ? record['user']['name'].toString().toLowerCase().includes(value.toLowerCase())
+        : ''
     },
+    // {
+    //   title: 'adasd',
+    //   dataIndex: '_id',
+    //   sorter: true,
+    //   key: '_id',
+    //   ...getColumnSearchProps('_id'),
+    //   onFilter: (value, record) =>
+    //   record['_id']
+    //     ? record['_id'].toString().toLowerCase().includes(value.toLowerCase())
+    //     : ''
+    // },
     {
       title: '최근 활동',
       dataIndex: 'signedTime',
