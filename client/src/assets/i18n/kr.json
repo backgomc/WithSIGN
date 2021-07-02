@@ -34,6 +34,7 @@
 	"Or": "또는",
 	"input.email": "이메일을 입력하세요!",
 	"input.password": "비밀번호를 입력하세요!",
+	"input.documentTitle": "문서 제목을 입력하세요!",
 	"input.name": "이름을 입력하세요!",
 	"confirm.password": "비밀번호를 확인하세요!",
 	"nomatch.password": "비밀번호가 일치하지 않습니다!",
@@ -46,5 +47,6 @@
 	"ConfirmPassword": "비밀번호 확인",
 	"view.agreement": "약관 보기",
 	"agree.agreement": "약관 내용에 동의합니다",
-	"document.massList": "대량 전송"
+	"document.massList": "대량 전송",
+	"Next": "다음"
 }

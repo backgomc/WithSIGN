@@ -50,15 +50,17 @@ const ViewDocument = () => {
       const normalStyles = (widget) => {
         if (widget instanceof Annotations.TextWidgetAnnotation) {
           return {
-            'background-color': '#a5c7ff',
+            // 'background-color': '#a5c7ff',
             color: 'black',
           };
         } else if (widget instanceof Annotations.SignatureWidgetAnnotation) {
           return {
-            border: '1px solid #a5c7ff',
+            // border: '1px solid #a5c7ff',
           };
         }
       };
+
+      // TODO annotation 수정 안되게 하기
 
       annotManager.on('annotationChanged', (annotations, action, { imported }) => {
         if (imported && action === 'add') {
@@ -67,7 +69,7 @@ const ViewDocument = () => {
               Annotations.WidgetAnnotation.getCustomStyles = normalStyles;
 
               console.log("annot.fieldName:"+annot.fieldName)
-              if (!annot.fieldName.startsWith(email)) { // TODO: 변경해야할듯 email -> _id 06/22
+              if (!annot.fieldName.startsWith(_id)) { 
                 annot.Hidden = true;
                 annot.Listable = false;
               }

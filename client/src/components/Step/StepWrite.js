@@ -9,9 +9,9 @@ const StepWrite = (props) => {
 
     return (
         <Steps current={current}>
-            <Step title="서명참여자 선택" description="문서에 서명할 참여자를 선택해주세요." />
-            <Step title="서명란 지정" description="참여자별로 서명란을 지정해주세요." />
-            <Step title="서명요청 완료" description="서명요청이 완료되었습니다." />
+            <Step title="문서 등록" description="문서 업로드 또는 템플릿 선택" />
+            <Step title="서명참여자 설정" description="" />
+            <Step title="입력 설정" description="" />
         </Steps>
     );
 

@@ -81,7 +81,7 @@ const SignDocument = () => {
               Annotations.WidgetAnnotation.getCustomStyles = normalStyles;
 
               console.log("annot.fieldName:"+annot.fieldName)
-              if (!annot.fieldName.startsWith(email)) { // TODO: 변경해야할듯 email -> _id 06/22
+              if (!annot.fieldName.startsWith(_id)) { // TODO: 변경해야할듯 email -> _id 06/22
                 annot.Hidden = true;
                 annot.Listable = false;
               }

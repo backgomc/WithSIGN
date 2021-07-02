@@ -34,6 +34,7 @@
 	"Or": "Or",
 	"input.email": "Please input your Email!",
 	"input.password": "Please input your Password!",
+	"input.documentTitle": "Please input document title!",
 	"input.name": "Please input your Name!",
 	"confirm.password": "Please confirm your password!",
 	"nomatch.password": "The two passwords that you entered do not match!",
@@ -46,5 +47,6 @@
 	"ConfirmPassword": "Confirm Password",
 	"view.agreement": "View Agreement",
 	"agree.agreement": "I have read the agreement",
-	"document.massList": "Mass Transfer"
+	"document.massList": "Mass Transfer",
+	"Next": "Next"
 }

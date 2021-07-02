@@ -29,7 +29,7 @@ const PrepareDocument = () => {
 
   const assignees = useSelector(selectAssignees);
   const assigneesValues = assignees.map(user => {
-    return { value: user.email, label: user.name };
+    return { value: user.key, label: user.name };
   });
   // let initialAssignee =
   //   assigneesValues.length > 0 ? assigneesValues[0].value : '';

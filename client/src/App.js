@@ -9,6 +9,7 @@ import { view as Sidebar } from './components/Sidebar';
 
 import AssignUsers from './components/AssignUsers';
 import Assign from './components/Assign/Assign';
+import UploadDocument from './components/UploadDocument/UploadDocument';
 import SignIn from './components/SignIn/SignIn';
 import SignUp from './components/SignUp/SignUp';
 import Preparation from './components/Preparation';
@@ -97,6 +98,7 @@ const App = () => {
       <Router>
         <Welcome path="/" />
         <Assign path="/assign" />
+        <UploadDocument path="/uploadDocument" />
         <Preparation path="/prepareDocument" />
         <SignList path="/signList" />
         <SignedList path="/signedList" />
