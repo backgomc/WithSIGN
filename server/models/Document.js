@@ -18,14 +18,22 @@ const documentSchema = mongoose.Schema({
     docRef: {
         type: String
     },
-    users: { type: Array },
+    // users: { type: Array },  //ISSUE: 아래 걸로 하면 리스트 하나를 못가지고 옴 
+    users: [{
+        type: Schema.Types.ObjectId,
+        ref: 'User'
+    }],
     // emails: { type: Array },
     xfdf: {
         type: Array
     },
-    signedBy: {
-        type: Array
-    },
+    signedBy: [{
+        user: { type: String },
+        signedTime: { type: Date }
+    }],
+    // signedBy: {
+    //     type: Array
+    // },
     signed: {
         type: Boolean
     },

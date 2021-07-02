@@ -1,7 +1,8 @@
 // import { storage } from '../../firebase/firebase';
 import axios from 'axios';
 
-export const mergeAnnotations = async (docRef, xfdf) => {
+export const mergeAnnotations = async (docRef, xfdf, isLast) => {
+
   const PDFNet = window.PDFNet;
   const CoreControls = window.CoreControls;
   CoreControls.setWorkerPath('webviewer/core');
@@ -16,10 +17,15 @@ export const mergeAnnotations = async (docRef, xfdf) => {
 
     let i;
     for (i=0; i < xfdf.length; i++) {
-        console.log(xfdf[i]);
+        console.log("A merge xfdf:" + xfdf[i]);
         let fdfDoc = await PDFNet.FDFDoc.createFromXFDF(xfdf[i]);
         await doc.fdfMerge(fdfDoc);
-        await doc.flattenAnnotations();
+        // await doc.flattenAnnotations();  //TODO: 이거는 문서 최종 반영시 실행
+    }
+
+    if (isLast) {
+      console.log("isLast:"+isLast)
+       await doc.flattenAnnotations();  // 문서 최종 반영시 실행
     }
   
     const docbuf = await doc.saveMemoryBuffer(

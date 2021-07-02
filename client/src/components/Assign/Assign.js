@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import axios from 'axios';
 import { navigate, Link } from '@reach/router';
-import { Transfer, Button } from 'antd';
+import { Transfer, Button, Space } from 'antd';
 import { selectUser } from '../../app/infoSlice';
 import { addSignee, resetSignee, selectAssignees } from './AssignSlice';
+import StepWrite from '../Step/StepWrite'
 
 const Assign = () => {
 
@@ -87,20 +88,24 @@ const Assign = () => {
   }, [_id]);
 
   return (
-    <div>
-      <Transfer
-        dataSource={data}
-        showSearch
-        listStyle={{
-          width: 250,
-          height: 300,
-        }}
-        operations={['to right', 'to left']}
-        targetKeys={targetKeys}
-        onChange={handleChange}
-        render={item => `${item.name} ${item.email}`}
-      />
-      <Button type="primary" onClick={() => handlePrepare()}>다음</Button>
+    <div style={{ padding: 8 }}>
+      <Space direction="vertical" align="center" size="middle">
+        {/* <StepWrite current={0} /> */}
+        <Transfer
+          dataSource={data}
+          showSearch
+          listStyle={{
+            width: 250,
+            height: 300,
+          }}
+          operations={['to right', 'to left']}
+          targetKeys={targetKeys}
+          onChange={handleChange}
+          render={item => `${item.name} ${item.email}`}
+        />
+        <Space align="baseline"><Button type="primary" onClick={() => handlePrepare()}>다음</Button></Space>
+        
+      </Space>
     </div>
   );
 };

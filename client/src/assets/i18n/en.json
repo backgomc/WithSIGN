@@ -45,5 +45,6 @@
 	"Password": "Password",
 	"ConfirmPassword": "Confirm Password",
 	"view.agreement": "View Agreement",
-	"agree.agreement": "I have read the agreement"
+	"agree.agreement": "I have read the agreement",
+	"document.massList": "Mass Transfer"
 }

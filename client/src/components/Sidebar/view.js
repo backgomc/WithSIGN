@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 // import { Link } from 'react-router-dom';
 import { Link, navigate } from '@reach/router';
-import { Menu } from 'antd';
-import Icon, { FormOutlined } from '@ant-design/icons';
+import { Menu, Button } from 'antd';
+import Icon, { FormOutlined, FileAddOutlined } from '@ant-design/icons';
 import styles from './sidebar.module.css';
 import logo from '../../assets/images/logo.svg';
 import useData from './useData';
@@ -43,6 +43,11 @@ const Sidebar = ({collapsed}) => {
           <h1>NH Sign</h1>
         </a>
       </div>
+      {/* <div className={styles.logo}>
+        <Link to='/assign'>
+          <Button type="primary" icon={<FileAddOutlined />} style={{ width: 220 }}>서명 요청하기</Button>
+        </Link>
+      </div> */}
       <Menu
         theme="dark"
         onClick={(e) => setCurrent(e.key)}

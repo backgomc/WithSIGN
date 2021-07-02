@@ -45,5 +45,6 @@
 	"Password": "비밀번호",
 	"ConfirmPassword": "비밀번호 확인",
 	"view.agreement": "약관 보기",
-	"agree.agreement": "약관 내용에 동의합니다"
+	"agree.agreement": "약관 내용에 동의합니다",
+	"document.massList": "대량 전송"
 }

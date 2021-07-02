@@ -3,16 +3,19 @@ import { useSelector } from 'react-redux';
 import { navigate } from '@reach/router';
 import { Box, Column, Heading, Row, Stack, Button } from 'gestalt';
 import { selectDocToView } from './ViewDocumentSlice';
-// import { storage } from '../../firebase/firebase';
+import { selectUser } from '../../app/infoSlice';
 import WebViewer from '@pdftron/webviewer';
 import 'gestalt/dist/gestalt.css';
 import './ViewDocument.css';
 
 const ViewDocument = () => {
+  const [annotManager, setAnnotatManager] = useState(null);
   const [instance, setInstance] = useState(null);
 
   const doc = useSelector(selectDocToView);
+  const user = useSelector(selectUser);
   const { docRef } = doc;
+  const { email, _id } = user;
 
   const viewer = useRef(null);
 
@@ -28,8 +31,12 @@ const ViewDocument = () => {
       },
       viewer.current,
     ).then(async instance => {
+
+      const { annotManager, Annotations } = instance;
+
       // select only the view group
       instance.setToolbarGroup('toolbarGroup-View');
+      // instance.setToolbarGroup('toolbarGroup-Insert');
 
       setInstance(instance);
 
@@ -39,9 +46,38 @@ const ViewDocument = () => {
       // console.log(URL);
       const URL = "/storage/" + docRef;      
       instance.docViewer.loadDocument(URL);
+
+      const normalStyles = (widget) => {
+        if (widget instanceof Annotations.TextWidgetAnnotation) {
+          return {
+            'background-color': '#a5c7ff',
+            color: 'black',
+          };
+        } else if (widget instanceof Annotations.SignatureWidgetAnnotation) {
+          return {
+            border: '1px solid #a5c7ff',
+          };
+        }
+      };
+
+      annotManager.on('annotationChanged', (annotations, action, { imported }) => {
+        if (imported && action === 'add') {
+          annotations.forEach(function(annot) {
+            if (annot instanceof Annotations.WidgetAnnotation) {
+              Annotations.WidgetAnnotation.getCustomStyles = normalStyles;
+
+              console.log("annot.fieldName:"+annot.fieldName)
+              if (!annot.fieldName.startsWith(email)) { // TODO: 변경해야할듯 email -> _id 06/22
+                annot.Hidden = true;
+                annot.Listable = false;
+              }
+            }
+          });
+        }
+      });
       
     });
-  }, [docRef]);
+  }, [docRef, _id]);
 
   const download = () => {
     instance.downloadPdf(true);

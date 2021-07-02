@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import axios from 'axios';
 import { navigate } from '@reach/router';
 import { Box, Column, Heading, Row, Stack, Button } from 'gestalt';
@@ -8,7 +8,6 @@ import { selectDocToSign } from './SignDocumentSlice';
 // import { selectUser } from '../../firebase/firebaseSlice';
 import { selectUser } from '../../app/infoSlice';
 import { mergeAnnotations } from '../MergeAnnotations/MergeAnnotations';
-
 import WebViewer from '@pdftron/webviewer';
 import 'gestalt/dist/gestalt.css';
 import './SignDocument.css';
@@ -16,7 +15,10 @@ import './SignDocument.css';
 const SignDocument = () => {
   const [annotManager, setAnnotatManager] = useState(null);
   const [annotPosition, setAnnotPosition] = useState(0);
+  const [loading, setLoading] = useState(false);
 
+  // const dispatch = useDispatch();
+  // const uploading = useSelector(selectUploading);
   const doc = useSelector(selectDocToSign);
   const user = useSelector(selectUser);
   const { docRef, docId } = doc;
@@ -60,8 +62,9 @@ const SignDocument = () => {
       const normalStyles = (widget) => {
         if (widget instanceof Annotations.TextWidgetAnnotation) {
           return {
+            border: '1px solid #a5c7ff',
             'background-color': '#a5c7ff',
-            color: 'white',
+            color: 'black',
           };
         } else if (widget instanceof Annotations.SignatureWidgetAnnotation) {
           return {
@@ -71,10 +74,13 @@ const SignDocument = () => {
       };
 
       annotManager.on('annotationChanged', (annotations, action, { imported }) => {
-        if (imported && action === 'add') {
+        console.log("annotationChanged called")
+        if (imported && (action === 'add' || action === 'modify')) {
           annotations.forEach(function(annot) {
             if (annot instanceof Annotations.WidgetAnnotation) {
               Annotations.WidgetAnnotation.getCustomStyles = normalStyles;
+
+              console.log("annot.fieldName:"+annot.fieldName)
               if (!annot.fieldName.startsWith(email)) { // TODO: 변경해야할듯 email -> _id 06/22
                 annot.Hidden = true;
                 annot.Listable = false;
@@ -83,6 +89,12 @@ const SignDocument = () => {
           });
         }
       });
+
+      // annotManager.on('fieldChanged', (field, value) => {
+      //   console.log("fieldChanged called")
+      //   console.log(field, value)
+      // })
+
     });
   }, [docRef, _id]);
 
@@ -107,7 +119,11 @@ const SignDocument = () => {
   }
 
   const completeSigning = async () => {
-    const xfdf = await annotManager.exportAnnotations({ widgets: false, links: false });
+
+    setLoading(true);
+
+    // field: true 를 해줘야 텍스트 값도 저장됨
+    const xfdf = await annotManager.exportAnnotations({ widgets: false, links: false, fields: true,	annotList: annotManager.getAnnotationsList() });
     // await updateDocumentToSign(docId, email, xfdf);
 
     let param = {
@@ -116,13 +132,35 @@ const SignDocument = () => {
       uid: _id,
       xfdf: xfdf
     }
-    console.log("paramS:"+param)
-    await axios.post('/api/document/updateDocumentToSign', param).then(response => {
-      if (response.data.success) {
-        // merge (pdf + annotaion)
-        mergeAnnotations(response.data.docRef, response.data.xfdfArray)
-      }
-    });
+    console.log("completeSigning param:"+param)
+
+    //TO-BE : 파일업로드 된 후에 화면 이동되도록 변경
+    try {
+      const res = await axios.post('/api/document/updateDocumentToSign', param)
+      if (res.data.success) {
+        console.log("start merge")
+        await mergeAnnotations(res.data.docRef, res.data.xfdfArray, res.data.isLast)
+        console.log("end merge")
+        setLoading(false);
+      } else {
+        console.log("updateDocumentToSign error")
+        setLoading(false);
+      } 
+    } catch (error) {
+      console.log(error)
+      setLoading(false);
+    }
+
+    //AS-IS
+    // await axios.post('/api/document/updateDocumentToSign', param).then(response => {
+    //   if (response.data.success) {
+    //     // merge (pdf + annotaion)
+    //     console.log("response.data.isLast : "+ response.data.isLast)
+    //     console.log("start merge")
+    //     mergeAnnotations(response.data.docRef, response.data.xfdfArray, response.data.isLast)
+    //     console.log("end merge")
+    //   }
+    // });
 
     navigate('/');
   }

@@ -9,7 +9,10 @@ import { navigate } from '@reach/router';
 import { setDocToView } from '../ViewDocument/ViewDocumentSlice';
 import { setDocToSign } from '../SignDocument/SignDocumentSlice';
 import Moment from 'react-moment';
+import moment from 'moment';
+import 'moment/locale/ko';
 import { DocumentType, DocumentTypeText, DOCUMENT_SIGNED, DOCUMENT_TOSIGN, DOCUMENT_SIGNING, DOCUMENT_CANCELED } from './DocumentType';
+import DocumentExpander from "./DocumentExpander";
 
 const DocumentList = () => {
 
@@ -22,6 +25,8 @@ const DocumentList = () => {
   const [data, setData] = useState([]);
   const [pagination, setPagination] = useState({current:1, pageSize:10});
   const [loading, setLoading] = useState(false);
+  // const [expandable, setExpandable] = useState();
+
   const searchInput = useRef<Input>(null)
 
   const handleTableChange = (pagination, filters, sorter) => {
@@ -133,6 +138,29 @@ const DocumentList = () => {
     clearFilters();
     setSearchText('');
   }
+
+  // const Expander = props => <span>{props.record.docTitle}</span>;
+
+  // const expandableData = {
+  //     expandedRowRender: record => <p style={{ margin: 0 }}>{record.docTitle}</p>
+  // }
+
+  // const isUploading = (row) => {
+  //   // 내가 문서 사인하고 10초 정도는 upload 시간 벌어주기
+  //   var val = false
+
+  //   if (row["signedBy"].some(e => e.user === _id)) {
+  //     var t1 = moment()
+  //     var t2 = moment(row["signedBy"].filter(e => e.user === _id)[0]["signedTime"])
+  //     // console.log("t1:"+t1)
+  //     // console.log("t2:"+t2)
+  //     // console.log("차이:"+t1.diff(t2, "seconds", true))
+  //     if (t1.diff(t2, "seconds", true) < 10) {  //10초보다 작으면 문서업로딩중으로 판단 
+  //       val = true
+  //     }
+  //     return val 
+  //   }
+  // }
   
   const columns = [
     {
@@ -162,20 +190,7 @@ const DocumentList = () => {
       // ...getColumnSearchProps('state'),
       render: (_,row) => {
         return <DocumentTypeText uid={_id} document={row} />
-          // if (row["signed"] == true) { // 서명 완료된 문서
-          //     return (<font color='gray'>서명 종료 문서</font>);
-          // } else {
-          //     if (row["canceled"] == true) {
-          //       return (<font color='red'>취소된 문서</font>);
-          //     } else {
-          //         if (row["users"].includes(_id)) {
-          //           return (<font color='blue'>서명 할 문서</font>);
-          //         } else {
-          //           return (<font color='green'>서명 진행중 문서</font>);
-          //         }
-          //     }
-          // }
-        }, // 완료된 문서 | 취소된 문서
+        }, 
     },
     {
       title: '문서 이름',
@@ -183,6 +198,7 @@ const DocumentList = () => {
       sorter: true,
       key: 'docTitle',
       ...getColumnSearchProps('docTitle'),
+      expandable: true
       // render: (text,row) => <div>{text} {row["email"]} </div>, // 여러 필드 동시 표시에 사용
     },
     {
@@ -208,39 +224,40 @@ const DocumentList = () => {
     //     : ''
     // },
     {
-      title: '최근 활동',
-      dataIndex: 'signedTime',
+      title: '요청 일시',
+      dataIndex: 'requestedTime',
       sorter: true,
-      key: 'signedTime',
+      key: 'requestedTime',
       render: (text, row) => {
-        if (text){
-          return <Moment format='YYYY/MM/DD HH:mm'>{text}</Moment>
-        } else {
+        // if (text){
+        //   return <Moment format='YYYY/MM/DD HH:mm'>{text}</Moment>
+        // } else {
           return <Moment format='YYYY/MM/DD HH:mm'>{row["requestedTime"]}</Moment>
-        }
+        // }
       } 
     },
     {
-      title: 'Action',
+      title: '활동',
       // dataIndex: 'docRef',
-      key: 'View',
+      key: 'action',
       render: (_,row) => {
-
         switch (DocumentType({uid: _id, document: row})) {
           case DOCUMENT_CANCELED:
             return (<div>cancel</div>) 
           case DOCUMENT_SIGNED:
             return (
-              <Button onClick={() => {        
+              <Button
+                // loading={isUploading(row)}
+                onClick={() => {        
                 const docId = row["_id"]
                 const docRef = row["docRef"]
                 dispatch(setDocToView({ docRef, docId }));
                 navigate(`/viewDocument`);
-              }}>문서보기</Button>
+              }}>문서조회</Button>
             )
           case DOCUMENT_TOSIGN:
             return (
-              <Button onClick={() => {
+              <Button type="primary" onClick={() => {
                 const docId = row["_id"]
                 const docRef = row["docRef"]
                 dispatch(setDocToSign({ docRef, docId }));
@@ -254,7 +271,7 @@ const DocumentList = () => {
                 const docRef = row["docRef"]
                 dispatch(setDocToView({ docRef, docId }));
                 navigate(`/viewDocument`);
-              }}>문서보기</Button>
+              }}>문서조회</Button>
             );
           default:
             return (
@@ -279,11 +296,20 @@ const DocumentList = () => {
   return (
     <div>
       <Table
+        rowKey={ item => { return item._id } }
         columns={columns}
         // rowKey={record => record.login.uuid}
         dataSource={data}
         pagination={pagination}
         loading={loading}
+        // expandable={expandableData}
+        expandedRowRender={row => <DocumentExpander item={row} />}
+        expandRowByClick
+        onRow={record => ({
+          onClick: e => {
+            console.log(`user clicked on row ${record.t1}!`);
+          }
+        })}
         onChange={handleTableChange}
       />
     </div>

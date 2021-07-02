@@ -159,7 +159,7 @@ const SignList = () => {
       title: '서명하기',
       // dataIndex: 'docRef',
       key: 'Sign',
-      render: (_,row) => <Button onClick={() => {
+      render: (_,row) => <Button type="primary" onClick={() => {
         const docId = row["_id"]
         const docRef = row["docRef"]
         dispatch(setDocToSign({ docRef, docId }));

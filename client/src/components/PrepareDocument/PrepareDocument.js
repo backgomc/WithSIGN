@@ -31,8 +31,10 @@ const PrepareDocument = () => {
   const assigneesValues = assignees.map(user => {
     return { value: user.email, label: user.name };
   });
+  // let initialAssignee =
+  //   assigneesValues.length > 0 ? assigneesValues[0].value : '';
   let initialAssignee =
-    assigneesValues.length > 0 ? assigneesValues[0].value : '';
+  assigneesValues.length > 0 ? assigneesValues[0] : '';
   const [assignee, setAssignee] = useState(initialAssignee);
 
   const user = useSelector(selectUser);
@@ -94,8 +96,10 @@ const PrepareDocument = () => {
         if (typeof annot.custom !== 'undefined') {
           // create a form field based on the type of annotation
           if (annot.custom.type === 'TEXT') {
+            console.log("annot.custom.name:"+annot.custom.name)
             field = new Annotations.Forms.Field(
-              annot.getContents() + Date.now() + index,
+              // annot.getContents() + Date.now() + index,
+              annot.custom.name + Date.now() + index,
               {
                 type: 'Tx',
                 value: annot.custom.value,
@@ -104,7 +108,8 @@ const PrepareDocument = () => {
             inputAnnot = new Annotations.TextWidgetAnnotation(field);
           } else if (annot.custom.type === 'SIGNATURE') {
             field = new Annotations.Forms.Field(
-              annot.getContents() + Date.now() + index,
+              // annot.getContents() + Date.now() + index,
+              annot.custom.name + Date.now() + index,
               {
                 type: 'Sig',
               },
@@ -126,7 +131,8 @@ const PrepareDocument = () => {
             });
           } else if (annot.custom.type === 'DATE') {
             field = new Annotations.Forms.Field(
-              annot.getContents() + Date.now() + index,
+              // annot.getContents() + Date.now() + index,
+              annot.custom.name + Date.now() + index,
               {
                 type: 'Tx',
                 value: 'm-d-yyyy',
@@ -238,11 +244,13 @@ const PrepareDocument = () => {
       type,
       value,
       flag,
-      name: `${assignee}_${type}_`,
+      // name: `${assignee}_${type}_`,  //TODO 이름_type으로 
+      name: `${assignee.value}_${type}_`
     };
 
     // set the type of annot
-    textAnnot.setContents(textAnnot.custom.name);
+    // textAnnot.setContents(textAnnot.custom.name);
+    textAnnot.setContents(assignee.label+"_"+type);
     textAnnot.FontSize = '' + 20.0 / zoom + 'px';
     textAnnot.FillColor = new Annotations.Color(211, 211, 211, 0.5);
     textAnnot.TextColor = new Annotations.Color(0, 165, 228);
@@ -418,11 +426,12 @@ const PrepareDocument = () => {
                   <SelectList
                     id="assigningFor"
                     name="assign"
-                    onChange={({ value }) => setAssignee(value)}
+                    onChange={({ value }) => setAssignee(assigneesValues.filter(e => e.value === value)[0])}  //TODO: value에 해당하는 Assignee 찾기
+                    // onChange={({ value }) => setAssignee(value)}
                     options={assigneesValues}
                     placeholder="Select recipient"
                     label="Adding signature for"
-                    value={assignee}
+                    value={assignee.value}
                   />
                 </Box>
                 <Box padding={2}>

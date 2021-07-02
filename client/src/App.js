@@ -20,6 +20,7 @@ import View from './components/View';
 // import Header from './components/Header';
 import PasswordReset from './components/PasswordReset/PasswordReset';
 import Welcome from './components/Welcome';
+import Footer from './components/Footer/Footer';
 
 import { Route } from 'react-router-dom';
 import Test from './components/Test/Test';
@@ -102,8 +103,8 @@ const App = () => {
         <DocumentList path="/documentList" />
         <Sign path="/signDocument" />
         <View path="/viewDocument" />
+        <Test path="/test" />
       </Router>
-
     </div>
   </div>
 
