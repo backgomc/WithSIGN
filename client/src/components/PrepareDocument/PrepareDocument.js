@@ -12,13 +12,18 @@ import {
   Button,
   SelectList,
 } from 'gestalt';
-import { selectAssignees, resetSignee } from '../Assign/AssignSlice';
+import { Upload, message } from 'antd';
+import { InboxOutlined } from '@ant-design/icons';
+import { selectAssignees, resetSignee, selectDocumentFile, selectDocumentTitle, resetDocumentFile, resetDocumentTitle } from '../Assign/AssignSlice';
 import { storage, addDocumentToSign } from '../../firebase/firebase';
 // import { selectUser } from '../../firebase/firebaseSlice';
 import { selectUser } from '../../app/infoSlice';
 import WebViewer from '@pdftron/webviewer';
 import 'gestalt/dist/gestalt.css';
 import './PrepareDocument.css';
+import StepWrite from '../Step/StepWrite'
+
+const { Dragger } = Upload;
 
 const PrepareDocument = () => {
   const [instance, setInstance] = useState(null);
@@ -26,6 +31,9 @@ const PrepareDocument = () => {
   const [fileName, setFileName] = useState(null);
 
   const dispatch = useDispatch();
+
+  const documentFile = useSelector(selectDocumentFile);
+  const documentTitle = useSelector(selectDocumentTitle);
 
   const assignees = useSelector(selectAssignees);
   const assigneesValues = assignees.map(user => {
@@ -42,6 +50,30 @@ const PrepareDocument = () => {
 
   const viewer = useRef(null);
   const filePicker = useRef(null);
+
+  const props = {
+    name: 'file',
+    multiple: false,
+    // action: '',
+    beforeUpload: file => {
+        if (file.type !== 'application/pdf') {
+            console.log(file.type)
+            message.error(`${file.name} is not a pdf file`);
+            return Upload.LIST_IGNORE;
+        }
+
+        instance.loadDocument(file);
+        // setFile(file);
+                
+        return false;
+    },
+    onChange(info) {
+        console.log(info.file, info.fileList);
+    },
+    onDrop(e) {
+      console.log('Dropped files', e.dataTransfer.files);
+    },
+  };
 
   // if using a class, equivalent of componentDidMount
   useEffect(() => {
@@ -70,13 +102,18 @@ const PrepareDocument = () => {
         drop(e, instance);
       });
 
-      filePicker.current.onchange = e => {
-        const file = e.target.files[0];
-        if (file) {
-          setFileName(file.name.split('.')[0]);
-          instance.loadDocument(file);
-        }
-      };
+      if(documentFile) {
+        instance.loadDocument(documentFile)
+      }
+
+      // filePicker.current.onchange = e => {
+      //   const file = e.target.files[0];
+      //   console.log("Afile:"+ file)
+      //   if (file) {
+      //     setFileName(file.name.split('.')[0]);
+      //     instance.loadDocument(file);
+      //   }
+      // };
     });
   }, []);
 
@@ -309,7 +346,7 @@ const PrepareDocument = () => {
 
     let body = {
       user: _id,
-      docTitle: fileName,
+      docTitle: documentTitle,
       email: email,
       docRef: referenceString,
       // emails: emails,
@@ -353,6 +390,8 @@ const PrepareDocument = () => {
     //   });
 
     dispatch(resetSignee());
+    dispatch(resetDocumentFile());
+    dispatch(resetDocumentTitle());
     navigate('/');
   };
 
@@ -392,13 +431,18 @@ const PrepareDocument = () => {
 
   return (
     <div className={'prepareDocument'}>
+      {/* <div style={{width: "750px"}} align="center">
+        <p><StepWrite current={2} /></p>
+      </div> */}
+      <p><StepWrite current={2} /></p>
+      
       <Box display="flex" direction="row" flex="grow">
         <Column span={2}>
           {/* <Box padding={3}>
             <Heading size="md">Prepare Document</Heading>
           </Box> */}
           <Box padding={3}>
-            <Row gap={1}>
+            {/* <Row gap={1}>
               <Stack>
                 <Box padding={2}>
                   <Text>{'Step 1'}</Text>
@@ -416,7 +460,7 @@ const PrepareDocument = () => {
                   />
                 </Box>
               </Stack>
-            </Row>
+            </Row> */}
             <Row>
               <Stack>
                 <Box padding={2}>
@@ -499,7 +543,7 @@ const PrepareDocument = () => {
           <div className="webviewer" ref={viewer}></div>
         </Column>
       </Box>
-      <input type="file" ref={filePicker} style={{ display: 'none' }} />
+      {/* <input type="file" ref={filePicker} style={{ display: 'none' }} /> */}
     </div>
   );
 };

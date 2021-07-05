@@ -48,5 +48,7 @@
 	"view.agreement": "View Agreement",
 	"agree.agreement": "I have read the agreement",
 	"document.massList": "Mass Transfer",
-	"Next": "Next"
+	"Next": "Next",
+	"input.fileupload": "Click or drag file to this area to upload",
+	"input.fileupload.hint": "Support for a single or bulk upload. Strictly prohibit from uploading company data or other band files"
 }

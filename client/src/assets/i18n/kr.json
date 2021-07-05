@@ -48,5 +48,7 @@
 	"view.agreement": "약관 보기",
 	"agree.agreement": "약관 내용에 동의합니다",
 	"document.massList": "대량 전송",
-	"Next": "다음"
+	"Next": "다음",
+	"input.fileupload": "이곳에 파일을 끌어다 놓거나, 내 컴퓨터에서 업로드할 문서를 선택해 주세요.",
+	"input.fileupload.hint": "지원 파일: pdf, 업로드 가능 용량: 최대 5Mb"
 }

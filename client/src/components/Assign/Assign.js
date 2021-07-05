@@ -89,6 +89,7 @@ const Assign = () => {
 
   return (
     <div style={{ padding: 8 }}>
+      <p style={{width: "550px"}}><StepWrite current={1} /></p>
       <Space direction="vertical" align="center" size="middle">
         {/* <StepWrite current={0} /> */}
         <Transfer

@@ -7,9 +7,16 @@ import { Tabs, Upload, message, Input, Space, Form, Button } from 'antd';
 import { InboxOutlined } from '@ant-design/icons';
 import StepWrite from '../Step/StepWrite';
 import { useIntl } from "react-intl";
+import { setDocumentFile, setDocumentTitle, selectDocumentTitle } from '../Assign/AssignSlice';
 
 const { TabPane } = Tabs;
 const { Dragger } = Upload;
+const tailLayout = {
+  wrapperCol: {
+    offset: 22,
+    span: 16,
+  },
+};
 
 const UploadDocument = () => {
 
@@ -18,23 +25,43 @@ const UploadDocument = () => {
 
   const [instance, setInstance] = useState(null);
   const [file, setFile] = useState(null);
+  const [hiddenFileUpload, setHiddenFileUpload] = useState(false);
+  const [hiddenForm, setHiddenForm] = useState(true);
 
   const user = useSelector(selectUser);
   const { email, _id } = user;
 
-  const { frm } = Form.useForm();
+  const documentTitle = useSelector(selectDocumentTitle);
+
+  const [form] = Form.useForm();
+  const formRef = React.createRef();
 
   useEffect(() => {
 
-  }, [_id]);
+    // formRef.current.setFieldsValue({
+    //   documentTitle: 'Bamboo',
+    // });
+    
+    if (documentTitle) {
+      setHiddenForm(false);
+      formRef.current.setFieldsValue({
+        documentTitle: documentTitle
+      })
+    }
+
+
+  }, [formRef, documentTitle]);
 
 
   const onFinish = (values) => {
     console.log(values)
 
-    let body = {
-        documentTitle: values.documentTitle
-    }
+    dispatch(setDocumentTitle(values.documentTitle));
+    navigate('/assign')
+
+    // let body = {
+    //     documentTitle: values.documentTitle
+    // }
 
     // navigate('/');
     // dispatch(setUser(response.data.user));
@@ -52,7 +79,16 @@ const UploadDocument = () => {
         }
         setFile(file);
         
-        frm.documentTitle = "asasass"
+        console.log("form:"+form)
+
+        formRef.current.setFieldsValue({
+          documentTitle: file.name.replace(/\.[^/.]+$/, ""),
+        })
+
+        dispatch(setDocumentFile(file));
+        setHiddenForm(false);
+        setHiddenFileUpload(true);
+
         return false;
     },
     onChange(info) {
@@ -65,50 +101,60 @@ const UploadDocument = () => {
 
   return (
       <div>
-        <StepWrite current={0} />
-        
-        <br></br>
+        <p style={{width: "550px"}}><StepWrite current={0} /></p>
         <Tabs defaultActiveKey="1" type="card" size="small">
             
         <TabPane tab="내 컴퓨터" key="1">
             <Space direction="vertical">
+              {/* ISSUE: 파일 업로드 후 히든이 안됨 */}
+              <Dragger {...props} hidden={hiddenFileUpload}>  
+                  <p className="ant-upload-drag-icon">
+                  <InboxOutlined />
+                  </p>
+                  <p className="ant-upload-text" style={{minWidth: "550px"}}>
+                    {formatMessage({id: 'input.fileupload'})}
+                  </p>
+                  <p className="ant-upload-hint">
+                    {formatMessage({id: 'input.fileupload.hint'})}
+                  </p>
+              </Dragger>
 
-                <Form
-                name="frm"
+              <Form 
+                name="form"
+                hidden={hiddenForm}
+                labelCol={{
+                  span: 0,
+                }}
+                wrapperCol={{
+                  span: 22,
+                }}
+                ref={formRef}
                 className="login-form"
                 initialValues={{
-                    // documentTitle: "ㅁㅁㅁㅁ",
+                    // documentTitle: "",
                 }}
                 onFinish={onFinish}
                 >
-                    <Form.Item
-                        name="documentTitle"
-                        rules={[
-                        {
-                            required: true,
-                            message: formatMessage({id: 'input.documentTitle'}),
-                        },
-                        ]}
-                    >
-                        <Input prefix="(문서 제목)" />
-                    </Form.Item>
-                    <Form.Item>
-                        <Button type="primary" htmlType="submit">
-                            {formatMessage({id: 'Next'})}
-                        </Button>
-                    </Form.Item>
-                </Form>
-                
-                <Dragger {...props}>
-                    <p className="ant-upload-drag-icon">
-                    <InboxOutlined />
-                    </p>
-                    <p className="ant-upload-text">Click or drag file to this area to upload</p>
-                    <p className="ant-upload-hint">
-                    Support for a single or bulk upload. Strictly prohibit from uploading company data or other
-                    band files
-                    </p>
-                </Dragger>
+                  <Form.Item
+                      name="documentTitle"
+                      label="문서 제목"
+                      rules={[
+                      {
+                          required: true,
+                          message: formatMessage({id: 'input.documentTitle'}),
+                      },
+                      ]}
+                  >
+                      <Input />
+                  </Form.Item>
+                  <Form.Item {...tailLayout}>
+                      <Button type="primary" htmlType="submit">
+                          {formatMessage({id: 'Next'})}
+                      </Button>
+                  </Form.Item>
+
+              </Form>
+
             </Space>
           </TabPane>
           <TabPane tab="회사 템플릿" key="2">

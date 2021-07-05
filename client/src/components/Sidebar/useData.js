@@ -8,7 +8,7 @@ export default function useData() {
     "icon": FileAddOutlined,
     "key": "assign",
     "label": formatMessage({id: 'document.assign'}),
-    "url": "/assign"
+    "url": "/uploadDocument"
   // }, {
   //   "icon": FileTextOutlined,
   //   "key": "sign",
@@ -37,7 +37,7 @@ export default function useData() {
   //     "key": "users",
   //     "label": formatMessage({id: 'SecondLevel'}) + "001",
   //     "url": "/home/users"
-  //   }, {
+  //   }, { 
   //     "key": "hms",
   //     "label": formatMessage({id: 'SecondLevel'}) + "002",
   //     "url": "/home/hms"
