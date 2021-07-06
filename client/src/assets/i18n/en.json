@@ -50,5 +50,6 @@
 	"document.massList": "Mass Transfer",
 	"Next": "Next",
 	"input.fileupload": "Click or drag file to this area to upload",
-	"input.fileupload.hint": "Support for a single or bulk upload. Strictly prohibit from uploading company data or other band files"
+	"input.fileupload.support": "Support File: pdf",
+	"input.fileupload.volume": "Maximum volume: 5Mb"
 }

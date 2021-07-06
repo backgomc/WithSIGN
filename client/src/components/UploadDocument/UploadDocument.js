@@ -4,7 +4,7 @@ import { navigate } from '@reach/router';
 import { selectUser } from '../../app/infoSlice';
 import 'antd/dist/antd.css';
 import { Tabs, Upload, message, Input, Space, Form, Button } from 'antd';
-import { InboxOutlined } from '@ant-design/icons';
+import { InboxOutlined, CheckOutlined } from '@ant-design/icons';
 import StepWrite from '../Step/StepWrite';
 import { useIntl } from "react-intl";
 import { setDocumentFile, setDocumentTitle, selectDocumentTitle } from '../Assign/AssignSlice';
@@ -101,7 +101,8 @@ const UploadDocument = () => {
 
   return (
       <div>
-        <p style={{width: "550px"}}><StepWrite current={0} /></p>
+        <p style={{width: "650px"}}><StepWrite current={0} /></p>
+        <br></br>
         <Tabs defaultActiveKey="1" type="card" size="small">
             
         <TabPane tab="내 컴퓨터" key="1">
@@ -111,11 +112,16 @@ const UploadDocument = () => {
                   <p className="ant-upload-drag-icon">
                   <InboxOutlined />
                   </p>
-                  <p className="ant-upload-text" style={{minWidth: "550px"}}>
+                  <p className="ant-upload-text" style={{minWidth: "650px"}}>
                     {formatMessage({id: 'input.fileupload'})}
                   </p>
                   <p className="ant-upload-hint">
-                    {formatMessage({id: 'input.fileupload.hint'})}
+                    <CheckOutlined /> &nbsp;
+                    {formatMessage({id: 'input.fileupload.support'})}
+                  </p>
+                  <p className="ant-upload-hint">
+                    <CheckOutlined /> &nbsp;
+                    {formatMessage({id: 'input.fileupload.volume'})}
                   </p>
               </Dragger>
 

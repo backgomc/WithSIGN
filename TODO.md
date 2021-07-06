@@ -40,3 +40,32 @@
 * annotation 수정 안되게 하기
 * 서명 요청 프로세스 - 파일업로드 (폼에 값을 수동으로 어떻게 컨트롤 하는지 ...)
 * 임직원 데이터 사용자 선택하기 
+
+//user
+		String  sourceInfo     = Strings.emptyToNull((String)parameter.get("sourceInfo"));
+		String  sourcePassword = Strings.emptyToNull((String)parameter.get("sourcePassword"));
+		String  userId         = Strings.emptyToNull((String)parameter.get("userId"));
+		String  name           = Strings.emptyToNull((String)parameter.get("name"));
+		String  jobTitle       = Strings.emptyToNull((String)parameter.get("jobTitle"));
+		String  jobGrade       = Strings.emptyToNull((String)parameter.get("jobGrade"));
+		String  mobilePhoneNo  = Strings.emptyToNull((String)parameter.get("mobilePhoneNo"));
+		String  officePhoneNo  = Strings.emptyToNull((String)parameter.get("officePhoneNo"));
+		String  companyName    = Strings.emptyToNull((String)parameter.get("companyName"));
+		String  companyCode    = Strings.emptyToNull((String)parameter.get("companyCode"));
+		String  departCode     = Strings.emptyToNull((String)parameter.get("departCode"));
+		String  companyDsc     = Strings.emptyToNull((String)parameter.get("companyDsc"));
+		String  vacationType   = Strings.emptyToNull((String)parameter.get("vacationType"));
+		boolean inUse          = (Boolean)parameter.get("inUse");
+
+//org
+		String  sourceInfo      = Strings.emptyToNull((String)parameter.get("sourceInfo"));
+		String  sourcePassword  = Strings.emptyToNull((String)parameter.get("sourcePassword"));
+		String  companyDsc      = Strings.emptyToNull((String)parameter.get("companyDsc"));
+		String  companyName     = Strings.emptyToNull((String)parameter.get("companyName"));
+		String  officeCode      = Strings.emptyToNull((String)parameter.get("officeCode"));
+		String  officeName      = Strings.emptyToNull((String)parameter.get("officeName"));
+		String  departCode      = Strings.emptyToNull((String)parameter.get("departCode"));
+		String  departName      = Strings.emptyToNull((String)parameter.get("departName"));
+		int     displayOrder    = (Integer)parameter.get("displayOrder");
+		String  parentNodeId    = Strings.emptyToNull((String)parameter.get("parentNodeId"));
+		boolean inUse           = (Boolean)parameter.get("inUse");
