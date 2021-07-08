@@ -39,7 +39,21 @@
 # 사인항목의 email을 uid로 key값 변경하기
 * annotation 수정 안되게 하기
 * 서명 요청 프로세스 - 파일업로드 (폼에 값을 수동으로 어떻게 컨트롤 하는지 ...)
+
+
+# 07.07
+# saveDocument 시 로딩 바 추가 
+* saveDocument 시 필드 빈 항목 체크 
+* 사인해야할 문서 갯수 리스트 메뉴에 출력하기 
 * 임직원 데이터 사용자 선택하기 
+* 템플릿 기능 구현
+* antd pro 화면에 항목 웹뷰어 출력해보기
+
+# 07.08
+# tree 구조에 직원정보 넣기 
+# tree 사용자 검색 기능
+* 사번 또는 이메일을 암호화해서 별도키값으로 동작하게 변경 
+* tree에서 조직은 선택된게 안넘어가도록 변경
 
 //user
 		String  sourceInfo     = Strings.emptyToNull((String)parameter.get("sourceInfo"));
@@ -69,3 +83,4 @@
 		int     displayOrder    = (Integer)parameter.get("displayOrder");
 		String  parentNodeId    = Strings.emptyToNull((String)parameter.get("parentNodeId"));
 		boolean inUse           = (Boolean)parameter.get("inUse");
+

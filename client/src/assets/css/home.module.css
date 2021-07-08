@@ -1,6 +1,7 @@
 .container {
   display: grid;
   height: inherit;
+  /* min-height: 1000px; */
   grid-template-columns: 256px 1fr;
   grid-template-rows: 64px 1fr;
   grid-template-areas: 'sidebar header' 'sidebar main';

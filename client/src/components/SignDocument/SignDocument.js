@@ -3,6 +3,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import axios from 'axios';
 import { navigate } from '@reach/router';
 import { Box, Column, Heading, Row, Stack, Button } from 'gestalt';
+import { Spin } from 'antd';
 import { selectDocToSign } from './SignDocumentSlice';
 // import { storage, updateDocumentToSign } from '../../firebase/firebase';
 // import { selectUser } from '../../firebase/firebaseSlice';
@@ -11,6 +12,7 @@ import { mergeAnnotations } from '../MergeAnnotations/MergeAnnotations';
 import WebViewer from '@pdftron/webviewer';
 import 'gestalt/dist/gestalt.css';
 import './SignDocument.css';
+import { useIntl } from "react-intl";
 
 const SignDocument = () => {
   const [annotManager, setAnnotatManager] = useState(null);
@@ -23,6 +25,7 @@ const SignDocument = () => {
   const user = useSelector(selectUser);
   const { docRef, docId } = doc;
   const { email, _id } = user;
+  const { formatMessage } = useIntl();
 
   const viewer = useRef(null);
 
@@ -167,46 +170,48 @@ const SignDocument = () => {
 
   return (
     <div className={'prepareDocument'}>
-      <Box display="flex" direction="row" flex="grow">
-        <Column span={2}>
-          <Box padding={3}>
-            <Heading size="md">Sign Document</Heading>
-          </Box>
-          <Box padding={3}>
-            <Row gap={1}>
-              <Stack>
-                <Box padding={2}>
-                  <Button
-                    onClick={nextField}
-                    accessibilityLabel="next field"
-                    text="Next field"
-                    iconEnd="arrow-forward"
-                  />
-                </Box>
-                <Box padding={2}>
-                  <Button
-                    onClick={prevField}
-                    accessibilityLabel="Previous field"
-                    text="Previous field"
-                    iconEnd="arrow-back"
-                  />
-                </Box>
-                <Box padding={2}>
-                  <Button
-                    onClick={completeSigning}
-                    accessibilityLabel="complete signing"
-                    text="Complete signing"
-                    iconEnd="compose"
-                  />
-                </Box>
-              </Stack>
-            </Row>
-          </Box>
-        </Column>
-        <Column span={10}>
-          <div className="webviewer" ref={viewer}></div>
-        </Column>
-      </Box>
+      <Spin tip={formatMessage({id: 'Processing'})} spinning={loading}>
+        <Box display="flex" direction="row" flex="grow">
+          <Column span={2}>
+            <Box padding={3}>
+              <Heading size="md">Sign Document</Heading>
+            </Box>
+            <Box padding={3}>
+              <Row gap={1}>
+                <Stack>
+                  <Box padding={2}>
+                    <Button
+                      onClick={nextField}
+                      accessibilityLabel="next field"
+                      text="Next field"
+                      iconEnd="arrow-forward"
+                    />
+                  </Box>
+                  <Box padding={2}>
+                    <Button
+                      onClick={prevField}
+                      accessibilityLabel="Previous field"
+                      text="Previous field"
+                      iconEnd="arrow-back"
+                    />
+                  </Box>
+                  <Box padding={2}>
+                    <Button
+                      onClick={completeSigning}
+                      accessibilityLabel="complete signing"
+                      text="Complete signing"
+                      iconEnd="compose"
+                    />
+                  </Box>
+                </Stack>
+              </Row>
+            </Box>
+          </Column>
+          <Column span={10}>
+            <div className="webviewer" ref={viewer}></div>
+          </Column>
+        </Box>
+      </Spin>
     </div>
   );
 };

@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const { User } = require("../models/User");
+const { Org } = require("../models/Org");
+var fs = require('fs');
 
 const { auth } = require("../middleware/auth");
 
@@ -28,9 +30,9 @@ router.post('/register', (req, res) => {
         }
     });
 
-  })
+})
   
-  router.post('/login', (req, res) => {
+router.post('/login', (req, res) => {
   
     // console.log('ping')
     //요청된 이메일을 데이터베이스에서 있는지 찾는다.
@@ -64,44 +66,52 @@ router.post('/register', (req, res) => {
         })
       })
     })
+})
+  
+  
+// role 1 어드민    role 2 특정 부서 어드민 
+// role 0 -> 일반유저   role 0이 아니면  관리자 
+router.get('/auth', auth, (req, res) => {
+  //여기 까지 미들웨어를 통과해 왔다는 얘기는  Authentication 이 True 라는 말.
+  res.status(200).json({
+    _id: req.user._id,
+    isAdmin: req.user.role === 0 ? false : true,
+    isAuth: true,
+    email: req.user.email,
+    name: req.user.name,
+    lastname: req.user.lastname,
+    role: req.user.role,
+    image: req.user.image
   })
+})
   
-  
-  // role 1 어드민    role 2 특정 부서 어드민 
-  // role 0 -> 일반유저   role 0이 아니면  관리자 
-  router.get('/auth', auth, (req, res) => {
-    //여기 까지 미들웨어를 통과해 왔다는 얘기는  Authentication 이 True 라는 말.
-    res.status(200).json({
-      _id: req.user._id,
-      isAdmin: req.user.role === 0 ? false : true,
-      isAuth: true,
-      email: req.user.email,
-      name: req.user.name,
-      lastname: req.user.lastname,
-      role: req.user.role,
-      image: req.user.image
-    })
-  })
-  
-  router.post('/logout', auth, (req, res) => {
-    // console.log('req.user', req.user)
-    User.findOneAndUpdate({ _id: req.user._id },
-      { token: "" }
-      , (err, user) => {
-        if (err) return res.json({ success: false, err });
-        return res.status(200).send({
-          success: true
-        })
+router.post('/logout', auth, (req, res) => {
+  // console.log('req.user', req.user)
+  User.findOneAndUpdate({ _id: req.user._id },
+    { token: "" }
+    , (err, user) => {
+      if (err) return res.json({ success: false, err });
+      return res.status(200).send({
+        success: true
       })
-  })
+    })
+})
 
 /*
     USER LIST: POST /list
 */
 router.post('/list', (req, res) => {
 
+  var searchStr;
+
+  if (req.body.COMPANY_CODE) {
+    searchStr = { $and: [{COMPANY_CODE: req.body.COMPANY_CODE}] };
+  } else {
+    searchStr = {};
+  }
+
   User
-  .find()
+  .find(searchStr)
   .sort({"name" : 0})    //0:오름차순 -1:내림차순 //{order : dir};
   .exec(function(err, results) {
 
@@ -113,5 +123,70 @@ router.post('/list', (req, res) => {
       })
   })
 });
+
+/*
+    ORG INSERT: POST /org
+*/
+router.post('/orgInsert', (req, res) => {
+
+  fs.readFile('/Users/niceharu/Dev/nhsign/server/mock/org.json', 'utf8', (error, jsonFile) => {
+    if (error) return console.log(error);
+
+    const jsonData = JSON.parse(jsonFile);
+    // console.log(jsonFile);
+
+    jsonData.forEach(org => {
+        console.log(org);
+
+        const orgInfo = new Org()
+        orgInfo.OFFICE_NAME = org.OFFICE_NAME
+        orgInfo.OFFICE_CODE = org.OFFICE_CODE
+        orgInfo.DEPART_CODE = org.DEPART_CODE
+        orgInfo.DEPART_NAME = org.DEPART_NAME
+        orgInfo.PARENT_NODE_ID = org.PARENT_NODE_ID //이게 오류
+        orgInfo.DISPLAY_ORDER = org.DISPLAY_ORDER
+
+        // orgInfo.save((err, orgInfo) => {
+        //   if (err) return res.json({ success: false, err })
+        // })        
+        Org.findOne({ DEPART_CODE: orgInfo.DEPART_CODE }, (err, exists) => {
+          if(!exists) {
+            orgInfo.save((err, orgInfo) => {
+              if (err) return res.json({ success: false, err })
+            })
+          }
+        });
+    });
+  });
+
+  return res.status(200).json({
+    success: true
+  })
+
+});
+
+
+/*
+    ORG LIST: POST /orgList
+*/
+router.post('/orgList', (req, res) => {
+
+  if (!req.body.OFFICE_CODE) {
+    return res.json({ success: false, message: "input value not enough!" })
+} 
+
+  Org
+  .find({"OFFICE_CODE" : req.body.OFFICE_CODE})
+  // .sort({"name" : 0})    //0:오름차순 -1:내림차순 //{order : dir};
+  .exec(function(err, results) {
+
+      if (err) return next(err)
+
+      res.send({
+          success: true,
+          orgs: results
+      })
+  })
+});
   
-  module.exports = router;
+module.exports = router;

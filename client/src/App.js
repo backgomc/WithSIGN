@@ -82,32 +82,32 @@ const App = () => {
     // </>
 
     <div style={sidebarStyle} className={styles.container}>
-    <div className={styles.header}>
-      <Header collapsed={collapsed} setCollapsed={setCollapsed} />
-    </div>
-    <div className={styles.sidebar}>
-      <Sidebar collapsed={collapsed} />
-    </div>
-    <div className={styles.content}>
-      {/* <Route path="/home/assign" component={Assign} /> */}
-      {/* <Route path="/home/landing" component={Welcome} /> */}
-      {/* <Route path="/home/prepareDocument" component={Preparation} /> */}
-      {/* <Route path="/home/users" component={User} />
-      <Route path="/home/pkgs" component={Pkg} /> */}
+      <div className={styles.header}>
+        <Header collapsed={collapsed} setCollapsed={setCollapsed} />
+      </div>
+      <div className={styles.sidebar}>
+        <Sidebar collapsed={collapsed} />
+      </div>
+      <div className={styles.content}>
+        {/* <Route path="/home/assign" component={Assign} /> */}
+        {/* <Route path="/home/landing" component={Welcome} /> */}
+        {/* <Route path="/home/prepareDocument" component={Preparation} /> */}
+        {/* <Route path="/home/users" component={User} />
+        <Route path="/home/pkgs" component={Pkg} /> */}
 
-      <Router>
-        <Welcome path="/" />
-        <Assign path="/assign" />
-        <UploadDocument path="/uploadDocument" />
-        <Preparation path="/prepareDocument" />
-        <SignList path="/signList" />
-        <SignedList path="/signedList" />
-        <DocumentList path="/documentList" />
-        <Sign path="/signDocument" />
-        <View path="/viewDocument" />
-        <Test path="/test" />
-      </Router>
-    </div>
+        <Router>
+          <Welcome path="/" />
+          <Assign path="/assign" />
+          <UploadDocument path="/uploadDocument" />
+          <Preparation path="/prepareDocument" />
+          <SignList path="/signList" />
+          <SignedList path="/signedList" />
+          <DocumentList path="/documentList" />
+          <Sign path="/signDocument" />
+          <View path="/viewDocument" />
+          <Test path="/test" />
+        </Router>
+      </div>
   </div>
 
   ) : (

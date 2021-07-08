@@ -51,5 +51,9 @@
 	"Next": "Next",
 	"input.fileupload": "Click or drag file to this area to upload",
 	"input.fileupload.support": "Support File: pdf",
-	"input.fileupload.volume": "Maximum volume: 5Mb"
+	"input.fileupload.volume": "Maximum volume: 5Mb",
+	"input.sign": "add sign",
+	"input.text": "add text",
+	"Send": "Send",
+	"Processing": "Processing..."
 }

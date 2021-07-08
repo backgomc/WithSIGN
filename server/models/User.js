@@ -32,6 +32,12 @@ const userSchema = mongoose.Schema({
     },
     tokenExp: {
         type: Number
+    },
+    DEPART_CODE: {
+        type: String
+    },
+    JOB_TITLE: {
+        type: String
     }
 })
 

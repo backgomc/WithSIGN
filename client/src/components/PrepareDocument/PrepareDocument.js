@@ -22,6 +22,7 @@ import WebViewer from '@pdftron/webviewer';
 import 'gestalt/dist/gestalt.css';
 import './PrepareDocument.css';
 import StepWrite from '../Step/StepWrite'
+import { useIntl } from "react-intl";
 
 const { Dragger } = Upload;
 
@@ -31,6 +32,7 @@ const PrepareDocument = () => {
   const [fileName, setFileName] = useState(null);
 
   const dispatch = useDispatch();
+  const { formatMessage } = useIntl();
 
   const documentFile = useSelector(selectDocumentFile);
   const documentTitle = useSelector(selectDocumentTitle);
@@ -143,7 +145,7 @@ const PrepareDocument = () => {
               },
             );
             inputAnnot = new Annotations.TextWidgetAnnotation(field);
-          } else if (annot.custom.type === 'SIGNATURE') {
+          } else if (annot.custom.type === 'SIGN') {
             field = new Annotations.Forms.Field(
               // annot.getContents() + Date.now() + index,
               annot.custom.name + Date.now() + index,
@@ -270,8 +272,16 @@ const PrepareDocument = () => {
       textAnnot.Width = 50.0 / zoom;
       textAnnot.Height = 250.0 / zoom;
     } else {
-      textAnnot.Width = 250.0 / zoom;
-      textAnnot.Height = 50.0 / zoom;
+      if (type == "SIGN") {
+        textAnnot.Width = 90.0 / zoom;
+        textAnnot.Height = 90.0 / zoom;
+      } else if (type == "TEXT") {
+        textAnnot.Width = 200.0 / zoom;
+        textAnnot.Height = 30.0 / zoom;
+      } else {
+        textAnnot.Width = 250.0 / zoom;
+        textAnnot.Height = 30.0 / zoom;
+      }
     }
     textAnnot.X = (page_point.x || page_info.width / 2) - textAnnot.Width / 2;
     textAnnot.Y = (page_point.y || page_info.height / 2) - textAnnot.Height / 2;
@@ -464,13 +474,13 @@ const PrepareDocument = () => {
             <Row>
               <Stack>
                 <Box padding={2}>
-                  <Text>{'Step 2'}</Text>
+                  <Text>{'Step 1'}</Text>
                 </Box>
                 <Box padding={2}>
                   <SelectList
                     id="assigningFor"
                     name="assign"
-                    onChange={({ value }) => setAssignee(assigneesValues.filter(e => e.value === value)[0])}  //TODO: value에 해당하는 Assignee 찾기
+                    onChange={({ value }) => setAssignee(assigneesValues.filter(e => e.value === value)[0])}  
                     // onChange={({ value }) => setAssignee(value)}
                     options={assigneesValues}
                     placeholder="Select recipient"
@@ -482,12 +492,12 @@ const PrepareDocument = () => {
                   <div
                     draggable
                     onDragStart={e => dragStart(e)}
-                    onDragEnd={e => dragEnd(e, 'SIGNATURE')}
+                    onDragEnd={e => dragEnd(e, 'SIGN')}
                   >
                     <Button
-                      onClick={() => addField('SIGNATURE')}
+                      onClick={() => addField('SIGN')}
                       accessibilityLabel="add signature"
-                      text="Add signature"
+                      text={formatMessage({id: 'input.sign'})}
                       iconEnd="compose"
                     />
                   </div>
@@ -501,12 +511,12 @@ const PrepareDocument = () => {
                     <Button
                       onClick={() => addField('TEXT')}
                       accessibilityLabel="add text"
-                      text="Add text"
+                      text= {formatMessage({id: 'input.text'})}
                       iconEnd="text-sentence-case"
                     />
                   </div>
                 </Box>
-                <Box padding={2}>
+                {/* <Box padding={2}>
                   <div
                     draggable
                     onDragStart={e => dragStart(e)}
@@ -519,19 +529,19 @@ const PrepareDocument = () => {
                       iconEnd="calendar"
                     />
                   </div>
-                </Box>
+                </Box> */}
               </Stack>
             </Row>
             <Row gap={1}>
               <Stack>
                 <Box padding={2}>
-                  <Text>{'Step 3'}</Text>
+                  <Text>{'Step 2'}</Text>
                 </Box>
                 <Box padding={2}>
                   <Button
                     onClick={applyFields}
                     accessibilityLabel="Send for signing"
-                    text="Send"
+                    text={formatMessage({id: 'Send'})}
                     iconEnd="send"
                   />
                 </Box>

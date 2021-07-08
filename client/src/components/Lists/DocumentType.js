@@ -7,8 +7,8 @@ import {
   ExclamationCircleOutlined,
   ClockCircleOutlined,
   MinusCircleOutlined,
+  EditOutlined,
 } from '@ant-design/icons';
-
 export const DOCUMENT_SIGNED = "서명 완료";
 export const DOCUMENT_TOSIGN = "서명 필요";
 export const DOCUMENT_SIGNING = "서명 대기";
@@ -57,7 +57,7 @@ export function DocumentTypeText(props) {
             // if (document["users"].some(e => e._id === uid) && !document["signedBy"].includes(uid)) {
               if (document["users"].some(e => e._id === uid) && !document["signedBy"].some(e => e.user === uid)) {
                 return (
-                  <Tag icon={<SyncOutlined spin />} color="processing">
+                  <Tag icon={<EditOutlined />} color="processing">
                   {DOCUMENT_TOSIGN}
                  </Tag>
                 )
