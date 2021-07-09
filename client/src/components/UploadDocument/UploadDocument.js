@@ -93,6 +93,10 @@ const UploadDocument = () => {
     },
     onChange(info) {
         console.log(info.file, info.fileList);
+
+        formRef.current.setFieldsValue({
+          documentTitle: info.file.name.replace(/\.[^/.]+$/, ""),
+        })
     },
     onDrop(e) {
       console.log('Dropped files', e.dataTransfer.files);
@@ -101,7 +105,8 @@ const UploadDocument = () => {
 
   return (
       <div>
-        <p style={{width: "650px"}}><StepWrite current={0} /></p>
+        {/* <p style={{width: "650px"}}><StepWrite current={0} /></p> */}
+        <StepWrite current={0} />
         <br></br>
         <Tabs defaultActiveKey="1" type="card" size="small">
             

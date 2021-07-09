@@ -133,7 +133,7 @@ const SignList = () => {
   
   const columns = [
     {
-      title: '문서 이름',
+      title: '문서명',
       dataIndex: 'docTitle',
       sorter: true,
       key: 'docTitle',

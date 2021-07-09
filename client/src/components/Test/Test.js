@@ -137,27 +137,27 @@ const Test = () => {
       const level1 = orgs.filter(e => e.PARENT_NODE_ID === "")
       level1.forEach(function(org){
         const level2 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE)
-        const org1 = {key: org.DEPART_CODE, title:org.DEPART_NAME, children:[]}
+        const org1 = {key: org.DEPART_CODE, title:org.DEPART_NAME, children:[], disableCheckbox: true, selectable: false}
         // const org1 = {key: org.DEPART_CODE, title:org.DEPART_NAME, children:[], disableCheckbox: true, selectable: false}
         insertUser(org1, users, org.DEPART_CODE)
 
         level2.forEach(function(org){
-          const org2 = {key: org.DEPART_CODE, title:org.DEPART_NAME, children:[]}
+          const org2 = {key: org.DEPART_CODE, title:org.DEPART_NAME, children:[], disableCheckbox: true, selectable: false}
           insertUser(org2, users, org.DEPART_CODE)
 
           const level3 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE)
           level3.forEach(function(org){
-            const org3 = {key: org.DEPART_CODE, title:org.DEPART_NAME, children:[]}
+            const org3 = {key: org.DEPART_CODE, title:org.DEPART_NAME, children:[], disableCheckbox: true, selectable: false}
             insertUser(org3, users, org.DEPART_CODE)
 
             const level4 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE)
             level4.forEach(function(org){
-              const org4 = {key: org.DEPART_CODE, title:org.DEPART_NAME, children:[]}
+              const org4 = {key: org.DEPART_CODE, title:org.DEPART_NAME, children:[], disableCheckbox: true, selectable: false}
               insertUser(org4, users, org.DEPART_CODE)
               
               const level5 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE)
               level5.forEach(function(org){
-                const org5 = {key: org.DEPART_CODE, title:org.DEPART_NAME, children:[]}
+                const org5 = {key: org.DEPART_CODE, title:org.DEPART_NAME, children:[], disableCheckbox: true, selectable: false}
                 insertUser(org5, users, org.DEPART_CODE)
                 org4.children.push(org5)
               })
