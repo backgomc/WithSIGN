@@ -14,13 +14,13 @@ router.post('/register', (req, res) => {
       if(exists){
           return res.json({
             success: false,
-              error: "EMAIL EXISTS",
+              error: "이미 가입된 Email이 존재합니다.",
                code: 4
           });
         } else {
           // SAVE USER 
           const user = new User(req.body)
-        
+                  
           user.save((err, userInfo) => {
             if (err) return res.json({ success: false, err })
             return res.status(200).json({
@@ -73,6 +73,12 @@ router.post('/login', (req, res) => {
 // role 0 -> 일반유저   role 0이 아니면  관리자 
 router.get('/auth', auth, (req, res) => {
   //여기 까지 미들웨어를 통과해 왔다는 얘기는  Authentication 이 True 라는 말.
+
+  // const user = req.user
+  // user.compareUid(user.email, (err, isMatch) => {
+  //   console.log("isMatch:"+isMatch)
+  // })
+
   res.status(200).json({
     _id: req.user._id,
     isAdmin: req.user.role === 0 ? false : true,
@@ -81,7 +87,8 @@ router.get('/auth', auth, (req, res) => {
     name: req.user.name,
     lastname: req.user.lastname,
     role: req.user.role,
-    image: req.user.image
+    image: req.user.image,
+    uid: req.user.uid
   })
 })
   

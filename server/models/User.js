@@ -1,10 +1,17 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
+const { hexCrypto } = require('../common/utils');
 const saltRounds = 10
+const saltRoundsUid = 5
 const jwt = require('jsonwebtoken');
 
 
 const userSchema = mongoose.Schema({
+    uid : {
+        type: String,
+        trim: true,
+        unique: 1
+    },
     name: {
         type: String,
         maxlength: 50
@@ -38,6 +45,9 @@ const userSchema = mongoose.Schema({
     },
     JOB_TITLE: {
         type: String
+    },
+    SABUN: {
+        type: String
     }
 })
 
@@ -60,6 +70,43 @@ userSchema.pre('save', function (next) {
     }
 })
 
+// uid 저장: usrId가 있으면 그대로 사용, 사번이 있으면 사번 암호화해서 사용, 이메일이 있으면 이메일 암호화해서 사용
+userSchema.pre('save', function (next) {
+    var user = this;
+
+    if (user.userId) {  // ERP에서 받아온 ID가 있으면 해당 ID 사용
+        user.uid = userId
+        next()
+    } else if (user.SABUN) {
+        // bcrypt.genSalt(saltRoundsUid, function (err, salt) {
+        //     if (err) return next(err)
+
+        //     bcrypt.hash(user.SABUN, salt, function (err, hash) {
+        //         if (err) return next(err)
+        //         user.uid = hash
+        //         next()
+        //     })
+        // })
+
+        // DB복구를 위해 단순 HASH값으로 변경
+        user.uid = hexCrypto(user.SABUN)
+        next()
+    } else if (user.email) {
+        // bcrypt.genSalt(saltRoundsUid, function (err, salt) {
+        //     if (err) return next(err)
+
+        //     bcrypt.hash(user.email, salt, function (err, hash) {
+        //         if (err) return next(err)
+        //         user.uid = hash
+        //         next()
+        //     })
+        // })
+
+        // DB복구를 위해 단순 HASH값으로 변경
+        user.uid = hexCrypto(user.email)
+        next()
+    }
+})
 
 userSchema.methods.comparePassword = function (plainPassword, cb) {
 
@@ -101,7 +148,21 @@ userSchema.statics.findByToken = function(token, cb) {
     })
 }
 
+userSchema.methods.compareUid = function (plainId, cb) {
+    // const origin = "sdsdsdsd@gmail.com"
+    // const encryped = "$2b$05$AiR.bnrUmsXQvO02x7d6ruXxjbfqhHAeoo1VHM99WfzgPV70Ch2H6"
+    // bcrypt.compare(origin, encryped, function (err, isMatch) {
+    // bcrypt.compare(plainId, this.uid, function (err, isMatch) {
+    //     if (err) return cb(err);
+    //     cb(null, isMatch);
+    // })
 
+    if (hexCrypto(plainId) === this.uid) {
+        cb(null, true) 
+    } else {
+        cb(null, false)
+    }
+}
 
 const User = mongoose.model('User', userSchema)
 

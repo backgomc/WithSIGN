@@ -52,8 +52,11 @@
 # 07.08
 # tree 구조에 직원정보 넣기 
 # tree 사용자 검색 기능
-* 사번 또는 이메일을 암호화해서 별도키값으로 동작하게 변경 
 * tree에서 조직은 선택된게 안넘어가도록 변경
+
+# 07.12
+* 사번 또는 이메일을 암호화해서 별도키값으로 동작하게 변경 
+* 반응형 UI 화면 대응 
 
 //user
 		String  sourceInfo     = Strings.emptyToNull((String)parameter.get("sourceInfo"));
