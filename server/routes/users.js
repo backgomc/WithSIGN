@@ -3,6 +3,7 @@ const router = express.Router();
 const { User } = require("../models/User");
 const { Org } = require("../models/Org");
 var fs = require('fs');
+const { hexCrypto } = require('../common/utils');
 
 const { auth } = require("../middleware/auth");
 
@@ -34,15 +35,27 @@ router.post('/register', (req, res) => {
   
 router.post('/login', (req, res) => {
   
-    // console.log('ping')
+    var uid;
+    if (req.body.SABUN) {
+      uid = hexCrypto(req.body.SABUN)
+    } else if (req.body.email) {
+      uid = hexCrypto(req.body.email)
+    } else {
+      return res.json({
+        success: false,
+        message: "잘못된 ID입니다."
+      })
+    }
+
+    console.log("uid: "+ uid)
     //요청된 이메일을 데이터베이스에서 있는지 찾는다.
-    User.findOne({ email: req.body.email }, (err, user) => {
-  
+    // User.findOne({ email: req.body.email }, (err, user) => {
+    User.findOne({ uid: uid }, (err, user) => {
       // console.log('user', user)
       if (!user) {
         return res.json({
           success: false,
-          message: "제공된 이메일에 해당하는 유저가 없습니다."
+          message: "입력하신 ID에 해당하는 유저가 없습니다."
         })
       }
   
@@ -59,7 +72,10 @@ router.post('/login', (req, res) => {
         user.generateToken((err, user) => {
           if (err) return res.status(400).send(err);
   
-          // 토큰을 저장한다.  어디에 ?  쿠키 , 로컳스토리지 
+          // 패스워드 빼고 리턴 
+          user.password = ""
+
+          // 토큰을 저장한다.  어디에 ?  쿠키 , 로컬스토리지 
           res.cookie("x_auth", user.token)
             .status(200)
             .json({ success: true, user: user })
@@ -79,6 +95,8 @@ router.get('/auth', auth, (req, res) => {
   //   console.log("isMatch:"+isMatch)
   // })
 
+  // console.log("email crypto: "+hexCrypto(req.user.email))
+
   res.status(200).json({
     _id: req.user._id,
     isAdmin: req.user.role === 0 ? false : true,
@@ -93,8 +111,7 @@ router.get('/auth', auth, (req, res) => {
 })
   
 router.post('/logout', auth, (req, res) => {
-  // console.log('req.user', req.user)
-  User.findOneAndUpdate({ _id: req.user._id },
+  User.findOneAndUpdate({ uid: req.user.uid },
     { token: "" }
     , (err, user) => {
       if (err) return res.json({ success: false, err });

@@ -156,7 +156,7 @@ const SignedList = () => {
       // render: (text,row) => <div>{text} {row["email"]} </div>, // 완료된 문서 | 취소된 문서
     },
     {
-      title: '문서 이름',
+      title: '문서명',
       dataIndex: 'docTitle',
       sorter: true,
       key: 'docTitle',

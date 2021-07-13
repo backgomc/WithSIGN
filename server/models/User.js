@@ -74,36 +74,43 @@ userSchema.pre('save', function (next) {
 userSchema.pre('save', function (next) {
     var user = this;
 
-    if (user.userId) {  // ERP에서 받아온 ID가 있으면 해당 ID 사용
-        user.uid = userId
-        next()
-    } else if (user.SABUN) {
-        // bcrypt.genSalt(saltRoundsUid, function (err, salt) {
-        //     if (err) return next(err)
+    console.log("A")
+    if (user.isModified('SABUN') || user.isModified('email')) {
+        console.log("B")
+        if (user.uid) {  // ERP에서 받아온 ID가 있으면 해당 ID 사용
+            next()
+            console.log("C")
+        } else if (user.SABUN) {
+            // bcrypt.genSalt(saltRoundsUid, function (err, salt) {
+            //     if (err) return next(err)
+    
+            //     bcrypt.hash(user.SABUN, salt, function (err, hash) {
+            //         if (err) return next(err)
+            //         user.uid = hash
+            //         next()
+            //     })
+            // })
+            console.log("D")
+            // DB복구를 위해 단순 HASH값으로 변경
+            user.uid = hexCrypto(user.SABUN)
+            next()
+        } else if (user.email) {
+            // bcrypt.genSalt(saltRoundsUid, function (err, salt) {
+            //     if (err) return next(err)
+    
+            //     bcrypt.hash(user.email, salt, function (err, hash) {
+            //         if (err) return next(err)
+            //         user.uid = hash
+            //         next()
+            //     })
+            // })
+            console.log("E")
+            // DB복구를 위해 단순 HASH값으로 변경
+            user.uid = hexCrypto(user.email)
+            next()
+        }
 
-        //     bcrypt.hash(user.SABUN, salt, function (err, hash) {
-        //         if (err) return next(err)
-        //         user.uid = hash
-        //         next()
-        //     })
-        // })
-
-        // DB복구를 위해 단순 HASH값으로 변경
-        user.uid = hexCrypto(user.SABUN)
-        next()
-    } else if (user.email) {
-        // bcrypt.genSalt(saltRoundsUid, function (err, salt) {
-        //     if (err) return next(err)
-
-        //     bcrypt.hash(user.email, salt, function (err, hash) {
-        //         if (err) return next(err)
-        //         user.uid = hash
-        //         next()
-        //     })
-        // })
-
-        // DB복구를 위해 단순 HASH값으로 변경
-        user.uid = hexCrypto(user.email)
+    } else {
         next()
     }
 })
