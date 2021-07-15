@@ -59,7 +59,35 @@
 * 반응형 UI 화면 대응 - IE10 에서 사용 가능한 건 없다 ... 
 # 내부망 서비스 업로드를 위해 docker 배포를 시도해보자 ...
 * docker image 내부망에 실제로 올려보기 
-* docker 이미지 용량을 줄여서 
+
+# 07.15
+* docker 이미지 용량을 줄이기 
+* docker image 수동 배포 및 테스트 ex)docker save -o nhsign_server.tar nhsign_server / docker load -i 경로 및 파일
+* 재컴파일이 필요하다....dockerignore 처리함 (node_modules)
+
+
+# docker 
+* 수동파일 배포
+ > docker save -o nhsign_server.tar nhsign_server (배포)
+ > docker load -i 경로 및 파일 (로드)
+* docker hub 배포
+ > docker login (dockerhub login)
+ > docker tag nhsign_server:latest niceharu/nhsign:1.0 (이름 맞추기)
+ > docker push niceharu/nhsign:1.0 (업로드)
+ > sudo usermod -a -G docker $USER (다운로드 전에 계정에 docker 권한주기)
+ > docker login (niceharu / password)
+ > docker pull niceharu/nhsign:1.0 (다운로드)
+
+# 배포
+* client
+ > yarn build
+* docker 배포
+
+# ISSUE
+* 1
+POST /api/storage/upload 500 2.646 ms - 243
+Error: ENOENT: no such file or directory, open 'storage/docToSign/60efdfa5ebb01b001337ffc91626337309475.pdf'
+=>  /Data/storage/docToSign 폴더가 생성되어있어야 한다. docToSign 폴더도 !!!
 
 //user
 		String  sourceInfo     = Strings.emptyToNull((String)parameter.get("sourceInfo"));

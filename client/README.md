@@ -1,19 +1,4 @@
-# PDFTron Sign App
-
-PDFTron Sign App demonstrates building a signing application where users can request signatures on the documents by placing fields, sign documents, review signed documents using [PDFTron PDF SDK](https://www.pdftron.com).
-
-Watch the video here:
-[![image](https://img.youtube.com/vi/tSpYY8IenJw/maxresdefault.jpg)](https://youtu.be/tSpYY8IenJw)
-
-This repo is designed to help to get started in creating your own signing workflow.
-
-## What is new in the latest release
-
-[Watch a quick recap](https://youtu.be/Q6-8s9uAe1s)
-
-- Ability to add date fields
-- Ability to see when the document was requested and signed
-- Update WebViewer to 7.2
+# NHSign
 
 ## Install
 
@@ -23,62 +8,10 @@ This repo is designed to help to get started in creating your own signing workfl
 npm install
 ```
 
-## Firebase Configuration
-
-This application uses Firebase to store PDFs and data for signatures. You can use any other backend of your choice. 
-However, to get started with this sample, please register a new app with [Firebase](https://firebase.google.com/).
-
-After you have registered an app, create `.env` file in the root of the directory and place the following:
-
-```
-REACT_APP_API_KEY=your_key_goes_here
-REACT_APP_MESSAGING_SENDER_ID=your_key_goes_here
-REACT_APP_APP_ID=your_key_goes_here
-REACT_APP_AUTH_DOMAIN=your_domain_goes_here
-REACT_APP_DATABASE_URL=your_database_go_here
-REACT_APP_PROJECT_ID=your_project_id
-REACT_APP_STORAGE_BUCKET=your_storage_bucket
-```
-The above information can be found under settings of your Firebase app.
-![Screenshot](https://github.com/PDFTron/pdftron-sign-app/blob/master/firebase.png)
-
-Make sure you create a storage bucket, and enable authentication for email and Google.
-![Screenshot](https://github.com/PDFTron/pdftron-sign-app/blob/master/firebase_authentication.png)
-
-After you have your storage bucket and Firestore setup give authenticated users read and write permissions.
-
-Rules for storage which will host your PDF documents.
-![Screenshot](https://github.com/PDFTron/pdftron-sign-app/blob/master/firebase-storage-rules.png)
-
-Rules for Firestore which will host document signing metadata.
-![Screenshot](https://github.com/PDFTron/pdftron-sign-app/blob/master/firebase-firestore-rules.png)
-
-
-Now you can run the application and start requesting signatures.
-
-## CORS
-
-You will need to set up CORS on your Firestore to allow WebViewer to access files stored in your bucket. I created a CORS file called `cors.json`: 
-
-```
-[
-  {
-    "origin": ["*"],
-    "method": ["GET"],
-    "maxAgeSeconds": 3600
-  }
-]
-```
-
-And then used gsutil to update it:
-https://cloud.google.com/storage/docs/configuring-cors
-
-The walkthrough recommends siging up for billing but that is not necessary to use this demo.
-
 ## Run
 
 ```
-npm start
+npm run client
 ```
 
 ## Project structure
@@ -109,7 +42,7 @@ src/
   tools/           - Helper function to copy over PDFTron dependencies into /public on post-install
 ```
 
-## Firebase Document Structure
+## Document Structure
 
 ```
 docRef: docToSign/c4Y72M0d0pZx3476jxJFxrFA3Qo21593036106369.pdf"
@@ -133,10 +66,6 @@ xfdf: ["<?xml version="1.0" encoding="UTF-8" ?><xfdf xmlns="http://ns.adobe.com/
 - xfdf - an array of strings - signature appearance/form field values for each user
 
 ## API documentation
-
 See [API documentation](https://www.pdftron.com/documentation/web/guides/ui/apis).
 
 ## License
-
-See [license](./LICENSE).
-![](https://onepixel.pdftron.com/webviewer-ui)

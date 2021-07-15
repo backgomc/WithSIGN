@@ -12,7 +12,7 @@ import {
   Button,
   SelectList,
 } from 'gestalt';
-import { Upload, message } from 'antd';
+import { Upload, message, Spin } from 'antd';
 import { InboxOutlined } from '@ant-design/icons';
 import { selectAssignees, resetSignee, selectDocumentFile, selectDocumentTitle, resetDocumentFile, resetDocumentTitle } from '../Assign/AssignSlice';
 import { storage, addDocumentToSign } from '../../firebase/firebase';
