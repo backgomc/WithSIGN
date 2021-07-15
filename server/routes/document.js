@@ -205,8 +205,8 @@ router.post('/searchForDocumentToSign', (req, res) => {
     // ISSUE2: 같은 단어를 넣어도 조회됬다가 안됬다가 하는 현상 발생 
     var searchStr;
     // var searchName;
-    console.log("docTitle:"+req.body.docTitle)
-    console.log("name:"+req.body.name)
+    // console.log("docTitle:"+req.body.docTitle)
+    // console.log("name:"+req.body.name)
     if (req.body.docTitle) {
       var regex = new RegExp(req.body.docTitle[0], "i")
       searchStr = { $and: [{'docTitle': regex}] };

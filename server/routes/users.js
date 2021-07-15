@@ -3,6 +3,7 @@ const router = express.Router();
 const { User } = require("../models/User");
 const { Org } = require("../models/Org");
 var fs = require('fs');
+var url = require('url');
 const { hexCrypto } = require('../common/utils');
 
 const { auth } = require("../middleware/auth");
@@ -128,8 +129,8 @@ router.post('/list', (req, res) => {
 
   var searchStr;
 
-  if (req.body.COMPANY_CODE) {
-    searchStr = { $and: [{COMPANY_CODE: req.body.COMPANY_CODE}] };
+  if (req.body.OFFICE_CODE) {
+    searchStr = { $and: [{OFFICE_CODE: req.body.OFFICE_CODE}] };
   } else {
     searchStr = {};
   }
@@ -153,7 +154,7 @@ router.post('/list', (req, res) => {
 */
 router.post('/orgInsert', (req, res) => {
 
-  fs.readFile('/Users/niceharu/Dev/nhsign/server/mock/org.json', 'utf8', (error, jsonFile) => {
+  fs.readFile('./public/mock/org.json', 'utf8', (error, jsonFile) => {
     if (error) return console.log(error);
 
     const jsonData = JSON.parse(jsonFile);

@@ -1,5 +1,5 @@
 {
-  "name": "boiler-plate",
+  "name": "nhsign-server",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -9,7 +9,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "concurrently \"npm run backend\" \"npm run start --prefix client\""
   },
-  "author": "john-ahn",
+  "author": "niceharu",
   "license": "ISC",
   "dependencies": {
     "@reduxjs/toolkit": "^1.5.1",

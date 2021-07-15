@@ -39,7 +39,7 @@ const Assign = () => {
     setLoading(true);
 
     var users = []
-    const res1 = await axios.post('/api/users/list', {COMPANY_CODE: "16"})
+    const res1 = await axios.post('/api/users/list', {OFFICE_CODE: "7831"})
     if (res1.data.success) {
       users = res1.data.users
       setUsers(res1.data.users)

@@ -56,8 +56,10 @@
 
 # 07.12
 # 사번 또는 이메일을 암호화해서 별도키값으로 동작하게 변경 => populate 가 ObjectID만 지원을해서 로그인시만 사번,이메일 변환키값 사용
-* 반응형 UI 화면 대응 
-
+* 반응형 UI 화면 대응 - IE10 에서 사용 가능한 건 없다 ... 
+# 내부망 서비스 업로드를 위해 docker 배포를 시도해보자 ...
+* docker image 내부망에 실제로 올려보기 
+* docker 이미지 용량을 줄여서 
 
 //user
 		String  sourceInfo     = Strings.emptyToNull((String)parameter.get("sourceInfo"));

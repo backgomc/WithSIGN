@@ -10,6 +10,7 @@ const config = require("./config/key");
 
 const mongoose = require("mongoose");
 const connect = mongoose.connect(config.mongoURI,
+// const connect = mongoose.connect("mongodb://mongo/nhsign",   // docker 로 붙을때 container name 으로 통신
   {
     useNewUrlParser: true, useUnifiedTopology: true,
     useCreateIndex: true, useFindAndModify: false
@@ -19,6 +20,8 @@ const connect = mongoose.connect(config.mongoURI,
 
 app.use(cors())
 app.use(logger('dev'));
+
+app.use(express.static('public'));
 
 //to not get any deprecation warning or error
 //support parsing of application/x-www-form-urlencoded post data

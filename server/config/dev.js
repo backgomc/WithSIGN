@@ -1,3 +1,4 @@
 module.exports = {
-    mongoURI: "mongodb://localhost/nhsign"
+    mongoURI: "mongodb://mongo/nhsign"
+    // mongoURI: "mongodb://localhost/nhsign"
 }

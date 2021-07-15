@@ -1,5 +1,5 @@
 {
-  "name": "pdftron-sign-app",
+  "name": "nhsign",
   "version": "0.1.0",
   "private": true,
   "dependencies": {

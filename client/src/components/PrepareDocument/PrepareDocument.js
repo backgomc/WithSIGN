@@ -30,6 +30,7 @@ const PrepareDocument = () => {
   const [instance, setInstance] = useState(null);
   const [dropPoint, setDropPoint] = useState(null);
   const [fileName, setFileName] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const dispatch = useDispatch();
   const { formatMessage } = useIntl();
@@ -340,6 +341,8 @@ const PrepareDocument = () => {
     });
     // await addDocumentToSign(_id, email, referenceString, emails);
 
+
+    setLoading(true);
     // TO-BE
     // 1.FILE SAVE
     const formData = new FormData()
@@ -367,11 +370,13 @@ const PrepareDocument = () => {
       signedTime: signedTime
     }
     console.log(body)
-    axios.post('/api/document/addDocumentToSign', body).then(response => {
+    const res2 = await axios.post('/api/document/addDocumentToSign', body)
+    console.log(res2)
+    // axios.post('/api/document/addDocumentToSign', body).then(response => {
+    //   console.log(response)
+    // });
 
-      console.log(response)
-
-    });
+    setLoading(false);
 
     // AS-IS
     // const signed = false;
@@ -441,6 +446,7 @@ const PrepareDocument = () => {
 
   return (
     <div className={'prepareDocument'}>
+      <Spin tip={formatMessage({id: 'Processing'})} spinning={loading}></Spin>
       {/* <div style={{width: "750px"}} align="center">
         <p><StepWrite current={2} /></p>
       </div> */}
