@@ -14,7 +14,7 @@
   "resolved" "https://registry.npmjs.org/@ant-design/icons-svg/-/icons-svg-4.1.0.tgz"
   "version" "4.1.0"
 
-"@ant-design/icons@^4.1.0", "@ant-design/icons@^4.2.1", "@ant-design/icons@^4.3.0", "@ant-design/icons@^4.6.2":
+"@ant-design/icons@^4.0.0", "@ant-design/icons@^4.1.0", "@ant-design/icons@^4.2.1", "@ant-design/icons@^4.3.0", "@ant-design/icons@^4.6.2":
   "integrity" "sha512-QsBG2BxBYU/rxr2eb8b2cZ4rPKAPBpzAR+0v6rrZLp/lnyvflLH3tw1vregK+M7aJauGWjIGNdFmUfpAOtw25A=="
   "resolved" "https://registry.npmjs.org/@ant-design/icons/-/icons-4.6.2.tgz"
   "version" "4.6.2"
@@ -24,6 +24,16 @@
     "@babel/runtime" "^7.11.2"
     "classnames" "^2.2.6"
     "rc-util" "^5.9.4"
+
+"@ant-design/pro-card@^1.14.5":
+  "integrity" "sha512-Ihmf9V/UKhiqMlvq+O+VK7QsBEUgdi99AUq0ViCPj9gxL46V57WVtCHII/s2fI4F6m7spQ7Pct47bg5KaRSL7Q=="
+  "resolved" "https://registry.npmjs.org/@ant-design/pro-card/-/pro-card-1.14.5.tgz"
+  "version" "1.14.5"
+  dependencies:
+    "@ant-design/icons" "^4.2.1"
+    "@ant-design/pro-utils" "1.19.5"
+    "classnames" "^2.2.6"
+    "omit.js" "^2.0.2"
 
 "@ant-design/pro-field@1.18.5":
   "integrity" "sha512-AbVXnqPqGHxIiA6Fu5io6+hGomFoXGYcu91YF1ueAEEncIph9r0TL97HDtMm2LdH9nJfwxKi3tc6MGcp6m67Yg=="
@@ -58,10 +68,39 @@
     "rc-util" "^5.0.6"
     "use-media-antd-query" "^1.0.6"
 
+"@ant-design/pro-layout@^6.21.1":
+  "integrity" "sha512-K1w6k0lueqkgeRoYRhX/v2/4ngUt0D2HGR+G/UH4QVADs4c43ekfCSAEfOzF+jf5Vuqkc1RgLJCUUcwasyMkqQ=="
+  "resolved" "https://registry.npmjs.org/@ant-design/pro-layout/-/pro-layout-6.21.1.tgz"
+  "version" "6.21.1"
+  dependencies:
+    "@ant-design/icons" "^4.0.0"
+    "@ant-design/pro-provider" "1.4.15"
+    "@ant-design/pro-utils" "1.19.5"
+    "@umijs/route-utils" "^1.0.35"
+    "@umijs/use-params" "^1.0.2"
+    "classnames" "^2.2.6"
+    "lodash.merge" "^4.6.2"
+    "omit.js" "^2.0.2"
+    "path-to-regexp" "2.4.0"
+    "rc-resize-observer" "^0.2.1"
+    "rc-util" "^5.0.6"
+    "swr" "^0.5.6"
+    "unstated-next" "^1.1.0"
+    "use-json-comparison" "^1.0.3"
+    "use-media-antd-query" "^1.0.6"
+    "warning" "^4.0.3"
+
 "@ant-design/pro-provider@1.4.13":
   "integrity" "sha512-zBff77Fy5OSBWVe43r6FEpdMRIM0xIrE7/WFZD52JCD873Mm596MBNOoYgvVnARVS/JMG7S87Nj0IhTMRDIuIA=="
   "resolved" "https://registry.npmjs.org/@ant-design/pro-provider/-/pro-provider-1.4.13.tgz"
   "version" "1.4.13"
+  dependencies:
+    "rc-util" "^5.0.1"
+
+"@ant-design/pro-provider@1.4.15":
+  "integrity" "sha512-DhAct74aP95RDnoASvfZiOSr534OaM5oNqGd19H2JSZ7tbmagqoDRw06vA+ZvJZvMkAGqVHXddwqW1Gu2yNMZw=="
+  "resolved" "https://registry.npmjs.org/@ant-design/pro-provider/-/pro-provider-1.4.15.tgz"
+  "version" "1.4.15"
   dependencies:
     "rc-util" "^5.0.1"
 
@@ -90,6 +129,20 @@
   dependencies:
     "@ant-design/icons" "^4.3.0"
     "@ant-design/pro-provider" "1.4.13"
+    "classnames" "^2.2.6"
+    "fast-deep-equal" "^3.1.3"
+    "lodash.merge" "^4.6.2"
+    "moment" "^2.27.0"
+    "rc-util" "^5.0.6"
+    "swr" "^0.5.6"
+
+"@ant-design/pro-utils@1.19.5":
+  "integrity" "sha512-XIjbsDrgA1pxc2os6vuzWnuaE93f55oQ8cWPtOoo7mOxmkxn4481muB/kaA6+3uV8pbXBecumqO6DLHwii47pw=="
+  "resolved" "https://registry.npmjs.org/@ant-design/pro-utils/-/pro-utils-1.19.5.tgz"
+  "version" "1.19.5"
+  dependencies:
+    "@ant-design/icons" "^4.3.0"
+    "@ant-design/pro-provider" "1.4.15"
     "classnames" "^2.2.6"
     "fast-deep-equal" "^3.1.3"
     "lodash.merge" "^4.6.2"
@@ -1881,6 +1934,11 @@
   "resolved" "https://registry.npmjs.org/@protobufjs/utf8/-/utf8-1.1.0.tgz"
   "version" "1.1.0"
 
+"@qixian.cs/path-to-regexp@^6.1.0":
+  "integrity" "sha512-2jIiLiVZB1jnY7IIRQKtoV8Gnr7XIhk4mC88ONGunZE3hYt5IHUG4BE/6+JiTBjjEWQLBeWnZB8hGpppkufiVw=="
+  "resolved" "https://registry.npmjs.org/@qixian.cs/path-to-regexp/-/path-to-regexp-6.1.0.tgz"
+  "version" "6.1.0"
+
 "@reach/router@^1.3.3":
   "integrity" "sha512-gOIAiFhWdiVGSVjukKeNKkCRBLmnORoTPyBihI/jLunICPgxdP30DroAvPQuf1eVfQbfGJQDJkwhJXsNPMnVWw=="
   "resolved" "https://registry.npmjs.org/@reach/router/-/router-1.3.3.tgz"
@@ -2501,6 +2559,16 @@
     "@typescript-eslint/types" "4.14.0"
     "eslint-visitor-keys" "^2.0.0"
 
+"@umijs/route-utils@^1.0.35":
+  "integrity" "sha512-RQYMYd0w3mKWlCvhUqYN2/dcCD8LxQWsr46DXpaLtqe2Y/8662qXA3E6moaFpyfokKJK6UHt2VxNGhkKPNJIgQ=="
+  "resolved" "https://registry.npmjs.org/@umijs/route-utils/-/route-utils-1.0.37.tgz"
+  "version" "1.0.37"
+  dependencies:
+    "@qixian.cs/path-to-regexp" "^6.1.0"
+    "fast-deep-equal" "^3.1.3"
+    "lodash.isequal" "^4.5.0"
+    "memoize-one" "^5.1.1"
+
 "@umijs/use-params@^1.0.2":
   "integrity" "sha512-gob94yiBsyFNeRKG+zK2nAKxqVsEkYh4vWM3sSyqwidHoUR+C7MmZUHXBBtB1/9C0dpRAi9arkUYvzuNla6q7Q=="
   "resolved" "https://registry.npmjs.org/@umijs/use-params/-/use-params-1.0.3.tgz"
@@ -2836,7 +2904,7 @@
     "intersection-observer" "^0.5.1"
     "lodash.throttle" "^4.1.1"
 
-"antd@^4.16.1", "antd@4.x":
+"antd@^4.16.1", "antd@^4.x", "antd@4.x":
   "integrity" "sha512-v7KfUYvEAiqfTECKC4/VkpRPB/4RRxZLR3b2kKCYEtcj4nEHvsOKfO5CDbWVtSUmCehxOXNR2lV+UNy06KHBnA=="
   "resolved" "https://registry.npmjs.org/antd/-/antd-4.16.1.tgz"
   "version" "4.16.1"
@@ -8010,6 +8078,11 @@
   "resolved" "https://registry.npmjs.org/lodash.camelcase/-/lodash.camelcase-4.3.0.tgz"
   "version" "4.3.0"
 
+"lodash.isequal@^4.5.0":
+  "integrity" "sha1-QVxEePK8wwEgwizhDtMib30+GOA="
+  "resolved" "https://registry.npmjs.org/lodash.isequal/-/lodash.isequal-4.5.0.tgz"
+  "version" "4.5.0"
+
 "lodash.memoize@^4.1.2":
   "integrity" "sha1-vMbEmkKihA7Zl/Mj6tpezRguC/4="
   "resolved" "https://registry.npmjs.org/lodash.memoize/-/lodash.memoize-4.1.2.tgz"
@@ -8184,6 +8257,11 @@
   "integrity" "sha512-QmpUu4KqDmX0plH4u+tf0riMc1KHE1+lw95cMrLlXQAFOx/xnBtwhZ52XJxd9X2O6kwKBqX32kmhbhlobD0cuw=="
   "resolved" "https://registry.npmjs.org/memoize-one/-/memoize-one-4.0.3.tgz"
   "version" "4.0.3"
+
+"memoize-one@^5.1.1":
+  "integrity" "sha512-zYiwtZUcYyXKo/np96AGZAckk+FWWsUdJ3cHGGmld7+AhvcWmQyGCYUh1hc4Q/pkOhb65dQR/pqCyK0cOaHz4Q=="
+  "resolved" "https://registry.npmjs.org/memoize-one/-/memoize-one-5.2.1.tgz"
+  "version" "5.2.1"
 
 "memory-fs@^0.4.1":
   "integrity" "sha1-OpoguEYlI+RHz7x+i7gO1me/xVI="
@@ -9089,6 +9167,11 @@
   "integrity" "sha1-32BBeABfUi8V60SQ5yR6G/qmf4w="
   "resolved" "https://registry.npmjs.org/path-to-regexp/-/path-to-regexp-0.1.7.tgz"
   "version" "0.1.7"
+
+"path-to-regexp@2.4.0":
+  "integrity" "sha512-G6zHoVqC6GGTQkZwF4lkuEyMbVOjoBKAEybQUypI1WTkqinCOrq2x6U2+phkJ1XsEMTy4LjtwPI7HW+NVrRR2w=="
+  "resolved" "https://registry.npmjs.org/path-to-regexp/-/path-to-regexp-2.4.0.tgz"
+  "version" "2.4.0"
 
 "path-type@^2.0.0":
   "integrity" "sha1-8BLMuEFbcJb8LaoQVMPXI4lZTHM="
@@ -10375,7 +10458,7 @@
     "classnames" "^2.2.5"
     "rc-util" "^5.0.1"
 
-"rc-resize-observer@^0.2.3":
+"rc-resize-observer@^0.2.1", "rc-resize-observer@^0.2.3":
   "integrity" "sha512-YX6nYnd6fk7zbuvT6oSDMKiZjyngjHoy+fz+vL3Tez38d/G5iGdaDJa2yE7345G6sc4Mm1IGRUIwclvltddhmA=="
   "resolved" "https://registry.npmjs.org/rc-resize-observer/-/rc-resize-observer-0.2.6.tgz"
   "version" "0.2.6"
@@ -12794,7 +12877,7 @@
     "punycode" "1.3.2"
     "querystring" "0.2.0"
 
-"use-json-comparison@^1.0.5":
+"use-json-comparison@^1.0.3", "use-json-comparison@^1.0.5":
   "integrity" "sha512-xPadt5yMRbEmVfOSGFSMqjjICrq7nLbfSH3rYIXsrtcuFX7PmbYDN/ku8ObBn3v8o/yZelO1OxUS5+5TI3+fUw=="
   "resolved" "https://registry.npmjs.org/use-json-comparison/-/use-json-comparison-1.0.6.tgz"
   "version" "1.0.6"

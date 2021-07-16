@@ -64,9 +64,9 @@ const HeaderComponent = ({collapsed, setCollapsed}) => {
 
   return (
     <div className={styles['header-wrapper']}>
-      <span className={styles['header-collapsed']} onClick={() => setCollapsed(!collapsed)}>
+      {/* <span className={styles['header-collapsed']} onClick={() => setCollapsed(!collapsed)}>
         <Icon component={collapsed ? MenuUnfoldOutlined : MenuFoldOutlined} />
-      </span>
+      </span> */}
       <div className={styles['header-user-info']}>
         <Dropdown key="1" overlay={menu}>
           <span className={styles['header-dropdown-link']}>

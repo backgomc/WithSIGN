@@ -65,6 +65,9 @@
 * docker image 수동 배포 및 테스트 ex)docker save -o nhsign_server.tar nhsign_server / docker load -i 경로 및 파일
 * 재컴파일이 필요하다....dockerignore 처리함 (node_modules)
 
+# 07.16
+* antd pro 적용해보자. https://pro.ant.design/   https://procomponents.ant.design/components/layout/
+
 
 # docker 
 * 수동파일 배포
