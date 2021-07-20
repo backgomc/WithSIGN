@@ -1,19 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import axios from 'axios';
+import { useIntl } from "react-intl";
 import { navigate, Link } from '@reach/router';
-import { Transfer, Tree, Input, Button, Space } from 'antd';
+import { Transfer, Tree, Input, Button, Space, message } from 'antd';
 import { selectUser } from '../../app/infoSlice';
 import { addSignee, resetSignee, selectAssignees } from './AssignSlice';
 import StepWrite from '../Step/StepWrite'
 import TreeTransfer from './TreeTransfer';
+import { PageContainer } from '@ant-design/pro-layout';
+import ProCard from '@ant-design/pro-card';
 import 'antd/dist/antd.css';
+import '@ant-design/pro-card/dist/card.css';
 
 const { Search } = Input;
 
 const Assign = () => {
 
   const dispatch = useDispatch();
+  const { formatMessage } = useIntl();
   const user = useSelector(selectUser);
   const { _id } = user;
   const [data, setData] = useState([]);
@@ -21,6 +26,7 @@ const Assign = () => {
   const [showToast, setShowToast] = useState(false);
   const assignees = useSelector(selectAssignees);
   const [targetKeys, setTargetKeys] = useState([]);
+  const [disableNext, setDisableNext] = useState(true);
 
 
   const [users, setUsers] = useState([]);
@@ -107,6 +113,12 @@ const Assign = () => {
   };
 
   const handleChange = targetKeys => {
+
+    if (targetKeys.length > 5) {
+      message.error('서명참여자는 최대 5명까지 지정할 수 있습니다.');
+      return
+    }
+
     setTargetKeys(targetKeys)
     dispatch(resetSignee());
 
@@ -119,6 +131,12 @@ const Assign = () => {
       const name = temp.name
 
       dispatch(addSignee({ key, name }));
+    }
+
+    if(targetKeys.length > 0) {
+      setDisableNext(false)
+    } else {
+      setDisableNext(true)
     }
   };
 
@@ -168,9 +186,54 @@ const Assign = () => {
   }, []);
 
   return (
-    <div style={{padding:8}}>
+    <div>
+
+      <PageContainer
+        ghost
+        header={{
+          title: '',
+          ghost: true,
+          breadcrumb: {
+            routes: [
+              {
+                path: '/',
+                breadcrumbName: '서명 요청',
+              },
+              {
+                path: '/',
+                breadcrumbName: '서명참여자 설정',
+              },
+            ],
+          },
+          extra: [
+          ],
+        }}
+        footer={[
+          <Button key="3" onClick={() => {navigate(`/uploadDocument`);}}>이전</Button>,
+          <Button key="2" type="primary" onClick={() => handlePrepare()} disabled={disableNext}>
+            {formatMessage({id: 'Next'})}
+          </Button>,
+        ]}
+      >
+        <ProCard direction="column" ghost gutter={[0, 16]}>
+          <ProCard style={{ background: '#FFFFFF'}} layout="center">
+            <StepWrite current={1} />
+          </ProCard>
+          <ProCard style={{ background: '#FFFFFF'}}>
+            <TreeTransfer 
+              dataSource={data}
+              targetKeys={targetKeys} 
+              onChange={handleChange} 
+              onSearch={handleSearch}
+              expandedKeys={expandedKeys}
+              autoExpandParent={autoExpandParent}
+              onExpand={onExpand}
+            />
+          </ProCard>
+        </ProCard>
+      </PageContainer>
       
-      <StepWrite current={1} />
+      {/* <StepWrite current={1} />
       <br></br>
       <TreeTransfer 
           dataSource={data}
@@ -183,29 +246,9 @@ const Assign = () => {
       />
       <br></br>
       <p align="right"><Button type="primary" onClick={() => handlePrepare()}>다음</Button></p>
-      
+       */}
     </div>
 
-    // <div style={{ padding: 8 }}>
-    //   <p style={{width: "550px"}}><StepWrite current={1} /></p>
-    //   <Space direction="vertical" align="center" size="middle">
-    //     {/* <StepWrite current={0} /> */}
-    //     <Transfer
-    //       dataSource={data}
-    //       showSearch
-    //       listStyle={{
-    //         width: 250,
-    //         height: 300,
-    //       }}
-    //       operations={['to right', 'to left']}
-    //       targetKeys={targetKeys}
-    //       onChange={handleChange}
-    //       render={item => `${item.name} ${item.email}`}
-    //     />
-    //     <Space align="baseline"><Button type="primary" onClick={() => handlePrepare()}>다음</Button></Space>
-        
-    //   </Space>
-    // </div>
   );
 };
 

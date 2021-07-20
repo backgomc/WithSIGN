@@ -66,6 +66,7 @@
 * 재컴파일이 필요하다....dockerignore 처리함 (node_modules)
 
 # 07.16
+* antd component https://ant.design/components/overview/
 * antd pro 적용해보자. https://pro.ant.design/   https://procomponents.ant.design/components/layout/
 
 
