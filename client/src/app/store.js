@@ -1,5 +1,4 @@
 import { configureStore } from '@reduxjs/toolkit';
-import firebaseReducer from '../firebase/firebaseSlice';
 import infoReducer from './infoSlice';
 import langReducer from './langSlice';
 import AssignReducer from '../components/Assign/AssignSlice';
@@ -8,7 +7,6 @@ import ViewDocumentReducer from '../components/ViewDocument/ViewDocumentSlice';
 
 export default configureStore({
   reducer: {
-    firebase: firebaseReducer,
     assign: AssignReducer,
     signDoc: SignDocumentReducer,
     viewDoc: ViewDocumentReducer,

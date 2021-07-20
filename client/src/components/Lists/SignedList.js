@@ -6,8 +6,6 @@ import Highlighter from 'react-highlight-words';
 import { SearchOutlined } from '@ant-design/icons';
 // import 'gestalt/dist/gestalt.css';
 import { useSelector, useDispatch } from 'react-redux';
-// import { searchForDocumentsSigned } from '../../firebase/firebase';
-// import { selectUser } from '../../firebase/firebaseSlice';
 import { selectUser } from '../../app/infoSlice';
 import { navigate } from '@reach/router';
 import { setDocToView } from '../ViewDocument/ViewDocumentSlice';

@@ -11,9 +11,7 @@ import {
   Heading,
 } from 'gestalt';
 import 'gestalt/dist/gestalt.css';
-// import { auth } from '../../firebase/firebase';
 import { useSelector, useDispatch } from 'react-redux';
-// import { selectUser, setUser } from '../../firebase/firebaseSlice';
 import { selectUser, setUser } from '../../app/infoSlice';
 import { resetSignee } from '../Assign/AssignSlice';
 import { navigate, Link } from '@reach/router';

@@ -15,8 +15,6 @@ import {
 import { Upload, message, Spin } from 'antd';
 import { InboxOutlined } from '@ant-design/icons';
 import { selectAssignees, resetSignee, selectDocumentFile, selectDocumentTitle, resetDocumentFile, resetDocumentTitle } from '../Assign/AssignSlice';
-import { storage, addDocumentToSign } from '../../firebase/firebase';
-// import { selectUser } from '../../firebase/firebaseSlice';
 import { selectUser } from '../../app/infoSlice';
 import WebViewer from '@pdftron/webviewer';
 import 'gestalt/dist/gestalt.css';

@@ -5,8 +5,6 @@ import { navigate } from '@reach/router';
 import { Box, Column, Heading, Row, Stack, Button } from 'gestalt';
 import { Spin } from 'antd';
 import { selectDocToSign } from './SignDocumentSlice';
-// import { storage, updateDocumentToSign } from '../../firebase/firebase';
-// import { selectUser } from '../../firebase/firebaseSlice';
 import { selectUser } from '../../app/infoSlice';
 import { mergeAnnotations } from '../MergeAnnotations/MergeAnnotations';
 import WebViewer from '@pdftron/webviewer';

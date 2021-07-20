@@ -6,7 +6,6 @@ import axios from 'axios';
 import { view as Header } from './components/Header';
 import Assign from './components/Assign/Assign';
 import UploadDocument from './components/UploadDocument/UploadDocument';
-import SignUp from './components/SignUp/SignUp';
 import Preparation from './components/Preparation';
 import SignList from './components/Lists/SignList';
 import SignedList from './components/Lists/SignedList';
@@ -92,11 +91,11 @@ const App = () => {
           <Header />
         </div>
       )}
-      footerRender={() => (
-        <div>
-          <Footer />
-        </div>
-      )}     
+      // footerRender={() => (
+      //   <div>
+      //     <Footer />
+      //   </div>
+      // )}     
   >
     <Router>
         <Welcome path="/" />
@@ -119,7 +118,6 @@ const App = () => {
       {/* <Header /> */}
       <Router>
         <Login path="/" />
-        <SignUp path="signUp" />
         <Register path="register" />
         <PasswordReset path="passwordReset" />
       </Router>

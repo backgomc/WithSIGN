@@ -15,7 +15,6 @@
     "antd": "^4.16.1",
     "antd-table-infinity": "^1.1.6",
     "axios": "^0.21.1",
-    "firebase": "^8.2.3",
     "fs-extra": "^9.0.0",
     "gestalt": "^1.58.1",
     "http-proxy-middleware": "^1.0.3",

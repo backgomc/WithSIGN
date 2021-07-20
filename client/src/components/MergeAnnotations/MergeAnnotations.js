@@ -1,4 +1,3 @@
-// import { storage } from '../../firebase/firebase';
 import axios from 'axios';
 
 export const mergeAnnotations = async (docRef, xfdf, isLast) => {
