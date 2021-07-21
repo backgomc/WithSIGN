@@ -69,6 +69,13 @@
 * antd component https://ant.design/components/overview/
 * antd pro 적용해보자. https://pro.ant.design/   https://procomponents.ant.design/components/layout/
 
+# 07.20
+# firebase 삭제
+# antdPro 적용 - 파일 업로드, 사용자 선택
+* 문서 업로드 이전화면 이동 시 데이터 넣어주기 
+* 문서 목록도 ProCard 입히기 
+* 문서 목록 상세 화면 만들기 
+
 
 # docker 
 * 수동파일 배포

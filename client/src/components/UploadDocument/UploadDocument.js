@@ -4,10 +4,10 @@ import { navigate } from '@reach/router';
 import { selectUser } from '../../app/infoSlice';
 import 'antd/dist/antd.css';
 import { Tabs, Upload, message, Input, Space, Form, Button } from 'antd';
-import { InboxOutlined, CheckOutlined } from '@ant-design/icons';
+// import { InboxOutlined, CheckOutlined } from '@ant-design/icons';
 import StepWrite from '../Step/StepWrite';
 import { useIntl } from "react-intl";
-import { setDocumentFile, setDocumentTitle, selectDocumentTitle } from '../Assign/AssignSlice';
+import { setDocumentFile, setDocumentTitle, selectDocumentTitle, selectDocumentFile } from '../Assign/AssignSlice';
 import { PageContainer } from '@ant-design/pro-layout';
 import ProCard from '@ant-design/pro-card';
 import ProForm, { ProFormUploadDragger, ProFormText } from '@ant-design/pro-form';
@@ -15,14 +15,14 @@ import '@ant-design/pro-card/dist/card.css';
 import 'antd/dist/antd.css';
 import '@ant-design/pro-form/dist/form.css';
 
-const { TabPane } = Tabs;
-const { Dragger } = Upload;
-const tailLayout = {
-  wrapperCol: {
-    offset: 22,
-    span: 16,
-  },
-};
+// const { TabPane } = Tabs;
+// const { Dragger } = Upload;
+// const tailLayout = {
+//   wrapperCol: {
+//     offset: 22,
+//     span: 16,
+//   },
+// };
 
 const UploadDocument = () => {
 
@@ -41,40 +41,30 @@ const UploadDocument = () => {
   const { email, _id } = user;
 
   const documentTitle = useSelector(selectDocumentTitle);
+  const documentFile = useSelector(selectDocumentFile);
+
 
   useEffect(() => {
 
-    // console.log("KK:"+formRef.current.getFieldValue('documentTitle'))
+    if (documentTitle) {
+      form.setFieldsValue({
+        documentTitle: documentTitle,
+      })
+    }
 
-    // if (formRef.current.getFieldValue('documentTitle')) {
-    //   setDisableNext(false)
-    // } else {
-    //   setDisableNext(true)
-    // }
+    if (documentFile) {
+      form.setFieldsValue({
+        dragger: [documentFile]
+      })
+    }
 
-    // formRef.current.setFieldsValue({
-    //   documentTitle: 'Bamboo',
-    // });
+    if (documentTitle && documentFile) {
+      setDisableNext(false)
+    } else {
+      setDisableNext(true)
+    }
 
-    // console.log("documentTitle:"+ documentTitle)
-    
-    // if (documentTitle) {
-      
-    //   setHiddenForm(false);
-    //   setDisableNext(false);
-    //   formRef.current.setFieldsValue({
-    //     documentTitle: documentTitle
-    //   })
-    // }
-
-    // if (documentTitle) {
-    //   setDisableNext(false)
-    // } else {
-    //   setDisableNext(true)
-    // }
-
-
-  }, []);
+  }, [documentTitle, documentFile]);
 
 
   const onFinish = (values) => {
@@ -203,6 +193,16 @@ const UploadDocument = () => {
                   },
                 }
               }}
+              // initialValues={{
+              //   dragger: [
+              //     {
+              //       uid: '1',
+              //       name: 'xxx.png',
+              //       status: 'done',
+              //       response: 'Server Error 500', // custom error message to show
+              //       url: 'https://gw.alipayobjects.com/zos/antfincdn/7%24YOiS6YIm/huaban.png',
+              //     }]
+              // }}
               onValuesChange={(changeValues) => {
                 console.log("onValuesChange called")
                 console.log(changeValues)

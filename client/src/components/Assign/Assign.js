@@ -179,9 +179,24 @@ const Assign = () => {
 
   useEffect(() => {
 
+    console.log("useEffect AAA")
     fetch({
       OFFICE_CODE: "7831"
     });
+
+    if (assignees) {
+      var targets = []
+      assignees.forEach(element => {
+        targets.push(element.key)
+      });
+      setTargetKeys(targets)
+    }
+    
+    if(targetKeys.length > 0) {
+      setDisableNext(false)
+    } else {
+      setDisableNext(true)
+    }
 
   }, []);
 
