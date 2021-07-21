@@ -134,11 +134,9 @@ const Assign = () => {
     }
 
     if(targetKeys.length > 0) {
-      setDisableNext(false) //TODO: 이게 버튼이 안변하는데 ???
-      console.log("AAA")
+      setDisableNext(false)
     } else {
       setDisableNext(true)
-      console.log("BBB")
     }
   };
 
@@ -181,7 +179,7 @@ const Assign = () => {
 
   useEffect(() => {
 
-    console.log("useEffect AAA")
+    console.log("useEffect called")
     fetch({
       OFFICE_CODE: "7831"
     });
@@ -193,7 +191,7 @@ const Assign = () => {
       });
       setTargetKeys(targets)
 
-      if(targetKeys.length > 0) {
+      if(assignees.length > 0) {
         setDisableNext(false)
       } else {
         setDisableNext(true)
