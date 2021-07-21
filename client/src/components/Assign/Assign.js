@@ -134,9 +134,11 @@ const Assign = () => {
     }
 
     if(targetKeys.length > 0) {
-      setDisableNext(false)
+      setDisableNext(false) //TODO: 이게 버튼이 안변하는데 ???
+      console.log("AAA")
     } else {
       setDisableNext(true)
+      console.log("BBB")
     }
   };
 
@@ -190,12 +192,12 @@ const Assign = () => {
         targets.push(element.key)
       });
       setTargetKeys(targets)
-    }
-    
-    if(targetKeys.length > 0) {
-      setDisableNext(false)
-    } else {
-      setDisableNext(true)
+
+      if(targetKeys.length > 0) {
+        setDisableNext(false)
+      } else {
+        setDisableNext(true)
+      }
     }
 
   }, []);
