@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const { hexCrypto } = require('../common/utils');
 const saltRounds = 10
 const saltRoundsUid = 5
