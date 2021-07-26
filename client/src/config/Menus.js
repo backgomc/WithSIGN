@@ -20,7 +20,7 @@ export default function Menus() {
           icon: <FileTextOutlined />,
         },
         {
-          path: '/template',
+          path: '/templateList',
           name: formatMessage({id: 'document.template'}),
           icon: <CopyOutlined />,
         },

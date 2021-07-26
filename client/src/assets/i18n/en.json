@@ -55,5 +55,7 @@
 	"input.sign": "add sign",
 	"input.text": "add text",
 	"Send": "Send",
-	"Processing": "Processing..."
+	"Processing": "Processing...",
+	"Initialize": "Initialize",
+	"Save": "Save"
 }

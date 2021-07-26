@@ -79,6 +79,10 @@
 # 07.23
 * 메인 대시보드 만들기
 
+# 07.26
+* 템플릿 개발
+
+
 # docker 
 * 수동파일 배포
  > docker save -o nhsign_server.tar nhsign_server (배포)
@@ -95,15 +99,6 @@
 * client
  > yarn build
 * docker 배포
-
-# ISSUE
-* [1]
-POST /api/storage/upload 500 2.646 ms - 243
-Error: ENOENT: no such file or directory, open 'storage/docToSign/60efdfa5ebb01b001337ffc91626337309475.pdf'
-=>  /Data/storage/docToSign 폴더가 생성되어있어야 한다. docToSign 폴더도 !!!
-* [2]
-bcrypt_lib.node is not a valid Win32 application
-=> const bcrypt = require("bcrypt"); for const bcrypt = require("bcryptjs"); and npm i bcryptjs --save
 
 //user
 		String  sourceInfo     = Strings.emptyToNull((String)parameter.get("sourceInfo"));

@@ -55,5 +55,7 @@
 	"input.sign": "서명 추가",
 	"input.text": "텍스트 추가",
 	"Send": "보내기",
-	"Processing": "처리 중..."
+	"Processing": "처리 중...",
+	"Initialize": "초기화",
+	"Save": "저장"
 }

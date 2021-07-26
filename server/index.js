@@ -37,7 +37,7 @@ app.use(express.static(__dirname, { dotfiles: 'allow' } ));
 app.use('/api/users', require('./routes/users'));
 app.use('/api/document', require('./routes/document'));
 app.use('/api/storage', require('./routes/storage'));
-
+app.use('/api/template', require('./routes/template'));
 
 // Serve static assets if in production
 if (process.env.NODE_ENV === "production") {

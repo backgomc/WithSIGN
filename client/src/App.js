@@ -10,6 +10,8 @@ import Preparation from './components/Preparation';
 import SignList from './components/Lists/SignList';
 import SignedList from './components/Lists/SignedList';
 import DocumentList from './components/Lists/DocumentList';
+import TemplateList from './components/Template/TemplateList';
+import UploadTemplate from './components/Template/UploadTemplate';
 import Sign from './components/Sign';
 import View from './components/View';
 import PasswordReset from './components/PasswordReset/PasswordReset';
@@ -105,6 +107,8 @@ const App = () => {
         <SignList path="/signList" />
         <SignedList path="/signedList" />
         <DocumentList path="/documentList" />
+        <TemplateList path="/templateList" />
+        <UploadTemplate path="/uploadTemplate" />
         <Sign path="/signDocument" />
         <View path="/viewDocument" />
         <Test2 path="/test" />
