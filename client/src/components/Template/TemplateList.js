@@ -65,6 +65,10 @@ const TemplateList = () => {
     });
   };
 
+  const deleteTemplate = () => {
+    console.log('delete aaa')
+  }
+
   const getColumnSearchProps = dataIndex => ({
 
     filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
@@ -220,7 +224,7 @@ const TemplateList = () => {
             템플릿 만들기
           </Button>
           <span style={{ marginLeft: 8 }}>
-            <Button type="primary" disabled={!hasSelected}>
+            <Button type="primary" disabled={!hasSelected} onClick={deleteTemplate()}>
               삭제
             </Button>
           </span>

@@ -7,7 +7,12 @@ const multer = require('multer'); // file upload module
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, 'storage/docToSign/');
+        console.log("req.body.path:"+req.body.path)
+        if(req.body.path) {
+            cb(null, 'storage/'+req.body.path+"/");
+        } else {
+            cb(null, 'storage/docToSign/');
+        }
     },
     filename: (req, file, cb) => {
         cb(null, file.originalname);
@@ -25,6 +30,6 @@ router.post('/upload', upload.single('file'), (req, res) => {
         return res.json({ success: false, message: "file upload failed"})
     }
     
-  })
+})
 
 module.exports = router;

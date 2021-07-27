@@ -1,13 +1,11 @@
-import React, { useRef, useEffect, useState } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import React, { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
+import axios from 'axios';
 import { navigate } from '@reach/router';
 import { selectUser } from '../../app/infoSlice';
 import 'antd/dist/antd.css';
-import { Tabs, Upload, message, Input, Space, Form, Button } from 'antd';
-// import { InboxOutlined, CheckOutlined } from '@ant-design/icons';
-import StepWrite from '../Step/StepWrite';
+import { Upload, message, Form, Button } from 'antd';
 import { useIntl } from "react-intl";
-import { setDocumentFile, setDocumentTitle, selectDocumentTitle, selectDocumentFile } from '../Assign/AssignSlice';
 import { PageContainer } from '@ant-design/pro-layout';
 import ProCard from '@ant-design/pro-card';
 import ProForm, { ProFormUploadDragger, ProFormText } from '@ant-design/pro-form';
@@ -17,52 +15,45 @@ import '@ant-design/pro-form/dist/form.css';
 
 const UploadTemplate = () => {
 
-  const dispatch = useDispatch();
   const { formatMessage } = useIntl();
   const [form] = Form.useForm();
-  // const formRef = React.createRef();
 
-  const [instance, setInstance] = useState(null);
   const [file, setFile] = useState(null);
-  const [hiddenFileUpload, setHiddenFileUpload] = useState(false);
-  const [hiddenForm, setHiddenForm] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [disableNext, setDisableNext] = useState(true);
 
   const user = useSelector(selectUser);
   const { email, _id } = user;
 
-  const documentTitle = useSelector(selectDocumentTitle);
-  const documentFile = useSelector(selectDocumentFile);
-
-
   useEffect(() => {
-
-    if (documentTitle) {
-      form.setFieldsValue({
-        documentTitle: documentTitle,
-      })
-    }
-
-    if (documentFile) {
-      form.setFieldsValue({
-        dragger: [documentFile]
-      })
-    }
-
-    if (documentTitle && documentFile) {
-      setDisableNext(false)
-    } else {
-      setDisableNext(true)
-    }
-
-  }, [documentTitle, documentFile]);
+  }, []);
 
 
-  const onFinish = (values) => {
+  const onFinish = async (values) => {
     console.log(values)
 
-    dispatch(setDocumentTitle(values.documentTitle));
-    navigate('/assign')
+    setLoading(true);
+    // 템플릿 업로드 
+    // 1. FILE-SAVE
+    const referenceString = `template/${_id}${Date.now()}.pdf`;
+    const formData = new FormData()
+    formData.append('path', 'template')
+    formData.append('file', file, referenceString)
+    const res = await axios.post(`/api/storage/upload`, formData)
+    console.log(res)
+
+    // 2. DB-SAVE
+    let body = {
+      user: _id,
+      docTitle: form.getFieldValue("documentTitle"),
+      email: email,
+      docRef: referenceString
+    }
+    console.log(body)
+    const res2 = await axios.post('/api/template/addTemplate', body)
+
+    setLoading(false);
+    navigate('/templateList')
   }
 
   return (
@@ -72,8 +63,8 @@ const UploadTemplate = () => {
       // background: '#FFFFFF',
     }}
     >
-    
       <PageContainer
+      loading={loading}
       ghost
       header={{
         title: '',
@@ -141,7 +132,6 @@ const UploadTemplate = () => {
               }}
             >
               <ProFormUploadDragger 
-                // {...props} 
                 max={1} 
                 label="" 
                 name="dragger" 
@@ -158,7 +148,6 @@ const UploadTemplate = () => {
                     }
                   },
                   beforeUpload: file => {
-                    console.log("AAAAA")
                     if (file.type !== 'application/pdf') {
                       console.log(file.type)
                       message.error(`${file.name} is not a pdf file`);
@@ -169,9 +158,7 @@ const UploadTemplate = () => {
                     form.setFieldsValue({
                       documentTitle: file.name.replace(/\.[^/.]+$/, ""),
                     })
-            
-                    dispatch(setDocumentFile(file));
-            
+                        
                     return false;
                   }
                 }}
@@ -180,10 +167,10 @@ const UploadTemplate = () => {
 
               <ProFormText
                 name="documentTitle"
-                label="문서명"
+                label="템플릿명"
                 // width="md"
-                tooltip="입력하신 문서명으로 상대방에게 표시됩니다."
-                placeholder="문서명을 입력하세요."
+                tooltip="입력하신 템플릿명으로 표시됩니다."
+                placeholder="템플릿명을 입력하세요."
                 rules={[{ required: true, message: formatMessage({id: 'input.documentTitle'}) }]}
               />
 
