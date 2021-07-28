@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
-import { Table, Input, Space, Button } from "antd";
+import { Table, Input, Space, Button, Popconfirm } from "antd";
 import Highlighter from 'react-highlight-words';
 import { SearchOutlined } from '@ant-design/icons';
 import { useSelector, useDispatch } from 'react-redux';
@@ -12,7 +12,7 @@ import Moment from 'react-moment';
 import moment from 'moment';
 import 'moment/locale/ko';
 // import { DocumentType, DocumentTypeText, DOCUMENT_SIGNED, DOCUMENT_TOSIGN, DOCUMENT_SIGNING, DOCUMENT_CANCELED } from './DocumentType';
-// import DocumentExpander from "./DocumentExpander";
+import TemplateExpander from "./TemplateExpander";
 
 const TemplateList = () => {
 
@@ -29,6 +29,7 @@ const TemplateList = () => {
   const [pagination, setPagination] = useState({current:1, pageSize:10});
   const [loading, setLoading] = useState(false);
   // const [expandable, setExpandable] = useState();
+  const [visiblePopconfirm, setVisiblePopconfirm] = useState(false);
 
   const searchInput = useRef<Input>(null)
 
@@ -65,8 +66,30 @@ const TemplateList = () => {
     });
   };
 
-  const deleteTemplate = () => {
-    console.log('delete aaa')
+  const deleteTemplate = async () => {
+    
+    setVisiblePopconfirm(false);
+
+    let param = {
+      _ids: selectedRowKeys
+    }
+
+    console.log("param:" + param)
+    const res = await axios.post('/api/template/deleteTemplate', param)
+    if (res.data.success) {
+      // alert('삭제 되었습니다.')
+    } else {
+      // alert('삭제 실패 하였습니다.')
+    }
+
+    setSelectedRowKeys([]);
+    setHasSelected(false)
+
+    fetch({
+      uid: _id,
+      pagination,
+    });
+
   }
 
   const getColumnSearchProps = dataIndex => ({
@@ -221,12 +244,17 @@ const TemplateList = () => {
     <div>
       <div style={{ marginBottom: 16 }}>
           <Button type="primary" onClick={() => {navigate('/uploadTemplate');}}>
-            템플릿 만들기
+            템플릿 등록
           </Button>
           <span style={{ marginLeft: 8 }}>
-            <Button type="primary" disabled={!hasSelected} onClick={deleteTemplate()}>
+
+          <Popconfirm title="삭제하시겠습니까？" okText="네" cancelText="아니오" visible={visiblePopconfirm} onConfirm={deleteTemplate} onCancel={() => {setVisiblePopconfirm(false);}}>
+            {/* <Button type="primary" disabled={!hasSelected} onClick={() => {deleteTemplate();}}> */}
+            <Button type="primary" danger disabled={!hasSelected} onClick={()=>{setVisiblePopconfirm(true);}}>
               삭제
             </Button>
+        </Popconfirm>
+
           </span>
           <span style={{ marginLeft: 8 }}>
             {hasSelected ? `Selected ${selectedRowKeys.length} items` : ''}
@@ -238,13 +266,12 @@ const TemplateList = () => {
         dataSource={data}
         pagination={pagination}
         loading={loading}
-        // expandable={expandableData}
-        // expandedRowRender={row => <DocumentExpander item={row} />}
-        // expandRowByClick
+        expandedRowRender={row => <TemplateExpander item={row} />}
+        expandRowByClick
         rowSelection={rowSelection}
         onRow={record => ({
           onClick: e => {
-            console.log(`user clicked on row ${record.t1}!`);
+            // console.log(`user clicked on row ${record.t1}!`);
           }
         })}
         onChange={handleTableChange}
