@@ -7,13 +7,15 @@ import { Tabs, Upload, message, Input, Space, Form, Button } from 'antd';
 // import { InboxOutlined, CheckOutlined } from '@ant-design/icons';
 import StepWrite from '../Step/StepWrite';
 import { useIntl } from "react-intl";
-import { setDocumentFile, setDocumentTitle, selectDocumentTitle, selectDocumentFile } from '../Assign/AssignSlice';
+import { setDocumentFile, setDocumentTitle, selectDocumentTitle, selectDocumentFile, setTemplate } from '../Assign/AssignSlice';
 import { PageContainer } from '@ant-design/pro-layout';
 import ProCard from '@ant-design/pro-card';
 import ProForm, { ProFormUploadDragger, ProFormText } from '@ant-design/pro-form';
+import TemplateList from '../Template/TemplateList';
 import '@ant-design/pro-card/dist/card.css';
 import 'antd/dist/antd.css';
 import '@ant-design/pro-form/dist/form.css';
+import TemplateSelect from '../Template/TemplateSelect';
 
 // const { TabPane } = Tabs;
 // const { Dragger } = Upload;
@@ -36,6 +38,7 @@ const UploadDocument = () => {
   const [hiddenFileUpload, setHiddenFileUpload] = useState(false);
   const [hiddenForm, setHiddenForm] = useState(true);
   const [disableNext, setDisableNext] = useState(true);
+  const [tab, setTab] = useState("tab1");
 
   const user = useSelector(selectUser);
   const { email, _id } = user;
@@ -74,6 +77,9 @@ const UploadDocument = () => {
     navigate('/assign')
   }
 
+  const templateNext = () => {
+    navigate('/assign')
+  }
   // const props = {
   //   name: 'file',
   //   multiple: false,
@@ -112,6 +118,16 @@ const UploadDocument = () => {
   //   },
   // };
 
+  const templateChanged = (template) => {
+    if(template) {
+      console.log(template);
+      if (template.docTitle.length > 0) {
+        setDisableNext(false)
+        dispatch(setTemplate(template));
+      }
+    }
+  }
+
   return (
     <div
     style={{
@@ -142,7 +158,7 @@ const UploadDocument = () => {
       }}
       footer={[
         <Button key="3" onClick={() => form.resetFields()}>초기화</Button>,
-        <Button key="2" type="primary" onClick={() => form.submit()} disabled={disableNext}>
+        <Button key="2" type="primary" onClick={() => (tab === "tab1") ? form.submit() : templateNext()} disabled={disableNext}>
           {formatMessage({id: 'Next'})}
         </Button>,
       ]}
@@ -153,27 +169,13 @@ const UploadDocument = () => {
         <ProCard
           tabs={{
             type: 'card',
+            onChange: (activeKey) => {
+              console.log("activeKey:"+activeKey)
+              setTab(activeKey)
+            }
           }}
         >
           <ProCard.TabPane key="tab1" tab="내 컴퓨터">
-            {/* <Space direction="vertical"> */}
-              {/* ISSUE: 파일 업로드 후 히든이 안됨 */}
-              {/* <Dragger {...props} hidden={hiddenFileUpload} max={1}>  
-                  <p className="ant-upload-drag-icon">
-                  <InboxOutlined />
-                  </p>
-                  <p className="ant-upload-text">
-                    {formatMessage({id: 'input.fileupload'})}
-                  </p>
-                  <p className="ant-upload-hint">
-                    <CheckOutlined /> &nbsp;
-                    {formatMessage({id: 'input.fileupload.support'})}
-                  </p>
-                  <p className="ant-upload-hint">
-                    <CheckOutlined /> &nbsp;
-                    {formatMessage({id: 'input.fileupload.volume'})}
-                  </p>
-              </Dragger> */}
 
             <ProForm 
               form={form}
@@ -193,16 +195,6 @@ const UploadDocument = () => {
                   },
                 }
               }}
-              // initialValues={{
-              //   dragger: [
-              //     {
-              //       uid: '1',
-              //       name: 'xxx.png',
-              //       status: 'done',
-              //       response: 'Server Error 500', // custom error message to show
-              //       url: 'https://gw.alipayobjects.com/zos/antfincdn/7%24YOiS6YIm/huaban.png',
-              //     }]
-              // }}
               onValuesChange={(changeValues) => {
                 console.log("onValuesChange called")
                 console.log(changeValues)
@@ -266,123 +258,16 @@ const UploadDocument = () => {
 
             </ProForm>
 
-              {/* <Form 
-                form={form}
-                name="form"
-                hidden={hiddenForm}
-                labelCol={{
-                  span: 0,
-                }}
-                wrapperCol={{
-                  span: 22,
-                }}
-                ref={formRef}
-                className="login-form"
-                initialValues={{
-                    // documentTitle: "",
-                }}
-                onFinish={onFinish}
-                >
-                  <Form.Item
-                      name="documentTitle"
-                      label="문서 제목"
-                      rules={[
-                      {
-                          required: true,
-                          message: formatMessage({id: 'input.documentTitle'}),
-                      },
-                      ]}
-                  >
-                      <Input />
-                  </Form.Item>
-                  <Form.Item {...tailLayout}>
-                      <Button type="primary" htmlType="submit">
-                          {formatMessage({id: 'Next'})}
-                      </Button>
-                  </Form.Item>
-
-              </Form> */}
-
           </ProCard.TabPane>
           <ProCard.TabPane key="tab2" tab="템플릿">
-            템플릿 선택 
+
+              <TemplateSelect templateChanged={templateChanged} />
+
           </ProCard.TabPane>
         </ProCard>
       </ProCard>
     </PageContainer>
   </div>
-
-      // <div>
-      //   <StepWrite current={0} />
-      //   <br></br>
-        // <Tabs defaultActiveKey="1" type="card" size="small">
-            
-        // <TabPane tab="내 컴퓨터" key="1">
-        //     <Space direction="vertical">
-        //       {/* ISSUE: 파일 업로드 후 히든이 안됨 */}
-        //       <Dragger {...props} hidden={hiddenFileUpload}>  
-        //           <p className="ant-upload-drag-icon">
-        //           <InboxOutlined />
-        //           </p>
-        //           <p className="ant-upload-text" style={{minWidth: "650px"}}>
-        //             {formatMessage({id: 'input.fileupload'})}
-        //           </p>
-        //           <p className="ant-upload-hint">
-        //             <CheckOutlined /> &nbsp;
-        //             {formatMessage({id: 'input.fileupload.support'})}
-        //           </p>
-        //           <p className="ant-upload-hint">
-        //             <CheckOutlined /> &nbsp;
-        //             {formatMessage({id: 'input.fileupload.volume'})}
-        //           </p>
-        //       </Dragger>
-
-        //       <Form 
-        //         name="form"
-        //         hidden={hiddenForm}
-        //         labelCol={{
-        //           span: 0,
-        //         }}
-        //         wrapperCol={{
-        //           span: 22,
-        //         }}
-        //         ref={formRef}
-        //         className="login-form"
-        //         initialValues={{
-        //             // documentTitle: "",
-        //         }}
-        //         onFinish={onFinish}
-        //         >
-        //           <Form.Item
-        //               name="documentTitle"
-        //               label="문서 제목"
-        //               rules={[
-        //               {
-        //                   required: true,
-        //                   message: formatMessage({id: 'input.documentTitle'}),
-        //               },
-        //               ]}
-        //           >
-        //               <Input />
-        //           </Form.Item>
-        //           <Form.Item {...tailLayout}>
-        //               <Button type="primary" htmlType="submit">
-        //                   {formatMessage({id: 'Next'})}
-        //               </Button>
-        //           </Form.Item>
-
-        //       </Form>
-
-        //     </Space>
-        //   </TabPane>
-        //   <TabPane tab="회사 템플릿" key="2">
-        //     Content of card tab 2
-        //   </TabPane>
-        //   <TabPane tab="내 템플릿" key="3">
-        //     Content of card tab 3
-        //   </TabPane>
-        // </Tabs>
-      // </div>
   )
 
 };

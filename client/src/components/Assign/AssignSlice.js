@@ -5,7 +5,8 @@ export const AssignSlice = createSlice({
   initialState: {
     signees: [],
     documentFile: null,
-    documentTitle: null
+    documentTitle: null,
+    template: null
   },
   reducers: {
     addSignee: (state, action) => {
@@ -26,14 +27,21 @@ export const AssignSlice = createSlice({
     },
     resetDocumentTitle: (state, action) => {
       state.documentTitle = null;
-    }
+    },
+    setTemplate: (state, action) => {
+      state.template = action.payload;
+    },
+    resetTemplate: (state, action) => {
+      state.template = null;
+    },
   },
 });
 
-export const { addSignee, resetSignee, setDocumentFile, resetDocumentFile, setDocumentTitle, resetDocumentTitle } = AssignSlice.actions;
+export const { addSignee, resetSignee, setDocumentFile, resetDocumentFile, setDocumentTitle, resetDocumentTitle, setTemplate, resetTemplate } = AssignSlice.actions;
 
 export const selectAssignees = state => state.assign.signees;
 export const selectDocumentFile = state => state.assign.documentFile;
 export const selectDocumentTitle = state => state.assign.documentTitle;
+export const selectTemplate = state => state.assign.template;
 
 export default AssignSlice.reducer;

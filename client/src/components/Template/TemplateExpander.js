@@ -5,7 +5,7 @@ import { useSelector } from 'react-redux';
 import { selectUser } from '../../app/infoSlice';
 import { navigate } from '@reach/router';
 import {
-    CheckCircleOutlined,
+    FileOutlined,
     SyncOutlined,
     CloseCircleOutlined,
     ExclamationCircleOutlined,

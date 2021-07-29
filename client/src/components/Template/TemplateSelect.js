@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
-import { Table, Input, Space, Button, Popconfirm } from "antd";
+import { Table, Input, Space, Button, Form, Radio } from "antd";
 import Highlighter from 'react-highlight-words';
 import { SearchOutlined } from '@ant-design/icons';
 import { useSelector, useDispatch } from 'react-redux';
@@ -11,17 +11,22 @@ import { setDocToSign } from '../SignDocument/SignDocumentSlice';
 import Moment from 'react-moment';
 import moment from 'moment';
 import 'moment/locale/ko';
+import { useIntl } from "react-intl";
+import ProForm, { ProFormText } from '@ant-design/pro-form';
 // import { DocumentType, DocumentTypeText, DOCUMENT_SIGNED, DOCUMENT_TOSIGN, DOCUMENT_SIGNING, DOCUMENT_CANCELED } from './DocumentType';
 import TemplateExpander from "./TemplateExpander";
 import {
   FileOutlined
 } from '@ant-design/icons';
+import { setDocumentFile, setDocumentTitle, selectDocumentTitle, selectDocumentFile } from '../Assign/AssignSlice';
 
-const TemplateList = () => {
+const TemplateSelect = (props) => {
 
   const dispatch = useDispatch();
+  const { formatMessage } = useIntl();
   const user = useSelector(selectUser);
-
+  
+  const [form] = Form.useForm();
   const { _id } = user;
   const [searchText, setSearchText] = useState('');
   const [searchedColumn, setSearchedColumn] = useState('');
@@ -48,6 +53,13 @@ const TemplateList = () => {
     });
   };
 
+  const onFinish = (values) => {
+    console.log(values)
+
+    dispatch(setDocumentTitle(values.documentTitle));
+    navigate('/assign')
+  }
+
   const fetch = (params = {}) => {
     setLoading(true);
 
@@ -68,32 +80,6 @@ const TemplateList = () => {
 
     });
   };
-
-  const deleteTemplate = async () => {
-    
-    setVisiblePopconfirm(false);
-
-    let param = {
-      _ids: selectedRowKeys
-    }
-
-    console.log("param:" + param)
-    const res = await axios.post('/api/template/deleteTemplate', param)
-    if (res.data.success) {
-      // alert('삭제 되었습니다.')
-    } else {
-      // alert('삭제 실패 하였습니다.')
-    }
-
-    setSelectedRowKeys([]);
-    setHasSelected(false)
-
-    fetch({
-      uid: _id,
-      pagination,
-    });
-
-  }
 
   const getColumnSearchProps = dataIndex => ({
 
@@ -211,10 +197,20 @@ const TemplateList = () => {
 
   const rowSelection = {
     selectedRowKeys,
-    onChange : selectedRowKeys => {
+    type : "radio",
+    onChange : (selectedRowKeys, selectedRows) => {
       console.log('selectedRowKeys changed: ', selectedRowKeys);
       setSelectedRowKeys(selectedRowKeys)
       setHasSelected(selectedRowKeys.length > 0)
+
+      //TODO
+      // console.log(selectedRows);
+      form.setFieldsValue({
+        documentTitle: selectedRows[0].docTitle,
+      })
+
+      props.templateChanged(selectedRows[0])
+
     },
     // selections: [
     //   Table.SELECTION_ALL,
@@ -245,36 +241,59 @@ const TemplateList = () => {
 
   return (
     <div>
-      <div style={{ marginBottom: 16 }}>
-          <Button type="primary" onClick={() => {navigate('/uploadTemplate');}}>
-            템플릿 등록
-          </Button>
-          <span style={{ marginLeft: 8 }}>
+      
 
-          <Popconfirm title="삭제하시겠습니까？" okText="네" cancelText="아니오" visible={visiblePopconfirm} onConfirm={deleteTemplate} onCancel={() => {setVisiblePopconfirm(false);}}>
-            {/* <Button type="primary" disabled={!hasSelected} onClick={() => {deleteTemplate();}}> */}
-            <Button type="primary" danger disabled={!hasSelected} onClick={()=>{setVisiblePopconfirm(true);}}>
-              삭제
-            </Button>
-        </Popconfirm>
-
-          </span>
-          <span style={{ marginLeft: 8 }}>
-            {hasSelected ? `${selectedRowKeys.length} 개의 문서가 선택됨` : ''}
-          </span>
-      </div>
+      <ProForm 
+        form={form}
+        onFinish={onFinish}
+        submitter={{
+          // Configure the properties of the button
+          resetButtonProps: {
+            style: {
+              // Hide the reset button
+              display: 'none',
+            },
+          },
+          submitButtonProps: {
+            style: {
+              // Hide the reset button
+              display: 'none',
+            },
+          }
+        }}
+        onValuesChange={(changeValues) => {
+          console.log("onValuesChange called")
+          console.log(changeValues)
+          console.log(form.getFieldValue("documentTitle"))
+          if (form.getFieldValue("documentTitle").length > 0) {
+            // setDisableNext(false)
+          } else {
+            // setDisableNext(true)
+          }
+        }}
+      >
+        <ProFormText
+          name="documentTitle"
+          label="문서명"
+          // width="md"
+          tooltip="입력하신 문서명으로 상대방에게 표시됩니다."
+          placeholder="문서명을 입력하세요."
+          rules={[{ required: true, message: formatMessage({id: 'input.documentTitle'}) }]}
+        />
+      </ProForm>
+      
       <Table
         rowKey={ item => { return item._id } }
         columns={columns}
         dataSource={data}
         pagination={pagination}
         loading={loading}
-        expandedRowRender={row => <TemplateExpander item={row} />}
-        expandRowByClick
+        // expandedRowRender={row => <TemplateExpander item={row} />}
+        // expandRowByClick
         rowSelection={rowSelection}
         onRow={record => ({
           onClick: e => {
-            // console.log(`user clicked on row ${record.t1}!`);
+            console.log(`user clicked on row ${record.t1}!`);
           }
         })}
         onChange={handleTableChange}
@@ -284,4 +303,4 @@ const TemplateList = () => {
   );
 };
 
-export default TemplateList;
+export default TemplateSelect;
