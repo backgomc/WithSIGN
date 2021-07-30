@@ -7,7 +7,7 @@ import { Tabs, Upload, message, Input, Space, Form, Button } from 'antd';
 // import { InboxOutlined, CheckOutlined } from '@ant-design/icons';
 import StepWrite from '../Step/StepWrite';
 import { useIntl } from "react-intl";
-import { setDocumentFile, setDocumentTitle, selectDocumentTitle, selectDocumentFile, setTemplate } from '../Assign/AssignSlice';
+import { setDocumentFile, setDocumentTitle, selectDocumentTitle, selectDocumentFile, setTemplate, setDocumentType, selectDocumentType, selectTemplate, selectTemplateTitle, setTemplateTitle } from '../Assign/AssignSlice';
 import { PageContainer } from '@ant-design/pro-layout';
 import ProCard from '@ant-design/pro-card';
 import ProForm, { ProFormUploadDragger, ProFormText } from '@ant-design/pro-form';
@@ -15,16 +15,7 @@ import TemplateList from '../Template/TemplateList';
 import '@ant-design/pro-card/dist/card.css';
 import 'antd/dist/antd.css';
 import '@ant-design/pro-form/dist/form.css';
-import TemplateSelect from '../Template/TemplateSelect';
-
-// const { TabPane } = Tabs;
-// const { Dragger } = Upload;
-// const tailLayout = {
-//   wrapperCol: {
-//     offset: 22,
-//     span: 16,
-//   },
-// };
+import SelectTemplate from '../Template/SelectTemplate';
 
 const UploadDocument = () => {
 
@@ -32,6 +23,7 @@ const UploadDocument = () => {
   const { formatMessage } = useIntl();
   const [form] = Form.useForm();
   // const formRef = React.createRef();
+  const templateRef = useRef();
 
   const [instance, setInstance] = useState(null);
   const [file, setFile] = useState(null);
@@ -45,78 +37,58 @@ const UploadDocument = () => {
 
   const documentTitle = useSelector(selectDocumentTitle);
   const documentFile = useSelector(selectDocumentFile);
+  const documentType = useSelector(selectDocumentType);
+  const template = useSelector(selectTemplate);
+  const templateTitle = useSelector(selectTemplateTitle);
 
 
   useEffect(() => {
 
-    if (documentTitle) {
-      form.setFieldsValue({
-        documentTitle: documentTitle,
-      })
+    if (documentType === 'PC') {
+      setTab("tab1")
+      if (documentTitle) {
+        form.setFieldsValue({
+          documentTitle: documentTitle,
+        })
+      }
+
+      if (documentFile) {
+        form.setFieldsValue({
+          dragger: [documentFile]
+        })
+      }
+
+      if (documentTitle && documentFile) {
+        setDisableNext(false)
+      } else {
+        setDisableNext(true)
+      }
+    } else if (documentType === 'TEMPLATE') {
+      setTab("tab2")
+      if (templateTitle && template) {
+        setDisableNext(false)
+      } else {
+        setDisableNext(true)
+      }
     }
 
-    if (documentFile) {
-      form.setFieldsValue({
-        dragger: [documentFile]
-      })
-    }
-
-    if (documentTitle && documentFile) {
-      setDisableNext(false)
-    } else {
-      setDisableNext(true)
-    }
-
-  }, [documentTitle, documentFile]);
+  }, [documentTitle, documentFile, documentType, templateTitle, templateRef]);
 
 
   const onFinish = (values) => {
     console.log(values)
 
-    dispatch(setDocumentTitle(values.documentTitle));
+    dispatch(setDocumentType('PC'))
+    dispatch(setDocumentTitle(values.documentTitle))
     navigate('/assign')
   }
 
   const templateNext = () => {
+
+    dispatch(setDocumentType('TEMPLATE'))
+    dispatch(setTemplateTitle(templateTitle));
     navigate('/assign')
   }
-  // const props = {
-  //   name: 'file',
-  //   multiple: false,
-  //   // action: '',
-  //   beforeUpload: file => {
-
-  //       console.log("beforeUpload called !!!")
-  //       if (file.type !== 'application/pdf') {
-  //           console.log(file.type)
-  //           message.error(`${file.name} is not a pdf file`);
-  //           return Upload.LIST_IGNORE;
-  //       }
-  //       setFile(file);
-        
-  //       console.log("form:"+form)
-
-  //       formRef.current.setFieldsValue({
-  //         documentTitle: file.name.replace(/\.[^/.]+$/, ""),
-  //       })
-
-  //       dispatch(setDocumentFile(file));
-  //       setHiddenForm(false);
-  //       setHiddenFileUpload(true);
-
-  //       return false;
-  //   },
-  //   onChange(info) {
-  //       console.log(info.file, info.fileList);
-
-  //       formRef.current.setFieldsValue({
-  //         documentTitle: info.file.name.replace(/\.[^/.]+$/, ""),
-  //       })
-  //   },
-  //   onDrop(e) {
-  //     console.log('Dropped files', e.dataTransfer.files);
-  //   },
-  // };
 
   const templateChanged = (template) => {
     if(template) {
@@ -124,8 +96,13 @@ const UploadDocument = () => {
       if (template.docTitle.length > 0) {
         setDisableNext(false)
         dispatch(setTemplate(template));
+        dispatch(setTemplateTitle(template.docTitle));
       }
     }
+  }
+
+  const templateTitleChanged = (title) => {
+    dispatch(setTemplateTitle(title))
   }
 
   return (
@@ -169,9 +146,16 @@ const UploadDocument = () => {
         <ProCard
           tabs={{
             type: 'card',
+            activeKey: tab,
             onChange: (activeKey) => {
               console.log("activeKey:"+activeKey)
               setTab(activeKey)
+
+              if (activeKey === "tab1") {
+                dispatch(setDocumentType('PC'))
+              } else {
+                dispatch(setDocumentType('TEMPLATE'))
+              }
             }
           }}
         >
@@ -261,7 +245,7 @@ const UploadDocument = () => {
           </ProCard.TabPane>
           <ProCard.TabPane key="tab2" tab="템플릿">
 
-              <TemplateSelect templateChanged={templateChanged} />
+              <SelectTemplate ref={templateRef} templateChanged={templateChanged} templateTitleChanged={templateTitleChanged} />
 
           </ProCard.TabPane>
         </ProCard>

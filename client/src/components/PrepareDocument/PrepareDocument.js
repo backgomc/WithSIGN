@@ -14,7 +14,7 @@ import {
 } from 'gestalt';
 import { Upload, message, Spin } from 'antd';
 import { InboxOutlined } from '@ant-design/icons';
-import { selectAssignees, resetSignee, selectDocumentFile, selectDocumentTitle, resetDocumentFile, resetDocumentTitle } from '../Assign/AssignSlice';
+import { resetAssignAll, selectAssignees, resetSignee, selectDocumentFile, selectDocumentTitle, resetDocumentFile, resetDocumentTitle, selectTemplate, resetTemplate, selectDocumentType, resetDocumentType, selectTemplateTitle, resetTemplateTitle } from '../Assign/AssignSlice';
 import { selectUser } from '../../app/infoSlice';
 import WebViewer from '@pdftron/webviewer';
 import 'gestalt/dist/gestalt.css';
@@ -35,6 +35,9 @@ const PrepareDocument = () => {
 
   const documentFile = useSelector(selectDocumentFile);
   const documentTitle = useSelector(selectDocumentTitle);
+  const documentType = useSelector(selectDocumentType);
+  const template = useSelector(selectTemplate);
+  const templateTitle = useSelector(selectTemplateTitle);
 
   const assignees = useSelector(selectAssignees);
   const assigneesValues = assignees.map(user => {
@@ -103,7 +106,10 @@ const PrepareDocument = () => {
         drop(e, instance);
       });
 
-      if(documentFile) {
+      if (documentType === 'TEMPLATE') {
+        // instance.loadDocument("http://localhost:5000/storage/template/60f4fb1e580054126cf7eba51627367952105.pdf")
+        instance.loadDocument("/storage/"+template.docRef)
+      } else if(documentType === 'PC') {
         instance.loadDocument(documentFile)
       }
 
@@ -116,7 +122,7 @@ const PrepareDocument = () => {
       //   }
       // };
     });
-  }, []);
+  }, [documentType]);
 
   const applyFields = async () => {
     const { Annotations, docViewer } = instance;
@@ -345,6 +351,7 @@ const PrepareDocument = () => {
     // 1.FILE SAVE
     const formData = new FormData()
     formData.append('file', blob, referenceString)
+    formData.append('path', 'docToSign')
     const res = await axios.post(`/api/storage/upload`, formData)
     console.log(res)
 
@@ -357,7 +364,7 @@ const PrepareDocument = () => {
 
     let body = {
       user: _id,
-      docTitle: documentTitle,
+      docTitle: (documentType === "PC") ? documentTitle : templateTitle,
       email: email,
       docRef: referenceString,
       // emails: emails,
@@ -402,9 +409,11 @@ const PrepareDocument = () => {
     //     console.error('Error adding document: ', error);
     //   });
 
-    dispatch(resetSignee());
-    dispatch(resetDocumentFile());
-    dispatch(resetDocumentTitle());
+    // dispatch(resetSignee());
+    // dispatch(resetDocumentFile());
+    // dispatch(resetDocumentTitle());
+    dispatch(resetAssignAll());
+
     navigate('/');
   };
 

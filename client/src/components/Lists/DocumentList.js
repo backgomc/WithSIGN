@@ -307,7 +307,7 @@ const DocumentList = () => {
         expandRowByClick
         onRow={record => ({
           onClick: e => {
-            console.log(`user clicked on row ${record.t1}!`);
+            // console.log(`user clicked on row ${record.t1}!`);
           }
         })}
         onChange={handleTableChange}

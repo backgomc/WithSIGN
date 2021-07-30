@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, forwardRef, useImperativeHandle } from 'react';
 import axios from 'axios';
 import { Table, Input, Space, Button, Form, Radio } from "antd";
 import Highlighter from 'react-highlight-words';
@@ -18,9 +18,16 @@ import TemplateExpander from "./TemplateExpander";
 import {
   FileOutlined
 } from '@ant-design/icons';
-import { setDocumentFile, setDocumentTitle, selectDocumentTitle, selectDocumentFile } from '../Assign/AssignSlice';
+import { selectTemplate, setTemplateTitle, selectTemplateTitle } from '../Assign/AssignSlice';
 
-const TemplateSelect = (props) => {
+const SelectTemplate =  forwardRef((props, ref) => {
+
+  useImperativeHandle(ref, () => ({
+
+    setTitle() {
+    }
+
+  }));
 
   const dispatch = useDispatch();
   const { formatMessage } = useIntl();
@@ -41,6 +48,9 @@ const TemplateSelect = (props) => {
 
   const searchInput = useRef<Input>(null)
 
+  const templateTitle = useSelector(selectTemplateTitle);
+  const template = useSelector(selectTemplate);
+
   const handleTableChange = (pagination, filters, sorter) => {
     console.log("handleTableChange called")
     console.log(filters)
@@ -56,7 +66,7 @@ const TemplateSelect = (props) => {
   const onFinish = (values) => {
     console.log(values)
 
-    dispatch(setDocumentTitle(values.documentTitle));
+    dispatch(setTemplateTitle(values.documentTitle));
     navigate('/assign')
   }
 
@@ -72,6 +82,17 @@ const TemplateSelect = (props) => {
         setPagination({...params.pagination, total:response.data.total});
         setData(templates);
         setLoading(false);
+
+        // 이전 화면에서 돌아왔을때 입력했던 값이 있는 경우 데이터 셋팅
+        if(templateTitle) {
+          console.log("templateTitle:"+templateTitle)
+          form.setFieldsValue({
+            documentTitle: templateTitle,
+          })
+        }
+        if(template) {
+          setSelectedRowKeys([template._id])
+        }
 
       } else {
           setLoading(false);
@@ -203,7 +224,6 @@ const TemplateSelect = (props) => {
       setSelectedRowKeys(selectedRowKeys)
       setHasSelected(selectedRowKeys.length > 0)
 
-      //TODO
       // console.log(selectedRows);
       form.setFieldsValue({
         documentTitle: selectedRows[0].docTitle,
@@ -267,6 +287,7 @@ const TemplateSelect = (props) => {
           console.log(form.getFieldValue("documentTitle"))
           if (form.getFieldValue("documentTitle").length > 0) {
             // setDisableNext(false)
+            props.templateTitleChanged(form.getFieldValue("documentTitle"))
           } else {
             // setDisableNext(true)
           }
@@ -293,7 +314,7 @@ const TemplateSelect = (props) => {
         rowSelection={rowSelection}
         onRow={record => ({
           onClick: e => {
-            console.log(`user clicked on row ${record.t1}!`);
+            // console.log(`user clicked on row ${record.t1}!`);
           }
         })}
         onChange={handleTableChange}
@@ -301,6 +322,6 @@ const TemplateSelect = (props) => {
     </div>
     
   );
-};
+});
 
-export default TemplateSelect;
+export default SelectTemplate;
