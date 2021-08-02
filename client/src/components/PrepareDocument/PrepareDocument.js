@@ -98,6 +98,9 @@ const PrepareDocument = () => {
       // select only the view group
       instance.setToolbarGroup('toolbarGroup-View');
 
+      // set language
+      instance.setLanguage('ko');
+
       setInstance(instance);
 
       const iframeDoc = iframeWindow.document.body;
@@ -122,7 +125,7 @@ const PrepareDocument = () => {
       //   }
       // };
     });
-  }, [documentType]);
+  }, []);
 
   const applyFields = async () => {
     const { Annotations, docViewer } = instance;
