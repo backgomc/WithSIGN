@@ -16,53 +16,131 @@ npm run start
 src/
   app/             - Redux Store Configuration
   components/      - React components
-    Assign/              - Add users to a document that needs to be signed 
-    Lists/               - List components to list files for signing and review
-    MergeAnnotations/    - Merge all signatures and flatten them onto a PDF 
-    PasswordReset/       - Reset password
-    PrepareDocument/     - Drag and drop signatures, text fields onto a PDF to prepare it for signing
+    Assign/              - 서명 참여자 설정
+    Lists/               - 문서 목록
+    MergeAnnotations/    - PDF Merge (입력 컴포넌트와 원본 PDF 합치기)
+    PasswordReset/       - 비밀번호 재설정
+    PrepareDocument/     - 문서 서명 요청 편집 (서명 및 텍스트 추가)
     Profile/             - Profile information and a sign out button
-    SignDocument/        - Sign PDF
-    Login/               - Sign in
-    Register/            - Sign up
-    ViewDocument/        - Review document after signing
-    Assign               - Component combines Profile and Assign
-    Header               - Header when the user is not logged in
-    Preparation          - Component combines Profile and PrepareDocument
-    Sign                 - Component combines Profile and SignDocument
-    View                 - Component combines Profile and ViewDocument
-    Welcome              - Component combines Profile, SignList, Preparation, SignedList
-  App              - Configuration for navigation, authentication
+    SignDocument/        - 문서 서명
+    UploadDocument/      - 문서 파일 업로드 
+    Login/               - 로그인
+    Register/            - 회원 가입
+    ViewDocument/        - 문서 조회
+    Step/                - 문서 서명 요청 순서
+    MySign/              - 내 서명 목록 및 추가 
+    Intl/                - 멀티 랭귀지 지원 
+    Footer/              - 화면 하단 공통
+    Header/              - 화면 상단 공통
+    Landing/             - 대시보드 (첫 화면)
+  config/menu.js         - 사이드 메뉴 
+  util/                  - 공통 유틸 
+  assets/                - css, images, 다국어 지원 리소스 등 
+  App              - 레이아웃 및 인증처리 
   index            - Entry point and configuration for React-Redux
   tools/           - Helper function to copy over PDFTron dependencies into /public on post-install
 ```
 
-## Document Structure
+- server
+```
+  common/         - 공통 유틸
+  config/         - 프로젝트 설정 값 (개발/운영)
+  middleware/     - 사용자 인증 공통
+  models/         - MongoDB Model
+  public/mock     - 샘플 데이터
+  routes/         - 라우팅 및 로직 처리
+  index.js        - entry point
+```
+
+## Database Structure
+- Document
 ```
 _id: "60dea7c97339d905696a41d7"
 docRef: docToSign/c4Y72M0d0pZx3476jxJFxrFA3Qo21593036106369.pdf"
 user: "60dea7c97339d905696a41d7"
 users: ["60dea7c97339d905696a41d7", "12dea7c97339d905696a41d7"]
 signed: false
-signedBy: ["60dea7c97339d905696a41d7"]
+signedBy: [{user: "60dea7c97339d905696a41d7", signedTime: July 17, 2020 at 12:01:24 PM UTC-7}]
 requestedTime: July 17, 2020 at 12:01:24 PM UTC-7
-signedTime: July 17, 2020 at 12:01:24 PM UTC-7
 docTitle: "보안서약서"
 xfdf: ["<?xml version="1.0" encoding="UTF-8" ?><xfdf xmlns="http://ns.adobe.com/xfdf/" xml:space="preserve">...</xfdf>"]
  ```
  
-- _id - string - unique identifier for the requestor of the signature
-- docRef - string - storage reference to the actual PDF
-- user - string - email of the requestor of the signature
-- users - an array of strings - users to sign the document
-- signed - boolean - value for whether or not all users have signed the document (gets determined by checking lengths of emails array and xfdf array)
-- requestedTime - TimeStamp - value for when the signature was requested
-- signedTime - TimeStamp - value for when the document was signed
-- docTitle - string - value of document title
-- xfdf - an array of strings - signature appearance/form field values for each user
+- _id - string - 문서 고유 ID
+- docRef - string - pdf 스토리지 저장 경로 
+- user - string - 서명 요청자 ID
+- users - an array of strings - 서명 해야할 유저 ID 목록
+- signed - boolean - 서명 완료 상태 
+- signedBy - [string, TimeStamp] - 서명한 시간
+- requestedTime - TimeStamp - 서명 요청 시간
+- docTitle - string - 문서 제목
+- xfdf - [string] - 유저 별 서명 및 입력한 value 값
+
+- User
+```
+"role": 0,
+"_id": "60dbfeb557e078050836b473",
+"email": "abc@naver.com",
+"password": "...",
+"name": "홍길동",
+"token": "eyJhbGciOiJIUzI1NiJ9.NjBkYmZlYjU1N2UwNzgwNTA4MzZiNDcz.vkSUWaKfoixDfQMpbTCwyrnrS-Jx0DADBneLFgeifXY",
+"DEPART_CODE": "A15800",
+"JOB_TITLE": "차장",
+"uid": "3b358edc99e9e5b2f80ef8d7c8b59fb20000603e79d19402124691331456adc5",
+"OFFICE_CODE": "7831"
+ ```
+ 
+- _id - string - 사용자 고유 ID
+- uid - string - 사번/이메일 기반 ID
+- name - string - 이름
+- email - string - 이메일
+- password - string - 비밀번호
+- token - string - 로그인 토큰
+- role - string - 권한 (관리자: 1, 일반: 0)
+- DEPART_CODE - string - 부서코드
+- JOB_TITLE - string - 직명
+- OFFICE_CODE - string - 회사코드(사무소코드)
+
+- Template
+```
+"_id": "61020d6d94af350531b56bd8",
+"user": {
+    "_id": "60dbfeb557e078050836b473",
+    "name": "박세현",
+    "JOB_TITLE": "차장"
+},
+"docTitle": "개인정보취급자 보안서약서",
+"docRef": "template/60dbfeb557e078050836b4731627524461421.pdf",
+"registeredTime": "2021-07-29T02:07:41.440Z"
+ ```
+ 
+- _id - string - 템플릿 고유 ID
+- user - string - 템플릿 생성자
+- docTitle - string - 템플릿명
+- docRef - string - 템플릿 고유 경로
+- registeredTime - TimeStamp - 등록 시간
+
+- Org
+```
+"_id": "60e648c4e87d550581211bf9",
+"OFFICE_NAME": "농협정보시스템",
+"OFFICE_CODE": "7831",
+"DEPART_CODE": "A11000",
+"DEPART_NAME": "경영전략부",
+"PARENT_NODE_ID": "B20000",
+"DISPLAY_ORDER": 1
+ ```
+ 
+- _id - string - 기관 고유 ID
+- OFFICE_NAME - string - 회사명(사무소명)
+- OFFICE_CODE - string - 회사코드
+- DEPART_CODE - string - 부서코드
+- DEPART_NAME - string - 부서명
+- PARENT_NODE_ID - string - 부모코드
+- DISPLAY_ORDER - string - 디스플레이 순서
 
 
-## RUN DOCKER
+## DOCKER 배포
 - client 빌드
  > yarn build
 - nginx 포트 설정
