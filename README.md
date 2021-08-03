@@ -66,15 +66,15 @@ docTitle: "보안서약서"
 xfdf: ["<?xml version="1.0" encoding="UTF-8" ?><xfdf xmlns="http://ns.adobe.com/xfdf/" xml:space="preserve">...</xfdf>"]
  ```
  
-- _id - string - 문서 고유 ID
-- docRef - string - pdf 스토리지 저장 경로 
-- user - string - 서명 요청자 ID
-- users - an array of strings - 서명 해야할 유저 ID 목록
-- signed - boolean - 서명 완료 상태 
-- signedBy - [string, TimeStamp] - 서명한 시간
-- requestedTime - TimeStamp - 서명 요청 시간
-- docTitle - string - 문서 제목
-- xfdf - [string] - 유저 별 서명 및 입력한 value 값
+> _id - string - 문서 고유 ID
+> docRef - string - pdf 스토리지 저장 경로 
+> user - string - 서명 요청자 ID
+> users - an array of strings - 서명 해야할 유저 ID 목록
+> signed - boolean - 서명 완료 상태 
+> signedBy - [string, TimeStamp] - 서명한 시간
+> requestedTime - TimeStamp - 서명 요청 시간
+> docTitle - string - 문서 제목
+> xfdf - [string] - 유저 별 서명 및 입력한 value 값
 
 - User
 ```
@@ -90,16 +90,16 @@ xfdf: ["<?xml version="1.0" encoding="UTF-8" ?><xfdf xmlns="http://ns.adobe.com/
 "OFFICE_CODE": "7831"
  ```
  
-- _id - string - 사용자 고유 ID
-- uid - string - 사번/이메일 기반 ID
-- name - string - 이름
-- email - string - 이메일
-- password - string - 비밀번호
-- token - string - 로그인 토큰
-- role - string - 권한 (관리자: 1, 일반: 0)
-- DEPART_CODE - string - 부서코드
-- JOB_TITLE - string - 직명
-- OFFICE_CODE - string - 회사코드(사무소코드)
+> _id - string - 사용자 고유 ID
+> uid - string - 사번/이메일 기반 ID
+> name - string - 이름
+> email - string - 이메일
+> password - string - 비밀번호
+> token - string - 로그인 토큰
+> role - string - 권한 (관리자: 1, 일반: 0)
+> DEPART_CODE - string - 부서코드
+> JOB_TITLE - string - 직명
+> OFFICE_CODE - string - 회사코드(사무소코드)
 
 - Template
 ```
@@ -114,11 +114,11 @@ xfdf: ["<?xml version="1.0" encoding="UTF-8" ?><xfdf xmlns="http://ns.adobe.com/
 "registeredTime": "2021-07-29T02:07:41.440Z"
  ```
  
-- _id - string - 템플릿 고유 ID
-- user - string - 템플릿 생성자
-- docTitle - string - 템플릿명
-- docRef - string - 템플릿 고유 경로
-- registeredTime - TimeStamp - 등록 시간
+> _id - string - 템플릿 고유 ID
+> user - string - 템플릿 생성자
+> docTitle - string - 템플릿명
+> docRef - string - 템플릿 고유 경로
+> registeredTime - TimeStamp - 등록 시간
 
 - Org
 ```
@@ -131,13 +131,13 @@ xfdf: ["<?xml version="1.0" encoding="UTF-8" ?><xfdf xmlns="http://ns.adobe.com/
 "DISPLAY_ORDER": 1
  ```
  
-- _id - string - 기관 고유 ID
-- OFFICE_NAME - string - 회사명(사무소명)
-- OFFICE_CODE - string - 회사코드
-- DEPART_CODE - string - 부서코드
-- DEPART_NAME - string - 부서명
-- PARENT_NODE_ID - string - 부모코드
-- DISPLAY_ORDER - string - 디스플레이 순서
+> _id - string - 기관 고유 ID
+> OFFICE_NAME - string - 회사명(사무소명)
+> OFFICE_CODE - string - 회사코드
+> DEPART_CODE - string - 부서코드
+> DEPART_NAME - string - 부서명
+> PARENT_NODE_ID - string - 부모코드
+> DISPLAY_ORDER - string - 디스플레이 순서
 
 
 ## DOCKER 배포
