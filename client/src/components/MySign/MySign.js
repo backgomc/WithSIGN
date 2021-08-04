@@ -11,38 +11,59 @@ import ProCard from '@ant-design/pro-card';
 import 'antd/dist/antd.css';
 import '@ant-design/pro-card/dist/card.css';
 import { DeleteOutlined, DownloadOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
+import { triggerBase64Download } from 'react-base64-downloader';
 
 const { confirm } = Modal;
 
 const MySign = () => {
 
   const [loading, setLoading] = useState(false);
-  const [signData, setSignData] = useState(null); 
   const [visiblModal, setVisiblModal] = useState(false);
+  const [data, setData] = useState([]);
 
   const dispatch = useDispatch();
   const user = useSelector(selectUser);
-  const { email, _id } = user;
+  const { _id } = user;
   const { formatMessage } = useIntl();
 
   const sigCanvas = useRef({});
   const clear = () => sigCanvas.current.clear();
-  const saveSignData = async () => {
-    
-    let param = {
-      _id: _id,
-      signData: sigCanvas.current.getTrimmedCanvas().toDataURL("image/png")
-    }
-    // setSignData(sigCanvas.current.getTrimmedCanvas().toDataURL("image/png"));
-
-    console.log("param:"+param);
-
-  }
 
   useEffect(() => {
+    fetchSigns();
   }, []);
 
-  const deleteSign = async () => {
+  const fetchSigns = async () => {
+    setLoading(true);
+    let param = {
+      user: _id
+    }
+    
+    const res = await axios.post('/api/sign/signs', param)
+    if (res.data.success) {
+      const signs = res.data.signs;
+      setData(signs)
+    }
+    setLoading(false);
+
+    // console.log("data:"+data);
+  }
+
+  const fetchDeleteSign = async (_id) => {
+    setLoading(true);
+    let param = {
+      _id: _id
+    }
+    
+    const res = await axios.post('/api/sign/deleteSign', param)
+    if (res.data.success) {
+      fetchSigns();
+    }
+    setLoading(false);
+  }
+
+  const deleteSign = async (_id) => {
+    console.log("_id:"+_id)
     confirm({
       title: '삭제하시겠습니까?',
       icon: <ExclamationCircleOutlined />,
@@ -51,7 +72,7 @@ const MySign = () => {
       okType: 'danger',
       cancelText: '아니오',
       onOk() {
-        console.log('OK');
+        fetchDeleteSign(_id);
       },
       onCancel() {
         console.log('Cancel');
@@ -67,22 +88,23 @@ const MySign = () => {
     setLoading(true);
     
     let param = {
-      _id: _id,
+      user: _id,
       signData: sigCanvas.current.getTrimmedCanvas().toDataURL("image/png")
     }
-    // setSignData(sigCanvas.current.getTrimmedCanvas().toDataURL("image/png"));
 
-    console.log("param _id:"+param._id);
-    console.log("param signData:"+param.signData);
+    // console.log("param user:"+param.user);
+    // console.log("param signData:"+param.signData);
 
-    //TODO 서버업로드
-
+    // 서버업로드
+    const res = await axios.post('/api/sign/addSign', param)
 
     setLoading(false);
     setVisiblModal(false);
     
-    // console.log("signData:"+signData);
-    
+    sigCanvas.current.clear();
+
+    fetchSigns();
+
     // setTimeout(() => {
     //   setLoading(false);
     //   setVisiblModal(false);
@@ -92,6 +114,28 @@ const MySign = () => {
   const handleCancel = () => {
     setVisiblModal(false);
   };
+
+  const downloadSign = (signData) => {
+    triggerBase64Download(signData, 'mysign')
+  } 
+
+  const renderSigns = data.map((sign, index) => {
+    return (
+      <ProCard 
+      colSpan="300px" 
+      layout="center" 
+      bordered
+      actions={[
+        <DeleteOutlined key="delete" onClick={e => { deleteSign(sign._id) }} />,
+        <DownloadOutlined key="download" onClick={e => { downloadSign(sign.signData)}} />,
+      ]}>
+      <img
+        src={sign.signData} height="130px"
+      />
+    </ProCard>
+    )
+    
+  })
 
   return (
     <div>
@@ -103,8 +147,8 @@ const MySign = () => {
     </div>  
 
     <ProCard style={{ marginTop: 8 }} gutter={[16, 16]} wrap title="">
-
-      <ProCard 
+      {renderSigns}
+      {/* <ProCard 
         colSpan="300px" 
         layout="center" 
         bordered
@@ -116,35 +160,8 @@ const MySign = () => {
           alt="example"
           src="https://gw.alipayobjects.com/zos/rmsportal/JiqGstEfoWAOHiTxclqi.png"
         />
-      </ProCard>
+      </ProCard> */}
       
-      <ProCard 
-        colSpan="300px" 
-        layout="center" 
-        bordered
-        actions={[
-          <DeleteOutlined key="delete" />,
-          <DownloadOutlined key="download" />,
-        ]}>
-        <img
-          alt="example"
-          src="https://gw.alipayobjects.com/zos/rmsportal/JiqGstEfoWAOHiTxclqi.png"
-        />
-      </ProCard>
-
-      <ProCard 
-        colSpan="300px" 
-        layout="center" 
-        bordered
-        actions={[
-          <DeleteOutlined key="delete" />,
-          <DownloadOutlined key="download" />,
-        ]}>
-        <img
-          alt="example"
-          src="https://gw.alipayobjects.com/zos/rmsportal/JiqGstEfoWAOHiTxclqi.png"
-        />
-      </ProCard>
     </ProCard>
 
     <Modal
