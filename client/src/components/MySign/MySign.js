@@ -2,16 +2,17 @@ import React, { useRef, useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import axios from 'axios';
 import { navigate } from '@reach/router';
-import { Spin, Button, Card, Modal } from 'antd';
+import { Spin, Button, Card, Modal, Empty, List } from 'antd';
 import { selectUser } from '../../app/infoSlice';
 import { useIntl } from "react-intl";
 import SignaturePad from "react-signature-canvas";
-import "./sigCanvas.css";
 import ProCard from '@ant-design/pro-card';
 import 'antd/dist/antd.css';
 import '@ant-design/pro-card/dist/card.css';
-import { DeleteOutlined, DownloadOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
+import "./sigCanvas.css";
+import { DeleteOutlined, DownloadOutlined, ExclamationCircleOutlined, PlusOutlined } from '@ant-design/icons';
 import { triggerBase64Download } from 'react-base64-downloader';
+import { PageContainer } from '@ant-design/pro-layout';
 
 const { confirm } = Modal;
 
@@ -119,50 +120,106 @@ const MySign = () => {
     triggerBase64Download(signData, 'mysign')
   } 
 
-  const renderSigns = data.map((sign, index) => {
-    return (
-      <ProCard 
-      colSpan="300px" 
-      layout="center" 
-      bordered
-      actions={[
-        <DeleteOutlined key="delete" onClick={e => { deleteSign(sign._id) }} />,
-        <DownloadOutlined key="download" onClick={e => { downloadSign(sign.signData)}} />,
-      ]}>
-      <img
-        src={sign.signData} height="130px"
-      />
-    </ProCard>
-    )
+  // const renderSigns = data.map((sign, index) => {
+  //   return (
+  //     <ProCard 
+  //     colSpan="300px" 
+  //     layout="center" 
+  //     bordered
+  //     actions={[
+  //       // <DeleteOutlined key="delete" onClick={e => { deleteSign(sign._id) }} />,
+  //       // <DownloadOutlined key="download" onClick={e => { downloadSign(sign.signData)}} />,
+  //       <Button type="text" danger icon={<DeleteOutlined />} onClick={e => { deleteSign(sign._id) }}>삭제</Button>,
+  //       <Button type="text" icon={<DownloadOutlined />} onClick={e => { downloadSign(sign.signData) }}>다운로드</Button>
+  //     ]}>
+  //     <img
+  //       src={sign.signData} height="130px"
+  //     />
+  //   </ProCard>
+  //   )
     
-  })
+  // })
 
   return (
     <div>
 
-    <div style={{ marginBottom: 16 }}>    
+    <PageContainer
+        ghost
+        header={{
+          title: '내 사인',
+          ghost: false,
+          breadcrumb: {
+            routes: [
+              // {
+              //   path: '/',
+              //   breadcrumbName: '내 사인',
+              // },
+              // {
+              //   path: '/',
+              //   breadcrumbName: '사인 등록',
+              // },
+            ],
+          },
+          extra: [
+          ],
+        }}
+        content={'서명에 사용되는 사인을 미리 등록할 수 있습니다.'}
+        footer={[
+        ]}
+    >
+    <br></br>
+    <List
+      rowKey="id"
+      loading={loading}
+      grid={{ gutter: 24, lg: 3, md: 2, sm: 1, xs: 1 }}
+      dataSource={['', ...data]}
+      renderItem={item => (item ? (
+        <List.Item key={item._id}>
+          {/* <Card hoverable className={styles.card} actions={[
+           <Button type="text" danger icon={<DeleteOutlined />} onClick={e => { deleteSign(item._id) }}>삭제</Button>,
+           <Button type="text" icon={<DownloadOutlined />} onClick={e => { downloadSign(item.signData) }}>다운로드</Button>
+          ]}>
+            <img src={item.signData} height="130px" align="center" />
+          </Card>
+          
+          */}
+          <ProCard 
+            hover
+            colSpan="300px" 
+            layout="center" 
+            bordered
+            style={{ minWidth: "300px" }}
+            actions={[
+              <Button type="text" danger icon={<DeleteOutlined />} onClick={e => { deleteSign(item._id) }}>삭제</Button>,
+              <Button type="text" icon={<DownloadOutlined />} onClick={e => { downloadSign(item.signData) }}>다운로드</Button>
+            ]}>
+            <img
+              src={item.signData} height="130px"
+            />
+          </ProCard>
+        </List.Item>
+        ) : (
+          <List.Item>
+            <Button type="dashed" style={{ height: "236px", width: "100%", minWidth: "300px" }} onClick={() => {showModal();}}>
+              <PlusOutlined /> 사인 등록
+            </Button>
+          </List.Item>
+        )
+      )}
+          />
+    
+    </PageContainer>
+
+
+    {/* <div style={{ marginBottom: 16 }}>    
       <Button type="primary" onClick={() => {showModal();}}>
         내 사인 등록
       </Button>
     </div>  
 
     <ProCard style={{ marginTop: 8 }} gutter={[16, 16]} wrap title="">
-      {renderSigns}
-      {/* <ProCard 
-        colSpan="300px" 
-        layout="center" 
-        bordered
-        actions={[
-          <DeleteOutlined key="delete" onClick={e => { deleteSign() }} />,
-          <DownloadOutlined key="download" />,
-        ]}>
-        <img
-          alt="example"
-          src="https://gw.alipayobjects.com/zos/rmsportal/JiqGstEfoWAOHiTxclqi.png"
-        />
-      </ProCard> */}
-      
-    </ProCard>
+      {data.length > 0 ? renderSigns : <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}       
+    </ProCard> */}
 
     <Modal
           visible={visiblModal}
