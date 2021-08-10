@@ -3,6 +3,7 @@
 *.pdf
 .well-known/
 test.html
+admin/node_modules
 client/node_modules
 server/node_modules
 server/sessions/*
