@@ -77,6 +77,16 @@ xfdf: ["<?xml version="1.0" encoding="UTF-8" ?><xfdf xmlns="http://ns.adobe.com/
   - xfdf - [string] - 유저 별 서명 및 입력한 value 값
 
 - User
+  - _id - string - 사용자 고유 ID
+  - uid - string - 사번/이메일 기반 ID
+  - name - string - 이름
+  - email - string - 이메일
+  - password - string - 비밀번호
+  - token - string - 로그인 토큰
+  - role - string - 권한 (관리자: 1, 일반: 0)
+  - DEPART_CODE - string - 부서코드
+  - JOB_TITLE - string - 직명
+  - OFFICE_CODE - string - 회사코드(사무소코드)
 ```
 "role": 0,
 "_id": "60dbfeb557e078050836b473",
@@ -90,16 +100,6 @@ xfdf: ["<?xml version="1.0" encoding="UTF-8" ?><xfdf xmlns="http://ns.adobe.com/
 "OFFICE_CODE": "7831"
  ```
  
-  - _id - string - 사용자 고유 ID
-  - uid - string - 사번/이메일 기반 ID
-  - name - string - 이름
-  - email - string - 이메일
-  - password - string - 비밀번호
-  - token - string - 로그인 토큰
-  - role - string - 권한 (관리자: 1, 일반: 0)
-  - DEPART_CODE - string - 부서코드
-  - JOB_TITLE - string - 직명
-  - OFFICE_CODE - string - 회사코드(사무소코드)
 
 - Template
 ```
