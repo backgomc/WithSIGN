@@ -22,16 +22,15 @@ router.post('/addDocumentToSign', (req, res) => {
 // 문서 상태 변경 (사인) : updateDocumentToSign
 router.post('/updateDocumentToSign', (req, res) => {
 
-  console.log("A")
   // console.log(req.body.docId)
   // console.log(req.body.uid)
   // console.log(req.body.xfdf)
-  if (!req.body.docId || !req.body.uid || !req.body.xfdf) {
+  if (!req.body.docId || !req.body.user || !req.body.xfdf) {
       return res.json({ success: false, message: "input value not enough!" })
   } 
 
   const docId = req.body.docId
-  const uid = req.body.uid
+  const user = req.body.user
   const xfdfSigned = req.body.xfdf
   const time = new Date()
   var isLast = false;
@@ -40,13 +39,10 @@ router.post('/updateDocumentToSign', (req, res) => {
     if (document) {
       const { signedBy, users, xfdf, docRef } = document;
       
-      console.log("B")
-      console.log(signedBy.some(e => e.user === uid))
-      if (!signedBy.some(e => e.user === uid)) {
+      console.log(signedBy.some(e => e.user === user))
+      if (!signedBy.some(e => e.user === user)) {
 
-        console.log("C")
-
-        const signedByArray = [...signedBy, {user:uid, signedTime:time}];
+        const signedByArray = [...signedBy, {user:user, signedTime:time}];
         const xfdfArray = [...xfdf, xfdfSigned];
 
         Document.updateOne({ _id: docId }, {xfdf: xfdfArray, signedBy:signedByArray}, (err, result) => {
@@ -79,22 +75,11 @@ router.post('/updateDocumentToSign', (req, res) => {
 // 사인 대상 문서 검색 : searchForDocumentToSign
 router.post('/searchForDocumentToSign', (req, res) => {
 
-  // const uid = req.body.email
-  // if (!uid) {
-  //     return res.json({ success: false, message: "input value not enough!" })
-  // } 
-
-  // Document.find({ "users": [uid], "signed": false })
-  //     .exec((err, documents) => {
-  //         if (err) return res.json({success: false, error: err});
-  //         return res.json({ success: true, documents: documents })
-  //     })
-
-  const uid = req.body.uid
-  if (!uid) {
+  const user = req.body.user
+  if (!user) {
       return res.json({ success: false, message: "input value not enough!" })
   }
-  
+ 
   const current = req.body.pagination.current
   const pageSize = req.body.pagination.pageSize
   var start = 0
@@ -117,17 +102,16 @@ router.post('/searchForDocumentToSign', (req, res) => {
 
   var recordsTotal = 0;
 
-  // Document.countDocuments({ "users": {$in:[uid]}, "signed": false, "signedBy": {$nin:[uid]} }).exec(function(err, count) {
-    Document.countDocuments({ "users": {$in:[uid]}, "signed": false, "signedBy.user": {$ne:uid} }).exec(function(err, count) {
+    Document.countDocuments({ "users": {$in:[user]}, "signed": false, "signedBy.user": {$ne:user} }).exec(function(err, count) {
     recordsTotal = count;
     console.log("recordsTotal:"+recordsTotal)
     
     Document
-    .find({ "users": {$in:[uid]}, "signed": false, "signedBy.user": {$ne:uid} })
+    .find({ "users": {$in:[user]}, "signed": false, "signedBy.user": {$ne:user} })
     .sort({[order] : dir})    //asc:오름차순 desc:내림차순
     .skip(Number(start))
     .limit(Number(pageSize))
-    .populate("user", {name: 1, email: 2})
+    .populate("user", {name: 1, JOB_TITLE: 2})
     .exec((err, documents) => {
         console.log(documents);
         if (err) return res.json({success: false, error: err});
@@ -141,8 +125,8 @@ router.post('/searchForDocumentToSign', (req, res) => {
   // sample : "{"email":"3thzone@naver.com","sortField":"signedTime","sortOrder":"ascend","pagination":{"current":1,"pageSize":2,"total":3}}"
   router.post('/searchForDocumentsSigned', (req, res) => {
 
-    const uid = req.body.uid
-    if (!uid) {
+    const user = req.body.user
+    if (!user) {
         return res.json({ success: false, message: "input value not enough!" })
     } 
 
@@ -168,12 +152,12 @@ router.post('/searchForDocumentToSign', (req, res) => {
 
     var recordsTotal = 0;
 
-    Document.countDocuments({ "users": {$in:[uid]}, "signed": true }).exec(function(err, count) {
+    Document.countDocuments({ "users": {$in:[user]}, "signed": true }).exec(function(err, count) {
       recordsTotal = count;
       console.log("recordsTotal:"+recordsTotal)
       
       Document
-      .find({ "users": {$in:[uid]}, "signed": true })
+      .find({ "users": {$in:[user]}, "signed": true })
       .sort({[order] : dir})    //asc:오름차순 desc:내림차순
       .skip(Number(start))
       .limit(Number(pageSize))
@@ -195,8 +179,8 @@ router.post('/searchForDocumentToSign', (req, res) => {
   // [내가서명해야할 문서: emails:[email], signed = false]
   router.post('/documents', (req, res) => {
 
-    const uid = req.body.uid
-    if (!uid) {
+    const user = req.body.user
+    if (!user) {
         return res.json({ success: false, message: "input value not enough!" })
     } 
 
@@ -240,12 +224,12 @@ router.post('/searchForDocumentToSign', (req, res) => {
 
     var recordsTotal = 0;
 
-    Document.countDocuments(searchStr).or([{"users": {$in:[uid]}}, {"user": uid}]).exec(function(err, count) {
+    Document.countDocuments(searchStr).or([{"users": {$in:[user]}}, {"user": user}]).exec(function(err, count) {
       recordsTotal = count;
       console.log("recordsTotal:"+recordsTotal)
       
       Document
-      .find(searchStr).or([{"users": {$in:[uid]}}, {"user": uid}])
+      .find(searchStr).or([{"users": {$in:[user]}}, {"user": user}])
       .sort({[order] : dir})    //asc:오름차순 desc:내림차순
       .skip(Number(start))
       .limit(Number(pageSize))

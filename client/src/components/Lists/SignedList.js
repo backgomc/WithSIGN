@@ -42,7 +42,7 @@ const SignedList = () => {
       sortOrder: sorter.order,
       pagination,
       ...filters,
-      uid: _id
+      user: _id
     });
   };
 
@@ -199,7 +199,7 @@ const SignedList = () => {
   useEffect(() => {
 
     fetch({
-      uid: _id,
+      user: _id,
       pagination,
     });
 

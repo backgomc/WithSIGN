@@ -37,7 +37,7 @@ const DocumentList = () => {
       sortOrder: sorter.order,
       pagination,
       ...filters,
-      uid: _id
+      user: _id
     });
   };
 
@@ -287,7 +287,7 @@ const DocumentList = () => {
 
     console.log("uid:"+_id)
     fetch({
-      uid: _id,
+      user: _id,
       pagination,
     });
 

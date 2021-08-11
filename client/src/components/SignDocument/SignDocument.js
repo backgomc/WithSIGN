@@ -193,7 +193,7 @@ const SignDocument = () => {
     let param = {
       docId: docId,
       // email: email,
-      uid: _id,
+      user: _id,
       xfdf: xfdf
     }
     console.log("completeSigning param:"+param)

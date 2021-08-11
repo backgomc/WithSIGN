@@ -16,6 +16,7 @@ import Sign from './components/Sign';
 import View from './components/View';
 import PasswordReset from './components/PasswordReset/PasswordReset';
 import Welcome from './components/Welcome';
+import Home from './components/Home/Home';
 import Footer from './components/Footer/Footer';
 import Test from './components/Test/Test';
 import Test2 from './components/Test/Test2';
@@ -32,7 +33,7 @@ const App = () => {
   const user = useSelector(selectUser);
   const dispatch = useDispatch();
 
-  const [pathname, setPathname] = useState('/documentList');
+  const [pathname, setPathname] = useState('/');
 
 
   useEffect(() => {
@@ -101,7 +102,7 @@ const App = () => {
       // )}     
   >
     <Router>
-        <Welcome path="/" />
+        <Home path="/" />
         <Assign path="/assign" />
         <UploadDocument path="/uploadDocument" />
         <Preparation path="/prepareDocument" />

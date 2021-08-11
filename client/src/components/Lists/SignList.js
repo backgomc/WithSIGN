@@ -30,7 +30,7 @@ const SignList = () => {
       sortOrder: sorter.order,
       pagination,
       ...filters,
-      uid: _id
+      user: _id
     });
   };
 
