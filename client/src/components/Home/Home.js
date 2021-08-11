@@ -95,7 +95,8 @@ const Home = () => {
     colSpan={{ xs: 24, sm: 12, md: 12, lg: 12, xl: 12 }}
     style={{ marginBottom: 0, marginRight: 30, padding: 0 }}
     title="서명 필요 문서"
-    bordered={true}
+    bordered={false}
+    headerBordered
     extra={<Link to="/">더보기</Link>}
     loading={loading}
     bodyStyle={{ padding: 10 }}
