@@ -256,4 +256,38 @@ router.post('/searchForDocumentToSign', (req, res) => {
 
   })
 
-  module.exports = router;
+// 문서 통계 : 서명 필요 건수, 서명 대기 건수, 전체 문서 건수
+router.post('/statics', (req, res) => {
+
+  const user = req.body.user
+  if (!user) {
+      return res.json({ success: false, message: "input value not enough!" })
+  } 
+
+  var totalNum = 0;   // 전체문서 건수
+  var toSignNum = 0;  // 서명필요 건수
+  var signingNum = 0; // 서명대기(진행) 건수
+
+  Document.countDocuments().or([{"users": {$in:[user]}}, {"user": user}]).exec(function(err, count) {
+    if (err) return res.json({success: false, error: err});
+    totalNum = count;
+    console.log("totalNum:"+totalNum);
+
+    Document.countDocuments({ "users": {$in:[user]}, "signed": false, "signedBy.user": {$ne:user} }).exec(function(err, count) {
+      if (err) return res.json({success: false, error: err});
+      toSignNum = count;
+      console.log("toSignNum:"+toSignNum);
+
+      Document.countDocuments({"signed": false}).or([ {"users": {$in:[user]}, "signedBy.user": user}, {"user": user, "users": {$ne:[user]} } ]).exec(function(err, count) {
+        if (err) return res.json({success: false, error: err});
+        waitingNum = count;
+        console.log("signingNum:"+signingNum);
+
+        return res.json({ success: true, totalNum:totalNum, toSignNum:toSignNum, signingNum:signingNum })
+      })
+    })
+  })
+
+})  
+
+module.exports = router;

@@ -22,10 +22,14 @@ const { Divider } = ProCard;
 
 const Home = () => {
 
-  const [loading, setLoading] = useState(false);
+  const [loadingToSign, setLoadingToSign] = useState(false);
+  const [loadingStatics, setLoadingStatics] = useState(false);
   const [documentsToSign, setDocumentsToSign] = useState([]);
   const [pagination, setPagination] = useState({current:1, pageSize:10});
   const [responsive, setResponsive] = useState(false);
+  const [totalNum, setTotalNum] = useState(0);
+  const [toSignNum, setToSignNum] = useState(0);
+  const [signingNum, setSigningNum] = useState(0);
 
   const dispatch = useDispatch();
   const user = useSelector(selectUser);
@@ -34,24 +38,36 @@ const Home = () => {
 
   useEffect(() => {
     fetchToSign();
+    fetchStatics();
   }, []);
 
   const fetchToSign = async () => {
-    setLoading(true);
+    setLoadingToSign(true);
     let param = {
       user: _id,
       pagination
     }
-    
     const res = await axios.post('/api/document/searchForDocumentToSign', param)
     if (res.data.success) {
       const documents = res.data.documents;
       setDocumentsToSign(documents)
     }
-    setLoading(false);
-
+    setLoadingToSign(false);
   }
 
+  const fetchStatics = async () => {
+    setLoadingStatics(true);
+    let param = {
+      user: _id
+    }
+    const res = await axios.post('/api/document/statics', param)
+    if (res.data.success) {
+      setSigningNum(res.data.signingNum)
+      setToSignNum(res.data.toSignNum)
+      setTotalNum(res.data.totalNum)
+    }
+    setLoadingStatics(false);
+  }
 
   const headerTitle = (
     <Space size={3}>    
@@ -98,7 +114,7 @@ const Home = () => {
     bordered={false}
     headerBordered
     extra={<Link to="/">더보기</Link>}
-    loading={loading}
+    loading={loadingToSign}
     bodyStyle={{ padding: 10 }}
     >
       <List
@@ -128,17 +144,17 @@ const Home = () => {
   )
 
   const documentStatic = (
-      <ProCard.Group title="문서 통계" direction='row'>
+      <ProCard.Group title="문서 통계" direction='row' loading={loadingStatics}>
       <ProCard>
-        <Link to='/documentList'><Statistic title="서명 필요" value={3} valueStyle={{ color: '#cf1322' }} suffix="건" /></Link>
+        <Link to='/documentList'><Statistic title="서명 필요" value={toSignNum} valueStyle={{ color: '#cf1322' }} suffix="건" /></Link>
       </ProCard>
       <Divider type='vertical' />
       <ProCard>
-        <Statistic title="서명 대기" value={12} suffix="건" />
+        <Statistic title="서명 대기" value={signingNum} suffix="건" />
       </ProCard>
       <Divider type='vertical' />
       <ProCard>
-        <Statistic title="전체 문서" value={93} suffix="건" />
+        <Statistic title="전체 문서" value={totalNum} suffix="건" />
       </ProCard>
     </ProCard.Group>
   )
