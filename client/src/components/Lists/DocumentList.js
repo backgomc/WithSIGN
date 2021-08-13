@@ -13,8 +13,10 @@ import moment from 'moment';
 import 'moment/locale/ko';
 import { DocumentType, DocumentTypeText, DOCUMENT_SIGNED, DOCUMENT_TOSIGN, DOCUMENT_SIGNING, DOCUMENT_CANCELED } from './DocumentType';
 import DocumentExpander from "./DocumentExpander";
+import { PageContainer } from '@ant-design/pro-layout';
+import 'antd/dist/antd.css';
 
-const DocumentList = () => {
+const DocumentList = ({location}) => {
 
   const dispatch = useDispatch();
   const user = useSelector(selectUser);
@@ -22,6 +24,7 @@ const DocumentList = () => {
   const { _id } = user;
   const [searchText, setSearchText] = useState('');
   const [searchedColumn, setSearchedColumn] = useState('');
+  // const [status, setStatus] = useState(null);
   const [data, setData] = useState([]);
   const [pagination, setPagination] = useState({current:1, pageSize:10});
   const [loading, setLoading] = useState(false);
@@ -31,13 +34,15 @@ const DocumentList = () => {
 
   const handleTableChange = (pagination, filters, sorter) => {
     console.log("handleTableChange called")
-    console.log(filters)
+    // console.log("status:"+status)
+    console.log("filters:"+filters)
     fetch({
       sortField: sorter.field,
       sortOrder: sorter.order,
       pagination,
       ...filters,
-      user: _id
+      user: _id,
+      // status:status  //필터에 포함되어 있음 
     });
   };
 
@@ -82,12 +87,12 @@ const DocumentList = () => {
             size="small"
             style={{ width: 90 }}
           >
-            Search
+            검색
           </Button>
           <Button onClick={() => handleReset(clearFilters)} size="small" style={{ width: 90 }}>
-            Reset
+            초기화
           </Button>
-          <Button
+          {/* <Button
             type="link"
             size="small"
             onClick={() => {
@@ -96,8 +101,8 @@ const DocumentList = () => {
               setSearchedColumn(dataIndex)
             }}
           >
-            Filter
-          </Button>
+            필터
+          </Button> */}
         </Space>
       </div>
     ),
@@ -165,9 +170,10 @@ const DocumentList = () => {
   const columns = [
     {
       title: '상태',
-      dataIndex: 'state',
+      dataIndex: 'status',
       sorter: false,
-      key: 'state',
+      key: 'status',
+      defaultFilteredValue: location.state.status? [location.state.status]: [],
       filters: [
         {
           text: DOCUMENT_SIGNED,
@@ -187,10 +193,9 @@ const DocumentList = () => {
         },
       ],
       onFilter: (value, record) => DocumentType({uid: _id, document: record}).indexOf(value) === 0,
-      // ...getColumnSearchProps('state'),
       render: (_,row) => {
         return <DocumentTypeText uid={_id} document={row} />
-        }, 
+      }, 
     },
     {
       title: '문서명',
@@ -285,16 +290,47 @@ const DocumentList = () => {
 
   useEffect(() => {
 
-    console.log("uid:"+_id)
+    console.log("useEffect called")
+
+    // if (location.state.status) {
+    //   setStatus(location.state.status)
+    // }
+
     fetch({
       user: _id,
       pagination,
+      status:location.state.status
     });
 
   }, [_id]);
 
   return (
     <div>
+    <PageContainer
+        ghost
+        header={{
+          title: '내 문서',
+          ghost: false,
+          breadcrumb: {
+            routes: [
+              // {
+              //   path: '/',
+              //   breadcrumbName: 'Home',
+              // },
+              // {
+              //   path: '../',
+              //   breadcrumbName: '내 문서',
+              // },
+            ],
+          },
+          extra: [
+          ],
+        }}
+        // content={'서명에 사용되는 사인을 미리 등록할 수 있습니다.'}
+        footer={[
+        ]}
+    >
+      <br></br>
       <Table
         rowKey={ item => { return item._id } }
         columns={columns}
@@ -312,6 +348,8 @@ const DocumentList = () => {
         })}
         onChange={handleTableChange}
       />
+
+    </PageContainer>
     </div>
     
   );

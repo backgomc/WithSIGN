@@ -152,11 +152,11 @@ const MySign = () => {
             routes: [
               // {
               //   path: '/',
-              //   breadcrumbName: '내 사인',
+              //   breadcrumbName: 'Home',
               // },
               // {
               //   path: '/',
-              //   breadcrumbName: '사인 등록',
+              //   breadcrumbName: '내 사인',
               // },
             ],
           },

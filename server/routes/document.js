@@ -187,20 +187,17 @@ router.post('/searchForDocumentToSign', (req, res) => {
     // 단어검색 
     // ISSUE1: 이름 검색의 경우 populate 의 match 함수를 사용해야 하는데 전체 글 수와 매치가 어려움 
     // ISSUE2: 같은 단어를 넣어도 조회됬다가 안됬다가 하는 현상 발생 
-    var searchStr;
-    // var searchName;
-    // console.log("docTitle:"+req.body.docTitle)
-    // console.log("name:"+req.body.name)
-    if (req.body.docTitle) {
-      var regex = new RegExp(req.body.docTitle[0], "i")
-      searchStr = { $and: [{'docTitle': regex}] };
-    // } else if (req.body.name) {
-    //   var regex = new RegExp(req.body.name[0], "i")
-    //   searchStr = req.body.name[0];
-    //   searchName = req.body.name[0]
-    } else {
-        searchStr = {};
-    }
+    // var searchStr;
+
+    // console.log("req.body.docTitle:"+req.body.docTitle)
+    // if (req.body.docTitle) {
+    //   var regex = new RegExp(req.body.docTitle[0], "i")
+    //   searchStr = { $and: [{'docTitle': regex}] };
+    // } else {
+    //     searchStr = {};
+    // }
+
+    const status = req.body.status
 
     const current = req.body.pagination.current
     const pageSize = req.body.pagination.pageSize
@@ -223,13 +220,41 @@ router.post('/searchForDocumentToSign', (req, res) => {
     }
 
     var recordsTotal = 0;
+    
+    var andParam = {};
+    var orParam = {};
 
-    Document.countDocuments(searchStr).or([{"users": {$in:[user]}}, {"user": user}]).exec(function(err, count) {
+    // 문서제목 검색
+    if (req.body.docTitle) {
+      andParam['docTitle'] = { $regex: '.*' + req.body.docTitle[0] + '.*', $options: 'i' }
+    }
+
+    if (status) {
+      if (status == '서명 대기') {
+        andParam['signed'] = false
+        orParam = [{$and:[{"users": {$in:[user]}}, {"signedBy.user": user}]},  {$and:[{"user": user}, {"users": {$ne:user}}]}]
+      } else if (status == '서명 필요') {
+        andParam['users'] = {$in:[user]}
+        andParam['signed'] = false
+        andParam['signedBy.user'] = {$ne:user}
+        console.log("서명필요 called")
+      } else if (status == '서명 완료') {
+        andParam['signed'] = true
+        orParam = [{"users": {$in:[user]}}, {"user": user}];
+        console.log("서명완료 called")
+      }
+    } else {  // 전체 목록 (status 배열에 복수개가 들어오면 전체 목록 호출)
+      orParam = [{"users": {$in:[user]}}, {"user": user}];
+      console.log("전체목록 called")
+    }
+
+
+    Document.countDocuments(andParam).or(orParam).exec(function(err, count) {
       recordsTotal = count;
       console.log("recordsTotal:"+recordsTotal)
       
       Document
-      .find(searchStr).or([{"users": {$in:[user]}}, {"user": user}])
+      .find(andParam).or(orParam)
       .sort({[order] : dir})    //asc:오름차순 desc:내림차순
       .skip(Number(start))
       .limit(Number(pageSize))
@@ -244,7 +269,7 @@ router.post('/searchForDocumentToSign', (req, res) => {
         select: {name: 1, email: 2}
       })
       .exec((err, documents) => {
-          console.log(documents);
+          // console.log(documents);
           // documents = documents.filter(function(document) {
           //   return document.user
           // });
@@ -278,14 +303,22 @@ router.post('/statics', (req, res) => {
       toSignNum = count;
       console.log("toSignNum:"+toSignNum);
 
-      Document.countDocuments({"signed": false}).or([ {"users": {$in:[user]}, "signedBy.user": user}, {"user": user, "users": {$ne:[user]} } ]).exec(function(err, count) {
+      Document.countDocuments({"signed": false})
+              .or([ {$and:[{"users": {$in:[user]}}, {"signedBy.user": user}]},  {$and:[{"user": user}, {"users": {$ne:user}}]} ])
+              // .and([{"users": {$in:[user]}}, {"signedBy.user": user}])
+              // .and([{"user": user}, {"users": {$ne:user}}])
+              .exec(function(err, count) {
+        
         if (err) return res.json({success: false, error: err});
-        waitingNum = count;
+        signingNum = count;
         console.log("signingNum:"+signingNum);
-
         return res.json({ success: true, totalNum:totalNum, toSignNum:toSignNum, signingNum:signingNum })
+        
       })
+
     })
+
+    
   })
 
 })  

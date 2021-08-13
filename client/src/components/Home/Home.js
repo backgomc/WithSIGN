@@ -23,8 +23,10 @@ const { Divider } = ProCard;
 const Home = () => {
 
   const [loadingToSign, setLoadingToSign] = useState(false);
+  const [loadingSigning, setLoadingSigning] = useState(false);
   const [loadingStatics, setLoadingStatics] = useState(false);
   const [documentsToSign, setDocumentsToSign] = useState([]);
+  const [documentsSigning, setDocumentsSigning] = useState([]);
   const [pagination, setPagination] = useState({current:1, pageSize:10});
   const [responsive, setResponsive] = useState(false);
   const [totalNum, setTotalNum] = useState(0);
@@ -38,6 +40,7 @@ const Home = () => {
 
   useEffect(() => {
     fetchToSign();
+    fetchSigning();
     fetchStatics();
   }, []);
 
@@ -45,14 +48,30 @@ const Home = () => {
     setLoadingToSign(true);
     let param = {
       user: _id,
-      pagination
+      pagination,
+      status: '서명 필요'
     }
-    const res = await axios.post('/api/document/searchForDocumentToSign', param)
+    const res = await axios.post('/api/document/documents', param)
     if (res.data.success) {
       const documents = res.data.documents;
       setDocumentsToSign(documents)
     }
     setLoadingToSign(false);
+  }
+
+  const fetchSigning = async () => {
+    setLoadingSigning(true);
+    let param = {
+      user: _id,
+      pagination,
+      status: '서명 대기'
+    }
+    const res = await axios.post('/api/document/documents', param)
+    if (res.data.success) {
+      const documents = res.data.documents;
+      setDocumentsSigning(documents)
+    }
+    setLoadingSigning(false);
   }
 
   const fetchStatics = async () => {
@@ -113,7 +132,7 @@ const Home = () => {
     title="서명 필요 문서"
     bordered={false}
     headerBordered
-    extra={<Link to="/">더보기</Link>}
+    extra={<Link to="/documentList" state={{ status: '서명 필요' }}>더보기</Link>}
     loading={loadingToSign}
     bodyStyle={{ padding: 10 }}
     >
@@ -143,18 +162,57 @@ const Home = () => {
     </ProCard>
   )
 
-  const documentStatic = (
+  const signing = (
+    <ProCard
+    colSpan={{ xs: 24, sm: 12, md: 12, lg: 12, xl: 12 }}
+    style={{ marginBottom: 0, marginRight: 30, padding: 0 }}
+    title="서명 대기 문서"
+    bordered={false}
+    headerBordered
+    extra={<Link to="/documentList" state={{ status: '서명 대기' }}>더보기</Link>}
+    loading={loadingSigning}
+    bodyStyle={{ padding: 10 }}
+    >
+      <List
+        // bordered
+        style={{ paddingLeft: 24, paddingRight: 24}}
+        dataSource={documentsSigning}
+        renderItem={item => (
+          <List.Item>
+          <List.Item.Meta
+            avatar={<FileOutlined />}
+            title={
+              <Link to="/documentList" state={{ status: '서명 대기' }}>
+                {item.docTitle}
+              </Link>
+            }
+            // description={item.user.JOB_TITLE ? item.user.name + ' '+ item.user.JOB_TITLE : item.user.name}
+          />
+          {/* <div><Moment format='YYYY/MM/DD'>{item.requestedTime}</Moment></div> */}
+          </List.Item>
+        )}
+      />
+    </ProCard>
+  )
+
+  const statics = (
       <ProCard.Group title="문서 통계" direction='row' loading={loadingStatics}>
       <ProCard>
-        <Link to='/documentList'><Statistic title="서명 필요" value={toSignNum} valueStyle={{ color: '#cf1322' }} suffix="건" /></Link>
+        <Link to='/documentList' state={{ status: '서명 필요' }}>
+          <Statistic title="서명 필요" value={toSignNum} valueStyle={{ color: '#cf1322' }} suffix="건" />
+        </Link>
       </ProCard>
       <Divider type='vertical' />
       <ProCard>
-        <Statistic title="서명 대기" value={signingNum} suffix="건" />
+        <Link to='/documentList' state={{ status: '서명 대기' }}>
+          <Statistic title="서명 대기" value={signingNum} suffix="건" />
+        </Link>
       </ProCard>
       <Divider type='vertical' />
       <ProCard>
-        <Statistic title="전체 문서" value={totalNum} suffix="건" />
+        <Link to='/documentList'>
+          <Statistic title="전체 문서" value={totalNum} suffix="건" />
+        </Link>
       </ProCard>
     </ProCard.Group>
   )
@@ -200,9 +258,9 @@ const Home = () => {
       }}
       >
         <Row gutter={[24, 24]}>
-          <Col span={24}>{documentStatic}</Col>
+          <Col span={24}>{statics}</Col>
           <Col span={responsive ? 24 : 12}>{tosign}</Col>
-          <Col span={responsive ? 24 : 12}>{tosign}</Col>
+          <Col span={responsive ? 24 : 12}>{signing}</Col>
         </Row>
 
       </RcResizeObserver>
