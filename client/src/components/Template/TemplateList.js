@@ -16,6 +16,8 @@ import TemplateExpander from "./TemplateExpander";
 import {
   FileOutlined
 } from '@ant-design/icons';
+import { PageContainer } from '@ant-design/pro-layout';
+import 'antd/dist/antd.css';
 
 const TemplateList = () => {
 
@@ -245,24 +247,42 @@ const TemplateList = () => {
 
   return (
     <div>
-      <div style={{ marginBottom: 16 }}>
+    <PageContainer
+        ghost
+        header={{
+          title: '템플릿 관리',
+          ghost: false,
+          breadcrumb: {
+            routes: [
+              // {
+              //   path: '/',
+              //   breadcrumbName: 'Home',
+              // },
+              // {
+              //   path: '../',
+              //   breadcrumbName: '내 문서',
+              // },
+            ],
+          },
+          extra: [           
           <Button type="primary" onClick={() => {navigate('/uploadTemplate');}}>
             템플릿 등록
-          </Button>
-          <span style={{ marginLeft: 8 }}>
-
+          </Button>,
           <Popconfirm title="삭제하시겠습니까？" okText="네" cancelText="아니오" visible={visiblePopconfirm} onConfirm={deleteTemplate} onCancel={() => {setVisiblePopconfirm(false);}}>
-            {/* <Button type="primary" disabled={!hasSelected} onClick={() => {deleteTemplate();}}> */}
             <Button type="primary" danger disabled={!hasSelected} onClick={()=>{setVisiblePopconfirm(true);}}>
               삭제
             </Button>
-        </Popconfirm>
-
-          </span>
-          <span style={{ marginLeft: 8 }}>
+          </Popconfirm>,
+          <span>
             {hasSelected ? `${selectedRowKeys.length} 개의 문서가 선택됨` : ''}
           </span>
-      </div>
+          ],
+        }}
+        // content={'서명에 사용되는 사인을 미리 등록할 수 있습니다.'}
+        footer={[
+        ]}
+    >
+      <br></br>
       <Table
         rowKey={ item => { return item._id } }
         columns={columns}
@@ -279,6 +299,8 @@ const TemplateList = () => {
         })}
         onChange={handleTableChange}
       />
+
+    </PageContainer>
     </div>
     
   );

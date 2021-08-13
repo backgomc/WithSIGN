@@ -67,30 +67,36 @@ const UploadTemplate = () => {
       loading={loading}
       ghost
       header={{
-        title: '',
-        ghost: true,
+        title: '템플릿 등록',
+        ghost: false,
         breadcrumb: {
           routes: [
-            {
-              path: '/',
-              breadcrumbName: '템플릿',
-            },
-            {
-              path: '/',
-              breadcrumbName: '템플릿 등록',
-            },
+            // {
+            //   path: '/',
+            //   breadcrumbName: '템플릿',
+            // },
+            // {
+            //   path: '/',
+            //   breadcrumbName: '템플릿 등록',
+            // },
           ],
         },
         extra: [
+          <Button key="1" onClick={() => {navigate(`/templateList`);}}>이전</Button>,
+          <Button key="2" onClick={() => form.resetFields()}>{formatMessage({id: 'Initialize'})}</Button>,
+          <Button key="3" type="primary" onClick={() => form.submit()} disabled={disableNext}>
+            {formatMessage({id: 'Save'})}
+          </Button>,
         ],
       }}
       footer={[
-        <Button key="3" onClick={() => form.resetFields()}>{formatMessage({id: 'Initialize'})}</Button>,
-        <Button key="2" type="primary" onClick={() => form.submit()} disabled={disableNext}>
-          {formatMessage({id: 'Save'})}
-        </Button>,
+        // <Button key="3" onClick={() => form.resetFields()}>{formatMessage({id: 'Initialize'})}</Button>,
+        // <Button key="2" type="primary" onClick={() => form.submit()} disabled={disableNext}>
+        //   {formatMessage({id: 'Save'})}
+        // </Button>,
       ]}
     >
+      <br></br>
       <ProCard direction="column" ghost gutter={[0, 16]}>
 
         <ProCard

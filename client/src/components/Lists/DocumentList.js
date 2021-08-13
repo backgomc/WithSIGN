@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
 import { Table, Input, Space, Button } from "antd";
 import Highlighter from 'react-highlight-words';
-import { SearchOutlined } from '@ant-design/icons';
+import { SearchOutlined, FileOutlined } from '@ant-design/icons';
 import { useSelector, useDispatch } from 'react-redux';
 import { selectUser } from '../../app/infoSlice';
 import { navigate } from '@reach/router';
@@ -323,7 +323,7 @@ const DocumentList = ({location}) => {
               // },
             ],
           },
-          extra: [
+          extra: [  // 여기 이미지 삽입하면 될듯
           ],
         }}
         // content={'서명에 사용되는 사인을 미리 등록할 수 있습니다.'}
