@@ -114,35 +114,40 @@ const UploadDocument = () => {
     >
     
       <PageContainer
-      ghost
+      // ghost
       header={{
-        title: '',
+        title: '서명 요청',
         ghost: true,
         breadcrumb: {
           routes: [
-            {
-              path: '/',
-              breadcrumbName: '서명 요청',
-            },
-            {
-              path: '/',
-              breadcrumbName: '문서 등록',
-            },
+            // {
+            //   path: '/',
+            //   breadcrumbName: '서명 요청',
+            // },
+            // {
+            //   path: '/',
+            //   breadcrumbName: '문서 등록',
+            // },
           ],
         },
         extra: [
+          <Button key="3" onClick={() => form.resetFields()}>초기화</Button>,
+          <Button key="2" type="primary" onClick={() => (tab === "tab1") ? form.submit() : templateNext()} disabled={disableNext}>
+            {formatMessage({id: 'Next'})}
+          </Button>,
         ],
       }}
+      content= { <ProCard style={{ background: '#ffffff'}} layout="center"><StepWrite current={0} /></ProCard> }
       footer={[
-        <Button key="3" onClick={() => form.resetFields()}>초기화</Button>,
-        <Button key="2" type="primary" onClick={() => (tab === "tab1") ? form.submit() : templateNext()} disabled={disableNext}>
-          {formatMessage({id: 'Next'})}
-        </Button>,
+        // <Button key="3" onClick={() => form.resetFields()}>초기화</Button>,
+        // <Button key="2" type="primary" onClick={() => (tab === "tab1") ? form.submit() : templateNext()} disabled={disableNext}>
+        //   {formatMessage({id: 'Next'})}
+        // </Button>,
       ]}
     >
       <ProCard direction="column" ghost gutter={[0, 16]}>
 
-        <ProCard style={{ background: '#FFFFFF'}} layout="center"><StepWrite current={0} /></ProCard>
+        {/* <ProCard style={{ background: '#FFFFFF'}} layout="center"><StepWrite current={0} /></ProCard> */}
         <ProCard
           tabs={{
             type: 'card',

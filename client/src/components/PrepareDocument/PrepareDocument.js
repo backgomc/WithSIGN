@@ -2,25 +2,31 @@ import React, { useRef, useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import axios from 'axios';
 import { navigate } from '@reach/router';
-import {
-  Box,
-  Column,
-  Heading,
-  Row,
-  Stack,
-  Text,
-  Button,
-  SelectList,
-} from 'gestalt';
-import { Upload, message, Spin } from 'antd';
+// import {
+//   Box,
+//   Column,
+//   Heading,
+//   Row,
+//   Stack,
+//   Text,
+//   Button,
+//   SelectList,
+// } from 'gestalt';
+import { Upload, message, Spin, Button, Row, Col } from 'antd';
 import { InboxOutlined } from '@ant-design/icons';
 import { resetAssignAll, selectAssignees, resetSignee, selectDocumentFile, selectDocumentTitle, resetDocumentFile, resetDocumentTitle, selectTemplate, resetTemplate, selectDocumentType, resetDocumentType, selectTemplateTitle, resetTemplateTitle } from '../Assign/AssignSlice';
 import { selectUser } from '../../app/infoSlice';
 import WebViewer from '@pdftron/webviewer';
-import 'gestalt/dist/gestalt.css';
+// import 'gestalt/dist/gestalt.css';
 import './PrepareDocument.css';
 import StepWrite from '../Step/StepWrite'
 import { useIntl } from "react-intl";
+import RcResizeObserver from 'rc-resize-observer';
+
+import { PageContainer } from '@ant-design/pro-layout';
+import ProCard from '@ant-design/pro-card';
+import 'antd/dist/antd.css';
+import '@ant-design/pro-card/dist/card.css';
 
 const { Dragger } = Upload;
 
@@ -29,6 +35,7 @@ const PrepareDocument = () => {
   const [dropPoint, setDropPoint] = useState(null);
   const [fileName, setFileName] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [responsive, setResponsive] = useState(false);
 
   const dispatch = useDispatch();
   const { formatMessage } = useIntl();
@@ -48,6 +55,7 @@ const PrepareDocument = () => {
   let initialAssignee =
   assigneesValues.length > 0 ? assigneesValues[0] : '';
   const [assignee, setAssignee] = useState(initialAssignee);
+  const [disableNext, setDisableNext] = useState(true);
 
   const user = useSelector(selectUser);
   const { _id, email } = user;
@@ -455,123 +463,169 @@ const PrepareDocument = () => {
   };
 
   return (
-    <div className={'prepareDocument'}>
-      <Spin tip={formatMessage({id: 'Processing'})} spinning={loading}></Spin>
-      {/* <div style={{width: "750px"}} align="center">
-        <p><StepWrite current={2} /></p>
-      </div> */}
-      <p><StepWrite current={2} /></p>
-      
-      <Box display="flex" direction="row" flex="grow">
-        <Column span={2}>
-          {/* <Box padding={3}>
-            <Heading size="md">Prepare Document</Heading>
-          </Box> */}
-          <Box padding={3}>
-            {/* <Row gap={1}>
-              <Stack>
-                <Box padding={2}>
-                  <Text>{'Step 1'}</Text>
-                </Box>
-                <Box padding={2}>
-                  <Button
-                    onClick={() => {
-                      if (filePicker) {
-                        filePicker.current.click();
-                      }
-                    }}
-                    accessibilityLabel="upload a document"
-                    text="Upload a document"
-                    iconEnd="add-circle"
-                  />
-                </Box>
-              </Stack>
-            </Row> */}
-            <Row>
-              <Stack>
-                <Box padding={2}>
-                  <Text>{'Step 1'}</Text>
-                </Box>
-                <Box padding={2}>
-                  <SelectList
-                    id="assigningFor"
-                    name="assign"
-                    onChange={({ value }) => setAssignee(assigneesValues.filter(e => e.value === value)[0])}  
-                    // onChange={({ value }) => setAssignee(value)}
-                    options={assigneesValues}
-                    placeholder="Select recipient"
-                    label="Adding signature for"
-                    value={assignee.value}
-                  />
-                </Box>
-                <Box padding={2}>
-                  <div
-                    draggable
-                    onDragStart={e => dragStart(e)}
-                    onDragEnd={e => dragEnd(e, 'SIGN')}
-                  >
-                    <Button
-                      onClick={() => addField('SIGN')}
-                      accessibilityLabel="add signature"
-                      text={formatMessage({id: 'input.sign'})}
-                      iconEnd="compose"
-                    />
-                  </div>
-                </Box>
-                <Box padding={2}>
-                  <div
-                    draggable
-                    onDragStart={e => dragStart(e)}
-                    onDragEnd={e => dragEnd(e, 'TEXT')}
-                  >
-                    <Button
-                      onClick={() => addField('TEXT')}
-                      accessibilityLabel="add text"
-                      text= {formatMessage({id: 'input.text'})}
-                      iconEnd="text-sentence-case"
-                    />
-                  </div>
-                </Box>
-                {/* <Box padding={2}>
-                  <div
-                    draggable
-                    onDragStart={e => dragStart(e)}
-                    onDragEnd={e => dragEnd(e, 'DATE')}
-                  >
-                    <Button
-                      onClick={() => addField('DATE')}
-                      accessibilityLabel="add date field"
-                      text="Add date"
-                      iconEnd="calendar"
-                    />
-                  </div>
-                </Box> */}
-              </Stack>
-            </Row>
-            <Row gap={1}>
-              <Stack>
-                <Box padding={2}>
-                  <Text>{'Step 2'}</Text>
-                </Box>
-                <Box padding={2}>
-                  <Button
-                    onClick={applyFields}
-                    accessibilityLabel="Send for signing"
-                    text={formatMessage({id: 'Send'})}
-                    iconEnd="send"
-                  />
-                </Box>
-              </Stack>
-            </Row>
-          </Box>
-        </Column>
-        <Column span={10}>
-          <div className="webviewer" ref={viewer}></div>
-        </Column>
-      </Box>
-      {/* <input type="file" ref={filePicker} style={{ display: 'none' }} /> */}
+    // <div className={'prepareDocument'}>
+    <div>
+
+    <PageContainer  
+      // ghost
+      header={{
+        title: '서명 요청',
+        ghost: true,
+        breadcrumb: {
+          routes: [
+          ],
+        },
+        extra: [
+          <Button key="3" onClick={() => {navigate(`/assign`);}}>이전</Button>,,
+          <Button key="2" type="primary" onClick={() => applyFields()} disabled={disableNext}>
+            {formatMessage({id: 'Send'})}
+          </Button>,
+        ],
+      }}
+      content= { <ProCard style={{ background: '#ffffff'}} layout="center"><StepWrite current={2} /></ProCard> }
+      footer={[
+      ]}
+      loading={loading}
+    >
+
+      <RcResizeObserver
+      key="resize-observer"
+      onResize={(offset) => {
+        setResponsive(offset.width < 596);
+      }}
+      >
+        <Row gutter={[24, 24]}>
+          <Col span={responsive ? 24 : 4}>dddd</Col>
+          <Col span={responsive ? 24 : 20}><div className="webviewer" ref={viewer}></div></Col>
+        </Row>
+
+      </RcResizeObserver>
+
+
+    </PageContainer>
+
+    
     </div>
   );
 };
 
 export default PrepareDocument;
+
+
+
+
+
+// {/* <Spin tip={formatMessage({id: 'Processing'})} spinning={loading}></Spin>
+// {/* <div style={{width: "750px"}} align="center">
+//   <p><StepWrite current={2} /></p>
+// </div> */}
+// <p><StepWrite current={2} /></p>
+
+// <Box display="flex" direction="row" flex="grow">
+//   <Column span={2}>
+//     {/* <Box padding={3}>
+//       <Heading size="md">Prepare Document</Heading>
+//     </Box> */}
+//     <Box padding={3}>
+//       {/* <Row gap={1}>
+//         <Stack>
+//           <Box padding={2}>
+//             <Text>{'Step 1'}</Text>
+//           </Box>
+//           <Box padding={2}>
+//             <Button
+//               onClick={() => {
+//                 if (filePicker) {
+//                   filePicker.current.click();
+//                 }
+//               }}
+//               accessibilityLabel="upload a document"
+//               text="Upload a document"
+//               iconEnd="add-circle"
+//             />
+//           </Box>
+//         </Stack>
+//       </Row> */}
+//       <Row>
+//         <Stack>
+//           <Box padding={2}>
+//             <Text>{'Step 1'}</Text>
+//           </Box>
+//           <Box padding={2}>
+//             <SelectList
+//               id="assigningFor"
+//               name="assign"
+//               onChange={({ value }) => setAssignee(assigneesValues.filter(e => e.value === value)[0])}  
+//               // onChange={({ value }) => setAssignee(value)}
+//               options={assigneesValues}
+//               placeholder="Select recipient"
+//               label="Adding signature for"
+//               value={assignee.value}
+//             />
+//           </Box>
+//           <Box padding={2}>
+//             <div
+//               draggable
+//               onDragStart={e => dragStart(e)}
+//               onDragEnd={e => dragEnd(e, 'SIGN')}
+//             >
+//               <Button
+//                 onClick={() => addField('SIGN')}
+//                 accessibilityLabel="add signature"
+//                 text={formatMessage({id: 'input.sign'})}
+//                 iconEnd="compose"
+//               />
+//             </div>
+//           </Box>
+//           <Box padding={2}>
+//             <div
+//               draggable
+//               onDragStart={e => dragStart(e)}
+//               onDragEnd={e => dragEnd(e, 'TEXT')}
+//             >
+//               <Button
+//                 onClick={() => addField('TEXT')}
+//                 accessibilityLabel="add text"
+//                 text= {formatMessage({id: 'input.text'})}
+//                 iconEnd="text-sentence-case"
+//               />
+//             </div>
+//           </Box>
+//           {/* <Box padding={2}>
+//             <div
+//               draggable
+//               onDragStart={e => dragStart(e)}
+//               onDragEnd={e => dragEnd(e, 'DATE')}
+//             >
+//               <Button
+//                 onClick={() => addField('DATE')}
+//                 accessibilityLabel="add date field"
+//                 text="Add date"
+//                 iconEnd="calendar"
+//               />
+//             </div>
+//           </Box> */}
+//         </Stack>
+//       </Row>
+//       <Row gap={1}>
+//         <Stack>
+//           <Box padding={2}>
+//             <Text>{'Step 2'}</Text>
+//           </Box>
+//           <Box padding={2}>
+//             <Button
+//               onClick={applyFields}
+//               accessibilityLabel="Send for signing"
+//               text={formatMessage({id: 'Send'})}
+//               iconEnd="send"
+//             />
+//           </Box>
+//         </Stack>
+//       </Row>
+//     </Box>
+//   </Column>
+//   <Column span={10}>
+//     <div className="webviewer" ref={viewer}></div>
+//   </Column>
+// </Box>
+// <input type="file" ref={filePicker} style={{ display: 'none' }} /> */}

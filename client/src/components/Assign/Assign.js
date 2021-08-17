@@ -204,36 +204,37 @@ const Assign = () => {
     <div>
 
       <PageContainer
-        ghost
+        // ghost
         header={{
-          title: '',
+          title: '서명 요청',
           ghost: true,
           breadcrumb: {
             routes: [
-              {
-                path: '/',
-                breadcrumbName: '서명 요청',
-              },
-              {
-                path: '/',
-                breadcrumbName: '서명참여자 설정',
-              },
+              // {
+              //   path: '/',
+              //   breadcrumbName: '서명 요청',
+              // },
+              // {
+              //   path: '/',
+              //   breadcrumbName: '서명참여자 설정',
+              // },
             ],
           },
           extra: [
+            <Button key="3" onClick={() => {navigate(`/uploadDocument`);}}>이전</Button>,
+            <Button key="2" type="primary" onClick={() => handlePrepare()} disabled={disableNext}>
+              {formatMessage({id: 'Next'})}
+            </Button>,
           ],
         }}
+        content= { <ProCard style={{ background: '#ffffff'}} layout="center"><StepWrite current={1} /></ProCard> }
         footer={[
-          <Button key="3" onClick={() => {navigate(`/uploadDocument`);}}>이전</Button>,
-          <Button key="2" type="primary" onClick={() => handlePrepare()} disabled={disableNext}>
-            {formatMessage({id: 'Next'})}
-          </Button>,
         ]}
       >
         <ProCard direction="column" ghost gutter={[0, 16]}>
-          <ProCard style={{ background: '#FFFFFF'}} layout="center">
+          {/* <ProCard style={{ background: '#FFFFFF'}} layout="center">
             <StepWrite current={1} />
-          </ProCard>
+          </ProCard> */}
           <ProCard style={{ background: '#FFFFFF'}}>
             <TreeTransfer 
               dataSource={data}
