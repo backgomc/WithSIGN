@@ -12,8 +12,9 @@ import { navigate } from '@reach/router';
 //   Button,
 //   SelectList,
 // } from 'gestalt';
-import { Upload, message, Spin, Button, Row, Col } from 'antd';
-import { InboxOutlined } from '@ant-design/icons';
+import { Upload, message, Spin, Button, Row, Col, List, Card } from 'antd';
+import Icon from '@ant-design/icons';
+import { InboxOutlined, HighlightOutlined, PlusOutlined } from '@ant-design/icons';
 import { resetAssignAll, selectAssignees, resetSignee, selectDocumentFile, selectDocumentTitle, resetDocumentFile, resetDocumentTitle, selectTemplate, resetTemplate, selectDocumentType, resetDocumentType, selectTemplateTitle, resetTemplateTitle } from '../Assign/AssignSlice';
 import { selectUser } from '../../app/infoSlice';
 import WebViewer from '@pdftron/webviewer';
@@ -22,11 +23,11 @@ import './PrepareDocument.css';
 import StepWrite from '../Step/StepWrite'
 import { useIntl } from "react-intl";
 import RcResizeObserver from 'rc-resize-observer';
-
 import { PageContainer } from '@ant-design/pro-layout';
 import ProCard from '@ant-design/pro-card';
 import 'antd/dist/antd.css';
 import '@ant-design/pro-card/dist/card.css';
+import logo from '../../assets/images/logo.svg';
 
 const { Dragger } = Upload;
 
@@ -55,7 +56,7 @@ const PrepareDocument = () => {
   let initialAssignee =
   assigneesValues.length > 0 ? assigneesValues[0] : '';
   const [assignee, setAssignee] = useState(initialAssignee);
-  const [disableNext, setDisableNext] = useState(true);
+  const [disableNext, setDisableNext] = useState(false);
 
   const user = useSelector(selectUser);
   const { _id, email } = user;
@@ -136,6 +137,9 @@ const PrepareDocument = () => {
   }, []);
 
   const applyFields = async () => {
+
+    // setLoading(true);
+
     const { Annotations, docViewer } = instance;
     const annotManager = docViewer.getAnnotationManager();
     const fieldManager = annotManager.getFieldManager();
@@ -263,9 +267,11 @@ const PrepareDocument = () => {
     // refresh viewer
     await annotManager.drawAnnotationsFromList(annotsToDraw);
     await uploadForSigning();
+
+    // setLoading(false);
   };
 
-  const addField = (type, point = {}, name = '', value = '', flag = {}) => {
+  const addField = (type, point = {}, member = {}, name = '', value = '', flag = {}) => {
     const { docViewer, Annotations } = instance;
     const annotManager = docViewer.getAnnotationManager();
     const doc = docViewer.getDocument();
@@ -308,12 +314,14 @@ const PrepareDocument = () => {
       value,
       flag,
       // name: `${assignee}_${type}_`,  //TODO 이름_type으로 
-      name: `${assignee.value}_${type}_`
+      // name: `${assignee.value}_${type}_`
+      name: `${member.key}_${type}_`
     };
 
     // set the type of annot
     // textAnnot.setContents(textAnnot.custom.name);
-    textAnnot.setContents(assignee.label+"_"+type);
+    // textAnnot.setContents(assignee.label+"_"+type);
+    textAnnot.setContents(member.name+"_"+type);
     textAnnot.FontSize = '' + 20.0 / zoom + 'px';
     textAnnot.FillColor = new Annotations.Color(211, 211, 211, 0.5);
     textAnnot.TextColor = new Annotations.Color(0, 165, 228);
@@ -388,43 +396,9 @@ const PrepareDocument = () => {
     console.log(body)
     const res2 = await axios.post('/api/document/addDocumentToSign', body)
     console.log(res2)
-    // axios.post('/api/document/addDocumentToSign', body).then(response => {
-    //   console.log(response)
-    // });
 
-    setLoading(false);
-
-    // AS-IS
-    // const signed = false;
-    // const xfdf = [];
-    // const signedBy = [];
-    // const requestedTime = new Date();
-    // const signedTime = '';
-    // firestore
-    //   .collection('documentsToSign')
-    //   .add({
-    //     uid,
-    //     email,
-    //     docRef,
-    //     emails,
-    //     xfdf,
-    //     signedBy,
-    //     signed,
-    //     requestedTime,
-    //     signedTime,
-    //   })
-    //   .then(function (docRef) {
-    //     console.log('Document written with ID: ', docRef.id);
-    //   })
-    //   .catch(function (error) {
-    //     console.error('Error adding document: ', error);
-    //   });
-
-    // dispatch(resetSignee());
-    // dispatch(resetDocumentFile());
-    // dispatch(resetDocumentTitle());
     dispatch(resetAssignAll());
-
+    setLoading(false);
     navigate('/');
   };
 
@@ -495,8 +469,39 @@ const PrepareDocument = () => {
       }}
       >
         <Row gutter={[24, 24]}>
-          <Col span={responsive ? 24 : 4}>dddd</Col>
-          <Col span={responsive ? 24 : 20}><div className="webviewer" ref={viewer}></div></Col>
+          <Col span={responsive ? 24 : 5}>
+            {/* 유저별로 카드 띄우기 */}
+            <List
+              rowKey="id"
+              loading={loading}
+              // grid={{ gutter: 24, lg: 3, md: 2, sm: 1, xs: 1 }}
+              grid={{ gutter: 24, column: responsive ? 2 : 1}}
+              dataSource={assignees}
+              renderItem={item =>
+                <List.Item key={item.key}>
+                  {/* <ProCard 
+                    title={item.name}
+                    hover={false}
+                    colSpan="150px" 
+                    layout="center" 
+                    bordered
+                    headerBordered
+                    style={{ minWidth: "150px" }}
+                    actions={[
+                    ]}>
+                      <p><Button icon={<PlusOutlined />} onClick={e => { addField('SIGN', {}, item); }}>{formatMessage({id: 'input.sign'})}</Button></p>
+                      <p><Button icon={<PlusOutlined />} onClick={e => { addField('TEXT', {}, item); }}>{formatMessage({id: 'input.text'})}</Button></p>
+                  </ProCard> */}
+                  <Card size="small" type="inner" title={item.name} style={{ minWidth: 148 }}>
+                    <p><Button icon={<PlusOutlined />} onClick={e => { addField('SIGN', {}, item); }}>{formatMessage({id: 'input.sign'})}</Button></p>
+                    <p><Button icon={<PlusOutlined />} onClick={e => { addField('TEXT', {}, item); }}>{formatMessage({id: 'input.text'})}</Button></p>
+                  </Card>
+                </List.Item>
+              }
+            />
+
+          </Col>
+          <Col span={responsive ? 24 : 19}><div className="webviewer" ref={viewer}></div></Col>
         </Row>
 
       </RcResizeObserver>

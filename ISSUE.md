@@ -6,3 +6,5 @@ Error: ENOENT: no such file or directory, open 'storage/docToSign/60efdfa5ebb01b
 * [2]
 bcrypt_lib.node is not a valid Win32 application
 > const bcrypt = require("bcrypt"); for const bcrypt = require("bcryptjs"); and npm i bcryptjs --save
+* [3]
+pdf 가 한장인 경우 PDF뷰어 높이가 여백이 많이 생기는 문제 발생 
