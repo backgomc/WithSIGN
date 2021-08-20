@@ -261,12 +261,12 @@ router.post('/searchForDocumentToSign', (req, res) => {
       // .populate("user", {name: 1, email: 2})
       .populate({
         path: "user", 
-        select: {name: 1, email: 2},
+        select: {name: 1, JOB_TITLE: 2},
         // match: { name : searchName? searchName : !'' }
       })
       .populate({
         path: "users", 
-        select: {name: 1, email: 2}
+        select: {name: 1, JOB_TITLE: 2}
       })
       .exec((err, documents) => {
           // console.log(documents);

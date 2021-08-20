@@ -9,12 +9,15 @@ import { navigate } from '@reach/router';
 import { setDocToView } from '../ViewDocument/ViewDocumentSlice';
 import { setDocToSign } from '../SignDocument/SignDocumentSlice';
 import Moment from 'react-moment';
-import moment from 'moment';
-import 'moment/locale/ko';
-import { DocumentType, DocumentTypeText, DOCUMENT_SIGNED, DOCUMENT_TOSIGN, DOCUMENT_SIGNING, DOCUMENT_CANCELED } from './DocumentType';
+import moment from "moment";
+import "moment/locale/ko";
+import { DocumentType, DocumentTypeText, DocumentTypeIcon, DOCUMENT_SIGNED, DOCUMENT_TOSIGN, DOCUMENT_SIGNING, DOCUMENT_CANCELED } from './DocumentType';
 import DocumentExpander from "./DocumentExpander";
 import { PageContainer } from '@ant-design/pro-layout';
 import 'antd/dist/antd.css';
+import RcResizeObserver from 'rc-resize-observer';
+
+moment.locale("ko");
 
 const DocumentList = ({location}) => {
 
@@ -28,7 +31,7 @@ const DocumentList = ({location}) => {
   const [data, setData] = useState([]);
   const [pagination, setPagination] = useState({current:1, pageSize:10});
   const [loading, setLoading] = useState(false);
-  // const [expandable, setExpandable] = useState();
+  const [responsive, setResponsive] = useState(false);
 
   const searchInput = useRef<Input>(null)
 
@@ -144,6 +147,7 @@ const DocumentList = ({location}) => {
     setSearchText('');
   }
 
+
   // const Expander = props => <span>{props.record.docTitle}</span>;
 
   // const expandableData = {
@@ -171,6 +175,7 @@ const DocumentList = ({location}) => {
     {
       title: '상태',
       dataIndex: 'status',
+      responsive: ["xs"],
       sorter: false,
       key: 'status',
       defaultFilteredValue: location.state.status? [location.state.status]: [],
@@ -194,7 +199,41 @@ const DocumentList = ({location}) => {
       ],
       onFilter: (value, record) => DocumentType({uid: _id, document: record}).indexOf(value) === 0,
       render: (_,row) => {
-        return <DocumentTypeText uid={_id} document={row} />
+        return (
+            <DocumentTypeIcon uid={_id} document={row} />
+          )
+      }, 
+    },
+    {
+      title: '상태',
+      dataIndex: 'status',
+      responsive: ["sm"],
+      sorter: false,
+      key: 'status',
+      defaultFilteredValue: location.state.status? [location.state.status]: [],
+      filters: [
+        {
+          text: DOCUMENT_SIGNED,
+          value: DOCUMENT_SIGNED,
+        },
+        {
+          text: DOCUMENT_TOSIGN,
+          value: DOCUMENT_TOSIGN,
+        },
+        {
+          text: DOCUMENT_SIGNING,
+          value: DOCUMENT_SIGNING,
+        },
+        {
+          text: DOCUMENT_CANCELED,
+          value: DOCUMENT_CANCELED,
+        },
+      ],
+      onFilter: (value, record) => DocumentType({uid: _id, document: record}).indexOf(value) === 0,
+      render: (_,row) => {
+        return (
+            <DocumentTypeText uid={_id} document={row} />
+          )
       }, 
     },
     {
@@ -208,6 +247,7 @@ const DocumentList = ({location}) => {
     },
     {
       title: '요청자',
+      responsive: ["sm"],
       dataIndex: ['user', 'name'],
       sorter: (a, b) => a.user.name.localeCompare(b.user.name),
       key: 'name',
@@ -216,6 +256,27 @@ const DocumentList = ({location}) => {
       record['user']['name']
         ? record['user']['name'].toString().toLowerCase().includes(value.toLowerCase())
         : ''
+    },
+    {
+      title: '요청자',
+      responsive: ["xs"],
+      dataIndex: ['user', 'name'],
+      sorter: (a, b) => a.user.name.localeCompare(b.user.name),
+      key: 'name',
+      ...getColumnSearchProps('name'),
+      onFilter: (value, record) =>
+      record['user']['name']
+        ? record['user']['name'].toString().toLowerCase().includes(value.toLowerCase())
+        : '',
+      render: (text, row) => {
+          return (
+            <React.Fragment>
+            {row['user']['name']}
+            <br />
+            <font color='#787878'>{moment(row["requestedTime"]).fromNow()}</font>
+            </React.Fragment>
+          )
+      } 
     },
     // {
     //   title: 'adasd',
@@ -231,14 +292,12 @@ const DocumentList = ({location}) => {
     {
       title: '요청 일시',
       dataIndex: 'requestedTime',
+      responsive: ["sm"],
       sorter: true,
       key: 'requestedTime',
       render: (text, row) => {
-        // if (text){
-        //   return <Moment format='YYYY/MM/DD HH:mm'>{text}</Moment>
-        // } else {
-          return <Moment format='YYYY/MM/DD HH:mm'>{row["requestedTime"]}</Moment>
-        // }
+          // return <Moment format='YYYY/MM/DD HH:mm'>{row["requestedTime"]}</Moment>
+          return (<font color='#787878'>{moment(row["requestedTime"]).fromNow()}</font>)
       } 
     },
     {

@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
-import { Descriptions, Tag, Timeline, Badge } from 'antd';
+import { Descriptions, Tag, Timeline, Button } from 'antd';
 import Moment from 'react-moment';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { selectUser } from '../../app/infoSlice';
 import {
     CheckCircleOutlined,
@@ -17,8 +17,13 @@ import RcResizeObserver from 'rc-resize-observer';
 import '@ant-design/pro-card/dist/card.css';
 import 'antd/dist/antd.css';
 
+import { setDocToView } from '../ViewDocument/ViewDocumentSlice';
+import { setDocToSign } from '../SignDocument/SignDocumentSlice';
+import { navigate } from '@reach/router';
+
 const DocumentExpander = (props) => {
 
+    const dispatch = useDispatch();
     const [responsive, setResponsive] = useState(false);
     const { item } = props
     const user = useSelector(selectUser);
@@ -26,9 +31,9 @@ const DocumentExpander = (props) => {
 
     const getSignInfo = (user) => {
         return (
-            <div style={{height:"30px"}}>
-                {user.name} {getSignedTime(user)}
-                {/* {user.name} */}
+            <div>
+                {/* {user.name} {getSignedTime(user)} */}
+                {user.name} {user.JOB_TITLE}
             </div>
         )
     }
@@ -55,6 +60,46 @@ const DocumentExpander = (props) => {
         return (
             <Moment format='YYYY/MM/DD HH:mm'>{org}</Moment>
         )
+    }
+
+    const actionDocument = () => {
+        switch (DocumentType({uid: _id, document: item})) {
+            case DOCUMENT_CANCELED:
+                return (<div>cancel</div>) 
+            case DOCUMENT_SIGNED:
+                return (
+                <Button
+                    // loading={isUploading(row)}
+                    onClick={() => {        
+                    const docId = item["_id"]
+                    const docRef = item["docRef"]
+                    dispatch(setDocToView({ docRef, docId }));
+                    navigate(`/viewDocument`);
+                }}>문서조회</Button>
+                )
+            case DOCUMENT_TOSIGN:
+                return (
+                <Button type="primary" onClick={() => {
+                    const docId = item["_id"]
+                    const docRef = item["docRef"]
+                    dispatch(setDocToSign({ docRef, docId }));
+                    navigate(`/signDocument`);
+                }}>서명하기</Button>
+                );
+            case DOCUMENT_SIGNING:
+                return (
+                <Button onClick={() => {        
+                    const docId = item["_id"]
+                    const docRef = item["docRef"]
+                    dispatch(setDocToView({ docRef, docId }));
+                    navigate(`/viewDocument`);
+                }}>문서조회</Button>
+                );
+            default:
+                return (
+                <div></div>
+                )
+            }
     }
 
     const activeHistory = (user) => {
@@ -93,30 +138,22 @@ const DocumentExpander = (props) => {
             split={responsive ? 'horizontal' : 'vertical'}
         >
             <ProCard split="horizontal">
-            <ProCard split="horizontal">
-                <ProCard split={responsive ? 'horizontal' : 'vertical'}>
-                <ProCard title="서명 요청자">{item.user.name}</ProCard>
-                <ProCard title="서명 참여자">
-                    {
-                        item.users.map((user, index) => (
-                            getSignInfo(user)
-                        ))
-                    }
+                <ProCard split="horizontal">
+                    <ProCard split={responsive ? 'horizontal' : 'vertical'}>
+                    <ProCard title="서명 요청자">{item.user.name} {item.user.JOB_TITLE}</ProCard>
+                    <ProCard title="서명 참여자">
+                        {
+                            item.users.map((user, index) => (
+                                getSignInfo(user)
+                            ))
+                        }
+                    </ProCard>
+                    </ProCard>
+                    <ProCard split="vertical">
+                    <ProCard title="서명 요청시간"><Moment format='YYYY/MM/DD HH:mm'>{item.requestedTime}</Moment></ProCard>
+                    <ProCard title="서명 상태"><DocumentType uid={_id} document={item} /></ProCard>
+                    </ProCard>
                 </ProCard>
-                </ProCard>
-                <ProCard split="vertical">
-                <ProCard title="서명 요청시간"><Moment format='YYYY/MM/DD HH:mm'>{item.requestedTime}</Moment></ProCard>
-                <ProCard title="서명 상태"><DocumentType uid={_id} document={item} /></ProCard>
-                </ProCard>
-            </ProCard>
-            <ProCard title="활동">
-                진본확인증명서 발급
-                {/* <div>图表</div>
-                <div>图表</div>
-                <div>图表</div>
-                <div>图表</div>
-                <div>图表</div> */}
-            </ProCard>
             </ProCard>
             <ProCard title="활동이력">
                 <Timeline>
@@ -132,6 +169,22 @@ const DocumentExpander = (props) => {
                     }
                 </Timeline>
             </ProCard>
+            
+
+            <ProCard title="활동">
+                <div style={{height:"40px"}}>
+                    <Button
+                        onClick={() => {        
+                    }}>
+                        진본확인증명서 발급
+                    </Button>
+                </div>
+                <div style={{height:"40px"}}>
+                    {actionDocument()}
+                </div>
+                
+            </ProCard>
+
         </ProCard>
       </RcResizeObserver>
         

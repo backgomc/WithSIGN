@@ -8,7 +8,12 @@ import {
   ClockCircleOutlined,
   MinusCircleOutlined,
   EditOutlined,
+  CheckCircleTwoTone,
+  CloseCircleTwoTone,
+  EditTwoTone,
+  ClockCircleTwoTone
 } from '@ant-design/icons';
+
 export const DOCUMENT_SIGNED = "서명 완료";
 export const DOCUMENT_TOSIGN = "서명 필요";
 export const DOCUMENT_SIGNING = "서명 대기";
@@ -17,7 +22,7 @@ export const DOCUMENT_CANCELED = "서명 취소됨";
 export function DocumentType(props) {
 
     let { uid, document } = props
-
+    
     if (document["signed"] == true) { 
         return DOCUMENT_SIGNED;
     } else {
@@ -39,7 +44,7 @@ export function DocumentType(props) {
 export function DocumentTypeText(props) {
 
     let { uid, document } = props
-
+  
     if (document["signed"] == true) { 
         return (
           <Tag icon={<CheckCircleOutlined />} color="default">
@@ -70,5 +75,34 @@ export function DocumentTypeText(props) {
             }
         }
     }
+
+}
+
+export function DocumentTypeIcon(props) {
+
+  let { uid, document } = props
+
+  if (document["signed"] == true) { 
+      return (
+        <CheckCircleOutlined/>
+      )
+  } else {
+      if (document["canceled"] == true) {
+        return (
+          <CloseCircleTwoTone twoToneColor="#d41c1c"/>
+        )
+      } else {
+          // if (document["users"].some(e => e._id === uid) && !document["signedBy"].includes(uid)) {
+            if (document["users"].some(e => e._id === uid) && !document["signedBy"].some(e => e.user === uid)) {
+              return (
+                <EditTwoTone/>
+              )
+          } else {
+            return (
+              <ClockCircleTwoTone twoToneColor="#52c41a"/>
+            )
+          }
+      }
+  }
 
 }

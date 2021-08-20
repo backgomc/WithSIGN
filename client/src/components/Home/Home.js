@@ -239,8 +239,12 @@ const Home = () => {
           },
           extra: [
             // <Button key="3">Operation</Button>,
-            <Button key="2">내 문서함</Button>,
-            <Button key="1" type="primary">
+            <Button key="2" onClick={() => {
+              navigate('/documentList')
+            }}>내 문서함</Button>,
+            <Button key="1" onClick={() => {
+              navigate('/uploadDocument')
+            }} type="primary">
               서명 요청
             </Button>,
           ],
