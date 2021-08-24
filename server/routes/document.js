@@ -72,6 +72,44 @@ router.post('/updateDocumentToSign', (req, res) => {
   });
 })
 
+// 문서 취소 : updateDocumentToSign
+router.post('/updateDocumentCancel', (req, res) => {
+
+  // console.log(req.body.docId)
+  // console.log(req.body.user)
+  // console.log(req.body.message)
+  if (!req.body.docId || !req.body.user) {
+      return res.json({ success: false, message: "input value not enough!" })
+  } 
+
+  const docId = req.body.docId
+  const user = req.body.user
+  const message = req.body.message
+  const time = new Date()
+  var isLast = false;
+
+  Document.findOne({ _id: req.body.docId }, (err, document) => {
+    if (document) {
+      const { canceled, canceledBy } = document;
+      
+      console.log(canceledBy.some(e => e.user === user))
+      if (!canceledBy.some(e => e.user === user)) {
+
+        const canceledByArray = [...canceledBy, {user:user, canceledTime:time, message: message}];
+
+        Document.updateOne({ _id: docId }, {canceled: true, canceledBy:canceledByArray}, (err, result) => {
+          if (err) {
+            console.log(err);
+            return res.json({ success: false, message: err })
+          } else {
+            return res.json({ success: true })
+          }
+        })
+      }
+    }
+  });
+})
+
 // 사인 대상 문서 검색 : searchForDocumentToSign
 router.post('/searchForDocumentToSign', (req, res) => {
 

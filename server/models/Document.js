@@ -34,6 +34,11 @@ const documentSchema = mongoose.Schema({
     // signedBy: {
     //     type: Array
     // },
+    canceledBy: [{
+        user: { type: String },
+        canceledTime: { type: Date },
+        message: { type: String }
+    }],
     signed: {
         type: Boolean
     },

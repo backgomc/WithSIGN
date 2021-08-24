@@ -146,7 +146,7 @@ const MySign = () => {
     <PageContainer
         ghost
         header={{
-          title: '내 사인',
+          title: formatMessage({id: 'sign.management'}),
           ghost: false,
           breadcrumb: {
             routes: [

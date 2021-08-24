@@ -18,6 +18,8 @@ import {
 } from '@ant-design/icons';
 import { PageContainer } from '@ant-design/pro-layout';
 import 'antd/dist/antd.css';
+import { useIntl } from "react-intl";
+
 
 const TemplateList = () => {
 
@@ -36,6 +38,7 @@ const TemplateList = () => {
   // const [expandable, setExpandable] = useState();
   const [visiblePopconfirm, setVisiblePopconfirm] = useState(false);
 
+  const { formatMessage } = useIntl();
   const searchInput = useRef<Input>(null)
 
   const handleTableChange = (pagination, filters, sorter) => {
@@ -250,7 +253,7 @@ const TemplateList = () => {
     <PageContainer
         ghost
         header={{
-          title: '템플릿 관리',
+          title: formatMessage({id: 'document.template'}),
           ghost: false,
           breadcrumb: {
             routes: [
@@ -278,7 +281,7 @@ const TemplateList = () => {
           </span>
           ],
         }}
-        // content={'서명에 사용되는 사인을 미리 등록할 수 있습니다.'}
+        content={'자주 사용하는 문서를 미리 등록하실 수 있습니다.'}
         footer={[
         ]}
     >

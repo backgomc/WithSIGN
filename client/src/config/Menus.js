@@ -26,7 +26,7 @@ export default function Menus() {
         },
         {
           path: '/mySign',
-          name: formatMessage({id: 'Sign'}),
+          name: formatMessage({id: 'sign.management'}),
           icon: <HighlightOutlined />,
         },
         {

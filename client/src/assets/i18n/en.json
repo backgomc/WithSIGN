@@ -26,7 +26,7 @@
 	"document.sign": "Sign Documents",
 	"document.signed": "Signed Documents",
 	"document.list": "My Documents",
-	"document.template": "template",
+	"document.template": "Template",
 	"Login": "Login",
 	"RememberMe": "Remember me",
 	"ForgotPassword": "Forgot password",
@@ -58,5 +58,9 @@
 	"Processing": "Processing...",
 	"Initialize": "Initialize",
 	"Save": "Save",
-	"Sign": "Sign"
+	"Sign": "Sign",
+	"sign.complete": "Complete signing",
+	"document.download": "Download",
+	"sign.management": "Sign Management",
+	"sign.cancel": "cancel signing"
 }

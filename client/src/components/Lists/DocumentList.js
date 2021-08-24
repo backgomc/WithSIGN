@@ -16,6 +16,7 @@ import DocumentExpander from "./DocumentExpander";
 import { PageContainer } from '@ant-design/pro-layout';
 import 'antd/dist/antd.css';
 import RcResizeObserver from 'rc-resize-observer';
+import { useIntl } from "react-intl";
 
 moment.locale("ko");
 
@@ -32,7 +33,8 @@ const DocumentList = ({location}) => {
   const [pagination, setPagination] = useState({current:1, pageSize:10});
   const [loading, setLoading] = useState(false);
   const [responsive, setResponsive] = useState(false);
-
+  
+  const { formatMessage } = useIntl();
   const searchInput = useRef<Input>(null)
 
   const handleTableChange = (pagination, filters, sorter) => {
@@ -368,7 +370,7 @@ const DocumentList = ({location}) => {
     <PageContainer
         ghost
         header={{
-          title: '내 문서',
+          title: formatMessage({id: 'document.list'}),
           ghost: false,
           breadcrumb: {
             routes: [

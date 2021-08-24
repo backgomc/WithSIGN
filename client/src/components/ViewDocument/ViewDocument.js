@@ -1,21 +1,32 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { navigate } from '@reach/router';
-import { Box, Column, Heading, Row, Stack, Button } from 'gestalt';
+// import { Box, Column, Heading, Row, Stack, Button } from 'gestalt';
+import { Row, Col, Button } from 'antd';
 import { selectDocToView } from './ViewDocumentSlice';
 import { selectUser } from '../../app/infoSlice';
 import WebViewer from '@pdftron/webviewer';
-import 'gestalt/dist/gestalt.css';
+// import 'gestalt/dist/gestalt.css';
 import './ViewDocument.css';
+import { useIntl } from "react-intl";
+import RcResizeObserver from 'rc-resize-observer';
+import { PageContainer } from '@ant-design/pro-layout';
+import ProCard from '@ant-design/pro-card';
+import 'antd/dist/antd.css';
+import '@ant-design/pro-card/dist/card.css';
+import { DownloadOutlined } from '@ant-design/icons';
 
 const ViewDocument = () => {
   const [annotManager, setAnnotatManager] = useState(null);
   const [instance, setInstance] = useState(null);
+  const [responsive, setResponsive] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const doc = useSelector(selectDocToView);
   const user = useSelector(selectUser);
   const { docRef } = doc;
-  const { email, _id } = user;
+  const { _id } = user;
+  const { formatMessage } = useIntl();
 
   const viewer = useRef(null);
 
@@ -87,12 +98,51 @@ const ViewDocument = () => {
   };
 
   const doneViewing = async () => {
-    navigate('/');
+    navigate('/documentList');
   }
 
   return (
-    <div className={'prepareDocument'}>
-      <Box display="flex" direction="row" flex="grow">
+    <div>
+
+    <PageContainer      
+      // ghost
+      header={{
+        title: '문서 조회',
+        ghost: true,
+        breadcrumb: {
+          routes: [
+          ],
+        },
+        extra: [
+          <Button key="3" type="primary" onClick={() => download()} icon={<DownloadOutlined />}>
+            {formatMessage({id: 'document.download'})}
+          </Button>,
+          <Button key="2" onClick={() => doneViewing()}>
+            {formatMessage({id: 'document.list'})}
+          </Button>,
+        ],
+      }}
+      // content= {}
+      footer={[
+      ]}
+      loading={loading}
+    >
+      <RcResizeObserver
+        key="resize-observer"
+        onResize={(offset) => {
+          setResponsive(offset.width < 596);
+        }}
+      >
+        <Row gutter={[24, 24]}>
+          <Col span={24}>
+          <div className="webviewer" ref={viewer}></div>
+          </Col>
+        </Row>
+
+      </RcResizeObserver>
+    </PageContainer> 
+
+      {/* <Box display="flex" direction="row" flex="grow">
         <Column span={2}>
           <Box padding={3}>
             <Heading size="md">View Document</Heading>
@@ -123,7 +173,7 @@ const ViewDocument = () => {
         <Column span={10}>
           <div className="webviewer" ref={viewer}></div>
         </Column>
-      </Box>
+      </Box> */}
     </div>
   );
 };

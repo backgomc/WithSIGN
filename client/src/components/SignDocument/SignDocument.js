@@ -2,20 +2,32 @@ import React, { useRef, useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import axios from 'axios';
 import { navigate } from '@reach/router';
-import { Box, Column, Heading, Row, Stack, Button } from 'gestalt';
-import { Spin } from 'antd';
+// import { Box, Column, Heading, Row, Stack, Button } from 'gestalt';
+import { Input, Row, Col, Modal, Button } from 'antd';
 import { selectDocToSign } from './SignDocumentSlice';
 import { selectUser } from '../../app/infoSlice';
 import { mergeAnnotations } from '../MergeAnnotations/MergeAnnotations';
 import WebViewer from '@pdftron/webviewer';
-import 'gestalt/dist/gestalt.css';
+// import 'gestalt/dist/gestalt.css';
 import './SignDocument.css';
 import { useIntl } from "react-intl";
+import RcResizeObserver from 'rc-resize-observer';
+import { PageContainer } from '@ant-design/pro-layout';
+import ProCard from '@ant-design/pro-card';
+import 'antd/dist/antd.css';
+import '@ant-design/pro-card/dist/card.css';
+import { ExclamationCircleOutlined } from '@ant-design/icons';
+
+const { confirm } = Modal;
+const { TextArea } = Input;
 
 const SignDocument = () => {
   const [annotManager, setAnnotatManager] = useState(null);
   const [annotPosition, setAnnotPosition] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [responsive, setResponsive] = useState(false);
+  const [disableNext, setDisableNext] = useState(false);
+  const [visiblModal, setVisiblModal] = useState(false);
 
   // const dispatch = useDispatch();
   // const uploading = useSelector(selectUploading);
@@ -24,8 +36,9 @@ const SignDocument = () => {
   const { docRef, docId } = doc;
   const { email, _id } = user;
   const { formatMessage } = useIntl();
-
+  
   const viewer = useRef(null);
+  const cancelMessage = useRef({});
 
   useEffect(() => {
     WebViewer(
@@ -182,6 +195,46 @@ const SignDocument = () => {
     }
   }
 
+  const cancelSigning = () => {
+
+    setVisiblModal(true);
+
+    // confirm({
+    //   title: '서명 취소하시겠습니까?',
+    //   icon: <ExclamationCircleOutlined />,
+    //   content: '서명 취소는 되돌릴 수 없습니다.',
+    //   okText: '네',
+    //   okType: 'danger',
+    //   cancelText: '아니오',
+    //   onOk() {
+    //     fetchCancelSigning(message);
+    //   },
+    //   onCancel() {
+    //     console.log('Cancel');
+    //   },
+    // });  
+  }
+
+  const fetchCancelSigning = async () => {
+    setLoading(true);
+
+    let param = {
+      docId: docId,
+      user: _id,
+      message: cancelMessage.text // ??? TODO: ref 로 텍스트 내용 읽어오기 
+    }
+
+    const res = await axios.post('/api/document/updateDocumentCancel', param)
+
+    console.log("fetchCancelSigning res:" + res);
+    setLoading(false);
+    navigate('/documentList');
+  }
+
+  const modalCancel = () => {
+    setVisiblModal(false);
+  };
+
   const completeSigning = async () => {
 
     setLoading(true);
@@ -230,8 +283,67 @@ const SignDocument = () => {
   }
 
   return (
-    <div className={'prepareDocument'}>
-      <Spin tip={formatMessage({id: 'Processing'})} spinning={loading}>
+    <div>
+    <PageContainer  
+      header={{
+        title: '서명 하기',
+        ghost: true,
+        breadcrumb: {
+          routes: [
+          ],
+        },
+        extra: [
+          <Button key="3" onClick={() => {navigate(`/documentList`);}}>{formatMessage({id: 'document.list'})}</Button>,
+          <Button key="1" type="primary" danger onClick={() => cancelSigning()}>
+            {formatMessage({id: 'sign.cancel'})}
+          </Button>,
+          <Button key="2" type="primary" onClick={() => completeSigning()} disabled={disableNext}>
+            {formatMessage({id: 'sign.complete'})}
+          </Button>,
+        ],
+      }}
+      // content= {}
+      footer={[
+      ]}
+      loading={loading}
+    >
+      <RcResizeObserver
+        key="resize-observer"
+        onResize={(offset) => {
+          setResponsive(offset.width < 596);
+        }}
+      >
+        <Row gutter={[24, 24]}>
+          <Col span={24}>
+          <div className="webviewer" ref={viewer}></div>
+          </Col>
+        </Row>
+
+        <Modal
+          visible={visiblModal}
+          width={400}
+          title="서명 취소하시겠습니까?"
+          content="서명 취소는 되돌릴 수 없습니다."
+          onOk={fetchCancelSigning}
+          onCancel={modalCancel}
+          footer={[
+            <Button key="back" onClick={modalCancel}>
+              닫기
+            </Button>,
+            <Button key="submit" type="primary" loading={loading} onClick={fetchCancelSigning} danger>
+              서명 취소하기
+            </Button>
+          ]}
+          >
+            취소사유 :
+            <TextArea rows={4} ref={cancelMessage} />
+        </Modal>
+
+      </RcResizeObserver>
+    </PageContainer> 
+
+
+      {/* <Spin tip={formatMessage({id: 'Processing'})} spinning={loading}>
         <Box display="flex" direction="row" flex="grow">
           <Column span={2}>
             <Box padding={3}>
@@ -272,7 +384,7 @@ const SignDocument = () => {
             <div className="webviewer" ref={viewer}></div>
           </Column>
         </Box>
-      </Spin>
+      </Spin> */}
     </div>
   );
 };
