@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import { Descriptions, Tag, Timeline, Button } from 'antd';
+import { Tooltip, Tag, Timeline, Button } from 'antd';
 import Moment from 'react-moment';
 import { useSelector, useDispatch } from 'react-redux';
 import { selectUser } from '../../app/infoSlice';
@@ -10,6 +10,7 @@ import {
     ExclamationCircleOutlined,
     ClockCircleOutlined,
     MinusCircleOutlined,
+    InfoCircleOutlined,
   } from '@ant-design/icons';
 import { DocumentType, DocumentTypeText, DOCUMENT_SIGNED, DOCUMENT_TOSIGN, DOCUMENT_SIGNING, DOCUMENT_CANCELED } from './DocumentType';
 import ProCard from '@ant-design/pro-card';
@@ -65,7 +66,16 @@ const DocumentExpander = (props) => {
     const actionDocument = () => {
         switch (DocumentType({uid: _id, document: item})) {
             case DOCUMENT_CANCELED:
-                return (<div>cancel</div>) 
+                return (
+                    <Button
+                        // loading={isUploading(row)}
+                        onClick={() => {        
+                        const docId = item["_id"]
+                        const docRef = item["docRef"]
+                        dispatch(setDocToView({ docRef, docId }));
+                        navigate(`/viewDocument`);
+                    }}>문서조회</Button>
+                    )
             case DOCUMENT_SIGNED:
                 return (
                 <Button
@@ -108,10 +118,21 @@ const DocumentExpander = (props) => {
             return  (
                 <Timeline.Item dot={<CheckCircleOutlined className="timeline-clock-icon" />}>
                     <b>{user.name}</b>님 서명 완료 &nbsp; 
-                    <Tag color="default">
+                    <Tag color="575757">
                     <Moment format='YYYY/MM/DD HH:mm'>{item.signedBy.filter(e => e.user === user._id)[0].signedTime}</Moment>
                     </Tag>
                     {/* <Badge count={timeFormat(item.signedBy.filter(e => e.user === user._id)[0].signedTime)} style={{ backgroundColor: 'grey' }}/> */}
+                </Timeline.Item>
+            )
+        } else if ((item.canceledBy.some(e => e.user === user._id))) {
+            return (
+                <Timeline.Item dot={<CloseCircleOutlined className="timeline-clock-icon" />} color="red">
+                    <b>{user.name}</b>님 서명 취소 &nbsp;
+                    <Tooltip placement="right" title={item.canceledBy.filter(e => e.user === user._id)[0].message}>
+                        <Tag color="#575757" >
+                            <Moment format='YYYY/MM/DD HH:mm'>{item.canceledBy.filter(e => e.user === user._id)[0].canceledTime}</Moment>
+                        </Tag>
+                    </Tooltip>
                 </Timeline.Item>
             )
         } else {
@@ -160,7 +181,7 @@ const DocumentExpander = (props) => {
                     {/* <Timeline.Item label={<Moment format='YYYY/MM/DD HH:mm'>{item.requestedTime}</Moment>}><b>{item.user.name}</b>님 서명 요청</Timeline.Item> */}
                     <Timeline.Item>
                         <b>{item.user.name}</b>님 서명 요청 &nbsp;  
-                        <Tag color="default"><Moment format='YYYY/MM/DD HH:mm'>{item.requestedTime}</Moment></Tag>
+                        <Tag color="#575757"><Moment format='YYYY/MM/DD HH:mm'>{item.requestedTime}</Moment></Tag>
                     </Timeline.Item>
                     {
                         item.users.map((user) => (

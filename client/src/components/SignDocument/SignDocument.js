@@ -217,11 +217,11 @@ const SignDocument = () => {
 
   const fetchCancelSigning = async () => {
     setLoading(true);
-
+    
     let param = {
       docId: docId,
       user: _id,
-      message: cancelMessage.text // ??? TODO: ref 로 텍스트 내용 읽어오기 
+      message: cancelMessage.current.resizableTextArea.props.value // ??? TODO: ref 로 텍스트 내용 읽어오기 
     }
 
     const res = await axios.post('/api/document/updateDocumentCancel', param)

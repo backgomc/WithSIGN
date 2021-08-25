@@ -39,6 +39,9 @@ const documentSchema = mongoose.Schema({
         canceledTime: { type: Date },
         message: { type: String }
     }],
+    canceled: {
+        type: Boolean 
+    },
     signed: {
         type: Boolean
     },

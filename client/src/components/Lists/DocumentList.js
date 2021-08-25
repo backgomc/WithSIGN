@@ -309,7 +309,17 @@ const DocumentList = ({location}) => {
       render: (_,row) => {
         switch (DocumentType({uid: _id, document: row})) {
           case DOCUMENT_CANCELED:
-            return (<div>cancel</div>) 
+            return (
+              <Button
+                danger
+                // loading={isUploading(row)}
+                onClick={() => {        
+                const docId = row["_id"]
+                const docRef = row["docRef"]
+                dispatch(setDocToView({ docRef, docId }));
+                navigate(`/viewDocument`);
+              }}>취소사유</Button>
+            )
           case DOCUMENT_SIGNED:
             return (
               <Button

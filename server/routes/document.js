@@ -75,9 +75,9 @@ router.post('/updateDocumentToSign', (req, res) => {
 // 문서 취소 : updateDocumentToSign
 router.post('/updateDocumentCancel', (req, res) => {
 
-  // console.log(req.body.docId)
-  // console.log(req.body.user)
-  // console.log(req.body.message)
+  console.log("docId:"+req.body.docId)
+  console.log("user:"+req.body.user)
+  console.log("message:"+req.body.message)
   if (!req.body.docId || !req.body.user) {
       return res.json({ success: false, message: "input value not enough!" })
   } 
@@ -86,7 +86,6 @@ router.post('/updateDocumentCancel', (req, res) => {
   const user = req.body.user
   const message = req.body.message
   const time = new Date()
-  var isLast = false;
 
   Document.findOne({ _id: req.body.docId }, (err, document) => {
     if (document) {
@@ -105,6 +104,8 @@ router.post('/updateDocumentCancel', (req, res) => {
             return res.json({ success: true })
           }
         })
+      } else {
+        return res.json({ success: false, message: "이미 서명취소 처리되었습니다." })
       }
     }
   });
@@ -267,6 +268,8 @@ router.post('/searchForDocumentToSign', (req, res) => {
       andParam['docTitle'] = { $regex: '.*' + req.body.docTitle[0] + '.*', $options: 'i' }
     }
 
+    console.log("status:"+status)
+
     if (status) {
       if (status == '서명 대기') {
         andParam['signed'] = false
@@ -280,6 +283,10 @@ router.post('/searchForDocumentToSign', (req, res) => {
         andParam['signed'] = true
         orParam = [{"users": {$in:[user]}}, {"user": user}];
         console.log("서명완료 called")
+      } else if (status == '서명 취소') {
+        andParam['canceled'] = true
+        orParam = [{"users": {$in:[user]}}, {"user": user}];
+        console.log("서명취소 called")
       }
     } else {  // 전체 목록 (status 배열에 복수개가 들어오면 전체 목록 호출)
       orParam = [{"users": {$in:[user]}}, {"user": user}];
