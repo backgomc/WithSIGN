@@ -27,7 +27,7 @@ const Home = () => {
   const [loadingStatics, setLoadingStatics] = useState(false);
   const [documentsToSign, setDocumentsToSign] = useState([]);
   const [documentsSigning, setDocumentsSigning] = useState([]);
-  const [pagination, setPagination] = useState({current:1, pageSize:10});
+  const [pagination, setPagination] = useState({current:1, pageSize:5});
   const [responsive, setResponsive] = useState(false);
   const [totalNum, setTotalNum] = useState(0);
   const [toSignNum, setToSignNum] = useState(0);
@@ -128,7 +128,7 @@ const Home = () => {
   const tosign = (
     <ProCard
     colSpan={{ xs: 24, sm: 12, md: 12, lg: 12, xl: 12 }}
-    style={{ marginBottom: 0, marginRight: 30, padding: 0 }}
+    style={{ marginBottom: 0, marginRight: 0, padding: 0 }}
     title="서명 필요 문서"
     bordered={false}
     headerBordered
@@ -165,7 +165,7 @@ const Home = () => {
   const signing = (
     <ProCard
     colSpan={{ xs: 24, sm: 12, md: 12, lg: 12, xl: 12 }}
-    style={{ marginBottom: 0, marginRight: 30, padding: 0 }}
+    style={{ marginBottom: 0, marginRight: 0, padding: 0 }}
     title="서명 대기 문서"
     bordered={false}
     headerBordered
@@ -263,8 +263,8 @@ const Home = () => {
       >
         <Row gutter={[24, 24]}>
           <Col span={24}>{statics}</Col>
-          <Col span={responsive ? 24 : 12}>{tosign}</Col>
-          <Col span={responsive ? 24 : 12}>{signing}</Col>
+          <Col span={responsive ? 24 : 12} style={{display: 'flex'}}>{tosign}</Col>
+          <Col span={responsive ? 24 : 12} style={{display: 'flex'}}>{signing}</Col>
         </Row>
 
       </RcResizeObserver>

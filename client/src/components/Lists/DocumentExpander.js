@@ -118,7 +118,7 @@ const DocumentExpander = (props) => {
             return  (
                 <Timeline.Item dot={<CheckCircleOutlined className="timeline-clock-icon" />}>
                     <b>{user.name}</b>님 서명 완료 &nbsp; 
-                    <Tag color="575757">
+                    <Tag color="#575757">
                     <Moment format='YYYY/MM/DD HH:mm'>{item.signedBy.filter(e => e.user === user._id)[0].signedTime}</Moment>
                     </Tag>
                     {/* <Badge count={timeFormat(item.signedBy.filter(e => e.user === user._id)[0].signedTime)} style={{ backgroundColor: 'grey' }}/> */}
@@ -133,6 +133,7 @@ const DocumentExpander = (props) => {
                             <Moment format='YYYY/MM/DD HH:mm'>{item.canceledBy.filter(e => e.user === user._id)[0].canceledTime}</Moment>
                         </Tag>
                     </Tooltip>
+                    <br></br>{item.canceledBy.filter(e => e.user === user._id)[0].message}
                 </Timeline.Item>
             )
         } else {

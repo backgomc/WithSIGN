@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
-import { Table, Input, Space, Button } from "antd";
+import { Table, Input, Space, Button, Popover } from "antd";
 import Highlighter from 'react-highlight-words';
 import { SearchOutlined, FileOutlined } from '@ant-design/icons';
 import { useSelector, useDispatch } from 'react-redux';
@@ -244,8 +244,8 @@ const DocumentList = ({location}) => {
       sorter: true,
       key: 'docTitle',
       ...getColumnSearchProps('docTitle'),
-      expandable: true
-      // render: (text,row) => <div>{text} {row["email"]} </div>, // 여러 필드 동시 표시에 사용
+      expandable: true,
+      render: (text,row) =>  <div style={{ wordWrap: 'break-word', wordBreak: 'break-word' }}>{text}</div>, // 여러 필드 동시 표시에 사용
     },
     {
       title: '요청자',
@@ -311,14 +311,13 @@ const DocumentList = ({location}) => {
           case DOCUMENT_CANCELED:
             return (
               <Button
-                danger
-                // loading={isUploading(row)}
+                // danger
                 onClick={() => {        
                 const docId = row["_id"]
                 const docRef = row["docRef"]
                 dispatch(setDocToView({ docRef, docId }));
                 navigate(`/viewDocument`);
-              }}>취소사유</Button>
+              }}>문서조회</Button>
             )
           case DOCUMENT_SIGNED:
             return (
