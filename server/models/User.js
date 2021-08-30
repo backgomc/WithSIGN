@@ -43,6 +43,9 @@ const userSchema = mongoose.Schema({
     DEPART_CODE: {
         type: String
     },
+    OFFICE_CODE: {
+        type: String
+    },
     JOB_TITLE: {
         type: String
     },

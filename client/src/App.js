@@ -22,6 +22,7 @@ import Test from './components/Test/Test';
 import Test2 from './components/Test/Test2';
 import Login from './components/Login/Login';
 import Register from './components/Register/Register';
+import Setting from './components/Setting/Setting';
 import MySign from './components/MySign/MySign';
 import { setUser, selectUser } from './app/infoSlice';
 import ProLayout from '@ant-design/pro-layout';
@@ -114,6 +115,7 @@ const App = () => {
         <MySign path="mySign" />
         <Sign path="/signDocument" />
         <View path="/viewDocument" />
+        <Setting path="/setting" />
         <Test2 path="/test" />
       </Router>
   </ProLayout>

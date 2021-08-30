@@ -108,7 +108,9 @@ router.get('/auth', auth, (req, res) => {
     role: req.user.role,
     image: req.user.image,
     uid: req.user.uid,
-    JOB_TITLE: req.user.JOB_TITLE
+    JOB_TITLE: req.user.JOB_TITLE,
+    DEPART_CODE: req.user.DEPART_CODE,
+    OFFICE_CODE: req.user.OFFICE_CODE
   })
 })
   
@@ -212,6 +214,41 @@ router.post('/orgList', (req, res) => {
           success: true,
           orgs: results
       })
+  })
+});
+
+/*
+    ORG NAME: POST /orgInfo
+    INPUT: DEPART_CODE
+    OUTPUT: Org
+*/
+router.post('/orgInfo', (req, res) => {
+
+  if (!req.body.DEPART_CODE) {
+    return res.json({ success: false, message: "input value not enough!" })
+  } 
+
+  Org
+  .find({"DEPART_CODE" : req.body.DEPART_CODE})
+  // .sort({"name" : 0})    //0:오름차순 -1:내림차순 //{order : dir};
+  .exec(function(err, results) {
+
+      if (err) return next(err)
+
+      if (results.length > 0) {
+        org = results[0]
+
+        res.send({
+          success: true,
+          org: org
+        })
+      } else {
+        res.send({
+          success: false,
+          msg: "해당 조직이 없습니다."
+        })
+      }
+
   })
 });
   
