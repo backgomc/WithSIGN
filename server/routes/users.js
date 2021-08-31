@@ -251,5 +251,31 @@ router.post('/orgInfo', (req, res) => {
 
   })
 });
+
+
+// 유저 업데이트 : updateUser
+router.post('/updateUser', (req, res) => {
+
+  console.log("user:"+req.body.user)
+  console.log("email:"+req.body.email)
+
+  if (!req.body.user) {
+      return res.json({ success: false, message: "input value not enough!" })
+  } 
+
+  const user = req.body.user
+  const email = req.body.email
+
+
+  User.updateOne({ _id: user }, {email: email}, (err, result) => {
+    if (err) {
+      console.log(err);
+      return res.json({ success: false, message: err })
+    } else {
+      return res.json({ success: true })
+    }
+  })
+
+})
   
 module.exports = router;

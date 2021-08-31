@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import axios from 'axios';
-import { selectUser } from '../../app/infoSlice';
-import { EllipsisOutlined } from '@ant-design/icons';
+import { setUser, selectUser } from '../../app/infoSlice';
+import { LockOutlined } from '@ant-design/icons';
 import { Form, message, Spin } from 'antd';
 import { PageContainer } from '@ant-design/pro-layout';
 import ProCard from '@ant-design/pro-card';
@@ -13,6 +13,8 @@ import 'antd/dist/antd.css';
 const Setting = () => {
 
   const user = useSelector(selectUser);
+  const dispatch = useDispatch();
+
   const { _id, name, JOB_TITLE, email, DEPART_CODE, OFFICE_CODE } = user;
 
   const [tab, setTab] = useState('tab1');
@@ -41,14 +43,62 @@ const Setting = () => {
     setLoading(false)
   }
 
-  const onFinish = (values) => {
+  const onFinish = async (values) => {
     console.log(values)
 
-    //TODO 기본정보 변경 API Call
+    // 유저정보 변경 API Call
+    let param = {
+        user: _id,
+        email: values.email      
+    }  
+    const res = await axios.post('/api/users/updateUser', param)
+
+    if (res.data.success) {
+      message.success('변경되었습니다 !');
+
+      // 유저정보 갱신
+      axios.get('/api/users/auth').then(response => {
+        if (!response.data.isAuth) {
+            dispatch(setUser(null));
+        } else {
+            dispatch(setUser(response.data));
+        }
+      });
+
+    } else {
+      message.error('변경 실패하였습니다 !');
+    }
+  }
+
+  const onFinishPassword = async (values) => {
+    console.log(values)
+
+    // TODO 비밀번호 변경 API Call
+    // let param = {
+    //     user: _id,
+    //     email: values.email      
+    // }  
+    // const res = await axios.post('/api/users/updateUser', param)
+
+    // if (res.data.success) {
+    //   message.success('변경되었습니다 !');
+
+    //   // 유저정보 갱신
+    //   axios.get('/api/users/auth').then(response => {
+    //     if (!response.data.isAuth) {
+    //         dispatch(setUser(null));
+    //     } else {
+    //         dispatch(setUser(response.data));
+    //     }
+    //   });
+
+    // } else {
+    //   message.error('변경 실패하였습니다 !');
+    // }
   }
 
   const validateMessages = {
-    required: '${label} is required!',
+    required: '${label} 을 입력하세요!',
     types: {
       email: '${label}이 유효하지 않습니다!',
       number: '${label} is not a valid number!',
@@ -134,6 +184,89 @@ const Setting = () => {
     }
   }
 
+  const updatePassword = () => {
+    return (
+        <ProForm
+        onFinish={onFinishPassword}
+        validateMessages={validateMessages}
+        submitter={{
+          // Configure the button text
+          searchConfig: {
+            resetText: '초기화',
+            submitText: '비밀번호 변경',
+          }
+        }}
+
+        initialValues={{
+        }}
+      >
+        <ProFormText.Password
+          width="md"
+          name="currentPassword"
+          label="현재 비밀번호"
+          fieldProps={{
+            size: 'large',
+            prefix: <LockOutlined className={'prefixIcon'} />,
+          }}
+          placeholder={'현재 비밀번호'}
+          rules={[
+            {
+              required: true,
+              min: 5,
+              message: '현재 비밀번호를 입력하세요 !',
+            },
+          ]}
+        />
+
+        <ProFormText.Password
+          width="md"
+          name="password"
+          label="새 비밀번호"
+          fieldProps={{
+            size: 'large',
+            prefix: <LockOutlined className={'prefixIcon'} />,
+          }}
+          placeholder={'새 비밀번호'}
+          rules={[
+            {
+              required: true,
+              min: 5,
+              message: '새 비밀번호를 입력하세요 !',
+            },
+          ]}
+        /> 
+
+        <ProFormText.Password
+          width="md"
+          name="confirmPassword"
+          label="새 비밀번호 확인"
+          fieldProps={{
+            size: 'large',
+            prefix: <LockOutlined className={'prefixIcon'} />,
+          }}
+          placeholder={'비밀번호'}
+          rules={[
+            {
+              required: true,
+              min: 5,
+              // message: '새 비밀번호를 다시 입력하세요 !',
+            },
+            ({ getFieldValue }) => ({
+              validator(_, value) {
+                if (!value || getFieldValue('password') === value) {
+                  return Promise.resolve();
+                }
+  
+                return Promise.reject(new Error('비밀번호가 일치하지 않습니다.'));
+              },
+            }),
+          ]}
+        />
+
+      </ProForm>
+    )   
+  }
+
   return (
     <div
         style={{
@@ -171,7 +304,7 @@ const Setting = () => {
                   <div style={{marginLeft:'35px'}}>{userinfo()}</div>
                 </ProCard.TabPane>
                 <ProCard.TabPane key="tab2" tab="비밀번호 변경">
-                ...
+                <div style={{marginLeft:'35px'}}>{updatePassword()}</div>
                 </ProCard.TabPane>
             </ProCard>
         
