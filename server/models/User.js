@@ -120,7 +120,11 @@ userSchema.pre('save', function (next) {
 
 userSchema.methods.comparePassword = function (plainPassword, cb) {
 
+    console.log("plainPassword:"+plainPassword)
+    console.log("password:"+this.password)
     //plainPassword 1234567    암호회된 비밀번호 $2b$10$l492vQ0M4s9YUBfwYkkaZOgWHExahjWC
+    //plainPassword 22222      암호회된 비밀번호 $2a$10$527Dy8uyL6zW9ZWa/X4o1OjCfgmtLndVi2VIBZsdE/G4yS.ex0k1i
+    //plainPassword 22222      암호회된 비밀번호 $2a$10$RPesiN5LTCNul9OpyN50x.qhm9pUSUhX.Dv8Uo8nYXvfnRFqRfNdC
     bcrypt.compare(plainPassword, this.password, function (err, isMatch) {
         if (err) return cb(err);
         cb(null, isMatch);

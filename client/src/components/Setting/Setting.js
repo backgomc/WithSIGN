@@ -15,6 +15,8 @@ const Setting = () => {
   const user = useSelector(selectUser);
   const dispatch = useDispatch();
 
+  const [formPassword] = Form.useForm();
+
   const { _id, name, JOB_TITLE, email, DEPART_CODE, OFFICE_CODE } = user;
 
   const [tab, setTab] = useState('tab1');
@@ -73,28 +75,25 @@ const Setting = () => {
   const onFinishPassword = async (values) => {
     console.log(values)
 
-    // TODO 비밀번호 변경 API Call
-    // let param = {
-    //     user: _id,
-    //     email: values.email      
-    // }  
-    // const res = await axios.post('/api/users/updateUser', param)
+    // 비밀번호 변경 API Call
+    let param = {
+        user: _id,
+        currentPassword: values.currentPassword,
+        password: values.password
 
-    // if (res.data.success) {
-    //   message.success('변경되었습니다 !');
+    }  
+    const res = await axios.post('/api/users/updatePassword', param)
 
-    //   // 유저정보 갱신
-    //   axios.get('/api/users/auth').then(response => {
-    //     if (!response.data.isAuth) {
-    //         dispatch(setUser(null));
-    //     } else {
-    //         dispatch(setUser(response.data));
-    //     }
-    //   });
+    if (res.data.success) {
+      message.success('비밀번호가 변경되었습니다!');
+      // 입력폼 초기화
+      formPassword.resetFields()
 
-    // } else {
-    //   message.error('변경 실패하였습니다 !');
-    // }
+    } else if (res.data.message) {
+      message.error(res.data.message);
+    } else {
+      message.error('비밀번호 변경에 실패하였습니다!');
+    }
   }
 
   const validateMessages = {
@@ -187,6 +186,7 @@ const Setting = () => {
   const updatePassword = () => {
     return (
         <ProForm
+        form={formPassword}
         onFinish={onFinishPassword}
         validateMessages={validateMessages}
         submitter={{
