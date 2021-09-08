@@ -19,7 +19,7 @@ import RcResizeObserver from 'rc-resize-observer';
 import '@ant-design/pro-card/dist/card.css';
 import 'antd/dist/antd.css';
 
-const BulkDocumentsExpander = (props) => {
+const BulkExpander = (props) => {
 
   const dispatch = useDispatch();
   const [responsive, setResponsive] = useState(false);
@@ -58,4 +58,4 @@ const BulkDocumentsExpander = (props) => {
 
 };
 
-export default BulkDocumentsExpander;
+export default BulkExpander;

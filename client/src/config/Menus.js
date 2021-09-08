@@ -20,8 +20,8 @@ export default function Menus() {
           icon: <FileTextOutlined />,
         },
         {
-          path: '/bulkDocuments',
-          name: formatMessage({id: 'document.bulkDocuments'}),
+          path: '/bulkList',
+          name: formatMessage({id: 'document.bulk'}),
           icon: <TeamOutlined />,
         },
         {

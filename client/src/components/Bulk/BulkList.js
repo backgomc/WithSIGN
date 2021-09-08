@@ -8,7 +8,7 @@ import { selectUser } from '../../app/infoSlice';
 import { navigate } from '@reach/router';
 import Moment from 'react-moment';
 import 'moment/locale/ko';
-import TemplateExpander from "./BulkDocumentsExpander";
+import TemplateExpander from "./BulkExpander";
 import {
   FileOutlined
 } from '@ant-design/icons';
@@ -17,7 +17,7 @@ import 'antd/dist/antd.css';
 import { useIntl } from "react-intl";
 
 
-const BulkDocuments = () => {
+const BulkList = () => {
 
   const dispatch = useDispatch();
   const user = useSelector(selectUser);
@@ -249,14 +249,14 @@ const BulkDocuments = () => {
     <PageContainer
         ghost
         header={{
-          title: formatMessage({id: 'document.bulkDocuments'}),
+          title: formatMessage({id: 'document.bulk'}),
           ghost: false,
           breadcrumb: {
             routes: [
             ],
           },
           extra: [           
-          <Button type="primary" onClick={() => {navigate('/bulkDocumentsUpload');}}>
+          <Button type="primary" onClick={() => {navigate('/bulkUpload');}}>
             대량전송 요청
           </Button>
           ],
@@ -289,4 +289,4 @@ const BulkDocuments = () => {
   );
 };
 
-export default BulkDocuments;
+export default BulkList;
