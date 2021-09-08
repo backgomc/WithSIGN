@@ -1,7 +1,7 @@
 // import { useMemo } from "react"
 import React from 'react';
 import { useIntl } from "react-intl";
-import { CopyOutlined, FileAddOutlined, SettingOutlined, FileTextOutlined, HighlightOutlined } from '@ant-design/icons';
+import { TeamOutlined, CopyOutlined, FileAddOutlined, SettingOutlined, FileTextOutlined, HighlightOutlined } from '@ant-design/icons';
 
 export default function Menus() {
   const { formatMessage } = useIntl();
@@ -18,6 +18,11 @@ export default function Menus() {
           path: '/documentList',
           name: formatMessage({id: 'document.list'}),
           icon: <FileTextOutlined />,
+        },
+        {
+          path: '/bulkDocuments',
+          name: formatMessage({id: 'document.bulkDocuments'}),
+          icon: <TeamOutlined />,
         },
         {
           path: '/templateList',
