@@ -104,6 +104,16 @@
 * 게시판 만들기
 * 회사 템플릿 기능 
 
+http://localhost:5000/api/bulk/addBulk
+{
+    "user"	   : "60dbfeb557e078050836b473",
+    "docTitle" : "bulk document 2",
+    "users"     : ["60dbfeb557e078050836b473", "60dc111457e078050836b47e"],
+    "docs"      : ["60dea7c97339d905696a41d7", "60dea8f67339d905696a41d9"],
+    "canceled"  : false,
+    "signed"    : false
+}
+
 
 # docker 
 * 수동파일 배포

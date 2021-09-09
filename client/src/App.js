@@ -13,6 +13,7 @@ import DocumentList from './components/Lists/DocumentList';
 import TemplateList from './components/Template/TemplateList';
 import UploadTemplate from './components/Template/UploadTemplate';
 import BulkList from './components/Bulk/BulkList';
+import BulkDetail from './components/Bulk/BulkDetail';
 import Sign from './components/Sign';
 import View from './components/View';
 import PasswordReset from './components/PasswordReset/PasswordReset';
@@ -114,6 +115,7 @@ const App = () => {
         <TemplateList path="/templateList" />
         <UploadTemplate path="/uploadTemplate" />
         <BulkList path="/bulkList" />
+        <BulkDetail path="/bulkDetail" />
         <MySign path="mySign" />
         <Sign path="/signDocument" />
         <View path="/viewDocument" />

@@ -175,6 +175,15 @@ const DocumentList = ({location}) => {
   
   const columns = [
     {
+      title: '문서명',
+      dataIndex: 'docTitle',
+      sorter: true,
+      key: 'docTitle',
+      ...getColumnSearchProps('docTitle'),
+      expandable: true,
+      render: (text,row) =>  <div style={{ wordWrap: 'break-word', wordBreak: 'break-word' }}><FileOutlined /> {text}</div>, // 여러 필드 동시 표시에 사용
+    },
+    {
       title: '상태',
       dataIndex: 'status',
       responsive: ["xs"],
@@ -239,15 +248,6 @@ const DocumentList = ({location}) => {
       }, 
     },
     {
-      title: '문서명',
-      dataIndex: 'docTitle',
-      sorter: true,
-      key: 'docTitle',
-      ...getColumnSearchProps('docTitle'),
-      expandable: true,
-      render: (text,row) =>  <div style={{ wordWrap: 'break-word', wordBreak: 'break-word' }}>{text}</div>, // 여러 필드 동시 표시에 사용
-    },
-    {
       title: '요청자',
       responsive: ["sm"],
       dataIndex: ['user', 'name'],
@@ -257,7 +257,14 @@ const DocumentList = ({location}) => {
       onFilter: (value, record) =>
       record['user']['name']
         ? record['user']['name'].toString().toLowerCase().includes(value.toLowerCase())
-        : ''
+        : '',
+      render: (text, row) => {
+        return (
+          <React.Fragment>
+          {row['user']['name']} {row['user']['JOB_TITLE']}
+          </React.Fragment>
+        )
+      } 
     },
     {
       title: '요청자',

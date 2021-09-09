@@ -6,9 +6,9 @@ import { SearchOutlined } from '@ant-design/icons';
 import { useSelector, useDispatch } from 'react-redux';
 import { selectUser } from '../../app/infoSlice';
 import { navigate } from '@reach/router';
-import Moment from 'react-moment';
+import moment from "moment";
 import 'moment/locale/ko';
-import TemplateExpander from "./BulkExpander";
+import BulkExpander from "./BulkExpander";
 import {
   FileOutlined
 } from '@ant-design/icons';
@@ -45,21 +45,21 @@ const BulkList = () => {
       sortOrder: sorter.order,
       pagination,
       ...filters,
-      uid: _id
+      user: _id
     });
   };
 
   const fetch = (params = {}) => {
     setLoading(true);
 
-    axios.post('/api/template/templates', params).then(response => {
+    axios.post('/api/bulk/bulks', params).then(response => {
 
       console.log(response)
       if (response.data.success) {
-        const templates = response.data.templates;
+        const bulks = response.data.bulks;
 
         setPagination({...params.pagination, total:response.data.total});
-        setData(templates);
+        setData(bulks);
         setLoading(false);
 
       } else {
@@ -69,32 +69,6 @@ const BulkList = () => {
 
     });
   };
-
-  const deleteTemplate = async () => {
-    
-    setVisiblePopconfirm(false);
-
-    let param = {
-      _ids: selectedRowKeys
-    }
-
-    console.log("param:" + param)
-    const res = await axios.post('/api/template/deleteTemplate', param)
-    if (res.data.success) {
-      // alert('삭제 되었습니다.')
-    } else {
-      // alert('삭제 실패 하였습니다.')
-    }
-
-    setSelectedRowKeys([]);
-    setHasSelected(false)
-
-    fetch({
-      uid: _id,
-      pagination,
-    });
-
-  }
 
   const getColumnSearchProps = dataIndex => ({
 
@@ -175,38 +149,65 @@ const BulkList = () => {
   
   const columns = [
     {
-      title: '템플릿 이름',
+      title: '문서명',
       dataIndex: 'docTitle',
       sorter: true,
       key: 'docTitle',
       ...getColumnSearchProps('docTitle'),
       expandable: true,
-      render: (text,row) => <div><FileOutlined /> {text}</div>, // 여러 필드 동시 표시에 사용
+      render: (text,row) => <div style={{ wordWrap: 'break-word', wordBreak: 'break-word' }}><FileOutlined /> {text}</div>, // 여러 필드 동시 표시에 사용
+    },
+    // {
+    //   title: '요청자',
+    //   dataIndex: ['user', 'name'],
+    //   sorter: (a, b) => a.user.name.localeCompare(b.user.name),
+    //   key: 'name',
+    //   ...getColumnSearchProps('name'),
+    //   onFilter: (value, record) =>
+    //   record['user']['name']
+    //     ? record['user']['name'].toString().toLowerCase().includes(value.toLowerCase())
+    //     : '',
+    //   render: (text, row) => {
+    //     return (
+    //       <React.Fragment>
+    //       {row['user']['name']} {row['user']['JOB_TITLE']}
+    //       </React.Fragment>
+    //     )
+    //   } 
+    // },
+    {
+      title: '전송 건수',
+      dataIndex: 'state',
+      sorter: true,
+      key: 'state',
+      expandable: true,
+      render: (text,row) => <div>{row['docs'].length}건</div>
     },
     {
-      title: '생성자',
-      dataIndex: ['user', 'name'],
-      sorter: (a, b) => a.user.name.localeCompare(b.user.name),
-      key: 'name',
-      ...getColumnSearchProps('name'),
-      onFilter: (value, record) =>
-      record['user']['name']
-        ? record['user']['name'].toString().toLowerCase().includes(value.toLowerCase())
-        : ''
-    },
-    {
-      title: '생성 일시',
+      title: '요청 일시',
       dataIndex: 'requestedTime',
       sorter: true,
       key: 'requestedTime',
       render: (text, row) => {
-        // if (text){
-        //   return <Moment format='YYYY/MM/DD HH:mm'>{text}</Moment>
-        // } else {
-          return <Moment format='YYYY/MM/DD HH:mm'>{row["registeredTime"]}</Moment>
-        // }
+        return (<font color='#787878'>{moment(row["requestedTime"]).fromNow()}</font>)
       } 
     },
+    {
+      title: '',
+      // dataIndex: 'docRef',
+      key: 'action',
+      render: (_,row) => {
+        return (
+          <Button
+            onClick={() => {        
+            // const docId = row["_id"]
+            // const docRef = row["docRef"]
+            // dispatch(setDocToView({ docRef, docId }));
+            navigate(`/bulkDetail`, { state: { bulk: row } } );
+          }}>자세히 보기</Button>
+        )
+      }
+    }
   ];
 
 
@@ -227,7 +228,7 @@ const BulkList = () => {
   useEffect(() => {
 
     fetch({
-      uid: _id,
+      user: _id,
       pagination,
     });
 
@@ -272,9 +273,9 @@ const BulkList = () => {
         dataSource={data}
         pagination={pagination}
         loading={loading}
-        expandedRowRender={row => <TemplateExpander item={row} />}
-        expandRowByClick
-        rowSelection={rowSelection}
+        // expandedRowRender={row => <BulkExpander item={row} />}
+        // expandRowByClick
+        // rowSelection={rowSelection}
         onRow={record => ({
           onClick: e => {
             // console.log(`user clicked on row ${record.t1}!`);
