@@ -147,6 +147,12 @@ const BulkDetail = ({location}) => {
     clearFilters();
     setSearchText('');
   }
+
+  const filterUsers = (query) => {
+    return bulk.users.filter((el) =>
+      el._id.toString().toLowerCase().indexOf(query.toString().toLowerCase()) > -1
+    );
+  }
   
   const columns = [
     {
@@ -182,7 +188,8 @@ const BulkDetail = ({location}) => {
       sorter: true,
       key: 'user',
       expandable: true,
-      render: (text,row) => <div>{row['users'][0]}</div>
+      // render: (text,row) => <div>{row['users'][0]}</div>
+      render: (text,row) => <div>{filterUsers(row['users'][0])[0].name} {filterUsers(row['users'][0])[0].JOB_TITLE}</div>
     },
     {
       title: '요청 일시',
