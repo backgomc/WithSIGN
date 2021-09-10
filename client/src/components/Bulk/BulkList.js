@@ -6,13 +6,9 @@ import { SearchOutlined } from '@ant-design/icons';
 import { useSelector, useDispatch } from 'react-redux';
 import { selectUser } from '../../app/infoSlice';
 import { navigate } from '@reach/router';
-import { setDocToView } from '../ViewDocument/ViewDocumentSlice';
-import { setDocToSign } from '../SignDocument/SignDocumentSlice';
-import Moment from 'react-moment';
-import moment from 'moment';
+import moment from "moment";
 import 'moment/locale/ko';
-// import { DocumentType, DocumentTypeText, DOCUMENT_SIGNED, DOCUMENT_TOSIGN, DOCUMENT_SIGNING, DOCUMENT_CANCELED } from './DocumentType';
-import TemplateExpander from "./TemplateExpander";
+import BulkExpander from "./BulkExpander";
 import {
   FileOutlined
 } from '@ant-design/icons';
@@ -21,7 +17,7 @@ import 'antd/dist/antd.css';
 import { useIntl } from "react-intl";
 
 
-const TemplateList = () => {
+const BulkList = () => {
 
   const dispatch = useDispatch();
   const user = useSelector(selectUser);
@@ -49,21 +45,21 @@ const TemplateList = () => {
       sortOrder: sorter.order,
       pagination,
       ...filters,
-      uid: _id
+      user: _id
     });
   };
 
   const fetch = (params = {}) => {
     setLoading(true);
 
-    axios.post('/api/template/templates', params).then(response => {
+    axios.post('/api/bulk/bulks', params).then(response => {
 
       console.log(response)
       if (response.data.success) {
-        const templates = response.data.templates;
+        const bulks = response.data.bulks;
 
         setPagination({...params.pagination, total:response.data.total});
-        setData(templates);
+        setData(bulks);
         setLoading(false);
 
       } else {
@@ -73,32 +69,6 @@ const TemplateList = () => {
 
     });
   };
-
-  const deleteTemplate = async () => {
-    
-    setVisiblePopconfirm(false);
-
-    let param = {
-      _ids: selectedRowKeys
-    }
-
-    console.log("param:" + param)
-    const res = await axios.post('/api/template/deleteTemplate', param)
-    if (res.data.success) {
-      // alert('삭제 되었습니다.')
-    } else {
-      // alert('삭제 실패 하였습니다.')
-    }
-
-    setSelectedRowKeys([]);
-    setHasSelected(false)
-
-    fetch({
-      uid: _id,
-      pagination,
-    });
-
-  }
 
   const getColumnSearchProps = dataIndex => ({
 
@@ -179,7 +149,7 @@ const TemplateList = () => {
   
   const columns = [
     {
-      title: '템플릿 이름',
+      title: '문서명',
       dataIndex: 'docTitle',
       sorter: true,
       key: 'docTitle',
@@ -187,30 +157,57 @@ const TemplateList = () => {
       expandable: true,
       render: (text,row) => <div style={{ wordWrap: 'break-word', wordBreak: 'break-word' }}><FileOutlined /> {text}</div>, // 여러 필드 동시 표시에 사용
     },
+    // {
+    //   title: '요청자',
+    //   dataIndex: ['user', 'name'],
+    //   sorter: (a, b) => a.user.name.localeCompare(b.user.name),
+    //   key: 'name',
+    //   ...getColumnSearchProps('name'),
+    //   onFilter: (value, record) =>
+    //   record['user']['name']
+    //     ? record['user']['name'].toString().toLowerCase().includes(value.toLowerCase())
+    //     : '',
+    //   render: (text, row) => {
+    //     return (
+    //       <React.Fragment>
+    //       {row['user']['name']} {row['user']['JOB_TITLE']}
+    //       </React.Fragment>
+    //     )
+    //   } 
+    // },
     {
-      title: '생성자',
-      dataIndex: ['user', 'name'],
-      sorter: (a, b) => a.user.name.localeCompare(b.user.name),
-      key: 'name',
-      ...getColumnSearchProps('name'),
-      onFilter: (value, record) =>
-      record['user']['name']
-        ? record['user']['name'].toString().toLowerCase().includes(value.toLowerCase())
-        : ''
+      title: '전송 건수',
+      dataIndex: 'state',
+      sorter: true,
+      key: 'state',
+      expandable: true,
+      render: (text,row) => <div>{row['docs'].length}건</div>
     },
     {
-      title: '생성 일시',
+      title: '요청 일시',
       dataIndex: 'requestedTime',
       sorter: true,
       key: 'requestedTime',
       render: (text, row) => {
-        // if (text){
-        //   return <Moment format='YYYY/MM/DD HH:mm'>{text}</Moment>
-        // } else {
-          return <Moment format='YYYY/MM/DD HH:mm'>{row["registeredTime"]}</Moment>
-        // }
+        return (<font color='#787878'>{moment(row["requestedTime"]).fromNow()}</font>)
       } 
     },
+    {
+      title: '',
+      // dataIndex: 'docRef',
+      key: 'action',
+      render: (_,row) => {
+        return (
+          <Button
+            onClick={() => {        
+            // const docId = row["_id"]
+            // const docRef = row["docRef"]
+            // dispatch(setDocToView({ docRef, docId }));
+            navigate(`/bulkDetail`, { state: { bulk: row } } );
+          }}>자세히 보기</Button>
+        )
+      }
+    }
   ];
 
 
@@ -231,7 +228,7 @@ const TemplateList = () => {
   useEffect(() => {
 
     fetch({
-      uid: _id,
+      user: _id,
       pagination,
     });
 
@@ -253,35 +250,19 @@ const TemplateList = () => {
     <PageContainer
         ghost
         header={{
-          title: formatMessage({id: 'document.template'}),
+          title: formatMessage({id: 'document.bulk'}),
           ghost: false,
           breadcrumb: {
             routes: [
-              // {
-              //   path: '/',
-              //   breadcrumbName: 'Home',
-              // },
-              // {
-              //   path: '../',
-              //   breadcrumbName: '내 문서',
-              // },
             ],
           },
           extra: [           
-          <Button type="primary" onClick={() => {navigate('/uploadTemplate');}}>
-            템플릿 등록
-          </Button>,
-          <Popconfirm title="삭제하시겠습니까？" okText="네" cancelText="아니오" visible={visiblePopconfirm} onConfirm={deleteTemplate} onCancel={() => {setVisiblePopconfirm(false);}}>
-            <Button type="primary" danger disabled={!hasSelected} onClick={()=>{setVisiblePopconfirm(true);}}>
-              삭제
-            </Button>
-          </Popconfirm>,
-          <span>
-            {hasSelected ? `${selectedRowKeys.length} 개의 문서가 선택됨` : ''}
-          </span>
+          <Button type="primary" onClick={() => {navigate('/bulkUpload');}}>
+            대량전송 요청
+          </Button>
           ],
         }}
-        content={'자주 사용하는 문서를 미리 등록할 수 있습니다.'}
+        content={'하나의 문서로 여러 참여자에게 대량의 서명요청을 보낼 수 있습니다.'}
         footer={[
         ]}
     >
@@ -292,9 +273,9 @@ const TemplateList = () => {
         dataSource={data}
         pagination={pagination}
         loading={loading}
-        expandedRowRender={row => <TemplateExpander item={row} />}
-        expandRowByClick
-        rowSelection={rowSelection}
+        // expandedRowRender={row => <BulkExpander item={row} />}
+        // expandRowByClick
+        // rowSelection={rowSelection}
         onRow={record => ({
           onClick: e => {
             // console.log(`user clicked on row ${record.t1}!`);
@@ -309,4 +290,4 @@ const TemplateList = () => {
   );
 };
 
-export default TemplateList;
+export default BulkList;

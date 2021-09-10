@@ -27,6 +27,7 @@
 	"document.signed": "Signed Documents",
 	"document.list": "My Documents",
 	"document.template": "Template",
+	"document.bulk": "Mass Transfer",
 	"Login": "Login",
 	"RememberMe": "Remember me",
 	"ForgotPassword": "Forgot password",

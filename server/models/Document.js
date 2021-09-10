@@ -3,8 +3,6 @@ const Schema = mongoose.Schema;
 
 const documentSchema = mongoose.Schema({
     user: {
-        // type: String,
-        // maxlength: 50
         type: Schema.Types.ObjectId,
         ref: 'User'
     },

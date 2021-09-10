@@ -83,17 +83,36 @@
 * 템플릿 개발
 
 # 08.24
-* 문서작성 유효성 체크
 # 문서목록 모바일 대응
 # 사인하기 antd 레이아웃 적용
+* 서명 취소 기능
+# 홈화면 최대 글수 제한 및 화면 표시 높이 맞추기 
+# 서명 취소 기능
+
+
+# 08.30
+# 설정 화면 
+
+# 09.08
+* 문서작성 유효성 체크
 * Icon 이미지 
 * 대량 발송 설계 
+ Document 를 같이 사용할 것인가 ?
+ - 서명할 문서를 같이 보여주기 위해서 같이 사용 필요함 
+ - 내 문서함에 대량 발송 리스트 목록은 안보여줘야 함
+ 
 * 게시판 만들기
-# 홈화면 최대 글수 제한 및 화면 표시 높이 맞추기 
-* 서명 취소 기능
-  - canceled = [true|false]
-  - canceledBy = [{user:'abcx', canceledTime:'', message:'취소사유' }]
+* 회사 템플릿 기능 
 
+http://localhost:5000/api/bulk/addBulk
+{
+    "user"	   : "60dbfeb557e078050836b473",
+    "docTitle" : "bulk document 2",
+    "users"     : ["60dbfeb557e078050836b473", "60dc111457e078050836b47e"],
+    "docs"      : ["60dea7c97339d905696a41d7", "60dea8f67339d905696a41d9"],
+    "canceled"  : false,
+    "signed"    : false
+}
 
 
 # docker 

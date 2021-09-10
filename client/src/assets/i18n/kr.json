@@ -27,6 +27,7 @@
 	"document.signed": "서명한 문서",
 	"document.list": "내 문서함",
 	"document.template": "템플릿 관리",
+	"document.bulk": "대량 전송",
 	"Login": "로그인",
 	"RememberMe": "기억하기",
 	"ForgotPassword": "비밀번호 찾기",

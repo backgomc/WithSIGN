@@ -199,7 +199,7 @@ const Home = () => {
       <ProCard.Group title="문서 통계" direction='row' loading={loadingStatics}>
       <ProCard>
         <Link to='/documentList' state={{ status: '서명 필요' }}>
-          <Statistic title="서명 필요" value={toSignNum} valueStyle={{ color: '#cf1322' }} suffix="건" />
+          <Statistic title="서명 필요" value={toSignNum} valueStyle={{ color: '#3057cf' }} suffix="건" />
         </Link>
       </ProCard>
       <Divider type='vertical' />

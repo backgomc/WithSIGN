@@ -12,6 +12,8 @@ import SignedList from './components/Lists/SignedList';
 import DocumentList from './components/Lists/DocumentList';
 import TemplateList from './components/Template/TemplateList';
 import UploadTemplate from './components/Template/UploadTemplate';
+import BulkList from './components/Bulk/BulkList';
+import BulkDetail from './components/Bulk/BulkDetail';
 import Sign from './components/Sign';
 import View from './components/View';
 import PasswordReset from './components/PasswordReset/PasswordReset';
@@ -22,6 +24,7 @@ import Test from './components/Test/Test';
 import Test2 from './components/Test/Test2';
 import Login from './components/Login/Login';
 import Register from './components/Register/Register';
+import Setting from './components/Setting/Setting';
 import MySign from './components/MySign/MySign';
 import { setUser, selectUser } from './app/infoSlice';
 import ProLayout from '@ant-design/pro-layout';
@@ -111,9 +114,12 @@ const App = () => {
         <DocumentList path="/documentList" />
         <TemplateList path="/templateList" />
         <UploadTemplate path="/uploadTemplate" />
+        <BulkList path="/bulkList" />
+        <BulkDetail path="/bulkDetail" />
         <MySign path="mySign" />
         <Sign path="/signDocument" />
         <View path="/viewDocument" />
+        <Setting path="/setting" />
         <Test2 path="/test" />
       </Router>
   </ProLayout>
