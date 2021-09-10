@@ -89,7 +89,7 @@
 * Icon 이미지 
 * 대량 발송 설계 
 * 게시판 만들기
-* 홈화면 최대 글수 제한 및 화면 표시 높이 맞추기 
+# 홈화면 최대 글수 제한 및 화면 표시 높이 맞추기 
 * 서명 취소 기능
   - canceled = [true|false]
   - canceledBy = [{user:'abcx', canceledTime:'', message:'취소사유' }]
