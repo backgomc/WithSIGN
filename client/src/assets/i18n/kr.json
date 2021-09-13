@@ -63,5 +63,6 @@
 	"sign.complete": "서명 완료",
 	"document.download": "문서 다운로드",
 	"sign.management": "사인 관리",
-	"sign.cancel": "서명 취소"
+	"sign.cancel": "서명 취소",
+	"Back": "이전"
 }

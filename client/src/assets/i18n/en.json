@@ -63,5 +63,6 @@
 	"sign.complete": "Complete signing",
 	"document.download": "Download",
 	"sign.management": "Sign Management",
-	"sign.cancel": "cancel signing"
+	"sign.cancel": "cancel signing",
+	"Back": "Back"
 }

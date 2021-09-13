@@ -146,6 +146,12 @@ const BulkList = () => {
     clearFilters();
     setSearchText('');
   }
+
+  const filterSigned = (docs) => {
+    return docs.filter((el) =>
+      el.signed == true
+    );
+  }
   
   const columns = [
     {
@@ -157,31 +163,31 @@ const BulkList = () => {
       expandable: true,
       render: (text,row) => <div style={{ wordWrap: 'break-word', wordBreak: 'break-word' }}><FileOutlined /> {text}</div>, // 여러 필드 동시 표시에 사용
     },
-    // {
-    //   title: '요청자',
-    //   dataIndex: ['user', 'name'],
-    //   sorter: (a, b) => a.user.name.localeCompare(b.user.name),
-    //   key: 'name',
-    //   ...getColumnSearchProps('name'),
-    //   onFilter: (value, record) =>
-    //   record['user']['name']
-    //     ? record['user']['name'].toString().toLowerCase().includes(value.toLowerCase())
-    //     : '',
-    //   render: (text, row) => {
-    //     return (
-    //       <React.Fragment>
-    //       {row['user']['name']} {row['user']['JOB_TITLE']}
-    //       </React.Fragment>
-    //     )
-    //   } 
-    // },
     {
-      title: '전송 건수',
-      dataIndex: 'state',
+      title: '완료/전체 건수',
+      dataIndex: 'total',
       sorter: true,
-      key: 'state',
+      key: 'total',
       expandable: true,
-      render: (text,row) => <div>{row['docs'].length}건</div>
+      render: (text,row) => <div>({filterSigned(row['docs']).length} / {row['docs'].length})</div>
+    },
+    {
+      title: '요청자',
+      dataIndex: ['user', 'name'],
+      sorter: (a, b) => a.user.name.localeCompare(b.user.name),
+      key: 'name',
+      ...getColumnSearchProps('name'),
+      onFilter: (value, record) =>
+      record['user']['name']
+        ? record['user']['name'].toString().toLowerCase().includes(value.toLowerCase())
+        : '',
+      render: (text, row) => {
+        return (
+          <React.Fragment>
+          {row['user']['name']} {row['user']['JOB_TITLE']}
+          </React.Fragment>
+        )
+      } 
     },
     {
       title: '요청 일시',
@@ -204,7 +210,7 @@ const BulkList = () => {
             // const docRef = row["docRef"]
             // dispatch(setDocToView({ docRef, docId }));
             navigate(`/bulkDetail`, { state: { bulk: row } } );
-          }}>자세히 보기</Button>
+          }}>상세 보기</Button>
         )
       }
     }

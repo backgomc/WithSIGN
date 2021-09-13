@@ -1,14 +1,17 @@
 import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
-import { Table, Input, Space, Button, Popconfirm } from "antd";
+import { Table, Input, Space, Button, Descriptions } from "antd";
 import Highlighter from 'react-highlight-words';
 import { SearchOutlined } from '@ant-design/icons';
 import { useSelector, useDispatch } from 'react-redux';
 import { selectUser } from '../../app/infoSlice';
 import { navigate } from '@reach/router';
+import { setDocToView } from '../ViewDocument/ViewDocumentSlice';
+import Moment from 'react-moment';
 import moment from "moment";
 import 'moment/locale/ko';
 import BulkExpander from "./BulkExpander";
+import { DocumentType, DocumentTypeText, DocumentTypeIcon, DOCUMENT_SIGNED, DOCUMENT_TOSIGN, DOCUMENT_SIGNING, DOCUMENT_CANCELED } from '../Lists/DocumentType';
 import {
   FileOutlined
 } from '@ant-design/icons';
@@ -41,13 +44,13 @@ const BulkDetail = ({location}) => {
   const handleTableChange = (pagination, filters, sorter) => {
     console.log("handleTableChange called")
     console.log(filters)
-    fetch({
-      sortField: sorter.field,
-      sortOrder: sorter.order,
-      pagination,
-      ...filters,
-      user: _id
-    });
+    // fetch({
+    //   sortField: sorter.field,
+    //   sortOrder: sorter.order,
+    //   pagination,
+    //   ...filters,
+    //   user: _id
+    // });
   };
 
   const fetch = (params = {}) => {
@@ -91,12 +94,12 @@ const BulkDetail = ({location}) => {
             size="small"
             style={{ width: 90 }}
           >
-            Search
+            검색
           </Button>
           <Button onClick={() => handleReset(clearFilters)} size="small" style={{ width: 90 }}>
-            Reset
+            초기화
           </Button>
-          <Button
+          {/* <Button
             type="link"
             size="small"
             onClick={() => {
@@ -105,17 +108,17 @@ const BulkDetail = ({location}) => {
               setSearchedColumn(dataIndex)
             }}
           >
-            Filter
-          </Button>
+            필터
+          </Button> */}
         </Space>
       </div>
     ),
     filterIcon: filtered => <SearchOutlined style={{ color: filtered ? '#1890ff' : undefined }} />,
     // DB 필터링 사용 시는 주석처리
-    // onFilter: (value, record) =>
-    //   record[dataIndex]
-    //     ? record[dataIndex].toString().toLowerCase().includes(value.toLowerCase())
-    //     : '',
+    onFilter: (value, record) =>
+      record[dataIndex]
+        ? record[dataIndex].toString().toLowerCase().includes(value.toLowerCase())
+        : '',
     onFilterDropdownVisibleChange: visible => {
       if (visible) {
         // setTimeout(() => searchInput.select(), 100);
@@ -153,6 +156,25 @@ const BulkDetail = ({location}) => {
       el._id.toString().toLowerCase().indexOf(query.toString().toLowerCase()) > -1
     );
   }
+
+  const filterSigned = (query) => {
+    return bulk.docs.filter((el) =>
+      el.signed == query
+    );
+  }
+
+  const filterCanceled = (query) => {
+    return bulk.docs.filter((el) =>
+      el.canceled == query
+    );
+  }
+
+  const filterProcessing = () => {
+    return bulk.docs.filter((el) =>
+      el.signed == false && el.canceled != true
+    );
+  }
+
   
   const columns = [
     {
@@ -163,56 +185,155 @@ const BulkDetail = ({location}) => {
       ...getColumnSearchProps('docTitle'),
       expandable: true,
       render: (text,row) => <div style={{ wordWrap: 'break-word', wordBreak: 'break-word' }}><FileOutlined /> {text}</div>, // 여러 필드 동시 표시에 사용
+      sorter: (a, b) => a.docTitle.length - b.docTitle.length,
+      // sortDirections: ['descend'],
     },
     // {
-    //   title: '요청자',
-    //   dataIndex: ['user', 'name'],
-    //   sorter: (a, b) => a.user.name.localeCompare(b.user.name),
-    //   key: 'name',
-    //   ...getColumnSearchProps('name'),
-    //   onFilter: (value, record) =>
-    //   record['user']['name']
-    //     ? record['user']['name'].toString().toLowerCase().includes(value.toLowerCase())
-    //     : '',
+    //   title: '상태',
+    //   dataIndex: 'state',
+    //   sorter: true,
+    //   key: 'state',
+    //   expandable: true,
     //   render: (text, row) => {
-    //     return (
-    //       <React.Fragment>
-    //       {row['user']['name']} {row['user']['JOB_TITLE']}
-    //       </React.Fragment>
-    //     )
+    //     return (row["signed"] ? "서명 완료" : "서명 대기")
     //   } 
     // },
     {
+      title: '상태',
+      dataIndex: 'status',
+      responsive: ["xs"],
+      sorter: false,
+      key: 'status',
+      defaultFilteredValue: location.state.status? [location.state.status]: [],
+      filters: [
+        {
+          text: DOCUMENT_SIGNED,
+          value: DOCUMENT_SIGNED,
+        },
+        {
+          text: DOCUMENT_TOSIGN,
+          value: DOCUMENT_TOSIGN,
+        },
+        {
+          text: DOCUMENT_SIGNING,
+          value: DOCUMENT_SIGNING,
+        },
+        {
+          text: DOCUMENT_CANCELED,
+          value: DOCUMENT_CANCELED,
+        },
+      ],
+      onFilter: (value, record) => DocumentType({uid: _id, document: record}).indexOf(value) === 0,
+      render: (_,row) => {
+        return (
+            <DocumentTypeIcon uid={_id} document={row} />
+          )
+      }, 
+    },
+    {
+      title: '상태',
+      dataIndex: 'status',
+      responsive: ["sm"],
+      sorter: false,
+      key: 'status',
+      defaultFilteredValue: location.state.status? [location.state.status]: [],
+      filters: [
+        {
+          text: DOCUMENT_SIGNED,
+          value: DOCUMENT_SIGNED,
+        },
+        {
+          text: DOCUMENT_TOSIGN,
+          value: DOCUMENT_TOSIGN,
+        },
+        {
+          text: DOCUMENT_SIGNING,
+          value: DOCUMENT_SIGNING,
+        },
+        {
+          text: DOCUMENT_CANCELED,
+          value: DOCUMENT_CANCELED,
+        },
+      ],
+      onFilter: (value, record) => DocumentType({uid: _id, document: record}).indexOf(value) === 0,
+      render: (_,row) => {
+        return (
+            <DocumentTypeText uid={_id} document={row} />
+          )
+      }, 
+    },
+    {
       title: '참여자',
       dataIndex: 'user',
+      responsive: ["sm"],
+      ...getColumnSearchProps('user'),
       sorter: true,
       key: 'user',
       expandable: true,
-      // render: (text,row) => <div>{row['users'][0]}</div>
-      render: (text,row) => <div>{filterUsers(row['users'][0])[0].name} {filterUsers(row['users'][0])[0].JOB_TITLE}</div>
+      onFilter: (value, row) =>
+        filterUsers(row['users'][0])[0].name
+          ? filterUsers(row['users'][0])[0].name.toString().toLowerCase().includes(value.toLowerCase())
+          : '',
+      render: (text, row) => <div>{filterUsers(row['users'][0]).length > 0 ? filterUsers(row['users'][0])[0].name +' '+ filterUsers(row['users'][0])[0].JOB_TITLE : ''}</div>
+    },
+    {
+      title: '참여자',
+      dataIndex: 'user',
+      responsive: ["xs"],
+      sorter: true,
+      key: 'user',
+      expandable: true,
+      render: (text,row) => <div>{filterUsers(row['users'][0]).length > 0 ? filterUsers(row['users'][0])[0].name : ''}</div>
     },
     {
       title: '요청 일시',
       dataIndex: 'requestedTime',
-      sorter: true,
+      // sorter: true,
       key: 'requestedTime',
       render: (text, row) => {
         return (<font color='#787878'>{moment(row["requestedTime"]).fromNow()}</font>)
       } 
     },
     {
+      title: '서명 일시',
+      dataIndex: 'signedTime',
+      // sorter: true,
+      key: 'signedTime',
+      render: (text, row) => {
+        return (row["signedTime"] ? <font color='#787878'>{moment(row["signedTime"]).fromNow()}</font> : <font color='#787878'>서명 전</font>)
+      }
+    },
+    {
       title: '',
-      // dataIndex: 'docRef',
       key: 'action',
+      responsive: ["sm"],
       render: (_,row) => {
         return (
+          row["signedTime"] ?
           <Button
             onClick={() => {        
-            // const docId = row["_id"]
-            // const docRef = row["docRef"]
-            // dispatch(setDocToView({ docRef, docId }));
-            navigate(`/bulkDetail`);
-          }}>문서 확인</Button>
+            const docId = row["_id"]
+            const docRef = row["docRef"]
+            dispatch(setDocToView({ docRef, docId }));
+            navigate(`/viewDocument`);
+          }}>문서 확인</Button> : ''
+        )
+      }
+    },
+    {
+      title: '',
+      key: 'action',
+      responsive: ["xs"],
+      render: (_,row) => {
+        return (
+          row["signedTime"] ?
+          <Button
+            onClick={() => {        
+            const docId = row["_id"]
+            const docRef = row["docRef"]
+            dispatch(setDocToView({ docRef, docId }));
+            navigate(`/viewDocument`);
+          }}>문서</Button> : ''
         )
       }
     }
@@ -266,25 +387,40 @@ const BulkDetail = ({location}) => {
         header={{
           title: bulk.docTitle,
           ghost: false,
-          breadcrumb: {
-            routes: [
-              {
-                path: '/bulkList',
-                breadcrumbName: '대량 전송',
-              },
-              {
-                path: '/',
-                breadcrumbName: '자세히 보기',
-              },
-            ],
-          },
+          // breadcrumb: {
+          //   routes: [
+          //     {
+          //       path: '',
+          //       breadcrumbName: '대량 전송',
+          //     },
+          //     {
+          //       path: '',
+          //       breadcrumbName: '자세히 보기',
+          //     },
+          //   ],
+          // },
           extra: [           
           <Button onClick={() => {navigate('/bulkList');}}>
-            뒤로가기
+            {formatMessage({id: 'Back'})}
           </Button>
           ],
         }}
-        content={'하나의 문서로 여러 참여자에게 대량의 서명요청을 보낼 수 있습니다.'}
+        content={
+          <Descriptions column={2} style={{ marginBottom: -16 }}>
+            <Descriptions.Item label="전체 건수">{bulk.docs.length} 건</Descriptions.Item>
+            <Descriptions.Item label="완료 건수">
+              {filterSigned(true).length} 건
+            </Descriptions.Item>
+            <Descriptions.Item label="대기 건수">
+              {filterProcessing().length} 건
+            </Descriptions.Item>
+            <Descriptions.Item label="취소 건수">
+              {filterCanceled(true).length} 건
+            </Descriptions.Item>
+            <Descriptions.Item label="요청 일시"><Moment format='YYYY/MM/DD HH:mm'>{bulk.requestedTime}</Moment></Descriptions.Item>
+            <Descriptions.Item label="요청자">{bulk.user.name} {bulk.user.JOB_TITLE}</Descriptions.Item>
+          </Descriptions>
+        }
         footer={[
         ]}
     >

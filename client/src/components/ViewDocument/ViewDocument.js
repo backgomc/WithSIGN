@@ -4,7 +4,7 @@ import { navigate } from '@reach/router';
 // import { Box, Column, Heading, Row, Stack, Button } from 'gestalt';
 import { Row, Col, Button } from 'antd';
 import { selectDocToView } from './ViewDocumentSlice';
-import { selectUser } from '../../app/infoSlice';
+import { selectUser, selectHistory } from '../../app/infoSlice';
 import WebViewer from '@pdftron/webviewer';
 // import 'gestalt/dist/gestalt.css';
 import './ViewDocument.css';
@@ -24,6 +24,8 @@ const ViewDocument = () => {
 
   const doc = useSelector(selectDocToView);
   const user = useSelector(selectUser);
+  const history = useSelector(selectHistory);
+
   const { docRef } = doc;
   const { _id } = user;
   const { formatMessage } = useIntl();
@@ -98,7 +100,7 @@ const ViewDocument = () => {
   };
 
   const doneViewing = async () => {
-    navigate('/documentList');
+    navigate(history ? history : '/documentList');
   }
 
   return (
@@ -114,12 +116,12 @@ const ViewDocument = () => {
           ],
         },
         extra: [
+          <Button key="2" onClick={() => window.history.back()}>
+            {formatMessage({id: 'Back'})}
+          </Button>,
           <Button key="3" type="primary" onClick={() => download()} icon={<DownloadOutlined />}>
             {formatMessage({id: 'document.download'})}
-          </Button>,
-          <Button key="2" onClick={() => doneViewing()}>
-            {formatMessage({id: 'document.list'})}
-          </Button>,
+          </Button>
         ],
       }}
       // content= {}
