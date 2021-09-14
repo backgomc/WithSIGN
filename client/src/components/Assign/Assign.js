@@ -5,7 +5,7 @@ import { useIntl } from "react-intl";
 import { navigate, Link } from '@reach/router';
 import { Transfer, Tree, Input, Button, Space, message } from 'antd';
 import { selectUser } from '../../app/infoSlice';
-import { addSignee, resetSignee, selectAssignees } from './AssignSlice';
+import { addSignee, resetSignee, selectAssignees, selectSendType } from './AssignSlice';
 import StepWrite from '../Step/StepWrite'
 import TreeTransfer from './TreeTransfer';
 import { PageContainer } from '@ant-design/pro-layout';
@@ -20,6 +20,7 @@ const Assign = () => {
   const dispatch = useDispatch();
   const { formatMessage } = useIntl();
   const user = useSelector(selectUser);
+  const sendType = useSelector(selectSendType);
   const { _id } = user;
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -206,7 +207,7 @@ const Assign = () => {
       <PageContainer
         // ghost
         header={{
-          title: '서명 요청',
+          title:(sendType == 'B') ? '서명 요청(대량 전송)' : '서명 요청',
           ghost: true,
           breadcrumb: {
             routes: [

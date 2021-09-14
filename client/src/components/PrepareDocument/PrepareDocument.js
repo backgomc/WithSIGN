@@ -15,7 +15,7 @@ import { navigate } from '@reach/router';
 import { Upload, message, Spin, Button, Row, Col, List, Card } from 'antd';
 import Icon from '@ant-design/icons';
 import { InboxOutlined, HighlightOutlined, PlusOutlined } from '@ant-design/icons';
-import { resetAssignAll, selectAssignees, resetSignee, selectDocumentFile, selectDocumentTitle, resetDocumentFile, resetDocumentTitle, selectTemplate, resetTemplate, selectDocumentType, resetDocumentType, selectTemplateTitle, resetTemplateTitle } from '../Assign/AssignSlice';
+import { resetAssignAll, selectAssignees, resetSignee, selectDocumentFile, selectDocumentTitle, resetDocumentFile, resetDocumentTitle, selectTemplate, resetTemplate, selectDocumentType, resetDocumentType, selectTemplateTitle, selectSendType } from '../Assign/AssignSlice';
 import { selectUser } from '../../app/infoSlice';
 import WebViewer from '@pdftron/webviewer';
 // import 'gestalt/dist/gestalt.css';
@@ -46,6 +46,7 @@ const PrepareDocument = () => {
   const documentType = useSelector(selectDocumentType);
   const template = useSelector(selectTemplate);
   const templateTitle = useSelector(selectTemplateTitle);
+  const sendType = useSelector(selectSendType);
 
   const assignees = useSelector(selectAssignees);
   const assigneesValues = assignees.map(user => {
@@ -166,6 +167,7 @@ const PrepareDocument = () => {
             );
             inputAnnot = new Annotations.TextWidgetAnnotation(field);
           } else if (annot.custom.type === 'SIGN') {
+            console.log("annot.custom.name:"+annot.custom.name)
             field = new Annotations.Forms.Field(
               // annot.getContents() + Date.now() + index,
               annot.custom.name + Date.now() + index,
@@ -271,6 +273,8 @@ const PrepareDocument = () => {
     // setLoading(false);
   };
 
+  // 일반전송 : 멤버 아이디로 필드값 저장
+  // 대량전송 : 멤버가 아닌 공통값(bulk)으로 저장
   const addField = (type, point = {}, member = {}, name = '', value = '', flag = {}) => {
     const { docViewer, Annotations } = instance;
     const annotManager = docViewer.getAnnotationManager();
@@ -315,13 +319,15 @@ const PrepareDocument = () => {
       flag,
       // name: `${assignee}_${type}_`,  //TODO 이름_type으로 
       // name: `${assignee.value}_${type}_`
-      name: `${member.key}_${type}_`
+      // name: `${member.key}_${type}_`
+      name: (sendType === 'B') ? `bulk_${type}_` : `${member.key}_${type}_`
     };
 
     // set the type of annot
     // textAnnot.setContents(textAnnot.custom.name);
     // textAnnot.setContents(assignee.label+"_"+type);
-    textAnnot.setContents(member.name+"_"+type);
+    // textAnnot.setContents(member.name+"_"+type);
+    textAnnot.setContents((sendType === 'B') ? type : member.name+"_"+type);
     textAnnot.FontSize = '' + 20.0 / zoom + 'px';
     textAnnot.FillColor = new Annotations.Color(211, 211, 211, 0.5);
     textAnnot.TextColor = new Annotations.Color(0, 165, 228);
@@ -341,8 +347,8 @@ const PrepareDocument = () => {
     // upload the PDF with fields as AcroForm
     // const storageRef = storage.ref();
     const referenceString = `docToSign/${_id}${Date.now()}.pdf`;
-    // TODO 1. 파일 저장
-    // TODO 2. DB 저장
+    // 1. 파일 저장
+    // 2. DB 저장
     // const docRef = storageRef.child(referenceString);
     const { docViewer, annotManager } = instance;
     const doc = docViewer.getDocument();
@@ -443,7 +449,7 @@ const PrepareDocument = () => {
     <PageContainer  
       // ghost
       header={{
-        title: '서명 요청',
+        title: (sendType == 'B') ? '서명 요청(대량 전송)' : '서명 요청',
         ghost: true,
         breadcrumb: {
           routes: [
@@ -470,8 +476,10 @@ const PrepareDocument = () => {
       >
         <Row gutter={[24, 24]}>
           <Col span={responsive ? 24 : 5}>
-            {/* 유저별로 카드 띄우기 */}
-            <List
+
+            {(sendType == 'G') ? (<div>
+
+              <List
               rowKey="id"
               loading={loading}
               // grid={{ gutter: 24, lg: 3, md: 2, sm: 1, xs: 1 }}
@@ -479,26 +487,38 @@ const PrepareDocument = () => {
               dataSource={assignees}
               renderItem={item =>
                 <List.Item key={item.key}>
-                  {/* <ProCard 
-                    title={item.name}
-                    hover={false}
-                    colSpan="150px" 
-                    layout="center" 
-                    bordered
-                    headerBordered
-                    style={{ minWidth: "150px" }}
-                    actions={[
-                    ]}>
-                      <p><Button icon={<PlusOutlined />} onClick={e => { addField('SIGN', {}, item); }}>{formatMessage({id: 'input.sign'})}</Button></p>
-                      <p><Button icon={<PlusOutlined />} onClick={e => { addField('TEXT', {}, item); }}>{formatMessage({id: 'input.text'})}</Button></p>
-                  </ProCard> */}
                   <Card size="small" type="inner" title={item.name} style={{ minWidth: 148 }}>
                     <p><Button icon={<PlusOutlined />} onClick={e => { addField('SIGN', {}, item); }}>{formatMessage({id: 'input.sign'})}</Button></p>
                     <p><Button icon={<PlusOutlined />} onClick={e => { addField('TEXT', {}, item); }}>{formatMessage({id: 'input.text'})}</Button></p>
                   </Card>
                 </List.Item>
               }
-            />
+              />
+
+            </div>) : (<div>
+
+              <Card size="small" type="inner" title="서명 참여자" style={{ minWidth: 148 }}>
+                    <p><Button icon={<PlusOutlined />} onClick={e => { addField('SIGN', {}); }}>{formatMessage({id: 'input.sign'})}</Button></p>
+                    <p><Button icon={<PlusOutlined />} onClick={e => { addField('TEXT', {}); }}>{formatMessage({id: 'input.text'})}</Button></p>
+              </Card>
+
+            </div>)}  
+            {/* 유저별로 카드 띄우기 */}
+            {/* <List
+              rowKey="id"
+              loading={loading}
+              // grid={{ gutter: 24, lg: 3, md: 2, sm: 1, xs: 1 }}
+              grid={{ gutter: 24, column: responsive ? 2 : 1}}
+              dataSource={assignees}
+              renderItem={item =>
+                <List.Item key={item.key}>
+                  <Card size="small" type="inner" title={item.name} style={{ minWidth: 148 }}>
+                    <p><Button icon={<PlusOutlined />} onClick={e => { addField('SIGN', {}, item); }}>{formatMessage({id: 'input.sign'})}</Button></p>
+                    <p><Button icon={<PlusOutlined />} onClick={e => { addField('TEXT', {}, item); }}>{formatMessage({id: 'input.text'})}</Button></p>
+                  </Card>
+                </List.Item>
+              }
+            /> */}
 
           </Col>
           <Col span={responsive ? 24 : 19}><div className="webviewer" ref={viewer}></div></Col>
@@ -515,122 +535,3 @@ const PrepareDocument = () => {
 };
 
 export default PrepareDocument;
-
-
-
-
-
-// {/* <Spin tip={formatMessage({id: 'Processing'})} spinning={loading}></Spin>
-// {/* <div style={{width: "750px"}} align="center">
-//   <p><StepWrite current={2} /></p>
-// </div> */}
-// <p><StepWrite current={2} /></p>
-
-// <Box display="flex" direction="row" flex="grow">
-//   <Column span={2}>
-//     {/* <Box padding={3}>
-//       <Heading size="md">Prepare Document</Heading>
-//     </Box> */}
-//     <Box padding={3}>
-//       {/* <Row gap={1}>
-//         <Stack>
-//           <Box padding={2}>
-//             <Text>{'Step 1'}</Text>
-//           </Box>
-//           <Box padding={2}>
-//             <Button
-//               onClick={() => {
-//                 if (filePicker) {
-//                   filePicker.current.click();
-//                 }
-//               }}
-//               accessibilityLabel="upload a document"
-//               text="Upload a document"
-//               iconEnd="add-circle"
-//             />
-//           </Box>
-//         </Stack>
-//       </Row> */}
-//       <Row>
-//         <Stack>
-//           <Box padding={2}>
-//             <Text>{'Step 1'}</Text>
-//           </Box>
-//           <Box padding={2}>
-//             <SelectList
-//               id="assigningFor"
-//               name="assign"
-//               onChange={({ value }) => setAssignee(assigneesValues.filter(e => e.value === value)[0])}  
-//               // onChange={({ value }) => setAssignee(value)}
-//               options={assigneesValues}
-//               placeholder="Select recipient"
-//               label="Adding signature for"
-//               value={assignee.value}
-//             />
-//           </Box>
-//           <Box padding={2}>
-//             <div
-//               draggable
-//               onDragStart={e => dragStart(e)}
-//               onDragEnd={e => dragEnd(e, 'SIGN')}
-//             >
-//               <Button
-//                 onClick={() => addField('SIGN')}
-//                 accessibilityLabel="add signature"
-//                 text={formatMessage({id: 'input.sign'})}
-//                 iconEnd="compose"
-//               />
-//             </div>
-//           </Box>
-//           <Box padding={2}>
-//             <div
-//               draggable
-//               onDragStart={e => dragStart(e)}
-//               onDragEnd={e => dragEnd(e, 'TEXT')}
-//             >
-//               <Button
-//                 onClick={() => addField('TEXT')}
-//                 accessibilityLabel="add text"
-//                 text= {formatMessage({id: 'input.text'})}
-//                 iconEnd="text-sentence-case"
-//               />
-//             </div>
-//           </Box>
-//           {/* <Box padding={2}>
-//             <div
-//               draggable
-//               onDragStart={e => dragStart(e)}
-//               onDragEnd={e => dragEnd(e, 'DATE')}
-//             >
-//               <Button
-//                 onClick={() => addField('DATE')}
-//                 accessibilityLabel="add date field"
-//                 text="Add date"
-//                 iconEnd="calendar"
-//               />
-//             </div>
-//           </Box> */}
-//         </Stack>
-//       </Row>
-//       <Row gap={1}>
-//         <Stack>
-//           <Box padding={2}>
-//             <Text>{'Step 2'}</Text>
-//           </Box>
-//           <Box padding={2}>
-//             <Button
-//               onClick={applyFields}
-//               accessibilityLabel="Send for signing"
-//               text={formatMessage({id: 'Send'})}
-//               iconEnd="send"
-//             />
-//           </Box>
-//         </Stack>
-//       </Row>
-//     </Box>
-//   </Column>
-//   <Column span={10}>
-//     <div className="webviewer" ref={viewer}></div>
-//   </Column>
-// </Box>
-// <input type="file" ref={filePicker} style={{ display: 'none' }} /> */}

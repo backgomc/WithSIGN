@@ -7,7 +7,7 @@ import { Tabs, Upload, message, Input, Space, Form, Button } from 'antd';
 // import { InboxOutlined, CheckOutlined } from '@ant-design/icons';
 import StepWrite from '../Step/StepWrite';
 import { useIntl } from "react-intl";
-import { setDocumentFile, setDocumentTitle, selectDocumentTitle, selectDocumentFile, setTemplate, setDocumentType, selectDocumentType, selectTemplate, selectTemplateTitle, setTemplateTitle } from '../Assign/AssignSlice';
+import { setDocumentFile, setDocumentTitle, selectDocumentTitle, selectDocumentFile, setTemplate, setDocumentType, selectDocumentType, selectTemplate, selectTemplateTitle, setTemplateTitle, selectSendType } from '../Assign/AssignSlice';
 import { PageContainer } from '@ant-design/pro-layout';
 import ProCard from '@ant-design/pro-card';
 import ProForm, { ProFormUploadDragger, ProFormText } from '@ant-design/pro-form';
@@ -40,7 +40,7 @@ const UploadDocument = () => {
   const documentType = useSelector(selectDocumentType);
   const template = useSelector(selectTemplate);
   const templateTitle = useSelector(selectTemplateTitle);
-
+  const sendType = useSelector(selectSendType);
 
   useEffect(() => {
 
@@ -116,7 +116,7 @@ const UploadDocument = () => {
       <PageContainer
       // ghost
       header={{
-        title: '서명 요청',
+        title: (sendType == 'B') ? '서명 요청(대량 전송)' : '서명 요청',
         ghost: true,
         breadcrumb: {
           routes: [

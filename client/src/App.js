@@ -31,6 +31,7 @@ import ProLayout from '@ant-design/pro-layout';
 import Menus from './config/Menus';
 import '@ant-design/pro-layout/dist/layout.css';
 import 'antd/dist/antd.css';
+import { setSendType } from './components/Assign/AssignSlice';
 
 const App = () => {
   const user = useSelector(selectUser);
@@ -86,6 +87,9 @@ const App = () => {
       menuItemRender={(item, dom) => (
         <a
           onClick={() => {
+            if (item.path === '/uploadDocument') {
+              dispatch(setSendType('G'));
+            }
             setPathname(item.path)
             navigate(item.path)
           }}

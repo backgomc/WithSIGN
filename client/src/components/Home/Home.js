@@ -4,6 +4,7 @@ import { navigate, Link } from '@reach/router';
 import { useIntl } from "react-intl";
 import { selectUser } from '../../app/infoSlice';
 import { setDocToSign } from '../SignDocument/SignDocumentSlice';
+import { setSendType } from '../Assign/AssignSlice';
 import axios from 'axios';
 import ProCard from '@ant-design/pro-card';
 import RcResizeObserver from 'rc-resize-observer';
@@ -243,6 +244,7 @@ const Home = () => {
               navigate('/documentList')
             }}>내 문서함</Button>,
             <Button key="1" onClick={() => {
+              dispatch(setSendType('G'));
               navigate('/uploadDocument')
             }} type="primary">
               서명 요청

@@ -15,6 +15,7 @@ import {
 import { PageContainer } from '@ant-design/pro-layout';
 import 'antd/dist/antd.css';
 import { useIntl } from "react-intl";
+import { setSendType } from '../Assign/AssignSlice';
 
 
 const BulkList = () => {
@@ -263,7 +264,10 @@ const BulkList = () => {
             ],
           },
           extra: [           
-          <Button type="primary" onClick={() => {navigate('/bulkUpload');}}>
+          <Button type="primary" onClick={() => {
+            dispatch(setSendType('B'));
+            navigate('/uploadDocument');
+            }}>
             대량전송 요청
           </Button>
           ],
