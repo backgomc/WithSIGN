@@ -322,7 +322,8 @@ const DocumentList = ({location}) => {
                 onClick={() => {        
                 const docId = row["_id"]
                 const docRef = row["docRef"]
-                dispatch(setDocToView({ docRef, docId }));
+                const docType = row["docType"]
+                dispatch(setDocToView({ docRef, docId, docType }));
                 navigate(`/viewDocument`);
               }}>문서조회</Button>
             )
@@ -333,7 +334,8 @@ const DocumentList = ({location}) => {
                 onClick={() => {        
                 const docId = row["_id"]
                 const docRef = row["docRef"]
-                dispatch(setDocToView({ docRef, docId }));
+                const docType = row["docType"]
+                dispatch(setDocToView({ docRef, docId, docType }));
                 navigate(`/viewDocument`);
               }}>문서조회</Button>
             )
@@ -342,7 +344,8 @@ const DocumentList = ({location}) => {
               <Button type="primary" onClick={() => {
                 const docId = row["_id"]
                 const docRef = row["docRef"]
-                dispatch(setDocToSign({ docRef, docId }));
+                const docType = row["docType"]
+                dispatch(setDocToSign({ docRef, docId, docType }));
                 navigate(`/signDocument`);
               }}>서명하기</Button>
             );
@@ -351,7 +354,8 @@ const DocumentList = ({location}) => {
               <Button onClick={() => {        
                 const docId = row["_id"]
                 const docRef = row["docRef"]
-                dispatch(setDocToView({ docRef, docId }));
+                const docType = row["docType"]
+                dispatch(setDocToView({ docRef, docId, docType }));
                 navigate(`/viewDocument`);
               }}>문서조회</Button>
             );

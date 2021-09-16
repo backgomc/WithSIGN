@@ -11,10 +11,11 @@ router.post('/addDocumentToSign', (req, res) => {
 
     const document = new Document(req.body)
   
-    document.save((err, documentInfo) => {
+    document.save((err, document) => {
       if (err) return res.json({ success: false, err })
       return res.status(200).json({
-        success: true
+        success: true,
+        documentId: document._id
       })
     })
 })

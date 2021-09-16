@@ -263,7 +263,7 @@ const BulkDetail = ({location}) => {
       }, 
     },
     {
-      title: '참여자',
+      title: '서명 참여자',
       dataIndex: 'user',
       responsive: ["sm"],
       ...getColumnSearchProps('user'),
@@ -274,7 +274,7 @@ const BulkDetail = ({location}) => {
         filterUsers(row['users'][0])[0].name
           ? filterUsers(row['users'][0])[0].name.toString().toLowerCase().includes(value.toLowerCase())
           : '',
-      render: (text, row) => <div>{filterUsers(row['users'][0]).length > 0 ? filterUsers(row['users'][0])[0].name +' '+ filterUsers(row['users'][0])[0].JOB_TITLE : ''}</div>
+      render: (text, row) => <div>{filterUsers(row['users'][0]).length > 0 ? filterUsers(row['users'][0])[0].name +' '+ (filterUsers(row['users'][0])[0].JOB_TITLE ? filterUsers(row['users'][0])[0].JOB_TITLE : '') : ''}</div>
     },
     {
       title: '참여자',
@@ -418,7 +418,7 @@ const BulkDetail = ({location}) => {
               {filterCanceled(true).length} 건
             </Descriptions.Item>
             <Descriptions.Item label="요청 일시"><Moment format='YYYY/MM/DD HH:mm'>{bulk.requestedTime}</Moment></Descriptions.Item>
-            <Descriptions.Item label="요청자">{bulk.user.name} {bulk.user.JOB_TITLE}</Descriptions.Item>
+            <Descriptions.Item label="서명 요청자">{bulk.user.name} {bulk.user.JOB_TITLE}</Descriptions.Item>
           </Descriptions>
         }
         footer={[

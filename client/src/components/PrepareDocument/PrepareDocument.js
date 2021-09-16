@@ -384,24 +384,72 @@ const PrepareDocument = () => {
     const signed = false;
     const xfdf = [];
     const signedBy = [];
-    // const requestedTime = new Date(); 
     const signedTime = '';
 
-    let body = {
-      user: _id,
-      docTitle: (documentType === "PC") ? documentTitle : templateTitle,
-      email: email,
-      docRef: referenceString,
-      // emails: emails,
-      users: users,
-      xfdf: xfdf, 
-      signedBy: signedBy,
-      signed: signed,
-      signedTime: signedTime
+    if (sendType === 'G') { // 일반
+      let body = {
+        user: _id,
+        docTitle: (documentType === "PC") ? documentTitle : templateTitle,
+        email: email,
+        docRef: referenceString,
+        // emails: emails,
+        users: users,
+        xfdf: xfdf, 
+        signedBy: signedBy,
+        signed: signed,
+        signedTime: signedTime
+      }
+      console.log("일반 전송")
+      const res2 = await axios.post('/api/document/addDocumentToSign', body)
+      console.log(res2)
+
+    } else {  // 대량 전송
+
+      const documentIds = [];
+      async function saveDB(item) {
+        console.log("Bulk 전송:" + item)
+        let body = {
+          user: _id,
+          docTitle: (documentType === "PC") ? documentTitle : templateTitle,
+          docType: "B",
+          email: email,
+          docRef: referenceString,
+          // emails: emails,
+          users: [item],
+          xfdf: xfdf, 
+          signedBy: signedBy,
+          signed: signed,
+          signedTime: signedTime
+        }
+        const res = await axios.post('/api/document/addDocumentToSign', body)
+        if (res.data.success) {
+          const documentId = res.data.documentId;
+          console.log("documentId:"+documentId);
+          documentIds.push(documentId)
+        }
+      }
+
+      const promises = users.map(saveDB);
+      // wait until all promises are resolved
+      await Promise.all(promises);
+
+      console.log("Done saveDocuments !!!");
+
+      let bulk = {
+        user: _id,
+        docTitle: (documentType === "PC") ? documentTitle : templateTitle,
+        users: users,
+        docs: documentIds,
+        canceled: false,
+        signed: false
+      }
+
+      console.log("documentIds:"+documentIds);
+      const res = await axios.post('/api/bulk/addBulk', bulk)
+      if (res.data.success) {
+        console.log("Done saveBulk !!!");
+      }
     }
-    console.log(body)
-    const res2 = await axios.post('/api/document/addDocumentToSign', body)
-    console.log(res2)
 
     dispatch(resetAssignAll());
     setLoading(false);
@@ -457,7 +505,7 @@ const PrepareDocument = () => {
         },
         extra: [
           <Button key="3" onClick={() => {navigate(`/assign`);}}>이전</Button>,,
-          <Button key="2" type="primary" onClick={() => applyFields()} disabled={disableNext}>
+          <Button key="2" type="primary" onClick={() => applyFields()} disabled={disableNext} loading={loading}>
             {formatMessage({id: 'Send'})}
           </Button>,
         ],
@@ -477,7 +525,7 @@ const PrepareDocument = () => {
         <Row gutter={[24, 24]}>
           <Col span={responsive ? 24 : 5}>
 
-            {(sendType == 'G') ? (<div>
+            {(sendType === 'G') ? (<div>
 
               <List
               rowKey="id"

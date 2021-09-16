@@ -33,7 +33,7 @@ const SignDocument = () => {
   // const uploading = useSelector(selectUploading);
   const doc = useSelector(selectDocToSign);
   const user = useSelector(selectUser);
-  const { docRef, docId } = doc;
+  const { docRef, docId, docType } = doc;
   const { email, _id } = user;
   const { formatMessage } = useIntl();
   
@@ -98,10 +98,19 @@ const SignDocument = () => {
               Annotations.WidgetAnnotation.getCustomStyles = normalStyles;
 
               console.log("annot.fieldName:"+annot.fieldName)
-              if (!annot.fieldName.startsWith(_id)) { 
-                annot.Hidden = true;
-                annot.Listable = false;
+
+              if (docType === 'B') {
+                if (!annot.fieldName.startsWith('bulk')) { 
+                  annot.Hidden = true;
+                  annot.Listable = false;
+                }
+              } else {
+                if (!annot.fieldName.startsWith(_id)) { 
+                  annot.Hidden = true;
+                  annot.Listable = false;
+                }
               }
+
             }
           });
         }
@@ -251,22 +260,28 @@ const SignDocument = () => {
     }
     console.log("completeSigning param:"+param)
 
-    //TO-BE : 파일업로드 된 후에 화면 이동되도록 변경
-    try {
-      const res = await axios.post('/api/document/updateDocumentToSign', param)
-      if (res.data.success) {
-        console.log("start merge")
-        await mergeAnnotations(res.data.docRef, res.data.xfdfArray, res.data.isLast)
-        console.log("end merge")
-        setLoading(false);
-      } else {
-        console.log("updateDocumentToSign error")
-        setLoading(false);
-      } 
-    } catch (error) {
-      console.log(error)
-      setLoading(false);
+    if (docType === 'B') {
+      //TODO : 벌크인경우 파일을 별도로 분리해서 저장하기 
+      
+    } else {
+        //TO-BE : 파일업로드 된 후에 화면 이동되도록 변경
+        try {
+          const res = await axios.post('/api/document/updateDocumentToSign', param)
+          if (res.data.success) {
+            console.log("start merge")
+            await mergeAnnotations(res.data.docRef, res.data.xfdfArray, res.data.isLast)
+            console.log("end merge")
+            setLoading(false);
+          } else {
+            console.log("updateDocumentToSign error")
+            setLoading(false);
+          } 
+        } catch (error) {
+          console.log(error)
+          setLoading(false);
+        }
     }
+
 
     //AS-IS
     // await axios.post('/api/document/updateDocumentToSign', param).then(response => {
