@@ -230,7 +230,7 @@ const SignDocument = () => {
     let param = {
       docId: docId,
       user: _id,
-      message: cancelMessage.current.resizableTextArea.props.value // ??? TODO: ref 로 텍스트 내용 읽어오기 
+      message: cancelMessage.current.resizableTextArea.props.value  
     }
 
     const res = await axios.post('/api/document/updateDocumentCancel', param)
@@ -261,7 +261,9 @@ const SignDocument = () => {
     console.log("completeSigning param:"+param)
 
     if (docType === 'B') {
-      //TODO : 벌크인경우 파일을 별도로 분리해서 저장하기 
+      //TODO : 1. 벌크방식이면 docRef에 있던 원본파일을 신규 경로로 복사하고 복사 경로로 돌려준다.
+      // bulkId를 파라미터로 같이 넘겨주면 좋을 듯 ex) docToSign/bulkId/60dbfeec57e078050836b4741625204681539.pdf
+      
       
     } else {
         //TO-BE : 파일업로드 된 후에 화면 이동되도록 변경
