@@ -42,7 +42,13 @@ export const mergeAnnotations = async (docRef, xfdf, isLast) => {
 
     // FILE OVERWRITE
     const formData = new FormData()
+
+    var reg = new RegExp('(.*\/).*')
+    console.log('path:'+reg.exec(docRef)) //docToSign/614bca38d55fa404d35dad1d/
+    formData.append('path', reg.exec(docRef)[1]) //docRef 에서 경로만 추출
+
     formData.append('file', blob, docRef)
+    
     const res = await axios.post(`/api/storage/upload`, formData)
     console.log(res)
   

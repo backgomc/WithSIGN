@@ -343,10 +343,24 @@ const PrepareDocument = () => {
     annotManager.selectAnnotation(textAnnot);
   };
 
+  const getToday = () => {
+    var date = new Date();
+    var year = date.getFullYear();
+    var month = ("0" + (1 + date.getMonth())).slice(-2);
+    var day = ("0" + date.getDate()).slice(-2);
+
+    return year + month + day;
+  }
+
   const uploadForSigning = async () => {
     // upload the PDF with fields as AcroForm
     // const storageRef = storage.ref();
-    const referenceString = `docToSign/${_id}${Date.now()}.pdf`;
+    // const referenceString = `docToSign/${_id}${Date.now()}.pdf`;
+    const referenceString = `docToSign/${getToday()}/${_id}${Date.now()}.pdf`;
+    var reg = new RegExp('(.*\/).*')
+    var path = reg.exec(referenceString)[1];
+    console.log("path:"+path)
+
     // 1. 파일 저장
     // 2. DB 저장
     // const docRef = storageRef.child(referenceString);
@@ -375,8 +389,9 @@ const PrepareDocument = () => {
     // TO-BE
     // 1.FILE SAVE
     const formData = new FormData()
+    // formData.append('path', 'docToSign/')
+    formData.append('path', path)
     formData.append('file', blob, referenceString)
-    formData.append('path', 'docToSign')
     const res = await axios.post(`/api/storage/upload`, formData)
     console.log(res)
 

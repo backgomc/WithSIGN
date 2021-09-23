@@ -14,7 +14,11 @@ const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         console.log("req.body.path:"+req.body.path)
         if(req.body.path) {
-            cb(null, config.storageDIR + req.body.path + "/");
+            // 폴더가 없으면 폴더생성 
+            const newDir = config.storageDIR + req.body.path;
+            makeFolder(newDir);
+
+            cb(null, config.storageDIR + req.body.path);
         } else {
             cb(null, config.storageDIR + 'docToSign/');
         }
@@ -89,14 +93,21 @@ router.post('/copyBulk', (req, res) => {
                     if (err) res.json({success: false, error: "error file copy!"});
                     console.log('file copied!');
 
-                    return res.json({success: true, docRef: "Not found bulkId"});
+                    // 3. document 파일 위치 업데이트 
+                    Document.updateOne({ _id: docId }, {docRef: 'docToSign/' + bulkId + '/' + docId + ".pdf"}, (err, result) => {
+                        if (err) {
+                            res.json({ success: false, message: err });
+                        } else {
+                           return res.json({ success: true }); 
+                        }
+                    });
                   });
                   
-              } else {
+              } else { 
                 return res.json({success: false, error: "Not found bulkId"});
               }
 
-              return res.json({ success: true })
+            //   return res.json({ success: true })
 
           })
 

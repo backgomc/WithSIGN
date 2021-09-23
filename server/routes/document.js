@@ -290,7 +290,8 @@ router.post('/searchForDocumentToSign', (req, res) => {
         console.log("서명취소 called")
       }
     } else {  // 전체 목록 (status 배열에 복수개가 들어오면 전체 목록 호출)
-      orParam = [{"users": {$in:[user]}}, {"user": user}];
+      // orParam = [{"users": {$in:[user]}}, {"user": user}];
+      orParam = [{"users": {$in:[user]}}, {$and:[{"user": user}, {"docType": "G"}]} ];  // 대량발송의 경우 본인이 서명참여하는 경우만 목록에서 조회시켜준다.
       console.log("전체목록 called")
     }
 

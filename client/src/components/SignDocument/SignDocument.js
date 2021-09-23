@@ -261,40 +261,27 @@ const SignDocument = () => {
     console.log("completeSigning param:"+param)
 
     if (docType === 'B') {
-      //TODO : 1. 벌크방식이면 docRef에 있던 원본파일을 신규 경로로 복사하고 복사 경로로 돌려준다.
-      // bulkId를 파라미터로 같이 넘겨주면 좋을 듯 ex) docToSign/bulkId/60dbfeec57e078050836b4741625204681539.pdf
-      
-      
-    } else {
-        //TO-BE : 파일업로드 된 후에 화면 이동되도록 변경
-        try {
-          const res = await axios.post('/api/document/updateDocumentToSign', param)
-          if (res.data.success) {
-            console.log("start merge")
-            await mergeAnnotations(res.data.docRef, res.data.xfdfArray, res.data.isLast)
-            console.log("end merge")
-            setLoading(false);
-          } else {
-            console.log("updateDocumentToSign error")
-            setLoading(false);
-          } 
-        } catch (error) {
-          console.log(error)
-          setLoading(false);
-        }
+      // 벌크방식이면 docRef에 있던 원본파일을 신규 경로로 복사
+      // ex) docToSign/bulkId/60dbfeec57e078050836b4741625204681539.pdf
+      const res = await axios.post('/api/storage/copyBulk', param)
+    } 
+
+    // 파일업로드 된 후에 화면 이동되도록 변경
+    try {
+      const res = await axios.post('/api/document/updateDocumentToSign', param)
+      if (res.data.success) {
+        console.log("start merge")
+        await mergeAnnotations(res.data.docRef, res.data.xfdfArray, res.data.isLast)
+        console.log("end merge")
+        setLoading(false);
+      } else {
+        console.log("updateDocumentToSign error")
+        setLoading(false);
+      } 
+    } catch (error) {
+      console.log(error)
+      setLoading(false);
     }
-
-
-    //AS-IS
-    // await axios.post('/api/document/updateDocumentToSign', param).then(response => {
-    //   if (response.data.success) {
-    //     // merge (pdf + annotaion)
-    //     console.log("response.data.isLast : "+ response.data.isLast)
-    //     console.log("start merge")
-    //     mergeAnnotations(response.data.docRef, response.data.xfdfArray, response.data.isLast)
-    //     console.log("end merge")
-    //   }
-    // });
 
     navigate('/');
   }
