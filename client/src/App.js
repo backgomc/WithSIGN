@@ -14,6 +14,8 @@ import TemplateList from './components/Template/TemplateList';
 import UploadTemplate from './components/Template/UploadTemplate';
 import BulkList from './components/Bulk/BulkList';
 import BulkDetail from './components/Bulk/BulkDetail';
+import BoardList from './components/Board/BoardList';
+import BoardDetail from './components/Board/BoardDetail';
 import Sign from './components/Sign';
 import View from './components/View';
 import PasswordReset from './components/PasswordReset/PasswordReset';
@@ -125,6 +127,8 @@ const App = () => {
         <View path="/viewDocument" />
         <Setting path="/setting" />
         <Test2 path="/test" />
+        <BoardList path="/customer" />
+        <BoardDetail path="/boardDetail" />
       </Router>
   </ProLayout>
 

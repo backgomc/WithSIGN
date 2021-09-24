@@ -39,6 +39,11 @@ export default function Menus() {
           name: formatMessage({id: 'Setting'}),
           icon: <SettingOutlined />,
         },
+        {
+          path: '/customer',
+          name: formatMessage({id: 'Customer'}),
+          icon: <SettingOutlined />,
+        },
       ],
     },
     location: {
