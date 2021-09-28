@@ -181,6 +181,7 @@ const BoardList = () => {
       key: 'title',
       ...getColumnSearchProps('title'),
       expandable: true,
+      width: '70%',
       render: (text,row) => <div style={{ wordWrap: 'break-word', wordBreak: 'break-word' }}>{text}</div>, // 여러 필드 동시 표시에 사용
     },
     {
@@ -188,6 +189,7 @@ const BoardList = () => {
       dataIndex: ['user', 'name'],
       sorter: (a, b) => a.user.name.localeCompare(b.user.name),
       key: 'name',
+      width: '10%',
       ...getColumnSearchProps('name'),
       onFilter: (value, record) =>
       record['user']['name']
@@ -199,6 +201,7 @@ const BoardList = () => {
       dataIndex: 'requestedTime',
       sorter: true,
       key: 'requestedTime',
+      width: '20%',
       render: (text, row) => {
         // if (text){
         //   return <Moment format='YYYY/MM/DD HH:mm'>{text}</Moment>

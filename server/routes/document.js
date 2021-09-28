@@ -336,9 +336,11 @@ router.post('/statics', (req, res) => {
       return res.json({ success: false, message: "input value not enough!" })
   } 
 
-  var totalNum = 0;   // 전체문서 건수
-  var toSignNum = 0;  // 서명필요 건수
-  var signingNum = 0; // 서명대기(진행) 건수
+  var totalNum = 0;    // 전체문서 건수
+  var toSignNum = 0;   // 서명필요 건수
+  var signingNum = 0;  // 서명대기(진행) 건수
+  var canceledNum = 0; // 서명취소 건수
+  var signedNum = 0;   // 서명완료 건수
 
   Document.countDocuments().or([{"users": {$in:[user]}}, {"user": user}]).exec(function(err, count) {
     if (err) return res.json({success: false, error: err});
@@ -359,8 +361,19 @@ router.post('/statics', (req, res) => {
         if (err) return res.json({success: false, error: err});
         signingNum = count;
         console.log("signingNum:"+signingNum);
-        return res.json({ success: true, totalNum:totalNum, toSignNum:toSignNum, signingNum:signingNum })
-        
+
+        Document.countDocuments({"canceled": true}).or([{"users": {$in:[user]}}, {"user": user}]).exec(function(err, count) {
+          if (err) return res.json({success: false, error: err});
+          canceledNum = count;
+
+          Document.countDocuments({"signed": true}).or([{"users": {$in:[user]}}, {"user": user}]).exec(function(err, count) {
+            if (err) return res.json({success: false, error: err});
+            signedNum = count;
+            return res.json({ success: true, totalNum:totalNum, toSignNum:toSignNum, signingNum:signingNum, canceledNum:canceledNum, signedNum:signedNum })
+          })
+
+        })
+          
       })
 
     })

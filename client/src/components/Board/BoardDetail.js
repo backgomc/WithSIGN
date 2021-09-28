@@ -17,6 +17,7 @@ import {
 import { PageContainer } from '@ant-design/pro-layout';
 import 'antd/dist/antd.css';
 import { useIntl } from "react-intl";
+import ProCard from '@ant-design/pro-card';
 
 
 const BoradDetail = ({location}) => {
@@ -204,13 +205,18 @@ const BoradDetail = ({location}) => {
         footer={[
         ]}
     >
-        <div
+
+      <ProCard direction="column" ghost gutter={[0, 16]}>
+        <ProCard style={{ height: '78vh' }}>{board.content}</ProCard>
+      </ProCard>
+
+        {/* <div
           style={{
             height: '100vh',
           }}
         >
           {board.content}
-        </div>
+        </div> */}
     </PageContainer>
     </div>
     

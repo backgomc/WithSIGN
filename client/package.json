@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@ant-design/charts": "^1.2.14",
     "@ant-design/pro-card": "^1.14.5",
     "@ant-design/pro-layout": "^6.21.1",
     "@ant-design/pro-table": "^2.41.0",
