@@ -19,7 +19,7 @@ const userSchema = mongoose.Schema({
     email: {
         type: String,
         trim: true,
-        unique: 1
+        // unique: 1
     },
     password: {
         type: String,
@@ -51,6 +51,10 @@ const userSchema = mongoose.Schema({
     },
     SABUN: {
         type: String
+    },
+    use: {
+        type: Boolean,
+        default: true
     }
 })
 

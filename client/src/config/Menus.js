@@ -1,7 +1,7 @@
 // import { useMemo } from "react"
 import React from 'react';
 import { useIntl } from "react-intl";
-import { TeamOutlined, CopyOutlined, FileAddOutlined, SettingOutlined, FileTextOutlined, HighlightOutlined } from '@ant-design/icons';
+import { TeamOutlined, CopyOutlined, FileAddOutlined, SettingOutlined, FileTextOutlined, HighlightOutlined, DashboardOutlined } from '@ant-design/icons';
 
 export default function Menus() {
   const { formatMessage } = useIntl();
@@ -9,6 +9,11 @@ export default function Menus() {
     route: {
       path: '/',
       routes: [
+        {
+          path: '/',
+          name: formatMessage({id: 'Dashboard'}),
+          icon: <DashboardOutlined />,
+        },
         {
           path: '/uploadDocument',
           name: formatMessage({id: 'document.assign'}),

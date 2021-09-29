@@ -1,9 +1,10 @@
-.extraContent {
-  /* margin-left: -44px; */
-  margin-right: 144px;
+.cardGrid {
+  width: 100%;
+  height: 200px;
 }
 
-.statItem {
-  margin-left: -44px;
-  padding: 0 16px;
+.test {
+  font-size: 30px;
+  color: aqua;
+  background-color: yellow;
 }

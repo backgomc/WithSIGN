@@ -266,7 +266,6 @@ router.post('/updateUser', (req, res) => {
   const user = req.body.user
   const email = req.body.email
 
-
   User.updateOne({ _id: user }, {email: email}, (err, result) => {
     if (err) {
       console.log(err);
@@ -295,8 +294,6 @@ router.post('/updatePassword', (req, res) => {
   const password = req.body.password
 
   // 현재 비밀번호 일치 여부 확인 
-
-
   User.findOne({ _id: user }, (err, user) => {
     // console.log('user', user)
     if (!user) {
@@ -322,7 +319,57 @@ router.post('/updatePassword', (req, res) => {
     })
   })
 
+})
+
+
+/*
+    USER INSERT: POST /insertUsers
+*/
+router.post('/insertUsers', (req, res) => {
+
+  fs.readFile('./public/mock/user.json', 'utf8', (error, jsonFile) => {
+    if (error) return console.log(error);
+
+    const jsonData = JSON.parse(jsonFile);
+    // console.log(jsonFile);
+
+    jsonData.forEach(org => {
+        console.log(org);
+
+        const user = new User()
+        user.name = org.name
+        user.password = org.password
+        user.DEPART_CODE = org.DEPART_CODE
+        user.OFFICE_CODE = org.OFFICE_CODE
+        user.JOB_TITLE = org.JOB_TITLE 
+        user.SABUN = org.SABUN
+    
+        User.findOne({ SABUN: user.SABUN }, (err, exists) => {
+          if(exists) {
+            User.updateOne({ SABUN: user.SABUN }, {DEPART_CODE: user.DEPART_CODE, OFFICE_CODE: user.OFFICE_CODE, JOB_TITLE: user.JOB_TITLE}, (err, result) => {
+              if (err) {
+                console.log(err);
+                return res.json({ success: false, message: err })
+              } 
+            })
+          } else {
+            user.save((err, user) => {
+              if (err) {
+                console.log(err)
+                return res.json({ success: false, err })
+              }
+            })
+          }
+        });
+    });
+
+    return res.json({
+      success: true
+    })
+
+  });
 
 })
+
 
 module.exports = router;

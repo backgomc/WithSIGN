@@ -1,0 +1,5 @@
+[
+    {"name": "영자1", "password": "11111", "DEPART_CODE": "A15800", "OFFICE_CODE": "7831", "JOB_TITLE": "과장", "SABUN": "P1010001"},
+    {"name": "영자2", "password": "11111", "DEPART_CODE": "A15800", "OFFICE_CODE": "7831", "JOB_TITLE": "차장", "SABUN": "P1010002"},
+    {"name": "박세현", "password": "11111", "DEPART_CODE": "A15800", "OFFICE_CODE": "7831", "JOB_TITLE": "차장", "SABUN": "P1010008"}
+]

@@ -21,6 +21,7 @@ import {
 import Moment from 'react-moment';
 import moment from "moment";
 import "moment/locale/ko";
+import styles from './Home.css';
 import { Pie, measureTextWidth } from '@ant-design/charts';
 const { Divider } = ProCard;
 
@@ -33,7 +34,7 @@ const Home = () => {
   const [documentsToSign, setDocumentsToSign] = useState([]);
   const [documentsSigning, setDocumentsSigning] = useState([]);
   const [notice, setNotice] = useState([]);
-  const [pagination, setPagination] = useState({current:1, pageSize:5});
+  const [pagination, setPagination] = useState({current:1, pageSize:6});
   const [responsive, setResponsive] = useState(false);
   const [totalNum, setTotalNum] = useState(0);
   const [toSignNum, setToSignNum] = useState(0);
@@ -281,7 +282,7 @@ const Home = () => {
         </Link>
       </ProCard>
       <Divider type='vertical' />
-      <ProCard>
+      {/* <ProCard>
         <Link to='/documentList' state={{ status: '서명 대기' }}>
           <Statistic title="서명 대기" value={signingNum} suffix="건" />
         </Link>
@@ -298,7 +299,7 @@ const Home = () => {
           <Statistic title="서명 완료" value={signedNum} suffix="건" />
         </Link>
       </ProCard>
-      <Divider type='vertical' />
+      <Divider type='vertical' /> */}
       <ProCard>
         <Link to='/documentList'>
           <Statistic title="전체 문서" value={totalNum} suffix="건" />
@@ -419,6 +420,63 @@ const Home = () => {
     <ProCard title="문서 통계"><Pie {...config} /></ProCard>
   )
 
+  const toSignCard = (
+    <Card
+    style={{ marginBottom: 24, width:'100%'}}
+    title="서명 필요 문서"
+    bordered={false}
+    extra={<Link to="/documentList" state={{ status: '서명 필요' }}>더보기</Link>}
+    loading={loadingToSign}
+    bodyStyle={{ padding: 0 }}
+  >
+    {documentsToSign.length == 0 ? <div style={{padding: 50}}><Empty image={Empty.PRESENTED_IMAGE_SIMPLE} /></div> :
+      documentsToSign.map(item => (
+        <Card.Grid style={{width:'50%'}} key={item._id}>
+          <Card bodyStyle={{ padding: 0 }} bordered={false}>
+            <Card.Meta
+              avatar={
+                <Avatar src="https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png" />
+              }
+              title={item.user.JOB_TITLE ? item.user.name + ' '+ item.user.JOB_TITLE : item.user.name}
+              description={
+                <Link to="/signDocument" onClick={() => {
+                  const docId = item._id;
+                  const docRef = item.docRef;
+                  dispatch(setDocToSign({ docRef, docId }));
+                }}>
+                  <font color='#5D7092'>{item.docTitle}</font>
+                </Link>
+              }
+            />
+            <span style={{color:'grey', flex:'0 0 auto', float:'right'}}>
+              {moment(item.requestedTime).fromNow()}
+            </span>
+            </Card>
+        </Card.Grid>
+        // <Card.Grid style={{width:'33.3%'}} key={item._id}>
+        //   <Card bodyStyle={{ padding: 0 }} bordered={false}>
+        //     <Card.Meta
+        //       title={(
+        //         <div style={{
+        //           marginLeft: '0px', lineHeight: '24px', height: '24px', display: 'inline-block', verticalAlign: 'top', fontSize: '15px'
+        //         }}>
+        //           <Avatar size={22} icon={<UserOutlined />} />&nbsp;&nbsp;
+        //             {item.user.JOB_TITLE ? item.user.name + ' '+ item.user.JOB_TITLE : item.user.name}
+        //         </div>
+        //       )}
+        //       description={<Link to="/documentList" state={{ status: '서명 대기' }}>{item.docTitle}</Link>}
+        //     />
+        //     <div style={{height: '20px', display: 'flex', marginTop: '8px', overflow: 'hidden', fontSize: '12px', lineHeight: '20px', textAlign: 'right'}}>
+        //         <span style={{color:'grey', flex:'0 0 auto', float:'right'}}>
+        //           {moment(item.requestedTime).fromNow()}
+        //         </span>
+        //     </div>
+        //   </Card>
+        // </Card.Grid>
+      ))
+    }
+    </Card>
+  )
 
   return (
     <div>
@@ -426,6 +484,7 @@ const Home = () => {
         ghost
         header={{
           title: headerTitle,
+          subTitle: '',
           ghost: false,
           breadcrumb: {
             routes: [
@@ -440,43 +499,50 @@ const Home = () => {
             ],
           },
           extra: [
-            // <Button key="3">Operation</Button>,
-            <Button key="2" onClick={() => {
-              navigate('/documentList')
-            }}>내 문서함</Button>,
-            <Button key="1" onClick={() => {
-              dispatch(setSendType('G'));
-              navigate('/uploadDocument')
-            }} type="primary">
-              서명 요청
-            </Button>,
-          ],
+            // <Button key="2" onClick={() => {
+            //   navigate('/documentList')
+            // }}>내 문서함</Button>,
+            // <Button key="1" onClick={() => {
+            //   dispatch(setSendType('G'));
+            //   navigate('/uploadDocument')
+            // }} type="primary">
+            //   서명 요청
+            // </Button>, 
+            statics
+          ], 
         }}
-        content={statics}
+        content=""
         extraContent=""
         footer={[
         ]}
       >
       <br/>
-      <RcResizeObserver
+      {/* <RcResizeObserver
       key="resize-observer"
       onResize={(offset) => {
         setResponsive(offset.width < 596);
       }}
       >
         <Row gutter={[24, 24]}>
-          <Col span={responsive ? 24 : 12} style={{display: 'flex'}}>{pie}</Col>
-          <Col span={responsive ? 24 : 12} style={{display: 'flex'}}>{tosign}</Col>
+          <Col span={responsive ? 24 : 16}>{toSignCard}</Col>
+          <Col span={responsive ? 24 : 8}>{pie}</Col>
           <Col span={responsive ? 24 : 12} style={{display: 'flex'}}>{signing}</Col>
           <Col span={responsive ? 24 : 12} style={{display: 'flex'}}>{noticeList}</Col>
         </Row>
 
-      </RcResizeObserver>
+      </RcResizeObserver> */}
 
-      {/* <ProCard style={{ marginTop: 20, backgroundColor: 'grey', padding: 0 }} gutter={[24, 0]} wrap title="">
-      {tosign}
-      {tosign}
-      </ProCard> */}
+      <Row gutter={24}>
+          <Col xl={16} lg={24} md={24} sm={24} xs={24}>
+            {toSignCard}
+            {signing}<br></br>
+          </Col>
+          <Col xl={8} lg={24} md={24} sm={24} xs={24}>
+            {pie}
+            <br></br>
+            {noticeList}
+          </Col>
+      </Row>
 
 
       </PageContainer>

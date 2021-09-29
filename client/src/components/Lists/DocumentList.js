@@ -40,7 +40,7 @@ const DocumentList = ({location}) => {
   const handleTableChange = (pagination, filters, sorter) => {
     console.log("handleTableChange called")
     // console.log("status:"+status)
-    console.log("filters:"+filters)
+    console.log("filters.status:"+filters.status)
     fetch({
       sortField: sorter.field,
       sortOrder: sorter.order,
@@ -183,44 +183,45 @@ const DocumentList = ({location}) => {
       expandable: true,
       render: (text,row) =>  <div style={{ wordWrap: 'break-word', wordBreak: 'break-word' }}><FileOutlined /> {text}</div>, // 여러 필드 동시 표시에 사용
     },
+    // {
+    //   title: '상태',
+    //   dataIndex: 'status',
+    //   responsive: ["xs"],
+    //   sorter: false,
+    //   key: 'status',
+    //   defaultFilteredValue: location.state.status? [location.state.status]: [],
+    //   filters: [
+    //     {
+    //       text: DOCUMENT_SIGNED,
+    //       value: DOCUMENT_SIGNED,
+    //     },
+    //     {
+    //       text: DOCUMENT_TOSIGN,
+    //       value: DOCUMENT_TOSIGN,
+    //     },
+    //     {
+    //       text: DOCUMENT_SIGNING,
+    //       value: DOCUMENT_SIGNING,
+    //     },
+    //     {
+    //       text: DOCUMENT_CANCELED,
+    //       value: DOCUMENT_CANCELED,
+    //     },
+    //   ],
+    //   onFilter: (value, record) => DocumentType({uid: _id, document: record}).indexOf(value) === 0,
+    //   render: (_,row) => {
+    //     return (
+    //         <DocumentTypeIcon uid={_id} document={row} />
+    //       )
+    //   }, 
+    // },
     {
       title: '상태',
       dataIndex: 'status',
-      responsive: ["xs"],
+      // responsive: ["sm"],
       sorter: false,
       key: 'status',
-      defaultFilteredValue: location.state.status? [location.state.status]: [],
-      filters: [
-        {
-          text: DOCUMENT_SIGNED,
-          value: DOCUMENT_SIGNED,
-        },
-        {
-          text: DOCUMENT_TOSIGN,
-          value: DOCUMENT_TOSIGN,
-        },
-        {
-          text: DOCUMENT_SIGNING,
-          value: DOCUMENT_SIGNING,
-        },
-        {
-          text: DOCUMENT_CANCELED,
-          value: DOCUMENT_CANCELED,
-        },
-      ],
-      onFilter: (value, record) => DocumentType({uid: _id, document: record}).indexOf(value) === 0,
-      render: (_,row) => {
-        return (
-            <DocumentTypeIcon uid={_id} document={row} />
-          )
-      }, 
-    },
-    {
-      title: '상태',
-      dataIndex: 'status',
-      responsive: ["sm"],
-      sorter: false,
-      key: 'status',
+      width: '50px',
       defaultFilteredValue: location.state.status? [location.state.status]: [],
       filters: [
         {
@@ -245,7 +246,7 @@ const DocumentList = ({location}) => {
         return (
             <DocumentTypeText uid={_id} document={row} />
           )
-      }, 
+      },
     },
     {
       title: '요청자',
@@ -253,6 +254,7 @@ const DocumentList = ({location}) => {
       dataIndex: ['user', 'name'],
       sorter: (a, b) => a.user.name.localeCompare(b.user.name),
       key: 'name',
+      width: '100px',
       ...getColumnSearchProps('name'),
       onFilter: (value, record) =>
       record['user']['name']
@@ -304,15 +306,77 @@ const DocumentList = ({location}) => {
       responsive: ["sm"],
       sorter: true,
       key: 'requestedTime',
+      width: '100px',
       render: (text, row) => {
           // return <Moment format='YYYY/MM/DD HH:mm'>{row["requestedTime"]}</Moment>
           return (<font color='#787878'>{moment(row["requestedTime"]).fromNow()}</font>)
       } 
     },
     {
-      title: '활동',
+      title: '',
       // dataIndex: 'docRef',
       key: 'action',
+      width: '50px',
+      responsive: ["xs"],
+      render: (_,row) => {
+        switch (DocumentType({uid: _id, document: row})) {
+          case DOCUMENT_CANCELED:
+            return (
+              <Button
+                // danger
+                onClick={() => {        
+                const docId = row["_id"]
+                const docRef = row["docRef"]
+                const docType = row["docType"]
+                dispatch(setDocToView({ docRef, docId, docType }));
+                navigate(`/viewDocument`);
+              }}>문서</Button>
+            )
+          case DOCUMENT_SIGNED:
+            return (
+              <Button
+                // loading={isUploading(row)}
+                onClick={() => {        
+                const docId = row["_id"]
+                const docRef = row["docRef"]
+                const docType = row["docType"]
+                dispatch(setDocToView({ docRef, docId, docType }));
+                navigate(`/viewDocument`);
+              }}>문서</Button>
+            )
+          case DOCUMENT_TOSIGN:
+            return (
+              <Button type="primary" onClick={() => {
+                const docId = row["_id"]
+                const docRef = row["docRef"]
+                const docType = row["docType"]
+                dispatch(setDocToSign({ docRef, docId, docType }));
+                navigate(`/signDocument`);
+              }}>서명</Button>
+            );
+          case DOCUMENT_SIGNING:
+            return (
+              <Button onClick={() => {        
+                const docId = row["_id"]
+                const docRef = row["docRef"]
+                const docType = row["docType"]
+                dispatch(setDocToView({ docRef, docId, docType }));
+                navigate(`/viewDocument`);
+              }}>문서</Button>
+            );
+          default:
+            return (
+              <div></div>
+            )
+        }
+      }, 
+    },
+    {
+      title: '',
+      // dataIndex: 'docRef',
+      key: 'action',
+      width: '100px',
+      responsive: ["sm"],
       render: (_,row) => {
         switch (DocumentType({uid: _id, document: row})) {
           case DOCUMENT_CANCELED:
@@ -364,7 +428,6 @@ const DocumentList = ({location}) => {
               <div></div>
             )
         }
-
       }, 
     },
   ];
@@ -383,7 +446,7 @@ const DocumentList = ({location}) => {
       status:location.state.status
     });
 
-  }, [_id]);
+  }, []);
 
   return (
     <div>
@@ -415,7 +478,6 @@ const DocumentList = ({location}) => {
       <Table
         rowKey={ item => { return item._id } }
         columns={columns}
-        // rowKey={record => record.login.uuid}
         dataSource={data}
         pagination={pagination}
         loading={loading}

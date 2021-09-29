@@ -177,7 +177,7 @@ const DocumentExpander = (props) => {
                     </ProCard>
                 </ProCard>
             </ProCard>
-            <ProCard title="활동이력">
+            <ProCard title="서명 이력">
                 <Timeline>
                     {/* <Timeline.Item label={<Moment format='YYYY/MM/DD HH:mm'>{item.requestedTime}</Moment>}><b>{item.user.name}</b>님 서명 요청</Timeline.Item> */}
                     <Timeline.Item>
@@ -193,7 +193,7 @@ const DocumentExpander = (props) => {
             </ProCard>
             
 
-            <ProCard title="활동">
+            <ProCard title="">
                 <div style={{height:"40px"}}>
                     <Button
                         onClick={() => {        
