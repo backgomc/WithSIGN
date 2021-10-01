@@ -405,7 +405,7 @@ const PrepareDocument = () => {
       let body = {
         user: _id,
         docTitle: (documentType === "PC") ? documentTitle : templateTitle,
-        email: email,
+        // email: email,
         docRef: referenceString,
         // emails: emails,
         users: users,
@@ -417,6 +417,9 @@ const PrepareDocument = () => {
       console.log("일반 전송")
       const res2 = await axios.post('/api/document/addDocumentToSign', body)
       console.log(res2)
+      if (!res2.data.success) {
+        alert('문서 등록 실패 !')
+      }
 
     } else {  // 대량 전송
 
@@ -427,7 +430,7 @@ const PrepareDocument = () => {
           user: _id,
           docTitle: (documentType === "PC") ? documentTitle : templateTitle,
           docType: "B",
-          email: email,
+          // email: email,
           docRef: referenceString,
           // emails: emails,
           users: [item],

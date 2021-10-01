@@ -169,6 +169,7 @@ const BulkList = () => {
       dataIndex: 'total',
       sorter: true,
       key: 'total',
+      width: '125px',
       expandable: true,
       render: (text,row) => <div>({filterSigned(row['docs']).length} / {row['docs'].length})</div>
     },
@@ -177,6 +178,7 @@ const BulkList = () => {
       dataIndex: ['user', 'name'],
       sorter: (a, b) => a.user.name.localeCompare(b.user.name),
       key: 'name',
+      width: '100px',
       ...getColumnSearchProps('name'),
       onFilter: (value, record) =>
       record['user']['name']
@@ -195,6 +197,7 @@ const BulkList = () => {
       dataIndex: 'requestedTime',
       sorter: true,
       key: 'requestedTime',
+      width: '100px',
       render: (text, row) => {
         return (<font color='#787878'>{moment(row["requestedTime"]).fromNow()}</font>)
       } 
@@ -203,6 +206,8 @@ const BulkList = () => {
       title: '',
       // dataIndex: 'docRef',
       key: 'action',
+      responsive: ["sm"],
+      width: '50px',
       render: (_,row) => {
         return (
           <Button
@@ -212,6 +217,24 @@ const BulkList = () => {
             // dispatch(setDocToView({ docRef, docId }));
             navigate(`/bulkDetail`, { state: { bulk: row } } );
           }}>상세 보기</Button>
+        )
+      }
+    },
+    {
+      title: '',
+      // dataIndex: 'docRef',
+      key: 'action',
+      responsive: ["xs"],
+      width: '30px',
+      render: (_,row) => {
+        return (
+          <Button
+            onClick={() => {        
+            // const docId = row["_id"]
+            // const docRef = row["docRef"]
+            // dispatch(setDocToView({ docRef, docId }));
+            navigate(`/bulkDetail`, { state: { bulk: row } } );
+          }}>상세</Button>
         )
       }
     }

@@ -1,8 +1,19 @@
 import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
-import { Table, Input, Space, Button, Popover } from "antd";
+import { Table, Input, Space, Button, Tag, Badge } from "antd";
 import Highlighter from 'react-highlight-words';
-import { SearchOutlined, FileOutlined } from '@ant-design/icons';
+import {
+  SearchOutlined,
+  FileOutlined,
+  CheckCircleOutlined,
+  SyncOutlined,
+  CloseCircleOutlined,
+  ExclamationCircleOutlined,
+  ClockCircleOutlined,
+  MinusCircleOutlined,
+  InfoCircleOutlined,
+} from '@ant-design/icons';
+
 import { useSelector, useDispatch } from 'react-redux';
 import { selectUser } from '../../app/infoSlice';
 import { navigate } from '@reach/router';
@@ -11,12 +22,13 @@ import { setDocToSign } from '../SignDocument/SignDocumentSlice';
 import Moment from 'react-moment';
 import moment from "moment";
 import "moment/locale/ko";
-import { DocumentType, DocumentTypeText, DocumentTypeIcon, DOCUMENT_SIGNED, DOCUMENT_TOSIGN, DOCUMENT_SIGNING, DOCUMENT_CANCELED } from './DocumentType';
+import { DocumentType, DocumentTypeText, DocumentTypeBadge, DocumentTypeIcon, DOCUMENT_SIGNED, DOCUMENT_TOSIGN, DOCUMENT_SIGNING, DOCUMENT_CANCELED } from './DocumentType';
 import DocumentExpander from "./DocumentExpander";
 import { PageContainer } from '@ant-design/pro-layout';
 import 'antd/dist/antd.css';
 import RcResizeObserver from 'rc-resize-observer';
 import { useIntl } from "react-intl";
+import { setSendType } from '../Assign/AssignSlice';
 
 moment.locale("ko");
 
@@ -149,6 +161,14 @@ const DocumentList = ({location}) => {
     setSearchText('');
   }
 
+  const description = (
+    <div>
+      <b><Badge status="processing" text="서명 필요" /></b> : 본인의 서명이 필요한 문서<br></br>
+      <b><Badge status="default" text="서명 진행" /></b> : 다른 서명 참여자의 서명이 진행 중인 문서<br></br>
+      <b><Badge status="error" text="서명 취소" /></b> : 서명 참여자 중 서명을 취소한 문서 <br></br>
+      <b><Badge status="success" text="서명 완료" /></b> : 모든 서명 참여자의 서명이 완료된 문서 
+    </div>
+  )
 
   // const Expander = props => <span>{props.record.docTitle}</span>;
 
@@ -221,7 +241,7 @@ const DocumentList = ({location}) => {
       // responsive: ["sm"],
       sorter: false,
       key: 'status',
-      width: '50px',
+      width: '110px',
       defaultFilteredValue: location.state.status? [location.state.status]: [],
       filters: [
         {
@@ -244,7 +264,7 @@ const DocumentList = ({location}) => {
       onFilter: (value, record) => DocumentType({uid: _id, document: record}).indexOf(value) === 0,
       render: (_,row) => {
         return (
-            <DocumentTypeText uid={_id} document={row} />
+            <DocumentTypeBadge uid={_id} document={row} />
           )
       },
     },
@@ -254,7 +274,7 @@ const DocumentList = ({location}) => {
       dataIndex: ['user', 'name'],
       sorter: (a, b) => a.user.name.localeCompare(b.user.name),
       key: 'name',
-      width: '100px',
+      width: '110px',
       ...getColumnSearchProps('name'),
       onFilter: (value, record) =>
       record['user']['name']
@@ -467,10 +487,16 @@ const DocumentList = ({location}) => {
               // },
             ],
           },
-          extra: [  // 여기 이미지 삽입하면 될듯
-          ],
+          extra: [           
+            <Button type="primary" onClick={() => {
+              dispatch(setSendType('G'));
+              navigate('/uploadDocument');
+              }}>
+              서명 요청
+            </Button>
+            ],
         }}
-        // content={'서명에 사용되는 사인을 미리 등록할 수 있습니다.'}
+        content={description}
         footer={[
         ]}
     >

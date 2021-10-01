@@ -5,19 +5,22 @@ const { Document } = require("../models/Document");
 // 신규 문서 등록
 router.post('/addDocumentToSign', (req, res) => {
 
-    if (!req.body.user || !req.body.email || !req.body.docRef) {
-        return res.json({ success: false, message: "input value not enough!" })
-    } 
+  console.log("req.body.user:"+req.body.user)
+  console.log("req.body.docRef:"+req.body.docRef)
 
-    const document = new Document(req.body)
-  
-    document.save((err, document) => {
-      if (err) return res.json({ success: false, err })
-      return res.status(200).json({
-        success: true,
-        documentId: document._id
-      })
+  if (!req.body.user || !req.body.docRef) {
+      return res.json({ success: false, message: "input value not enough!" })
+  } 
+
+  const document = new Document(req.body)
+
+  document.save((err, document) => {
+    if (err) return res.json({ success: false, err })
+    return res.status(200).json({
+      success: true,
+      documentId: document._id
     })
+  })
 })
 
 // 문서 상태 변경 (사인) : updateDocumentToSign
@@ -272,7 +275,7 @@ router.post('/searchForDocumentToSign', (req, res) => {
     console.log("status:"+status)
 
     if (status) {
-      if (status == '서명 대기') {
+      if (status == '서명 진행') {
         andParam['signed'] = false
         orParam = [{$and:[{"users": {$in:[user]}}, {"signedBy.user": user}]},  {$and:[{"user": user}, {"users": {$ne:user}}]}]
       } else if (status == '서명 필요') {
@@ -290,8 +293,8 @@ router.post('/searchForDocumentToSign', (req, res) => {
         console.log("서명취소 called")
       }
     } else {  // 전체 목록 (status 배열에 복수개가 들어오면 전체 목록 호출)
-      // orParam = [{"users": {$in:[user]}}, {"user": user}];
-      orParam = [{"users": {$in:[user]}}, {$and:[{"user": user}, {"docType": "G"}]} ];  // 대량발송의 경우 본인이 서명참여하는 경우만 목록에서 조회시켜준다.
+      orParam = [{"users": {$in:[user]}}, {"user": user}];
+      // orParam = [{"users": {$in:[user]}}, {$and:[{"user": user}, {"docType": "G"}]} ];  // 대량발송의 경우 본인이 서명참여하는 경우만 목록에서 조회시켜준다.
       console.log("전체목록 called")
     }
 
@@ -308,7 +311,7 @@ router.post('/searchForDocumentToSign', (req, res) => {
       // .populate("user", {name: 1, email: 2})
       .populate({
         path: "user", 
-        select: {name: 1, JOB_TITLE: 2},
+        select: {name: 1, JOB_TITLE: 2, image: 3},
         // match: { name : searchName? searchName : !'' }
       })
       .populate({
