@@ -4,26 +4,43 @@ const { Template } = require("../models/Template");
 const fs = require('fs');
 const config = require("../config/key");
 
-// 템플릿 등록
-// router.post('/addTemplate', (req, res) => {
+// -- 사용자 관리 --
+// /api/admin/user/list
+// /api/admin/user/info
+// /api/admin/user/update
+// -- 문서 관리 --
+// /api/admin/document/list
+// /api/admin/document/info
+// -- 템플릿 관리 --
+// /api/admin/templates/list
+// /api/admin/templates/info
+// /api/admin/templages/insert
+// /api/admin/templages/delete
 
-//     if (!req.body.user) {
-//         return res.json({ success: false, message: "input value not enough!" })
-//     } 
+// 사용자 관리 > 목록
+router.post('/user/list', (req, res) => {
+  return res.json({ success: true, message: '/user/list' })
+})
+// 사용자 관리 > 상세
+router.post('/user/info', (req, res) => {
+  return res.json({ success: true, message: 'user/info' })
+})
+// 사용자 관리 > 변경(권한)
+router.post('/user/update', (req, res) => {
+  return res.json({ success: true, message: '/user/update' })
+})
 
-//     const template = new Template(req.body)
-  
-//     template.save((err, documentInfo) => {
-//       if (err) return res.json({ success: false, err })
-//       return res.status(200).json({
-//         success: true
-//       })
-//     })
-// })
+// 문서 관리 > 목록
+router.post('/document/list', (req, res) => {
+  return res.json({ success: true, message: '/document/list' })
+})
+// 문서 관리 > 상세
+router.post('/document/info', (req, res) => {
+  return res.json({ success: true, message: '/document/info' })
+})
 
-// 템플릿 목록
-router.post('/templates', (req, res) => {
-
+// 템플릿 관리 > 목록
+router.post('/templates/list', (req, res) => {
   const uid = req.body.uid
   if (!uid) {
       return res.json({ success: false, message: "input value not enough!" })
@@ -85,37 +102,17 @@ router.post('/templates', (req, res) => {
   })
 })
 
-// 템플릿 삭제
-// router.post('/deleteTemplate', (req, res) => {
-
-//   if (!req.body._ids) {
-//       return res.json({ success: false, message: "input value not enough!" })
-//   } 
-
-//   const _ids = req.body._ids
-  
-//   // 스토리지 파일 삭제 
-//   Template
-//   .find({"_id" : {$in: _ids} })
-//   .exec((err, rows) => {
-//     rows.forEach(template => {
-//       console.log(template.docRef)
-//       fs.unlink(config.storageDIR + template.docRef, function (err) {            
-//            if (err) {                                                 
-//                console.error(err);
-//                return res.json({ success: false, err });                                    
-//            }                                                          
-//           console.log('File has been Deleted');                           
-//        });
-//     });
-
-//     // DB 삭제
-//     Template.deleteMany({_id: { $in: _ids}}, function(err) {
-//       if (err) { return res.json({ success: false, err }) }
-//       return res.status(200).json({ success: true})     
-//     })
-//   })
-  
-// })
+// 템플릿 관리 > 상세
+router.post('/templates/info', (req, res) => {
+  return res.json({ success: true, message: '/templates/info' })
+})
+// 템플릿 관리 > 등록
+router.post('/templates/insert', (req, res) => {
+  return res.json({ success: true, message: '/templates/insert' })
+})
+// 템플릿 관리 > 삭제
+router.post('/templates/delete', (req, res) => {
+  return res.json({ success: true, message: '/templates/delete' })
+})
 
 module.exports = router;

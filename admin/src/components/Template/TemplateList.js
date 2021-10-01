@@ -12,7 +12,7 @@ import Moment from 'react-moment';
 import moment from 'moment';
 import 'moment/locale/ko';
 // import { DocumentType, DocumentTypeText, DOCUMENT_SIGNED, DOCUMENT_TOSIGN, DOCUMENT_SIGNING, DOCUMENT_CANCELED } from './DocumentType';
-import TemplateExpander from "./TemplateExpander";
+// import TemplateExpander from "./TemplateExpander";
 import {
   FileOutlined
 } from '@ant-design/icons';
@@ -56,7 +56,7 @@ const TemplateList = () => {
   const fetch = (params = {}) => {
     setLoading(true);
 
-    axios.post('/api/admin/templates', params).then(response => {
+    axios.post('/api/admin/templates/list', params).then(response => {
 
       console.log(response)
       if (response.data.success) {
@@ -292,8 +292,8 @@ const TemplateList = () => {
         dataSource={data}
         pagination={pagination}
         loading={loading}
-        expandedRowRender={row => <TemplateExpander item={row} />}
-        expandRowByClick
+        // expandedRowRender={row => <TemplateExpander item={row} />}
+        // expandRowByClick
         rowSelection={rowSelection}
         onRow={record => ({
           onClick: e => {
