@@ -11,7 +11,7 @@ import Moment from 'react-moment';
 import moment from "moment";
 import 'moment/locale/ko';
 import BulkExpander from "./BulkExpander";
-import { DocumentType, DocumentTypeText, DocumentTypeIcon, DOCUMENT_SIGNED, DOCUMENT_TOSIGN, DOCUMENT_SIGNING, DOCUMENT_CANCELED } from '../Lists/DocumentType';
+import { DocumentType, DocumentTypeBadge, DocumentTypeIcon, DOCUMENT_SIGNED, DOCUMENT_TOSIGN, DOCUMENT_SIGNING, DOCUMENT_CANCELED } from '../Lists/DocumentType';
 import {
   FileOutlined
 } from '@ant-design/icons';
@@ -236,6 +236,7 @@ const BulkDetail = ({location}) => {
       responsive: ["sm"],
       sorter: false,
       key: 'status',
+      width: '100px',
       defaultFilteredValue: location.state.status? [location.state.status]: [],
       filters: [
         {
@@ -258,7 +259,7 @@ const BulkDetail = ({location}) => {
       onFilter: (value, record) => DocumentType({uid: _id, document: record}).indexOf(value) === 0,
       render: (_,row) => {
         return (
-            <DocumentTypeText uid={_id} document={row} />
+            <DocumentTypeBadge uid={_id} document={row} />
           )
       }, 
     },
@@ -267,8 +268,9 @@ const BulkDetail = ({location}) => {
       dataIndex: 'user',
       responsive: ["sm"],
       ...getColumnSearchProps('user'),
-      sorter: true,
+      // sorter: true,
       key: 'user',
+      width: '115px',
       expandable: true,
       onFilter: (value, row) =>
         filterUsers(row['users'][0])[0].name
@@ -290,6 +292,7 @@ const BulkDetail = ({location}) => {
       dataIndex: 'requestedTime',
       // sorter: true,
       key: 'requestedTime',
+      width: '100px',
       render: (text, row) => {
         return (<font color='#787878'>{moment(row["requestedTime"]).fromNow()}</font>)
       } 
@@ -299,6 +302,7 @@ const BulkDetail = ({location}) => {
       dataIndex: 'signedTime',
       // sorter: true,
       key: 'signedTime',
+      width: '100px',
       render: (text, row) => {
         return (row["signedTime"] ? <font color='#787878'>{moment(row["signedTime"]).fromNow()}</font> : <font color='#787878'>서명 전</font>)
       }
@@ -307,6 +311,7 @@ const BulkDetail = ({location}) => {
       title: '',
       key: 'action',
       responsive: ["sm"],
+      width: '50px',
       render: (_,row) => {
         return (
           row["signedTime"] ?
@@ -324,6 +329,7 @@ const BulkDetail = ({location}) => {
       title: '',
       key: 'action',
       responsive: ["xs"],
+      width: '50px',
       render: (_,row) => {
         return (
           row["signedTime"] ?

@@ -14,11 +14,11 @@ export default function Menus() {
           name: formatMessage({id: 'Dashboard'}),
           icon: <DashboardOutlined />,
         },
-        {
-          path: '/uploadDocument',
-          name: formatMessage({id: 'document.assign'}),
-          icon: <FileAddOutlined />,
-        },
+        // {
+        //   path: '/uploadDocument',
+        //   name: formatMessage({id: 'document.assign'}),
+        //   icon: <FileAddOutlined />,
+        // },
         {
           path: '/documentList',
           name: formatMessage({id: 'document.list'}),
@@ -44,11 +44,11 @@ export default function Menus() {
           name: formatMessage({id: 'Setting'}),
           icon: <SettingOutlined />,
         },
-        {
-          path: '/customer',
-          name: formatMessage({id: 'Customer'}),
-          icon: <SettingOutlined />,
-        },
+        // {
+        //   path: '/customer',
+        //   name: formatMessage({id: 'Customer'}),
+        //   icon: <SettingOutlined />,
+        // },
       ],
     },
     location: {

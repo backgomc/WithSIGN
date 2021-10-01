@@ -81,7 +81,7 @@ const Assign = () => {
               
               const level5 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE)
               level5.forEach(function(org){
-                const org5 = {key: org.DEPART_CODE, title:org.DEPART_NAME, children:[], disableCheckbox: true, selectable: false}
+                const org5 = {key: org.DEPART_CODE, title:org.DEPART_NAME, children:[], disableCheckbox: false, selectable: false}
                 insertUser(org5, users, org.DEPART_CODE)
                 org4.children.push(org5)
               })
@@ -115,15 +115,17 @@ const Assign = () => {
 
   const handleChange = targetKeys => {
 
-    if (targetKeys.length > 5) {
-      message.error('서명참여자는 최대 5명까지 지정할 수 있습니다.');
-      return
-    }
+    // if (targetKeys.length > 5) {
+    //   message.error('서명참여자는 최대 5명까지 지정할 수 있습니다.');
+    //   return
+    // }
+
+    console.log("targetKeys:"+targetKeys)
 
     setTargetKeys(targetKeys)
     dispatch(resetSignee());
 
-    console.log("targetKeys:"+targetKeys)
+    //TODO : 대량발송 그룹 선택시 사용자만 선택되게 ... 
     for(let i=0; i<targetKeys.length; i++){
 
       const temp = users.find(element => element._id == targetKeys[i])

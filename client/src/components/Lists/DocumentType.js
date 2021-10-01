@@ -16,7 +16,7 @@ import {
 
 export const DOCUMENT_SIGNED = "서명 완료";
 export const DOCUMENT_TOSIGN = "서명 필요";
-export const DOCUMENT_SIGNING = "서명 대기";
+export const DOCUMENT_SIGNING = "서명 진행";
 export const DOCUMENT_CANCELED = "서명 취소";
 
 export function DocumentType(props) {
@@ -47,7 +47,8 @@ export function DocumentTypeText(props) {
   
     if (document["signed"] == true) { 
         return (
-          <Tag icon={<CheckCircleOutlined />} color="default">
+          // <Tag icon={<CheckCircleOutlined />} color="success">
+          <Tag icon={<CheckCircleOutlined />} color="#87d068">
             {DOCUMENT_SIGNED}
           </Tag>
         )
@@ -68,14 +69,41 @@ export function DocumentTypeText(props) {
                 )
             } else {
               return (
-                <Tag icon={<ClockCircleOutlined />} color="success">
+                <Tag icon={<SyncOutlined spin />} color="default">
                 {DOCUMENT_SIGNING}
                </Tag>
               )
             }
         }
     }
+}
 
+export function DocumentTypeBadge(props) {
+
+  let { uid, document } = props
+
+  if (document["signed"] == true) { 
+      return (
+        <b><Badge status="success" text={DOCUMENT_SIGNED} /></b> 
+      )
+  } else {
+      if (document["canceled"] == true) {
+        return (
+          <b><Badge status="error" text={DOCUMENT_CANCELED} /></b>
+        )
+      } else {
+          // if (document["users"].some(e => e._id === uid) && !document["signedBy"].includes(uid)) {
+            if (document["users"].some(e => e._id === uid) && !document["signedBy"].some(e => e.user === uid)) {
+              return (
+                <b><Badge status="processing" text={DOCUMENT_TOSIGN} /></b>
+              )
+          } else {
+            return (
+              <b><Badge status="default" text={DOCUMENT_SIGNING} /></b>
+            )
+          }
+      }
+  }
 }
 
 export function DocumentTypeIcon(props) {
@@ -84,7 +112,7 @@ export function DocumentTypeIcon(props) {
 
   if (document["signed"] == true) { 
       return (
-        <CheckCircleOutlined/>
+        <CheckCircleOutlined twoToneColor="#52c41a"/>
       )
   } else {
       if (document["canceled"] == true) {
@@ -99,7 +127,7 @@ export function DocumentTypeIcon(props) {
               )
           } else {
             return (
-              <ClockCircleTwoTone twoToneColor="#52c41a"/>
+              <ClockCircleTwoTone />
             )
           }
       }

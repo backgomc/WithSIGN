@@ -181,7 +181,6 @@ const BoardList = () => {
       key: 'title',
       ...getColumnSearchProps('title'),
       expandable: true,
-      width: '70%',
       render: (text,row) => <div style={{ wordWrap: 'break-word', wordBreak: 'break-word' }}>{text}</div>, // 여러 필드 동시 표시에 사용
     },
     {
@@ -189,25 +188,33 @@ const BoardList = () => {
       dataIndex: ['user', 'name'],
       sorter: (a, b) => a.user.name.localeCompare(b.user.name),
       key: 'name',
-      width: '10%',
+      width: '110px',
       ...getColumnSearchProps('name'),
       onFilter: (value, record) =>
       record['user']['name']
         ? record['user']['name'].toString().toLowerCase().includes(value.toLowerCase())
-        : ''
+        : '',
+        render: (text, row) => {
+          return (
+            <React.Fragment>
+            {row['user']['name']} {row['user']['JOB_TITLE']}
+            </React.Fragment>
+          )
+        } 
     },
     {
       title: '작성일',
       dataIndex: 'requestedTime',
       sorter: true,
       key: 'requestedTime',
-      width: '20%',
+      width: '110px',
       render: (text, row) => {
         // if (text){
         //   return <Moment format='YYYY/MM/DD HH:mm'>{text}</Moment>
         // } else {
-          return <Moment format='YYYY/MM/DD HH:mm'>{row["registeredTime"]}</Moment>
+          // return <Moment format='YYYY/MM/DD HH:mm'>{row["registeredTime"]}</Moment>
         // }
+        return (<font color='#787878'>{moment(row["requestedTime"]).fromNow()}</font>)
       } 
     },
   ];
