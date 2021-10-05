@@ -235,7 +235,7 @@ const Home = () => {
               </Link>
             }
             // description={item.user.JOB_TITLE ? item.user.name + ' '+ item.user.JOB_TITLE : item.user.name}
-            description={<Progress percent={(item.signedBy.length / item.users.length) * 100} steps={item.users.length} status="active" />}
+            description={<Progress percent={Math.round((item.signedBy.length / item.users.length) * 100)} steps={item.users.length} status="active" />}
           />
             <div><font color='grey'>{moment(item.requestedTime).fromNow()}</font></div> 
           </List.Item>

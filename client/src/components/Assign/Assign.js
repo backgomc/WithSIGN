@@ -7,7 +7,7 @@ import { Transfer, Tree, Input, Button, Space, message } from 'antd';
 import { selectUser } from '../../app/infoSlice';
 import { addSignee, resetSignee, selectAssignees, selectSendType } from './AssignSlice';
 import StepWrite from '../Step/StepWrite'
-import TreeTransfer from './TreeTransfer';
+import TreeTransfer from '../TreeTransfer/TreeTransfer';
 import { PageContainer } from '@ant-design/pro-layout';
 import ProCard from '@ant-design/pro-card';
 import 'antd/dist/antd.css';
@@ -26,14 +26,12 @@ const Assign = () => {
   const [loading, setLoading] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const assignees = useSelector(selectAssignees);
-  const [targetKeys, setTargetKeys] = useState([]);
   const [disableNext, setDisableNext] = useState(true);
+  const [target, setTarget] = useState([]);
+  const [source, setSource] = useState([]);
 
 
   const [users, setUsers] = useState([]);
-  const [expandedKeys, setExpandedKeys] = useState([]);
-  const [autoExpandParent, setAutoExpandParent] = useState(false);
-  const [searchValue, setSearchValue] = useState();
 
   const insertUser = (org, users, depart_code) => {
     const _users = users.filter(e => e.DEPART_CODE === depart_code)
@@ -61,27 +59,27 @@ const Assign = () => {
       const level1 = orgs.filter(e => e.PARENT_NODE_ID === "")
       level1.forEach(function(org){
         const level2 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE)
-        const org1 = {key: org.DEPART_CODE, title:org.DEPART_NAME, children:[], disableCheckbox: true, selectable: false}
+        const org1 = {key: org.DEPART_CODE, title:org.DEPART_NAME, children:[], disableCheckbox: false, selectable: true}
         // const org1 = {key: org.DEPART_CODE, title:org.DEPART_NAME, children:[], disableCheckbox: true, selectable: false}
         insertUser(org1, users, org.DEPART_CODE)
 
         level2.forEach(function(org){
-          const org2 = {key: org.DEPART_CODE, title:org.DEPART_NAME, children:[], disableCheckbox: true, selectable: false}
+          const org2 = {key: org.DEPART_CODE, title:org.DEPART_NAME, children:[], disableCheckbox: false, selectable: true}
           insertUser(org2, users, org.DEPART_CODE)
 
           const level3 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE)
           level3.forEach(function(org){
-            const org3 = {key: org.DEPART_CODE, title:org.DEPART_NAME, children:[], disableCheckbox: true, selectable: false}
+            const org3 = {key: org.DEPART_CODE, title:org.DEPART_NAME, children:[], disableCheckbox: false, selectable: true}
             insertUser(org3, users, org.DEPART_CODE)
 
             const level4 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE)
             level4.forEach(function(org){
-              const org4 = {key: org.DEPART_CODE, title:org.DEPART_NAME, children:[], disableCheckbox: true, selectable: false}
+              const org4 = {key: org.DEPART_CODE, title:org.DEPART_NAME, children:[], disableCheckbox: false, selectable: true}
               insertUser(org4, users, org.DEPART_CODE)
               
               const level5 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE)
               level5.forEach(function(org){
-                const org5 = {key: org.DEPART_CODE, title:org.DEPART_NAME, children:[], disableCheckbox: false, selectable: false}
+                const org5 = {key: org.DEPART_CODE, title:org.DEPART_NAME, children:[], disableCheckbox: false, selectable: true}
                 insertUser(org5, users, org.DEPART_CODE)
                 org4.children.push(org5)
               })
@@ -102,7 +100,7 @@ const Assign = () => {
         tree.push(org1)
       })
       
-      setData(tree)
+      setSource(tree)
 
       // setData(tree)
       setLoading(false);
@@ -113,36 +111,6 @@ const Assign = () => {
     }
   };
 
-  const handleChange = targetKeys => {
-
-    // if (targetKeys.length > 5) {
-    //   message.error('서명참여자는 최대 5명까지 지정할 수 있습니다.');
-    //   return
-    // }
-
-    console.log("targetKeys:"+targetKeys)
-
-    setTargetKeys(targetKeys)
-    dispatch(resetSignee());
-
-    //TODO : 대량발송 그룹 선택시 사용자만 선택되게 ... 
-    for(let i=0; i<targetKeys.length; i++){
-
-      const temp = users.find(element => element._id == targetKeys[i])
-      
-      const key = temp._id
-      const name = temp.name
-
-      dispatch(addSignee({ key, name }));
-    }
-
-    if(targetKeys.length > 0) {
-      setDisableNext(false)
-    } else {
-      setDisableNext(true)
-    }
-  };
-
   const handlePrepare = () => {
     if (assignees.length > 0) {
       navigate(`/prepareDocument`);
@@ -150,34 +118,6 @@ const Assign = () => {
       // setShowToast(true);
       // setTimeout(() => setShowToast(false), 1000);
     }
-  }
-
-  const handleSearch = e => {
-    const { value } = e.target;
-    console.log("search:"+value)
-    // console.log("users:"+users)
-
-    var expandedKeys = users
-      .map(item => {
-        if (item.name === value) {  //속도때문에 이름 모두 입력했을때 필터링하는게 좋을듯
-        // if (item.name.indexOf(value) > -1) { //한 단어로 검색
-          console.log("FIND IT")
-          return item.DEPART_CODE
-        }
-        return null;
-      })
-      .filter((item, i, self) => item && self.indexOf(item) === i);
-      if(value === "") expandedKeys = null
-
-      // console.log("expandedKeys:"+expandedKeys)
-    setExpandedKeys(expandedKeys)
-    setAutoExpandParent(true)
-    setSearchValue(value)
-  }
-
-  const onExpand = expandedKeys => {
-    setExpandedKeys(expandedKeys)
-    setAutoExpandParent(false)
   }
 
   useEffect(() => {
@@ -192,7 +132,7 @@ const Assign = () => {
       assignees.forEach(element => {
         targets.push(element.key)
       });
-      setTargetKeys(targets)
+      setTarget(targets)
 
       if(assignees.length > 0) {
         setDisableNext(false)
@@ -202,6 +142,43 @@ const Assign = () => {
     }
 
   }, []);
+
+
+  const onChange = (target) => {
+    // if (target.length > 5) {
+    //   message.error('서명참여자는 최대 5명까지 지정할 수 있습니다.');
+    //   return
+    // }
+
+    console.log("targetKeys:"+target)
+
+    setTarget(target)
+    dispatch(resetSignee());
+
+    for(let i=0; i<target.length; i++){
+
+      const temp = users.find(element => element._id == target[i])
+      
+      const key = temp._id
+      const name = temp.name
+
+      dispatch(addSignee({ key, name }));
+    }
+
+    if(target.length > 0) {
+      setDisableNext(false)
+    } else {
+      setDisableNext(true)
+    }
+  }
+
+  const treeTransferProps = {
+    source,
+    target,
+    rowKey: "key",
+    rowTitle: "title",
+    onChange: onChange
+  };
 
   return (
     <div>
@@ -213,14 +190,6 @@ const Assign = () => {
           ghost: true,
           breadcrumb: {
             routes: [
-              // {
-              //   path: '/',
-              //   breadcrumbName: '서명 요청',
-              // },
-              // {
-              //   path: '/',
-              //   breadcrumbName: '서명참여자 설정',
-              // },
             ],
           },
           extra: [
@@ -235,37 +204,16 @@ const Assign = () => {
         ]}
       >
         <ProCard direction="column" ghost gutter={[0, 16]}>
-          {/* <ProCard style={{ background: '#FFFFFF'}} layout="center">
-            <StepWrite current={1} />
-          </ProCard> */}
           <ProCard style={{ background: '#FFFFFF'}}>
             <TreeTransfer 
-              dataSource={data}
-              targetKeys={targetKeys} 
-              onChange={handleChange} 
-              onSearch={handleSearch}
-              expandedKeys={expandedKeys}
-              autoExpandParent={autoExpandParent}
-              onExpand={onExpand}
+              {...treeTransferProps}
+              showSearch 
+              loading={loading}
             />
           </ProCard>
         </ProCard>
       </PageContainer>
       
-      {/* <StepWrite current={1} />
-      <br></br>
-      <TreeTransfer 
-          dataSource={data}
-          targetKeys={targetKeys} 
-          onChange={handleChange} 
-          onSearch={handleSearch}
-          expandedKeys={expandedKeys}
-          autoExpandParent={autoExpandParent}
-          onExpand={onExpand}
-      />
-      <br></br>
-      <p align="right"><Button type="primary" onClick={() => handlePrepare()}>다음</Button></p>
-       */}
     </div>
 
   );
