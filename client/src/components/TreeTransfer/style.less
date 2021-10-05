@@ -1,0 +1,107 @@
+@prefix: ~"tree-transfer";
+@size: 14px;
+@color: rgba(0, 0, 0, 0.89);
+@borderColor: #d9d9d9;
+@mobile: ~"(max-width:500px)";
+@other: ~"(min-width:501px)";
+
+.lucio-@{prefix} {
+  position: relative;
+  line-height: 1.5;
+  // font-family: Consolas,Menlo,Courier,monospace;
+  text-align: left;
+  color: @color;
+  .@{prefix}-panel {
+    @media @mobile{
+      width: 100%;
+    }
+    @media @other{
+      width: calc(50% - 20px);
+    }
+    height: 480px;
+    font-size: @size;
+    border: 1px solid @borderColor;
+    display: inline-block;
+    border-radius: 4px;
+    vertical-align: middle;
+    position: relative;
+    padding-top: 34px;
+    &-header {
+      padding: 8px 12px;
+      height: 34px;
+      border-radius: 4px 4px 0 0;
+      border-bottom: 1px solid @borderColor;
+      overflow: hidden;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      .ant-checkbox-wrapper {
+        font-size: @size;
+      }
+      &-title {
+        position: absolute;
+        right: 12px;
+      }
+    }
+    &-body {
+      height: 100%;
+      font-size: @size;
+      position: relative;
+      overflow: auto;
+      .ant-alert {
+        font-size: @size;
+        .ant-alert-icon {
+          top: @size - 1.5px
+        }
+      }
+      &-search {
+        position: absolute;
+        top: 0;
+        width: 100%;
+        padding: 8px;
+        .ant-input {
+          font-size: @size;
+        }
+      }
+      .ant-spin-nested-loading {
+        height: 100%;
+        .ant-spin-container {
+          height: 100%;
+        }
+      }
+      &-content {
+        padding: 0px;
+        overflow: auto;
+        height: 100%;
+        .ant-tree {
+          font-size: @size;
+        }
+        li {
+          padding: 8px 8px 8px 12px;
+          min-height: 32px;
+          transition: all .3s;
+          overflow: hidden;
+          white-space: nowrap;
+          text-overflow: ellipsis;
+          &:hover {
+            background-color: #d2eafb;
+          }
+        }
+      }
+      &-has-search {
+        padding-top: 46px;
+      }
+    }
+  }
+  .@{prefix}-operation {
+    display: inline-block;
+    overflow: hidden;
+    margin: 0 8px;
+    vertical-align: middle;
+    button.ant-btn {
+      display: block;
+      margin: 4px 0;
+    }
+  }
+}

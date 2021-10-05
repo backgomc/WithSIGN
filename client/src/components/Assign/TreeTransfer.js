@@ -30,7 +30,7 @@ const TreeTransfer = ({ dataSource, targetKeys, onSearch, expandedKeys, autoExpa
       dataSource={transferDataSource}
       className="tree-transfer"
       render={item => item.title}
-      showSelectAll={false}
+      showSelectAll={true}
     >
       {({ direction, onItemSelect, selectedKeys }) => {
         if (direction === 'left') {
@@ -41,6 +41,7 @@ const TreeTransfer = ({ dataSource, targetKeys, onSearch, expandedKeys, autoExpa
             <Tree
               blockNode
               checkable
+              multiple
               // checkStrictly /* 하위 같이 선택안되게 하려면 넣기 */
               defaultExpandAll
               checkedKeys={checkedKeys}
