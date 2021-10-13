@@ -9,6 +9,7 @@ import Home from './components/Home/Home';
 import UserList from './components/User/UserList';
 import DocumentList from './components/Document/DocumentList';
 import TemplateList from './components/Template/TemplateList';
+import UploadTemplate from './components/Template/UploadTemplate';
 import ViewDocument from './components/Document/ViewDocument';
 import Footer from './components/Footer/Footer';
 import { view as Header } from './components/Header';
@@ -92,6 +93,7 @@ const App = () => {
         <UserList path="/userList" />
         <DocumentList path="/documentList" />
         <TemplateList path="/templateList" />
+        <UploadTemplate path="/uploadTemplate" />
         <ViewDocument path="/viewDocument" />
       </Router>
   </ProLayout>
