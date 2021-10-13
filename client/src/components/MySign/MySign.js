@@ -1,18 +1,21 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector, useDispatch, useStore } from 'react-redux';
 import axios from 'axios';
 import { navigate } from '@reach/router';
-import { Spin, Button, Card, Modal, Empty, List } from 'antd';
+import { Spin, Button, Card, Modal, Empty, List, Form, message, Upload } from 'antd';
 import { selectUser } from '../../app/infoSlice';
 import { useIntl } from "react-intl";
 import SignaturePad from "react-signature-canvas";
 import ProCard from '@ant-design/pro-card';
+import ProForm, { ProFormUploadDragger } from '@ant-design/pro-form';
 import 'antd/dist/antd.css';
 import '@ant-design/pro-card/dist/card.css';
+import '@ant-design/pro-form/dist/form.css';
 import "./sigCanvas.css";
 import { DeleteOutlined, DownloadOutlined, ExclamationCircleOutlined, PlusOutlined } from '@ant-design/icons';
 import { triggerBase64Download } from 'react-base64-downloader';
 import { PageContainer } from '@ant-design/pro-layout';
+import * as common from "../../util/common";
 
 const { confirm } = Modal;
 
@@ -21,6 +24,10 @@ const MySign = () => {
   const [loading, setLoading] = useState(false);
   const [visiblModal, setVisiblModal] = useState(false);
   const [data, setData] = useState([]);
+  const [tab, setTab] = useState("tab1");
+  const [form] = Form.useForm();
+  const [disableNext, setDisableNext] = useState(true);
+  const [file, setFile] = useState(null);
 
   const dispatch = useDispatch();
   const user = useSelector(selectUser);
@@ -86,30 +93,59 @@ const MySign = () => {
   };
 
   const handleOk = async () => {
-    setLoading(true);
+
+    if (tab == 'tab1') {  //서명 그리기
+      setLoading(true);
     
-    let param = {
-      user: _id,
-      signData: sigCanvas.current.getTrimmedCanvas().toDataURL("image/png")
+      let param = {
+        user: _id,
+        signData: sigCanvas.current.getTrimmedCanvas().toDataURL("image/png")
+      }
+  
+      // 서버업로드
+      const res = await axios.post('/api/sign/addSign', param)
+  
+      setLoading(false);
+      setVisiblModal(false);
+      
+      sigCanvas.current.clear();
+  
+      fetchSigns();
+
+    } else { // 파일 업로드
+
+      console.log('file upload method !')
+
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+
+      reader.addEventListener("load", async function () {
+        // convert image file to base64 string
+        setLoading(true);
+
+        let param = {
+          user: _id,
+          signData: reader.result
+        }
+
+        // 서버업로드
+        const res = await axios.post('/api/sign/addSign', param)
+    
+        setLoading(false);
+        setVisiblModal(false);
+
+        setFile(null);
+        form.setFieldsValue({
+          dragger: []
+        })
+        setTab('tab1');
+        setDisableNext(true);
+            
+        fetchSigns();
+
+      }, false);
+
     }
-
-    // console.log("param user:"+param.user);
-    // console.log("param signData:"+param.signData);
-
-    // 서버업로드
-    const res = await axios.post('/api/sign/addSign', param)
-
-    setLoading(false);
-    setVisiblModal(false);
-    
-    sigCanvas.current.clear();
-
-    fetchSigns();
-
-    // setTimeout(() => {
-    //   setLoading(false);
-    //   setVisiblModal(false);
-    // }, 5000);
   };
 
   const handleCancel = () => {
@@ -119,26 +155,11 @@ const MySign = () => {
   const downloadSign = (signData) => {
     triggerBase64Download(signData, 'mysign')
   } 
+  
+  const onFinish = (values) => {
+    console.log(values)
 
-  // const renderSigns = data.map((sign, index) => {
-  //   return (
-  //     <ProCard 
-  //     colSpan="300px" 
-  //     layout="center" 
-  //     bordered
-  //     actions={[
-  //       // <DeleteOutlined key="delete" onClick={e => { deleteSign(sign._id) }} />,
-  //       // <DownloadOutlined key="download" onClick={e => { downloadSign(sign.signData)}} />,
-  //       <Button type="text" danger icon={<DeleteOutlined />} onClick={e => { deleteSign(sign._id) }}>삭제</Button>,
-  //       <Button type="text" icon={<DownloadOutlined />} onClick={e => { downloadSign(sign.signData) }}>다운로드</Button>
-  //     ]}>
-  //     <img
-  //       src={sign.signData} height="130px"
-  //     />
-  //   </ProCard>
-  //   )
-    
-  // })
+  }
 
   return (
     <div>
@@ -222,27 +243,119 @@ const MySign = () => {
     </ProCard> */}
 
     <Modal
-          visible={visiblModal}
-          width={400}
-          title="내 사인 만들기"
-          onOk={handleOk}
-          onCancel={handleCancel}
-          footer={[
-            <Button key="back" onClick={clear}>
-              모두 지우기
-            </Button>,
-            <Button key="submit" type="primary" loading={loading} onClick={handleOk}>
-              저장
-            </Button>
-          ]}
-        >
-      <SignaturePad
-        penColor='black'
-        ref={sigCanvas}
-        canvasProps={{
-          className: "signatureCanvas"
+      visible={visiblModal}
+      width={450}
+      title="내 사인 만들기"
+      onOk={handleOk}
+      onCancel={handleCancel}
+      footer={[
+        <Button key="back" onClick={clear} hidden={tab!='tab1'}>
+          모두 지우기
+        </Button>,
+        <Button key="submit" type="primary" loading={loading} onClick={handleOk} disabled={tab=='tab1'? false : disableNext}>
+          저장
+        </Button>
+      ]}
+    >
+
+      <ProCard
+        tabs={{
+          type: 'card',
+          activeKey: tab,
+          onChange: (activeKey) => {
+            console.log("activeKey:"+activeKey)
+            setTab(activeKey)
+
+            // if (activeKey === "tab1") {
+            //   dispatch(setDocumentType('PC'))
+            // } else {
+            //   dispatch(setDocumentType('TEMPLATE'))
+            // }
+          }
         }}
-      />
+      >
+        <ProCard.TabPane key="tab1" tab="사인 그리기">
+          <SignaturePad
+            penColor='black'
+            ref={sigCanvas}
+            canvasProps={{
+              className: "signatureCanvas"
+            }}
+          />
+
+        </ProCard.TabPane>
+
+        <ProCard.TabPane key="tab2" tab="이미지 첨부">
+          <ProForm 
+              form={form}
+              onFinish={onFinish}
+              submitter={{
+                // Configure the properties of the button
+                resetButtonProps: {
+                  style: {
+                    // Hide the reset button
+                    display: 'none',
+                  },
+                },
+                submitButtonProps: {
+                  style: {
+                    // Hide the reset button
+                    display: 'none',
+                  },
+                }
+              }}
+              onValuesChange={(changeValues) => {
+                console.log("onValuesChange called")
+                console.log(changeValues)
+                console.log(form.getFieldValue("dragger"))
+
+                if (form.getFieldValue("dragger")) {
+                  setDisableNext(false)
+                } else {
+                  setDisableNext(true)
+                }
+              }}
+            >
+              <ProFormUploadDragger 
+                max={1} 
+                label="" 
+                name="dragger" 
+                title={formatMessage({id: 'input.fileupload.image'})}
+                description={formatMessage({id: 'input.fileupload.support.image'})}
+                fieldProps={{
+                  onChange: (info) => {
+                    console.log(info.file, info.fileList);
+                    if (info.fileList.length == 0) {
+                      setDisableNext(true)
+                    }
+                  },
+                  beforeUpload: file => {
+                    console.log("filetype:"+file.type)
+                    if ( !(file.type == 'image/jpeg' || file.type == 'image/png') ) {
+                      console.log(file.type)
+                      message.error(`${file.name} is not a image file`);
+                      return Upload.LIST_IGNORE;
+                    }
+
+                    if (file.size > 1048576) {  //1MB
+                      console.log(file.size)
+                      message.error(`filesize(${common.formatBytes(file.size)}) is bigger than 1MB`);
+                      return Upload.LIST_IGNORE;
+                    }
+
+                    setFile(file);
+                                          
+                    return false;
+                  }
+                }}
+              >
+              </ProFormUploadDragger>
+
+            </ProForm>
+
+        </ProCard.TabPane>
+      </ProCard>
+
     </Modal>
 
     </div>

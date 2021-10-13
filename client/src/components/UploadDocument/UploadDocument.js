@@ -16,6 +16,7 @@ import '@ant-design/pro-card/dist/card.css';
 import 'antd/dist/antd.css';
 import '@ant-design/pro-form/dist/form.css';
 import SelectTemplate from '../Template/SelectTemplate';
+import * as common from "../../util/common";
 
 const UploadDocument = () => {
 
@@ -222,6 +223,13 @@ const UploadDocument = () => {
                       message.error(`${file.name} is not a pdf file`);
                       return Upload.LIST_IGNORE;
                     }
+
+                    if (file.size > 1048576 * 5) {  //5MB
+                      console.log(file.size)
+                      message.error(`filesize(${common.formatBytes(file.size)}) is bigger than 5MB`);
+                      return Upload.LIST_IGNORE;
+                    }
+
                     setFile(file);
                     
                     form.setFieldsValue({
