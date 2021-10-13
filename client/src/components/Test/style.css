@@ -1,12 +1,12 @@
-.lucio-tree-transfer {
+.lucio-tree-transfer-test {
   position: relative;
   line-height: 1.5;
   text-align: left;
   color: rgba(0, 0, 0, 0.89);
 }
-.lucio-tree-transfer .tree-transfer-panel {
+.lucio-tree-transfer-test .tree-transfer-test-panel {
   width: 450px;
-  height: 450px;
+  height: 550px;
   font-size: 14px;
   border: 1px solid #d9d9d9;
   display: inline-block;
@@ -15,7 +15,7 @@
   position: relative;
   padding-top: 34px;
 }
-.lucio-tree-transfer .tree-transfer-panel-header {
+.lucio-tree-transfer-test .tree-transfer-test-panel-header {
   padding: 8px 12px;
   height: 34px;
   border-radius: 4px 4px 0 0;
@@ -26,49 +26,48 @@
   left: 0;
   width: 100%;
 }
-.lucio-tree-transfer .tree-transfer-panel-header .ant-checkbox-wrapper {
+.lucio-tree-transfer-test .tree-transfer-test-panel-header .ant-checkbox-wrapper {
   font-size: 14px;
 }
-.lucio-tree-transfer .tree-transfer-panel-header-title {
+.lucio-tree-transfer-test .tree-transfer-test-panel-header-title {
   position: absolute;
   right: 12px;
 }
-.lucio-tree-transfer .tree-transfer-panel-body {
+.lucio-tree-transfer-test .tree-transfer-test-panel-body {
   height: 100%;
   font-size: 14px;
   position: relative;
   overflow: auto;
 }
-.lucio-tree-transfer .tree-transfer-panel-body .ant-alert {
+.lucio-tree-transfer-test .tree-transfer-test-panel-body .ant-alert {
   font-size: 14px;
 }
-.lucio-tree-transfer .tree-transfer-panel-body .ant-alert .ant-alert-icon {
+.lucio-tree-transfer-test .tree-transfer-test-panel-body .ant-alert .ant-alert-icon {
   top: 12.5px;
 }
-.lucio-tree-transfer .tree-transfer-panel-body-search {
+.lucio-tree-transfer-test .tree-transfer-test-panel-body-search {
   position: absolute;
   top: 0;
   width: 100%;
   padding: 8px;
 }
-.lucio-tree-transfer .tree-transfer-panel-body-search .ant-input {
+.lucio-tree-transfer-test .tree-transfer-test-panel-body-search .ant-input {
   font-size: 14px;
 }
-.lucio-tree-transfer .tree-transfer-panel-body .ant-spin-nested-loading {
+.lucio-tree-transfer-test .tree-transfer-test-panel-body .ant-spin-nested-loading {
   height: 100%;
 }
-.lucio-tree-transfer .tree-transfer-panel-body .ant-spin-nested-loading .ant-spin-container {
+.lucio-tree-transfer-test .tree-transfer-test-panel-body .ant-spin-nested-loading .ant-spin-container {
   height: 100%;
 }
-.lucio-tree-transfer .tree-transfer-panel-body-content {
+.lucio-tree-transfer-test .tree-transfer-test-panel-body-content {
   padding: 0px;
   overflow: auto;
-  height: 100%;
 }
-.lucio-tree-transfer .tree-transfer-panel-body-content .ant-tree {
+.lucio-tree-transfer-test .tree-transfer-test-panel-body-content .ant-tree {
   font-size: 14px;
 }
-.lucio-tree-transfer .tree-transfer-panel-body-content li {
+.lucio-tree-transfer-test .tree-transfer-test-panel-body-content li {
   padding: 8px 8px 8px 12px;
   min-height: 32px;
   transition: all 0.3s;
@@ -76,19 +75,19 @@
   white-space: nowrap;
   text-overflow: ellipsis;
 }
-.lucio-tree-transfer .tree-transfer-panel-body-content li:hover {
+.lucio-tree-transfer-test .tree-transfer-test-panel-body-content li:hover {
   background-color: #d2eafb;
 }
-.lucio-tree-transfer .tree-transfer-panel-body-has-search {
+.lucio-tree-transfer-test .tree-transfer-test-panel-body-has-search {
   padding-top: 46px;
 }
-.lucio-tree-transfer .tree-transfer-operation {
+.lucio-tree-transfer-test .tree-transfer-test-operation {
   display: inline-block;
   overflow: hidden;
   margin: 0 8px;
   vertical-align: middle;
 }
-.lucio-tree-transfer .tree-transfer-operation button.ant-btn {
+.lucio-tree-transfer-test .tree-transfer-test-operation button.ant-btn {
   display: block;
   margin: 4px 0;
 }

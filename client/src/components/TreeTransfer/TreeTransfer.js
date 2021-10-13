@@ -12,7 +12,7 @@ import difference from 'lodash.difference';
 import { hasUnLoadNode, unique } from './utils';
 import { RightOutlined, LeftOutlined } from '@ant-design/icons';
 import { Empty } from 'antd';
-import './style.css?v=15';
+import './style.css?v=16';
 const TreeNode = Tree.TreeNode;
 const Search = Input.Search;
 

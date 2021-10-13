@@ -72,7 +72,6 @@
 .lucio-tree-transfer .tree-transfer-panel-body-content {
   padding: 0px;
   overflow: auto;
-  height: 100%;
 }
 .lucio-tree-transfer .tree-transfer-panel-body-content .ant-tree {
   font-size: 14px;

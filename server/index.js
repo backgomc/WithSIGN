@@ -28,7 +28,7 @@ app.use(express.static('public'));
 app.use(express.urlencoded({ extended: true }));
 //to get json data
 // support parsing of application/json type post data
-app.use(express.json());
+app.use(express.json({limit: '10mb'}));
 app.use(cookieParser());
 
 // storage access
