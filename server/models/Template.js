@@ -12,6 +12,9 @@ const templateSchema = mongoose.Schema({
     docRef: {
         type: String
     },
+    type: {
+        type: String
+    },
     registeredTime: {
         type: Date, default: Date.now
     },
