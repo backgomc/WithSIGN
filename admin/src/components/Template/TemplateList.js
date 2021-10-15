@@ -83,7 +83,7 @@ const TemplateList = () => {
     }
 
     console.log("param:" + param)
-    const res = await axios.post('/api/admin/deleteTemplate', param)
+    const res = await axios.post('/api/admin/templates/delete', param)
     if (res.data.success) {
       // alert('삭제 되었습니다.')
     } else {
