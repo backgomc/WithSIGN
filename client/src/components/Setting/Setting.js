@@ -1,14 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import axios from 'axios';
+import BoardCard from '../Board/BoardCard';
 import { setUser, selectUser } from '../../app/infoSlice';
-import { LockOutlined } from '@ant-design/icons';
-import { Form, message, Spin } from 'antd';
+import { navigate, Link } from '@reach/router';
+import { LockOutlined, UserOutlined } from '@ant-design/icons';
+import { Form, message, Spin, Avatar, Alert, Row, Col } from 'antd';
 import { PageContainer } from '@ant-design/pro-layout';
 import ProCard from '@ant-design/pro-card';
 import ProForm, { ProFormText, ProFormSelect, ProFormDependency } from '@ant-design/pro-form';
-
 import 'antd/dist/antd.css';
+import '@ant-design/pro-form/dist/form.css';
+import '@ant-design/pro-card/dist/card.css';
 
 const Setting = () => {
 
@@ -114,77 +117,116 @@ const Setting = () => {
     } else {
         return (
 
+          <div>
+
+            <div style={{marginLeft:'150px', marginTop:'15px', marginBottom:'15px'}}>
+              <Avatar size={84} icon={<UserOutlined />} />
+            </div>
+            
+            <div style={{marginLeft:'30px'}}>
             <ProForm
-            onFinish={onFinish}
-            validateMessages={validateMessages}
-            submitter={{
-              // Configure the button text
-              searchConfig: {
-                resetText: '초기화',
-                submitText: '변경',
-              }
-            }}
-    
-            initialValues={{
-              name: name,
-              jobTitle: JOB_TITLE,
-              email: email,
-              office: officeName,
-              depart: departName
-            }}
-          >
-            <ProFormText
-              disabled
-              width="md"
-              name="name"
-              label="이름"
-              placeholder="이름"
-              tooltip="이름 변경은 관리자에게 문의해주세요"
-            />
-            <ProFormText
-              disabled
-              width="md"
-              name="jobTitle"
-              label="직급"
-              placeholder="직급"
-              tooltip="직급 변경은 관리자에게 문의해주세요"
-            />
-            <ProFormText
-              width="md"
-              name="email"
-              label="이메일"
-              placeholder="이메일"
-              tooltip="이메일로 문서를 수신/발신시 사용됩니다"
-              rules={[
-                {
-                  type: 'email',
+              onFinish={onFinish}
+              validateMessages={validateMessages}
+
+              submitter={{
+                // Configure the button text
+                searchConfig: {
+                  resetText: '초기화',
+                  submitText: '변경',
                 },
-              ]}
-            />
+                render: (_, dom) => {},
+              }}
+      
+              initialValues={{
+                name: name,
+                jobTitle: JOB_TITLE,
+                email: email,
+                office: officeName,
+                depart: departName
+              }}
+            >
+              
+              <ProFormText
+                disabled
+                width="md"
+                name="name"
+                label="이름"
+                fieldProps={{
+                  size: 'large'
+                }}
+                placeholder="이름"
+                tooltip="이름 변경은 관리자에게 문의해주세요"
+              />
+              <ProFormText
+                disabled
+                width="md"
+                name="jobTitle"
+                label="직급"
+                fieldProps={{
+                  size: 'large'
+                }}
+                placeholder="직급"
+                tooltip="직급 변경은 관리자에게 문의해주세요"
+              />
+              {/* <ProFormText
+                width="md"
+                name="email"
+                label="이메일"
+                fieldProps={{
+                  size: 'large'
+                }}
+                placeholder="이메일"
+                tooltip="이메일로 문서를 수신/발신시 사용됩니다"
+                rules={[
+                  {
+                    type: 'email',
+                  },
+                ]}
+              /> */}
+      
+              <ProFormText
+                disabled
+                width="md"
+                name="office"
+                label="소속"
+                fieldProps={{
+                  size: 'large'
+                }}
+                placeholder="소속명"
+              />
+      
+              <ProFormText
+                disabled
+                width="md"
+                name="depart"
+                label="부서명"
+                fieldProps={{
+                  size: 'large'
+                }}
+                placeholder="부서명"
+              />
     
-            <ProFormText
-              disabled
-              width="md"
-              name="office"
-              label="소속"
-              placeholder="소속명"
-            />
-    
-            <ProFormText
-              disabled
-              width="md"
-              name="depart"
-              label="부서명"
-              placeholder="부서명"
-            />
-    
-          </ProForm>
+            <div style={{width:"328px"}}>
+              <Alert
+                message="기본정보 변경 안내"
+                description="내부시스템(ERP) 기본정보를 변경하시면 익일 자동 반영됩니다."
+                type="info"
+                showIcon
+              />
+            </div>
+
+            </ProForm>
+            </div>
+
+          </div>
+
         )   
     }
   }
 
   const updatePassword = () => {
     return (
+        <div style={{marginLeft:'30px'}}>
         <ProForm
         form={formPassword}
         onFinish={onFinishPassword}
@@ -264,13 +306,33 @@ const Setting = () => {
         />
 
       </ProForm>
+      </div>
     )   
+  }
+
+  const faq = () => {
+    return (
+      <div>
+        <ProCard
+          colSpan={{ xs: 24, sm: 12, md: 12, lg: 12, xl: 12 }}
+          style={{ marginBottom: 0, marginRight: 0, padding: 0 }}
+          title="공지사항"
+          bordered={false}
+          headerBordered
+          extra={<Link to="/customer">더보기</Link>}
+          // loading={loadingNotice}
+          bodyStyle={{ padding: 10 }}
+          >
+            dsdsd
+        </ProCard>
+      </div>
+    )
   }
 
   return (
     <div
         style={{
-        background: '#F5F7FA',
+        background: '',
         }}
     >
         <PageContainer
@@ -291,22 +353,35 @@ const Setting = () => {
         content={'사용자 정보 및 관련 설정을 변경 할 수 있습니다.'}
         >
 
-            <ProCard
-                tabs={{
-                type: 'card',
-                activeKey: tab,
-                onChange: (key) => {
-                    setTab(key);
-                },
-                }}
-            >
-                <ProCard.TabPane key="tab1" tab="기본 정보">
-                  <div style={{marginLeft:'35px'}}>{userinfo()}</div>
-                </ProCard.TabPane>
-                <ProCard.TabPane key="tab2" tab="비밀번호 변경">
-                <div style={{marginLeft:'35px'}}>{updatePassword()}</div>
-                </ProCard.TabPane>
-            </ProCard>
+          <Row gutter={24}>
+              <Col xl={12} lg={24} md={24} sm={24} xs={24}>
+
+                <ProCard
+                  title='사용자 정보 및 변경'
+                  tabs={{
+                  type: 'card',
+                  activeKey: tab,
+                  onChange: (key) => {
+                      setTab(key);
+                  },
+                  }}
+                >
+                  <ProCard.TabPane key="tab1" tab="기본 정보">
+                    <div>{userinfo()}</div>
+                  </ProCard.TabPane>
+                  <ProCard.TabPane key="tab2" tab="비밀번호 변경">
+                    <div>{updatePassword()}</div>
+                  </ProCard.TabPane>
+                </ProCard>
+                <br></br>
+              </Col>
+              <Col xl={12} lg={24} md={24} sm={24} xs={24}>
+                {/* {faq()} */}
+                <BoardCard boardType={'notice'} boardName={'공지사항'}></BoardCard>
+                <br></br>
+              </Col>
+          </Row>
+
         
         </PageContainer>
     </div>

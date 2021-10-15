@@ -4,7 +4,7 @@ import Moment from 'react-moment';
 import { useSelector, useDispatch } from 'react-redux';
 import { selectUser } from '../../app/infoSlice';
 import { navigate } from '@reach/router';
-import { setTemplate, setDocumentType, setTemplateTitle } from '../Assign/AssignSlice';
+import { setTemplate, setDocumentType, setTemplateTitle, setTemplateType } from '../Assign/AssignSlice';
 
 import {
     FileOutlined,
@@ -30,6 +30,7 @@ const TemplateExpander = (props) => {
   const signTemplate = () => {
     console.log(item._id);
     dispatch(setDocumentType('TEMPLATE'))
+    dispatch(setTemplateType('M'))
     dispatch(setTemplateTitle(item.docTitle))
     dispatch(setTemplate(item))
     navigate('/assign');

@@ -20,14 +20,28 @@ import {
 } from '@ant-design/icons';
 import { selectTemplate, setTemplateTitle, selectTemplateTitle } from '../Assign/AssignSlice';
 
-const SelectTemplate =  forwardRef((props, ref) => {
+const SelectTemplate = forwardRef((props, ref) => {
 
   useImperativeHandle(ref, () => ({
-
-    setTitle() {
+    initTemplateUI() {
+      console.log("initTemplateUI called!")
+      setSelectedRowKeys([])
+      form.setFieldsValue({
+        documentTitle: "",
+      })
     }
-
   }));
+
+  // useImperativeHandle(ref, () => ({
+
+  //   // setTitle() {
+  //   // }
+  //   resetSelect() {
+  //     console.log("부모컴포넌트로부터 initSelect called!")
+  //     setSelectedRowKeys([])
+  //   }
+
+  // }));
 
   const dispatch = useDispatch();
   const { formatMessage } = useIntl();
@@ -178,6 +192,10 @@ const SelectTemplate =  forwardRef((props, ref) => {
     clearFilters();
     setSearchText('');
   }
+
+  const initTable = () => {
+    console.log('init table called')
+  }
   
   const columns = [
     {
@@ -191,6 +209,7 @@ const SelectTemplate =  forwardRef((props, ref) => {
     },
     {
       title: '생성자',
+      width: '110px',
       dataIndex: ['user', 'name'],
       sorter: (a, b) => a.user.name.localeCompare(b.user.name),
       key: 'name',
@@ -205,12 +224,9 @@ const SelectTemplate =  forwardRef((props, ref) => {
       dataIndex: 'requestedTime',
       sorter: true,
       key: 'requestedTime',
+      width: '110px',
       render: (text, row) => {
-        // if (text){
-        //   return <Moment format='YYYY/MM/DD HH:mm'>{text}</Moment>
-        // } else {
-          return <Moment format='YYYY/MM/DD HH:mm'>{row["registeredTime"]}</Moment>
-        // }
+        return (<font color='#787878'>{moment(row["requestedTime"]).fromNow()}</font>)
       } 
     },
   ];
@@ -241,28 +257,24 @@ const SelectTemplate =  forwardRef((props, ref) => {
 
   useEffect(() => {
 
-    fetch({
-      uid: _id,
-      pagination,
-    });
-
-    // const data = [];
-    // for (let i = 0; i < 46; i++) {
-    //   data.push({
-    //     key: i,
-    //     templateTitle: `template title ${i}`,
-    //     name: `Edward King ${i}`,
-    //     requestedTime: `2021-07-02T05:46:40.769+00:00`,
-    //   });
-    // }
-    // setData(data);
+    if (props.type && props.type === 'C') {
+      fetch({
+        uid: _id,
+        pagination,
+        type: 'C'
+      });
+    } else {
+      fetch({
+        uid: _id,
+        pagination,
+      });
+    }
 
   }, [_id]);
 
   return (
     <div>
       
-
       <ProForm 
         form={form}
         onFinish={onFinish}

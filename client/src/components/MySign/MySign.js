@@ -323,6 +323,7 @@ const MySign = () => {
                 title={formatMessage({id: 'input.fileupload.image'})}
                 description={formatMessage({id: 'input.fileupload.support.image'})}
                 fieldProps={{
+                  listType: 'picture',
                   onChange: (info) => {
                     console.log(info.file, info.fileList);
                     if (info.fileList.length == 0) {

@@ -9,6 +9,7 @@ export const AssignSlice = createSlice({
     template: null,
     templateTitle: null,
     documentType: "PC",
+    templateType: null,
     sendType: "G" // G:일반 / B:벌크방식
   },
   reducers: {
@@ -49,6 +50,12 @@ export const AssignSlice = createSlice({
     resetDocumentType: (state, action) => {
       state.documentType = null;
     },
+    setTemplateType: (state, action) => {
+      state.templateType = action.payload;
+    },
+    resetTemplateType: (state, action) => {
+      state.templateType = null;
+    },
     setSendType: (state, action) => {
       state.sendType = action.payload;
     },
@@ -58,11 +65,13 @@ export const AssignSlice = createSlice({
       state.documentTitle = null;
       state.template = null;
       state.templateTitle = null;
+      state.templateType = null;
+      state.signees = [];
     },
   },
 });
 
-export const { addSignee, resetSignee, setDocumentFile, resetDocumentFile, setDocumentTitle, resetDocumentTitle, setTemplate, resetTemplate, setTemplateTitle, resetTemplateTitle, setDocumentType, resetDocumentType, setSendType, resetAssignAll } = AssignSlice.actions;
+export const { addSignee, resetSignee, setDocumentFile, resetDocumentFile, setDocumentTitle, resetDocumentTitle, setTemplate, resetTemplate, setTemplateTitle, resetTemplateTitle, setDocumentType, resetDocumentType, setTemplateType, resetTemplateType, setSendType, resetAssignAll } = AssignSlice.actions;
 
 export const selectAssignees = state => state.assign.signees;
 export const selectDocumentFile = state => state.assign.documentFile;
@@ -70,6 +79,7 @@ export const selectDocumentTitle = state => state.assign.documentTitle;
 export const selectTemplate = state => state.assign.template;
 export const selectTemplateTitle = state => state.assign.templateTitle;
 export const selectDocumentType = state => state.assign.documentType;
+export const selectTemplateType = state => state.assign.templateType;
 export const selectSendType = state => state.assign.sendType;
 
 export default AssignSlice.reducer;

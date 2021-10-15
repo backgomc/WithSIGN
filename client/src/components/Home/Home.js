@@ -6,10 +6,11 @@ import { selectUser } from '../../app/infoSlice';
 import { setDocToSign } from '../SignDocument/SignDocumentSlice';
 import { setSendType } from '../Assign/AssignSlice';
 import axios from 'axios';
+import BoardCard from '../Board/BoardCard';
 import ProCard from '@ant-design/pro-card';
 import RcResizeObserver from 'rc-resize-observer';
 import { PageContainer } from '@ant-design/pro-layout';
-import { Spin, Button, Card, Modal, Empty, List, Space, Statistic, Avatar, Row, Col, Progress } from 'antd';
+import { Badge, Button, Card, Modal, Empty, List, Space, Statistic, Avatar, Row, Col, Progress } from 'antd';
 import 'antd/dist/antd.css';
 import '@ant-design/pro-card/dist/card.css';
 import {
@@ -31,10 +32,10 @@ const Home = () => {
   const [loadingToSign, setLoadingToSign] = useState(false);
   const [loadingSigning, setLoadingSigning] = useState(false);
   const [loadingStatics, setLoadingStatics] = useState(false);
-  const [loadingNotice, setLoadingNotice] = useState(false);
+  // const [loadingNotice, setLoadingNotice] = useState(false);
   const [documentsToSign, setDocumentsToSign] = useState([]);
   const [documentsSigning, setDocumentsSigning] = useState([]);
-  const [notice, setNotice] = useState([]);
+  // const [notice, setNotice] = useState([]);
   const [pagination, setPagination] = useState({current:1, pageSize:6});
   const [responsive, setResponsive] = useState(false);
   const [totalNum, setTotalNum] = useState(0);
@@ -52,7 +53,7 @@ const Home = () => {
     fetchToSign();
     fetchSigning();
     fetchStatics();
-    fetchNotice();
+    // fetchNotice();
   }, []);
 
   const fetchToSign = async () => {
@@ -101,19 +102,19 @@ const Home = () => {
     setLoadingStatics(false);
   }
 
-  const fetchNotice = async () => {
-    setLoadingNotice(true);
-    let param = {
-      boardType: 'notice',
-      pagination
-    }
-    const res = await axios.post('/api/board/list', param)
-    if (res.data.success) {
-      const boards = res.data.boards;
-      setNotice(boards)
-    }
-    setLoadingNotice(false);
-  }
+  // const fetchNotice = async () => {
+  //   setLoadingNotice(true);
+  //   let param = {
+  //     boardType: 'notice',
+  //     pagination
+  //   }
+  //   const res = await axios.post('/api/board/list', param)
+  //   if (res.data.success) {
+  //     const boards = res.data.boards;
+  //     setNotice(boards)
+  //   }
+  //   setLoadingNotice(false);
+  // }
 
   const headerTitle = (
     <Space size={3}>    
@@ -121,6 +122,20 @@ const Home = () => {
       <div>{name} {JOB_TITLE}</div>
     </Space>
   )
+
+  const renderBadge = (count, active = false) => {
+    return (
+      <Badge
+        count={count}
+        style={{
+          marginTop: -2,
+          marginLeft: 4,
+          color: active ? '#1890FF' : '#999',
+          backgroundColor: active ? '#E6F7FF' : '#eee',
+        }}
+      />
+    );
+  };
 
   const extraContent = (
     // <Space size={24}>
@@ -214,7 +229,7 @@ const Home = () => {
     <ProCard
     colSpan={{ xs: 24, sm: 12, md: 12, lg: 12, xl: 12 }}
     style={{ marginBottom: 0, marginRight: 0, padding: 0 }}
-    title={<div>서명 진행 문서 ({documentsSigning.length}건)</div>}
+    title={<div>서명 진행 문서 {renderBadge(documentsSigning.length, false)}</div>}
     bordered={false}
     headerBordered
     extra={<Link to="/documentList" state={{ status: '서명 진행' }}>더보기</Link>}
@@ -244,38 +259,38 @@ const Home = () => {
     </ProCard>
   )
 
-  const noticeList = (
-    <ProCard
-    colSpan={{ xs: 24, sm: 12, md: 12, lg: 12, xl: 12 }}
-    style={{ marginBottom: 0, marginRight: 0, padding: 0 }}
-    title="공지사항"
-    bordered={false}
-    headerBordered
-    extra={<Link to="/customer">더보기</Link>}
-    loading={loadingNotice}
-    bodyStyle={{ padding: 10 }}
-    >
-      <List
-        // bordered
-        style={{ paddingLeft: 24, paddingRight: 24}}
-        dataSource={notice}
-        renderItem={item => (
-          <List.Item>
-          <List.Item.Meta
-            avatar={<NotificationOutlined style={{ fontSize: 16 }} />}
-            title={
-              <Link to="/boardDetail" state={{ boardId: item._id }}>
-                {item.title}
-              </Link>
-            }
-            // description={item.user.JOB_TITLE ? item.user.name + ' '+ item.user.JOB_TITLE : item.user.name}
-          />
-            <div><font color='grey'>{moment(item.requestedTime).fromNow()}</font></div>
-          </List.Item>
-        )}
-      />
-    </ProCard>
-  )
+  // const noticeList = (
+  //   <ProCard
+  //   colSpan={{ xs: 24, sm: 12, md: 12, lg: 12, xl: 12 }}
+  //   style={{ marginBottom: 0, marginRight: 0, padding: 0 }}
+  //   title="공지사항"
+  //   bordered={false}
+  //   headerBordered
+  //   extra={<Link to="/customer">더보기</Link>}
+  //   loading={loadingNotice}
+  //   bodyStyle={{ padding: 10 }}
+  //   >
+  //     <List
+  //       // bordered
+  //       style={{ paddingLeft: 24, paddingRight: 24}}
+  //       dataSource={notice}
+  //       renderItem={item => (
+  //         <List.Item>
+  //         <List.Item.Meta
+  //           avatar={<NotificationOutlined style={{ fontSize: 16 }} />}
+  //           title={
+  //             <Link to="/boardDetail" state={{ boardId: item._id }}>
+  //               {item.title}
+  //             </Link>
+  //           }
+  //           // description={item.user.JOB_TITLE ? item.user.name + ' '+ item.user.JOB_TITLE : item.user.name}
+  //         />
+  //           <div><font color='grey'>{moment(item.requestedTime).fromNow()}</font></div>
+  //         </List.Item>
+  //       )}
+  //     />
+  //   </ProCard>
+  // )
 
   const statics = (
       <ProCard.Group title="" direction='row' loading={loadingStatics}>
@@ -426,7 +441,7 @@ const Home = () => {
   const toSignCard = (
     <Card
     style={{ marginBottom: 24, width:'100%'}}
-    title={<div>서명 필요 문서 ({documentsToSign.length}건)</div>}
+    title={<div>서명 필요 문서 {renderBadge(documentsToSign.length, true)}</div>}
     bordered={false}
     extra={<Link to="/documentList" state={{ status: '서명 필요' }}>더보기</Link>}
     loading={loadingToSign}
@@ -567,7 +582,8 @@ const Home = () => {
           <Col xl={8} lg={24} md={24} sm={24} xs={24}>
             {pie}
             <br></br>
-            {noticeList}
+            {/* {noticeList} */}
+            <BoardCard boardType={'notice'} boardName={'공지사항'}></BoardCard>
           </Col>
       </Row>
 

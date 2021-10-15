@@ -7,7 +7,7 @@ import { Tabs, Upload, message, Input, Space, Form, Button } from 'antd';
 // import { InboxOutlined, CheckOutlined } from '@ant-design/icons';
 import StepWrite from '../Step/StepWrite';
 import { useIntl } from "react-intl";
-import { setDocumentFile, setDocumentTitle, selectDocumentTitle, selectDocumentFile, setTemplate, setDocumentType, selectDocumentType, selectTemplate, selectTemplateTitle, setTemplateTitle, selectSendType } from '../Assign/AssignSlice';
+import { setDocumentFile, setDocumentTitle, selectDocumentTitle, selectDocumentFile, setTemplate, setTemplateType, setDocumentType, selectDocumentType, selectTemplate, selectTemplateTitle, setTemplateTitle, selectSendType, selectTemplateType, resetTemplate, resetTemplateTitle } from '../Assign/AssignSlice';
 import { PageContainer } from '@ant-design/pro-layout';
 import ProCard from '@ant-design/pro-card';
 import ProForm, { ProFormUploadDragger, ProFormText } from '@ant-design/pro-form';
@@ -24,7 +24,8 @@ const UploadDocument = () => {
   const { formatMessage } = useIntl();
   const [form] = Form.useForm();
   // const formRef = React.createRef();
-  const templateRef = useRef();
+  const templateRef_C = useRef();
+  const templateRef_M = useRef();
 
   const [instance, setInstance] = useState(null);
   const [file, setFile] = useState(null);
@@ -42,9 +43,11 @@ const UploadDocument = () => {
   const template = useSelector(selectTemplate);
   const templateTitle = useSelector(selectTemplateTitle);
   const sendType = useSelector(selectSendType);
+  const templateType = useSelector(selectTemplateType);
 
   useEffect(() => {
 
+    console.log("UploadDocument useEffect called !")
     if (documentType === 'PC') {
       setTab("tab1")
       if (documentTitle) {
@@ -65,7 +68,12 @@ const UploadDocument = () => {
         setDisableNext(true)
       }
     } else if (documentType === 'TEMPLATE') {
-      setTab("tab2")
+      if (templateType === 'C') { // 회사 템플릿인 경우
+        setTab("tab2")
+      } else {
+        setTab("tab3")
+      }
+      
       if (templateTitle && template) {
         setDisableNext(false)
       } else {
@@ -73,7 +81,16 @@ const UploadDocument = () => {
       }
     }
 
-  }, [documentTitle, documentFile, documentType, templateTitle, templateRef]);
+  }, [documentTitle, documentFile, documentType, templateTitle, templateRef_C, templateRef_M]);
+
+  useEffect(() => {
+    console.log(tab)
+    if (tab === 'tab2') {
+      templateRef_C.current.initTemplateUI();
+    } else if (tab === 'tab3') {
+      templateRef_M.current.initTemplateUI();
+    }
+  }, [tab])
 
 
   const onFinish = (values) => {
@@ -106,6 +123,23 @@ const UploadDocument = () => {
     dispatch(setTemplateTitle(title))
   }
 
+  // const initSelectTemplate = (type) => {
+  //   if (type === 'C') {
+
+  //     setTimeout(() => {
+  //       templateRef_C.current.resetSelect();
+  //     }, 1000);
+      
+  //   } else {
+
+  //     setTimeout(() => {
+  //       templateRef_M.current.resetSelect();
+  //     }, 1000);
+
+  //   }
+  // };
+
+
   return (
     <div
     style={{
@@ -113,7 +147,7 @@ const UploadDocument = () => {
       // background: '#FFFFFF',
     }}
     >
-    
+      
       <PageContainer
       // ghost
       header={{
@@ -146,6 +180,7 @@ const UploadDocument = () => {
         // </Button>,
       ]}
     >
+
       <ProCard direction="column" ghost gutter={[0, 16]}>
 
         {/* <ProCard style={{ background: '#FFFFFF'}} layout="center"><StepWrite current={0} /></ProCard> */}
@@ -159,8 +194,26 @@ const UploadDocument = () => {
 
               if (activeKey === "tab1") {
                 dispatch(setDocumentType('PC'))
+              } else if (activeKey === "tab2") {
+                dispatch(setDocumentType('TEMPLATE'))
+                dispatch(setTemplateType('C'))
+
+                dispatch(resetTemplate());
+                dispatch(resetTemplateTitle());
+
+                // UI 변경은 렌더링이 완료된 후에 해야 하므로 useEffect (tab) 에서 처리함
+                // templateRef_C.current.resetSelect();
+                
               } else {
                 dispatch(setDocumentType('TEMPLATE'))
+                dispatch(setTemplateType('M'))
+
+                dispatch(resetTemplate());
+                dispatch(resetTemplateTitle());
+
+                // UI 변경은 렌더링이 완료된 후에 해야 하므로 useEffect (tab) 에서 처리함
+                // templateRef_M.current.resetSelect();
+
               }
             }
           }}
@@ -256,13 +309,17 @@ const UploadDocument = () => {
             </ProForm>
 
           </ProCard.TabPane>
-          <ProCard.TabPane key="tab2" tab="템플릿">
-
-              <SelectTemplate ref={templateRef} templateChanged={templateChanged} templateTitleChanged={templateTitleChanged} />
-
+          <ProCard.TabPane key="tab2" tab="회사 템플릿">
+              <SelectTemplate type='C' ref={templateRef_C} templateChanged={templateChanged} templateTitleChanged={templateTitleChanged} />
           </ProCard.TabPane>
+
+          <ProCard.TabPane key="tab3" tab="내 템플릿">
+              <SelectTemplate type='M' ref={templateRef_M} templateChanged={templateChanged} templateTitleChanged={templateTitleChanged} />
+          </ProCard.TabPane>
+
         </ProCard>
       </ProCard>
+      
     </PageContainer>
   </div>
   )

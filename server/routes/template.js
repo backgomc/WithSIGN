@@ -22,12 +22,19 @@ router.post('/addTemplate', (req, res) => {
 })
 
 // 템플릿 목록
+// type:C(회사 템플릿)
 router.post('/templates', (req, res) => {
 
   const uid = req.body.uid
   if (!uid) {
       return res.json({ success: false, message: "input value not enough!" })
   } 
+
+  var orParam = [{"user": uid}]
+  const type = req.body.type 
+  if (type && type === 'C') {
+    orParam = [{"type": "C"}]
+  }
 
   // 단어검색 
   var searchStr;
@@ -61,12 +68,12 @@ router.post('/templates', (req, res) => {
 
   var recordsTotal = 0;
 
-  Template.countDocuments(searchStr).or([{"user": uid}]).exec(function(err, count) {
+  Template.countDocuments(searchStr).or(orParam).exec(function(err, count) {
     recordsTotal = count;
     console.log("recordsTotal:"+recordsTotal)
     
     Template
-    .find(searchStr).or([{"user": uid}])
+    .find(searchStr).or(orParam)
     .sort({[order] : dir})    //asc:오름차순 desc:내림차순
     .skip(Number(start))
     .limit(Number(pageSize))
