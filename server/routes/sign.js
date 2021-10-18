@@ -3,6 +3,7 @@ const router = express.Router();
 const { Sign } = require("../models/Sign");
 const fs = require('fs');
 const config = require("../config/key");
+const { encrypt, decrypt } = require('../common/utils');
 
 // 템플릿 등록
 router.post('/addSign', (req, res) => {
@@ -12,7 +13,9 @@ router.post('/addSign', (req, res) => {
     } 
 
     const sign = new Sign(req.body)
-  
+
+    sign.signData = encrypt(sign.signData)
+    
     sign.save((err, signInfo) => {
       if (err) return res.json({ success: false, err })
       return res.status(200).json({
@@ -51,9 +54,16 @@ router.post('/signs', (req, res) => {
     select: {name: 1, JOB_TITLE: 2}
   })
   .exec((err, data) => {
-      console.log(data);
+      // console.log(data);
       if (err) return res.json({success: false, error: err});
-      return res.json({ success: true, signs: data })
+
+      // 복호화
+      const newData = data.map(sign => {
+        sign.signData = decrypt(sign.signData)
+        return sign
+      })
+
+      return res.json({ success: true, signs: newData })
   })
 
 })

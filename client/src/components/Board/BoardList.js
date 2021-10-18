@@ -204,9 +204,9 @@ const BoardList = () => {
     },
     {
       title: '작성일',
-      dataIndex: 'requestedTime',
+      dataIndex: 'registeredTime',
       sorter: true,
-      key: 'requestedTime',
+      key: 'registeredTime',
       width: '110px',
       render: (text, row) => {
         // if (text){
@@ -214,7 +214,7 @@ const BoardList = () => {
         // } else {
           // return <Moment format='YYYY/MM/DD HH:mm'>{row["registeredTime"]}</Moment>
         // }
-        return (<font color='#787878'>{moment(row["requestedTime"]).fromNow()}</font>)
+        return (<font color='#787878'>{moment(row["registeredTime"]).fromNow()}</font>)
       } 
     },
   ];

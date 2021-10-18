@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import axios from 'axios';
 import BoardCard from '../Board/BoardCard';
+import FAQCard from '../Board/FAQCard';
 import { setUser, selectUser } from '../../app/infoSlice';
 import { navigate, Link } from '@reach/router';
 import { LockOutlined, UserOutlined } from '@ant-design/icons';
@@ -354,7 +355,7 @@ const Setting = () => {
         >
 
           <Row gutter={24}>
-              <Col xl={12} lg={24} md={24} sm={24} xs={24}>
+              <Col xl={10} lg={24} md={24} sm={24} xs={24}>
 
                 <ProCard
                   title='사용자 정보 및 변경'
@@ -375,10 +376,12 @@ const Setting = () => {
                 </ProCard>
                 <br></br>
               </Col>
-              <Col xl={12} lg={24} md={24} sm={24} xs={24}>
+              <Col xl={14} lg={24} md={24} sm={24} xs={24}>
                 {/* {faq()} */}
                 <BoardCard boardType={'notice'} boardName={'공지사항'}></BoardCard>
                 <br></br>
+                <FAQCard boardType={'faq'} boardName={'FAQ'}></FAQCard>
+                
               </Col>
           </Row>
 
