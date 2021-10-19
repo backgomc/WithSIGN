@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const { Document } = require("../models/Document");
+var requestIp = require('request-ip');
+
 
 // 신규 문서 등록
 router.post('/addDocumentToSign', (req, res) => {
@@ -25,6 +27,9 @@ router.post('/addDocumentToSign', (req, res) => {
 
 // 문서 상태 변경 (사인) : updateDocumentToSign
 router.post('/updateDocumentToSign', (req, res) => {
+
+  // TODO 서명자의 IP 정보 남기기
+  console.log("client IP: " +requestIp.getClientIp(req));
 
   // console.log(req.body.docId)
   // console.log(req.body.uid)

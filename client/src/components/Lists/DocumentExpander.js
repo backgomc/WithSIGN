@@ -116,9 +116,9 @@ const DocumentExpander = (props) => {
         
         if ((item.signedBy.some(e => e.user === user._id))) {
             return  (
-                <Timeline.Item dot={<CheckCircleOutlined className="timeline-clock-icon" />} >
+                <Timeline.Item dot={<CheckCircleOutlined className="timeline-clock-icon" />} color="gray">
                     <b>{user.name} {user.JOB_TITLE}</b> 서명 완료 &nbsp; 
-                    <Tag color="#575757">
+                    <Tag color="#918F8F">
                     <Moment format='YYYY/MM/DD HH:mm'>{item.signedBy.filter(e => e.user === user._id)[0].signedTime}</Moment>
                     </Tag>
                     {/* <Badge count={timeFormat(item.signedBy.filter(e => e.user === user._id)[0].signedTime)} style={{ backgroundColor: 'grey' }}/> */}
@@ -129,7 +129,7 @@ const DocumentExpander = (props) => {
                 <Timeline.Item dot={<CloseCircleOutlined className="timeline-clock-icon" />} color="red">
                     <b>{user.name} {user.JOB_TITLE}</b> 서명 취소 &nbsp;
                     <Tooltip placement="right" title={item.canceledBy.filter(e => e.user === user._id)[0].message}>
-                        <Tag color="#575757" >
+                        <Tag color="#918F8F" >
                             <Moment format='YYYY/MM/DD HH:mm'>{item.canceledBy.filter(e => e.user === user._id)[0].canceledTime}</Moment>
                         </Tag>
                     </Tooltip>
@@ -138,8 +138,8 @@ const DocumentExpander = (props) => {
             )
         } else {
             return (
-                <Timeline.Item dot={<ClockCircleOutlined className="timeline-clock-icon" />} color="gray">
-                    <b>{user.name} {user.JOB_TITLE}</b> 서명 진행
+                <Timeline.Item dot={<ClockCircleOutlined className="timeline-clock-icon" />}>
+                    <b>{user.name} {user.JOB_TITLE}</b> 서명 필요
                 </Timeline.Item>
             )
         }
@@ -180,9 +180,9 @@ const DocumentExpander = (props) => {
             <ProCard title="서명 현황">
                 <Timeline>
                     {/* <Timeline.Item label={<Moment format='YYYY/MM/DD HH:mm'>{item.requestedTime}</Moment>}><b>{item.user.name}</b>님 서명 요청</Timeline.Item> */}
-                    <Timeline.Item>
+                    <Timeline.Item color="gray">
                         <b>{item.user.name} {item.user.JOB_TITLE}</b> 서명 요청 &nbsp;  
-                        <Tag color="#575757"><Moment format='YYYY/MM/DD HH:mm'>{item.requestedTime}</Moment></Tag>
+                        <Tag color="#918F8F"><Moment format='YYYY/MM/DD HH:mm'>{item.requestedTime}</Moment></Tag>
                     </Timeline.Item>
                     {
                         item.users.map((user) => (

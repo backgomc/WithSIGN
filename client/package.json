@@ -23,6 +23,7 @@
     "less-watch-compiler": "^1.16.3",
     "lodash.difference": "^4.5.0",
     "react": "^16.13.1",
+    "react-app-polyfill": "^2.0.0",
     "react-base64-downloader": "^2.1.7",
     "react-dom": "^16.13.1",
     "react-highlight-words": "^0.17.0",
@@ -53,7 +54,8 @@
     "development": [
       "last 1 chrome version",
       "last 1 firefox version",
-      "last 1 safari version"
+      "last 1 safari version",
+      "ie 11"
     ]
   },
   "devDependencies": {
