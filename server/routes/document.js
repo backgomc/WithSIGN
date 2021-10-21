@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { Document } = require("../models/Document");
-var requestIp = require('request-ip');
+const requestIp = require('request-ip');
 
 
 // 신규 문서 등록
@@ -29,7 +29,7 @@ router.post('/addDocumentToSign', (req, res) => {
 router.post('/updateDocumentToSign', (req, res) => {
 
   // TODO 서명자의 IP 정보 남기기
-  console.log("client IP: " +requestIp.getClientIp(req));
+  // console.log("client IP: " +requestIp.getClientIp(req));
 
   // console.log(req.body.docId)
   // console.log(req.body.uid)
@@ -42,6 +42,7 @@ router.post('/updateDocumentToSign', (req, res) => {
   const user = req.body.user
   const xfdfSigned = req.body.xfdf
   const time = new Date()
+  const ip = requestIp.getClientIp(req)
   var isLast = false;
 
   Document.findOne({ _id: req.body.docId }, (err, document) => {
@@ -51,7 +52,7 @@ router.post('/updateDocumentToSign', (req, res) => {
       console.log(signedBy.some(e => e.user === user))
       if (!signedBy.some(e => e.user === user)) {
 
-        const signedByArray = [...signedBy, {user:user, signedTime:time}];
+        const signedByArray = [...signedBy, {user:user, signedTime:time, ip:ip}];
         const xfdfArray = [...xfdf, xfdfSigned];
 
         Document.updateOne({ _id: docId }, {xfdf: xfdfArray, signedBy:signedByArray}, (err, result) => {

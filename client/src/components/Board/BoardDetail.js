@@ -20,7 +20,7 @@ import { useIntl } from "react-intl";
 import ProCard from '@ant-design/pro-card';
 
 
-const BoradDetail = ({location}) => {
+const BoardDetail = ({location}) => {
 
   const dispatch = useDispatch();
   const user = useSelector(selectUser);
@@ -223,4 +223,4 @@ const BoradDetail = ({location}) => {
   );
 };
 
-export default BoradDetail;
+export default BoardDetail;

@@ -196,14 +196,16 @@ const DocumentExpander = (props) => {
             <ProCard title="">
                 <div style={{height:"40px"}}>
                     <Button
-                        onClick={() => {        
+                        onClick={() => {         
+                            navigate(`/audit`, { state: { item: item } } );
                     }}>
                         진본확인증명서 발급
-                    </Button>
-                </div>
-                <div style={{height:"40px"}}>
+                    </Button>&nbsp;&nbsp;
                     {actionDocument()}
                 </div>
+                {/* <div style={{height:"40px"}}>
+                    {actionDocument()}
+                </div> */}
                 
             </ProCard>
 

@@ -28,6 +28,7 @@ import Login from './components/Login/Login';
 import Register from './components/Register/Register';
 import Setting from './components/Setting/Setting';
 import MySign from './components/MySign/MySign';
+import Audit from './components/Audit/Audit';
 import { setUser, selectUser } from './app/infoSlice';
 import ProLayout from '@ant-design/pro-layout';
 import Menus from './config/Menus';
@@ -132,6 +133,7 @@ const App = () => {
         <Test2 path="/test" />
         <BoardList path="/customer" />
         <BoardDetail path="/boardDetail" />
+        <Audit path="/audit" />
       </Router>
   </ProLayout>
 

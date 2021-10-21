@@ -31,7 +31,8 @@ const documentSchema = mongoose.Schema({
     },
     signedBy: [{
         user: { type: String },
-        signedTime: { type: Date }
+        signedTime: { type: Date },
+        ip: {type: String }
     }],
     // signedBy: {
     //     type: Array
