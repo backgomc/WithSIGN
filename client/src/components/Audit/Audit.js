@@ -1,6 +1,6 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import { Page, Text, View, Document, StyleSheet, PDFViewer, Font } from '@react-pdf/renderer';
-import { Table, Input, Space, Button, Descriptions, Collapse } from "antd";
+import { Button } from "antd";
 import { PageContainer } from '@ant-design/pro-layout';
 import { useIntl } from "react-intl";
 import Header from './Header';
@@ -10,6 +10,7 @@ import Moment from 'react-moment';
 // import font from '../../assets/font/NanumGothic-ExtraBold.ttf';
 import font from '../../assets/font/NanumGothic.ttf';
 import font_Bold from '../../assets/font/NanumGothic-ExtraBold.ttf';
+import { navigate } from '@reach/router';
 
 Font.register({ family: "Nanum Gothic", src: font });
 Font.register({ family: "Nanum Gothic Bold", src: font_Bold });
@@ -215,31 +216,6 @@ const Audit = ({location}) => {
   };
 
   const MyDocument = () => (
-      // <Document>
-      //   <Page size="A4" style={styles.page}>
-
-      //   <View style={styles.container}>
-      //       <Text style={styles.title}>진본확인 증명서</Text>
-      //   </View>
-
-      //   <View style={styles.section}>
-      //       <Text style={styles.text}>진본확인 증명서</Text>
-      //   </View>
-
-      //     <View style={styles.section}>
-      //       <Text style={styles.text}>{item.requestedTime}</Text>
-      //       <Text style={styles.text}>{item.user.name}</Text>
-      //       <Text style={styles.text}>{item.user.JOB_TITLE}</Text>
-      //       <Text style={styles.text}>{docTitle}</Text>
-      //       <Text style={styles.textBold}>{docTitle}</Text>
-      //     </View>
-          
-      //     <Text style={styles.pageNumber} render={({ pageNumber, totalPages }) => (
-      //       `${pageNumber} / ${totalPages}`
-      //     )} fixed />
-
-      //   </Page>
-      // </Document>
 
       <Document>
         <Page size="A4" style={styles.page}>
@@ -250,9 +226,6 @@ const Audit = ({location}) => {
               <View style={styles.leftColumn}>
                 <Text style={styles.title}>문서 정보</Text>
               </View>
-              {/* <View style={styles.rightColumn}>
-                <Text style={styles.date}>{item.requestedTime}</Text>
-              </View> */}
             </View>
             {/* <List>
               <Item style={styles.detailContainer}>문서 이름: {docTitle}</Item>
@@ -302,6 +275,12 @@ const Audit = ({location}) => {
     </Document>
   );
 
+  useEffect(() => {
+
+    console.log("useEffect called: Audit")
+
+  }, []);
+
   return (
 
     <div>
@@ -310,10 +289,10 @@ const Audit = ({location}) => {
         // loading={loading}
         header={{
           // title: board ? board.title : '',
-          title: '감사 추적 증명서',
+          title: '진본 확인 증명서',
           // ghost: false,
           extra: [           
-          <Button onClick={() => window.history.back()}>
+          <Button onClick={() => navigate('/documentList')}>
             {formatMessage({id: 'Back'})}
           </Button>
           ],
@@ -327,11 +306,6 @@ const Audit = ({location}) => {
         footer={[
         ]}
     >
-
-      {/* <ProCard direction="column" ghost gutter={[0, 16]}>
-        <ProCard style={{ height: '78vh' }}>{board.content}</ProCard>
-      </ProCard> */}
-
         <div
           style={{
             width: '100%',
@@ -341,6 +315,15 @@ const Audit = ({location}) => {
         >
           <PDFViewer style={{width: '100%', height: '100%', display: 'flex'}}>
             <MyDocument />
+
+            {/* <Document>
+              <Page size="A4" style={styles.page}>
+              <View style={styles.leftColumn}>
+                <Text style={styles.title}>문서 정보</Text>
+              </View>
+              </Page>
+            </Document> */}
+
           </PDFViewer>
         </div>
     </PageContainer>

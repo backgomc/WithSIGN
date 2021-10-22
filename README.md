@@ -146,6 +146,7 @@ xfdf: ["<?xml version="1.0" encoding="UTF-8" ?><xfdf xmlns="http://ns.adobe.com/
  > client/Dockerfile
  > server/Dockerfile
 - docker 파일 배포
+ > docker-compose build --no-cache (패키지 추가된 경우)
  > docker-compose up -d
  > docker-compse down 
 - docker image 수동으로 추출

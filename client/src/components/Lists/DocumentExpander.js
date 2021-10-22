@@ -193,21 +193,22 @@ const DocumentExpander = (props) => {
             </ProCard>
             
 
-            <ProCard title="">
-                <div style={{height:"40px"}}>
-                    <Button
-                        onClick={() => {         
-                            navigate(`/audit`, { state: { item: item } } );
-                    }}>
-                        진본확인증명서 발급
-                    </Button>&nbsp;&nbsp;
-                    {actionDocument()}
-                </div>
-                {/* <div style={{height:"40px"}}>
-                    {actionDocument()}
-                </div> */}
-                
-            </ProCard>
+            {DocumentType({uid: _id, document: item}) == DOCUMENT_SIGNED ?
+                <ProCard title="">
+                    <div style={{height:"40px"}}>                 
+                        <Button
+                            onClick={() => {         
+                                navigate(`/audit`, { state: { item: item } } );
+                        }}>
+                            진본 확인 증명서
+                        </Button> 
+
+                    </div>
+                    {/* <div style={{height:"40px"}}>
+                        {actionDocument()}
+                    </div> */}
+                </ProCard>
+            : ''}
 
         </ProCard>
       </RcResizeObserver>

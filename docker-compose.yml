@@ -7,7 +7,7 @@ services:
     container_name: nhsign_admin # 컨테이너 명
     restart: always
     ports:
-      - 3030:80
+      - 3030:3030
     volumes: # 볼륨 설정
       - ./admin/build:/app/build
 
@@ -17,9 +17,9 @@ services:
     container_name: nhsign-client # 컨테이너 명
     restart: "on-failure"
     ports:
-      - 80:80
-    volumes: # 볼륨 설정
-      - ./client/build:/app/build
+      - 3000:3000
+    # volumes: # 볼륨 설정
+      # - ./client/build:/app/build
     # image: nginx:latest # nginx 이미지
     # container_name: nhsign-client # 컨테이너 명
     # restart: "on-failure" # 구동 실패 시 재시작
@@ -41,13 +41,15 @@ services:
     depends_on:
       - mongo
     volumes: # 볼륨 설정
-      - './server:/app'
-      - '/app/node_modules' 
+      # - './server:/app'
+      # - '/app/node_modules' 
       - type: bind 
-        source: /Users/niceharu/Dev/Data/storage # local 경로
-        target: /app/storage  # container 내부에서의 경로
+        # source: /Users/niceharu/Dev/Data/storage # local 경로
+        # target: /app/storage  # container 내부에서의 경로
+        source: /Users/niceharu/Dev/nhsign-docker/server # local 경로
+        target: /app  # container 내부에서의 경로
     environment: # 환경변수 설정
-      - NODE_ENV=development
+      - NODE_ENV=production
       - CHOKIDAR_USEPOLLING=true
     stdin_open: true
     tty: true
