@@ -69,5 +69,6 @@
 	"sign.cancel": "cancel signing",
 	"Back": "Back",
 	"Customer": "Customer",
-	"Notice": "Notice"
+	"Notice": "Notice",
+	"document.check": "Check Document"
 }

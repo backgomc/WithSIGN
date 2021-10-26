@@ -10,7 +10,7 @@ import BoardCard from '../Board/BoardCard';
 import ProCard from '@ant-design/pro-card';
 import RcResizeObserver from 'rc-resize-observer';
 import { PageContainer } from '@ant-design/pro-layout';
-import { Badge, Button, Card, Modal, Empty, List, Space, Statistic, Avatar, Row, Col, Progress } from 'antd';
+import { Badge, Button, Card, Empty, List, Space, Statistic, Avatar, Row, Col, Progress } from 'antd';
 import 'antd/dist/antd.css';
 import '@ant-design/pro-card/dist/card.css';
 import {
@@ -18,7 +18,8 @@ import {
   SyncOutlined,
   BellOutlined,
   UserOutlined,
-  NotificationOutlined
+  NotificationOutlined,
+  FileProtectOutlined
 } from '@ant-design/icons';
 import Moment from 'react-moment';
 import moment from "moment";
@@ -438,6 +439,14 @@ const Home = () => {
     <ProCard title="문서 통계"><Pie {...config} /></ProCard>
   )
 
+  const direct = (
+    <ProCard title="바로 가기">
+      <Space>
+        <Button onClick={()=> {navigate('/auditCheck')}} icon={<FileProtectOutlined />}>문서 진본 확인</Button>
+      </Space>
+    </ProCard>
+  )
+
   const toSignCard = (
     <Card
     style={{ marginBottom: 24, width:'100%'}}
@@ -584,6 +593,8 @@ const Home = () => {
             <br></br>
             {/* {noticeList} */}
             <BoardCard boardType={'notice'} boardName={'공지사항'}></BoardCard>
+            <br></br>
+            {direct}
           </Col>
       </Row>
 

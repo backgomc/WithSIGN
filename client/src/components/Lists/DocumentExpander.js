@@ -72,7 +72,8 @@ const DocumentExpander = (props) => {
                         onClick={() => {        
                         const docId = item["_id"]
                         const docRef = item["docRef"]
-                        dispatch(setDocToView({ docRef, docId }));
+                        const docTitle = item["docTitle"]
+                        dispatch(setDocToView({ docRef, docId, docTitle }));
                         navigate(`/viewDocument`);
                     }}>문서조회</Button>
                     )
@@ -83,7 +84,8 @@ const DocumentExpander = (props) => {
                     onClick={() => {        
                     const docId = item["_id"]
                     const docRef = item["docRef"]
-                    dispatch(setDocToView({ docRef, docId }));
+                    const docTitle = item["docTitle"]
+                    dispatch(setDocToView({ docRef, docId, docTitle }));
                     navigate(`/viewDocument`);
                 }}>문서조회</Button>
                 )
@@ -92,7 +94,8 @@ const DocumentExpander = (props) => {
                 <Button type="primary" onClick={() => {
                     const docId = item["_id"]
                     const docRef = item["docRef"]
-                    dispatch(setDocToSign({ docRef, docId }));
+                    const docTitle = item["docTitle"]
+                    dispatch(setDocToView({ docRef, docId, docTitle }));
                     navigate(`/signDocument`);
                 }}>서명하기</Button>
                 );
@@ -101,7 +104,8 @@ const DocumentExpander = (props) => {
                 <Button onClick={() => {        
                     const docId = item["_id"]
                     const docRef = item["docRef"]
-                    dispatch(setDocToView({ docRef, docId }));
+                    const docTitle = item["docTitle"]
+                    dispatch(setDocToView({ docRef, docId, docTitle }));
                     navigate(`/viewDocument`);
                 }}>문서조회</Button>
                 );

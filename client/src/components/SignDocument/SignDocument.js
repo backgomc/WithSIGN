@@ -271,7 +271,7 @@ const SignDocument = () => {
       const res = await axios.post('/api/document/updateDocumentToSign', param)
       if (res.data.success) {
         console.log("start merge")
-        await mergeAnnotations(res.data.docRef, res.data.xfdfArray, res.data.isLast)
+        await mergeAnnotations(docId, res.data.docRef, res.data.xfdfArray, res.data.isLast)
         console.log("end merge")
         setLoading(false);
       } else {

@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-export const mergeAnnotations = async (docRef, xfdf, isLast) => {
+export const mergeAnnotations = async (docId, docRef, xfdf, isLast) => {
 
   const PDFNet = window.PDFNet;
   const CoreControls = window.CoreControls;
@@ -46,11 +46,22 @@ export const mergeAnnotations = async (docRef, xfdf, isLast) => {
     var reg = new RegExp('(.*\/).*')
     console.log('path:'+reg.exec(docRef)) //docToSign/614bca38d55fa404d35dad1d/
     formData.append('path', reg.exec(docRef)[1]) //docRef 에서 경로만 추출
+    formData.append('isLast', isLast)
+    formData.append('docId', docId)
 
     formData.append('file', blob, docRef)
     
     const res = await axios.post(`/api/storage/upload`, formData)
     console.log(res)
+
+    // SAVE FILE HASH (마지막 서명인 경우)
+    if (isLast) {
+      let param = {
+        docId: docId
+      }
+      const res = await axios.post(`/api/storage/updateHash`, param)
+      console.log(res)
+    }
   
   }
 

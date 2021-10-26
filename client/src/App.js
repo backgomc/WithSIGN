@@ -3,6 +3,7 @@ import { Router } from '@reach/router';
 import { useSelector, useDispatch } from 'react-redux';
 import { navigate } from '@reach/router';
 import axios from 'axios';
+import { Button } from "antd";
 import { view as Header } from './components/Header';
 import Assign from './components/Assign/Assign';
 import UploadDocument from './components/UploadDocument/UploadDocument';
@@ -29,6 +30,7 @@ import Register from './components/Register/Register';
 import Setting from './components/Setting/Setting';
 import MySign from './components/MySign/MySign';
 import Audit from './components/Audit/Audit';
+import AuditCheck from './components/Audit/AuditCheck';
 import { setUser, selectUser } from './app/infoSlice';
 import ProLayout from '@ant-design/pro-layout';
 import Menus from './config/Menus';
@@ -88,7 +90,14 @@ const App = () => {
         // height: 500,
       }}
       // menuExtraRender={() =>
-      //   <div style={{backgroundColor:'blue'}}>test</div>
+      //   <div>
+      //     <Button type="primary" style={{ width: '100%'}}>서명 요청</Button>
+      //   </div>
+      // }
+      // menuFooterRender={() =>
+      //   <div style={{ height: '80px'}}>
+      //     <Button style={{ width: '80%'}}>서명 요청</Button>
+      //   </div>
       // }
       menuItemRender={(item, dom) => (
         <a
@@ -134,6 +143,7 @@ const App = () => {
         <BoardList path="/customer" />
         <BoardDetail path="/boardDetail" />
         <Audit path="/audit" />
+        <AuditCheck path="/auditCheck" />
       </Router>
   </ProLayout>
 

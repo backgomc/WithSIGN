@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { navigate } from '@reach/router';
+import { navigate, Link } from '@reach/router';
 // import { Box, Column, Heading, Row, Stack, Button } from 'gestalt';
 import { Row, Col, Button } from 'antd';
 import { selectDocToView } from './ViewDocumentSlice';
@@ -26,7 +26,7 @@ const ViewDocument = () => {
   const user = useSelector(selectUser);
   const history = useSelector(selectHistory);
 
-  const { docRef } = doc;
+  const { docRef, docTitle } = doc;
   const { _id } = user;
   const { formatMessage } = useIntl();
 
@@ -109,7 +109,7 @@ const ViewDocument = () => {
     <PageContainer      
       // ghost
       header={{
-        title: '문서 조회',
+        title: "문서 조회",
         ghost: true,
         breadcrumb: {
           routes: [
@@ -119,9 +119,15 @@ const ViewDocument = () => {
           <Button key="2" onClick={() => window.history.back()}>
             {formatMessage({id: 'Back'})}
           </Button>,
-          <Button key="3" type="primary" onClick={() => download()} icon={<DownloadOutlined />}>
-            {formatMessage({id: 'document.download'})}
-          </Button>
+          // <Button key="3" type="primary" onClick={() => download()} icon={<DownloadOutlined />}>
+          //   {formatMessage({id: 'document.download'})}
+          // </Button>
+          // AS-IS > TO-BE : 해시값 유지를 위해 서버에 파일을 다운로드 하도록 변경
+          <a href={process.env.REACT_APP_STORAGE_DIR+docRef} download={docTitle+'.pdf'}> 
+            <Button key="3" type="primary" icon={<DownloadOutlined />}>
+              {formatMessage({id: 'document.download'})}
+            </Button>
+          </a>
         ],
       }}
       // content= {}

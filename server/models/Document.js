@@ -20,6 +20,9 @@ const documentSchema = mongoose.Schema({
         type: String,
         default: "G"
     },
+    docHash: {
+        type: String
+    },
     // users: { type: Array },  //ISSUE: 아래 걸로 하면 리스트 하나를 못가지고 옴 
     users: [{
         type: Schema.Types.ObjectId,

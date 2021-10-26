@@ -348,7 +348,8 @@ const DocumentList = ({location}) => {
                 const docId = row["_id"]
                 const docRef = row["docRef"]
                 const docType = row["docType"]
-                dispatch(setDocToView({ docRef, docId, docType }));
+                const docTitle = row["docTitle"]
+                dispatch(setDocToView({ docRef, docId, docType, docTitle }));
                 navigate(`/viewDocument`);
               }}>문서</Button>
             )
@@ -360,7 +361,8 @@ const DocumentList = ({location}) => {
                 const docId = row["_id"]
                 const docRef = row["docRef"]
                 const docType = row["docType"]
-                dispatch(setDocToView({ docRef, docId, docType }));
+                const docTitle = row["docTitle"]
+                dispatch(setDocToView({ docRef, docId, docType, docTitle }));
                 navigate(`/viewDocument`);
               }}>문서</Button>
             )
@@ -380,7 +382,8 @@ const DocumentList = ({location}) => {
                 const docId = row["_id"]
                 const docRef = row["docRef"]
                 const docType = row["docType"]
-                dispatch(setDocToView({ docRef, docId, docType }));
+                const docTitle = row["docTitle"]
+                dispatch(setDocToView({ docRef, docId, docType, docTitle }));
                 navigate(`/viewDocument`);
               }}>문서</Button>
             );
@@ -407,7 +410,8 @@ const DocumentList = ({location}) => {
                 const docId = row["_id"]
                 const docRef = row["docRef"]
                 const docType = row["docType"]
-                dispatch(setDocToView({ docRef, docId, docType }));
+                const docTitle = row["docTitle"]
+                dispatch(setDocToView({ docRef, docId, docType, docTitle }));
                 navigate(`/viewDocument`);
               }}>문서조회</Button>
             )
@@ -419,7 +423,8 @@ const DocumentList = ({location}) => {
                 const docId = row["_id"]
                 const docRef = row["docRef"]
                 const docType = row["docType"]
-                dispatch(setDocToView({ docRef, docId, docType }));
+                const docTitle = row["docTitle"]
+                dispatch(setDocToView({ docRef, docId, docType, docTitle }));
                 navigate(`/viewDocument`);
               }}>문서조회</Button>
             )
@@ -439,7 +444,8 @@ const DocumentList = ({location}) => {
                 const docId = row["_id"]
                 const docRef = row["docRef"]
                 const docType = row["docType"]
-                dispatch(setDocToView({ docRef, docId, docType }));
+                const docTitle = row["docTitle"]
+                dispatch(setDocToView({ docRef, docId, docType, docTitle }));
                 navigate(`/viewDocument`);
               }}>문서조회</Button>
             );

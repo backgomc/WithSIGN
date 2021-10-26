@@ -234,7 +234,7 @@ const Audit = ({location}) => {
             <View style={tableStyle}>
               {createTableRow("문서명", docTitle, 20, 80)}
               {createTableRow("문서 ID",item._id, 20, 80)}
-              {createTableRow("문서 Hash", "", 20, 80)}
+              {createTableRow("문서 Hash", item.docHash, 20, 80)}
               {createTableRow("기준 시간", "(UTC+09:00) 한국 표준시", 20, 80)}
               {createTableRow("서명 진행 상태","완료", 20, 80)}
            </View>

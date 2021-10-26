@@ -319,7 +319,8 @@ const BulkDetail = ({location}) => {
             onClick={() => {        
             const docId = row["_id"]
             const docRef = row["docRef"]
-            dispatch(setDocToView({ docRef, docId }));
+            const docTitle = row["docTitle"]
+            dispatch(setDocToView({ docRef, docId, docTitle }));
             navigate(`/viewDocument`);
           }}>문서 확인</Button> : ''
         )
@@ -337,7 +338,8 @@ const BulkDetail = ({location}) => {
             onClick={() => {        
             const docId = row["_id"]
             const docRef = row["docRef"]
-            dispatch(setDocToView({ docRef, docId }));
+            const docTitle = row["docTitle"]
+            dispatch(setDocToView({ docRef, docId, docTitle }));
             navigate(`/viewDocument`);
           }}>문서</Button> : ''
         )
