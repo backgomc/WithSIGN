@@ -19,19 +19,39 @@ import '@ant-design/pro-layout/dist/layout.css';
 import 'antd/dist/antd.css';
 
 const App = () => {
-
+  
+  const rqUrl = window.location.href.split('?')[1];
+  const param = new URLSearchParams(rqUrl);
+  const token = param.get('t');
+  
   const user = useSelector(selectUser);
   const dispatch = useDispatch();
 
-  const [pathname, setPathname] = useState('/');  // 시작 path
-
-  useEffect(() => {
+    const [pathname, setPathname] = useState('/');  // 시작 path
+  
+    useEffect(() => {
 
     axios.get('/api/users/auth').then(response => {
-      if (!response.data.isAuth) {
-          dispatch(setUser(null));
+      if (response.data.isAuth) {
+        dispatch(setUser(response.data));
       } else {
-          dispatch(setUser(response.data));
+        if (token) {
+          let body = {
+            token: token
+          }
+          axios.post('/api/users/sso', body).then(response => {
+            console.log(response);
+            if ( response.data.isAuth ) {
+              dispatch(setUser(response.data));
+              navigate('/');
+            } else {
+              dispatch(setUser(null));
+            }
+          });
+        } else {
+          dispatch(setUser(null));  
+        }
+        dispatch(setUser(null));
       }
     });
 

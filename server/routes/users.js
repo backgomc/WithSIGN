@@ -8,6 +8,22 @@ const { hexCrypto } = require('../common/utils');
 
 const { auth } = require("../middleware/auth");
 
+const java = require('java');
+const jarFilePath1 = __dirname+'/../lib/INICrypto_v4.0.12.jar';
+const jarFilePath2 = __dirname+'/../lib/INISAFECore_v2.1.23.jar';
+const jarFilePath3 = __dirname+'/../lib/INISAFEPKI_v1.1.13jar';
+const jarFilePath4 = __dirname+'/../lib/INISAFEToolSet_v1.0.2.jar';
+const jarFilePath5 = __dirname+'/../lib/nls_v4.1.3.jar';
+const jarFilePath6 = __dirname+'/../lib/NH_SSO.jar';
+const jarFilePath7 = __dirname+'/../lib/log4j-1.2.16.jar';
+java.classpath.push(jarFilePath1);
+java.classpath.push(jarFilePath2);
+java.classpath.push(jarFilePath3);
+java.classpath.push(jarFilePath4);
+java.classpath.push(jarFilePath5);
+java.classpath.push(jarFilePath6);
+java.classpath.push(jarFilePath7);
+
 router.post('/register', (req, res) => {
 
     // CHECK EMAIL EXISTANCE
@@ -113,7 +129,43 @@ router.get('/auth', auth, (req, res) => {
     OFFICE_CODE: req.user.OFFICE_CODE
   })
 })
-  
+
+// SSO Token -> 사번 추출 -> 사용자 검색 -> 로그인
+router.post('/sso', (req, res) => {
+  var LoginUtil = java.import('com.nonghyupit.sso.LoginUtil');
+  var sabun = LoginUtil.getIdSync(req.body.token)
+  console.log('token : ' + req.body.token)
+  console.log('sabun : ' + sabun)
+
+  var uid;
+  if (sabun) {
+    uid = hexCrypto(sabun)
+  } else {
+    return res.json({
+      success: false,
+      message: "잘못된 ID입니다."
+    })
+  }
+  console.log("uid: "+ uid)
+
+  User.findOne({ uid: uid }, (err, user) => {
+    if (user) {
+      user.generateToken((err, user) => {
+        if (err) return res.status(400).send(err);
+        user.password = ""
+        res.cookie("x_auth", user.token)
+          .status(200)
+          .json({ isAuth: true, user: user })
+      })
+    } else {
+      return res.json({
+        success: false,
+        message: "입력하신 ID에 해당하는 유저가 없습니다."
+      })
+    }
+  })
+})
+
 router.post('/logout', auth, (req, res) => {
   User.findOneAndUpdate({ uid: req.user.uid },
     { token: "" }
