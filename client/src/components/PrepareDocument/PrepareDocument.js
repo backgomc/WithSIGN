@@ -37,6 +37,14 @@ const PrepareDocument = () => {
   const [fileName, setFileName] = useState(null);
   const [loading, setLoading] = useState(false);
   const [responsive, setResponsive] = useState(false);
+  // const [inputValue, _setInputValue] = useState([new Map()]);
+
+  // event 안에서는 최신 state 값을 못 불러와서 ref 사용
+  // const inputValueRef = useRef(inputValue);
+  // const setInputValue = data => {
+  //   inputValueRef.current = data;
+  //   _setInputValue(data);
+  // };
 
   const dispatch = useDispatch();
   const { formatMessage } = useIntl();
@@ -52,6 +60,12 @@ const PrepareDocument = () => {
   const assigneesValues = assignees.map(user => {
     return { value: user.key, label: user.name };
   });
+  const box = assignees.map(user => {
+    return { key:user.key, sign:0, text:0 };
+  });
+
+  const [boxData, setBoxData] = useState(box);
+
   // let initialAssignee =
   //   assigneesValues.length > 0 ? assigneesValues[0].value : '';
   let initialAssignee =
@@ -89,8 +103,45 @@ const PrepareDocument = () => {
     },
   };
 
+
+  // S. control inputValue map
+  // const insertInputValue = (key, value) => {
+  //   setInputValue((prev) => new Map([...prev, [key, value]]));
+  // };
+  
+  
+  // const updateInputValue = (key, value) => {
+  //   setInputValue((prev) => new Map(prev).set(key, value));
+  // }
+  
+  // const deleteInputValue = (key) => {
+  //   setInputValue((prev) => {
+  //     const newState = new Map(prev);
+  //     newState.delete(key);
+  //     return newState;
+  //   });
+  // }
+  
+  // const clearInputValue = () => {
+  //   setInputValue((prev) => new Map(prev.clear()));
+  // }
+  // E. control inputValue map
+
+
   // if using a class, equivalent of componentDidMount
   useEffect(() => {
+
+    // init inputValue
+    // assignees.map(user => {
+    //   insertInputValue(user.key, {sign:0, text:0})
+    // });
+
+    // setInputValue(
+    //   assignees.map(user => {
+    //     return { [user.key]: {sign:0, text:0} };
+    // }))
+
+
     WebViewer(
       {
         path: 'webviewer',
@@ -103,7 +154,7 @@ const PrepareDocument = () => {
       },
       viewer.current,
     ).then(instance => {
-      const { iframeWindow } = instance;
+      const { iframeWindow, docViewer } = instance;
 
       // select only the view group
       instance.setToolbarGroup('toolbarGroup-View');
@@ -125,6 +176,70 @@ const PrepareDocument = () => {
       } else if(documentType === 'PC') {
         instance.loadDocument(documentFile)
       }
+
+
+      const annotManager = docViewer.getAnnotationManager();
+
+      annotManager.on('annotationChanged', (annotations, action, info) => {
+
+        console.log('called annotationChanged')
+
+        //TODO
+        // 해당 메서드에서는 state 값을 제대로 못불러온다 ... 
+        // Ref 를 써서 해결 ...
+        const name = annotations[0].custom.name //sample: 6156a3c9c7f00c0d4ace4744_SIGN_
+        const user = name.split('_')[0]
+
+        console.log('name:'+name)
+        console.log("user:"+user)
+
+        if (action === 'add') {
+          console.log('added annotation');
+
+
+          const member = boxData.filter(e => e.key === user)[0]
+
+          if (name.includes('SIGN')) {
+            member.sign = member.sign + 1
+          } else if (name.includes('TEXT')) {
+            member.text = member.text + 1
+          }
+
+          const newBoxData = boxData.slice()
+          newBoxData[boxData.filter(e => e.key === user).index] = member 
+          
+          setBoxData(newBoxData)
+
+
+          // 0: {key: '6156a3c9c7f00c0d4ace4744', sign: 0, text: 0}
+          // 1: {key: '6156a3c9c7f00c0d4ace4746', sign: 0, text: 0}
+
+
+          // setBoxData( (prev) => [...prev, {key:123, sign:1, text:2}] );
+          // setBoxData([{key: '6156a3c9c7f00c0d4ace4744', sign: 1, text: 0}, {key: '6156a3c9c7f00c0d4ace4746', sign: 0, text: 0}])
+
+          // if (temp) {
+
+          //   const asisInputValue = tmp(user)
+
+          //   console.log("asisInputValue.sign:"+asisInputValue.sign)
+          //   const updateNum = asisInputValue.sign + 1 
+          //   console.log("updateNum:"+updateNum)
+          //   updateInputValue(user, {sign:updateNum, text:asisInputValue.text})
+
+          // } else {
+          //   insertInputValue(user, {sign:1, text:0})
+          // }
+
+          
+
+        } else if (action === 'modify') {
+          console.log('this change modified annotations');
+        } else if (action === 'delete') {
+          console.log('deleted annotation');
+        }
+
+      })
 
       // filePicker.current.onchange = e => {
       //   const file = e.target.files[0];
@@ -276,6 +391,9 @@ const PrepareDocument = () => {
   // 일반전송 : 멤버 아이디로 필드값 저장
   // 대량전송 : 멤버가 아닌 공통값(bulk)으로 저장
   const addField = (type, point = {}, member = {}, name = '', value = '', flag = {}) => {
+
+    console.log('called addField')
+
     const { docViewer, Annotations } = instance;
     const annotManager = docViewer.getAnnotationManager();
     const doc = docViewer.getDocument();
@@ -301,6 +419,15 @@ const PrepareDocument = () => {
       if (type == "SIGN") {
         textAnnot.Width = 90.0 / zoom;
         textAnnot.Height = 90.0 / zoom;
+
+        // console.log('ADD SIGN')
+        // console.log('member.key:'+member.key)
+
+        // const asisInputValue = inputValue.get(member.key)
+        // const updateNum = asisInputValue.sign + 1 
+        // updateInputValue(member.key, {sign:updateNum, text:asisInputValue.text})
+
+
       } else if (type == "TEXT") {
         textAnnot.Width = 200.0 / zoom;
         textAnnot.Height = 30.0 / zoom;
@@ -554,8 +681,16 @@ const PrepareDocument = () => {
               renderItem={item =>
                 <List.Item key={item.key}>
                   <Card size="small" type="inner" title={item.name} style={{ minWidth: 148 }}>
-                    <p><Button icon={<PlusOutlined />} onClick={e => { addField('SIGN', {}, item); }}>{formatMessage({id: 'input.sign'})}</Button></p>
-                    <p><Button icon={<PlusOutlined />} onClick={e => { addField('TEXT', {}, item); }}>{formatMessage({id: 'input.text'})}</Button></p>
+                    <p>
+                      <Button icon={<PlusOutlined />} onClick={e => { addField('SIGN', {}, item); }}>{formatMessage({id: 'input.sign'})}</Button>
+                      {/* {inputValue.get(item.key)? inputValue.get(item.key).sign : '0' } */}
+                      {boxData.filter(e => e.key === item.key)[0].sign}
+                    </p>
+                    <p>
+                      <Button icon={<PlusOutlined />} onClick={e => { addField('TEXT', {}, item); }}>{formatMessage({id: 'input.text'})}</Button>
+                      {/* {inputValue.get(item.key)? inputValue.get(item.key).text : '0' } */}
+                      {boxData.filter(e => e.key === item.key)[0].text}
+                    </p>
                   </Card>
                 </List.Item>
               }
