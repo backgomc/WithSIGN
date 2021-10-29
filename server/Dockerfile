@@ -1,4 +1,7 @@
-FROM node:15
+FROM node:16
+
+RUN apt-get update || : && apt-get install python -y
+RUN apt-get update && apt-get install -y openjdk-11-jdk
 
 WORKDIR /app 
 COPY package.json /app
