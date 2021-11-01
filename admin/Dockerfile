@@ -6,7 +6,7 @@ ADD ./build ./build
 COPY ./nginx/nginx.conf /etc/nginx/nginx.conf
 
 
-EXPOSE 80
+EXPOSE 3002
 
 # 실행 명령어
 CMD ["nginx", "-g", "daemon off;"]
