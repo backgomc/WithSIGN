@@ -26,6 +26,7 @@ import moment from "moment";
 import "moment/locale/ko";
 import styles from './Home.css';
 import { Pie, measureTextWidth } from '@ant-design/charts';
+import banner from '../../assets/images/banner.png'
 const { Divider } = ProCard;
 
 const Home = () => {
@@ -230,7 +231,7 @@ const Home = () => {
     <ProCard
     colSpan={{ xs: 24, sm: 12, md: 12, lg: 12, xl: 12 }}
     style={{ marginBottom: 0, marginRight: 0, padding: 0 }}
-    title={<div>서명 진행 문서 {renderBadge(documentsSigning.length, false)}</div>}
+    title={<div>서명 진행 문서 {renderBadge(signingNum, false)}</div>}
     bordered={false}
     headerBordered
     extra={<Link to="/documentList" state={{ status: '서명 진행' }}>더보기</Link>}
@@ -450,7 +451,7 @@ const Home = () => {
   const toSignCard = (
     <Card
     style={{ marginBottom: 24, width:'100%'}}
-    title={<div>서명 필요 문서 {renderBadge(documentsToSign.length, true)}</div>}
+    title={<div>서명 필요 문서 {renderBadge(toSignNum, true)}</div>}
     bordered={false}
     extra={<Link to="/documentList" state={{ status: '서명 필요' }}>더보기</Link>}
     loading={loadingToSign}

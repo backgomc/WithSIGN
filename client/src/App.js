@@ -37,6 +37,7 @@ import Menus from './config/Menus';
 import '@ant-design/pro-layout/dist/layout.css';
 import 'antd/dist/antd.css';
 import { setSendType } from './components/Assign/AssignSlice';
+import './App.css';
 
 const App = () => {
   const user = useSelector(selectUser);

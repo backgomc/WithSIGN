@@ -12,7 +12,7 @@ import { navigate } from '@reach/router';
 //   Button,
 //   SelectList,
 // } from 'gestalt';
-import { Upload, message, Spin, Button, Row, Col, List, Card } from 'antd';
+import { Upload, message, Badge, Button, Row, Col, List, Card } from 'antd';
 import Icon from '@ant-design/icons';
 import { InboxOutlined, HighlightOutlined, PlusOutlined } from '@ant-design/icons';
 import { resetAssignAll, selectAssignees, resetSignee, selectDocumentFile, selectDocumentTitle, resetDocumentFile, resetDocumentTitle, selectTemplate, resetTemplate, selectDocumentType, resetDocumentType, selectTemplateTitle, selectSendType } from '../Assign/AssignSlice';
@@ -63,15 +63,16 @@ const PrepareDocument = () => {
   const box = assignees.map(user => {
     return { key:user.key, sign:0, text:0 };
   });
+  const box_bulk = [{key:'bulk', sign:0, text:0}]
 
-  const [boxData, setBoxData] = useState(box);
+  const [boxData, setBoxData] = useState((sendType === 'B') ? box_bulk:box);
 
   // let initialAssignee =
   //   assigneesValues.length > 0 ? assigneesValues[0].value : '';
   let initialAssignee =
   assigneesValues.length > 0 ? assigneesValues[0] : '';
   const [assignee, setAssignee] = useState(initialAssignee);
-  const [disableNext, setDisableNext] = useState(false);
+  const [disableNext, setDisableNext] = useState(true);
 
   const user = useSelector(selectUser);
   const { _id, email } = user;
@@ -128,6 +129,7 @@ const PrepareDocument = () => {
   // E. control inputValue map
 
 
+
   // if using a class, equivalent of componentDidMount
   useEffect(() => {
 
@@ -182,20 +184,21 @@ const PrepareDocument = () => {
 
       annotManager.on('annotationChanged', (annotations, action, info) => {
 
-        console.log('called annotationChanged')
+        console.log('called annotationChanged:'+ action)
+
+        // applyFields 에서 호출 시는 아래가 호출되지 않도록 처리 
+        if (!annotations[0].custom) {
+          return
+        } 
 
         //TODO
         // 해당 메서드에서는 state 값을 제대로 못불러온다 ... 
         // Ref 를 써서 해결 ...
-        const name = annotations[0].custom.name //sample: 6156a3c9c7f00c0d4ace4744_SIGN_
-        const user = name.split('_')[0]
-
-        console.log('name:'+name)
-        console.log("user:"+user)
-
         if (action === 'add') {
           console.log('added annotation');
 
+          const name = annotations[0].custom.name //sample: 6156a3c9c7f00c0d4ace4744_SIGN_
+          const user = name.split('_')[0]
 
           const member = boxData.filter(e => e.key === user)[0]
 
@@ -237,7 +240,32 @@ const PrepareDocument = () => {
           console.log('this change modified annotations');
         } else if (action === 'delete') {
           console.log('deleted annotation');
+
+          const name = annotations[0].custom.name //sample: 6156a3c9c7f00c0d4ace4744_SIGN_
+          const user = name.split('_')[0]
+
+          const member = boxData.filter(e => e.key === user)[0]
+
+          if (name.includes('SIGN')) {
+            member.sign = member.sign - 1
+          } else if (name.includes('TEXT')) {
+            member.text = member.text - 1
+          }
+
+          const newBoxData = boxData.slice()
+          newBoxData[boxData.filter(e => e.key === user).index] = member 
+          
+          setBoxData(newBoxData)
+
         }
+
+        // 유효성 체크 
+        var check = false
+        boxData.map(box => {
+        //{ key:user.key, sign:0, text:0 };
+          if(box.sign === 0 && box.text === 0) check = true
+        });
+        setDisableNext(check)
 
       })
 
@@ -680,16 +708,18 @@ const PrepareDocument = () => {
               dataSource={assignees}
               renderItem={item =>
                 <List.Item key={item.key}>
-                  <Card size="small" type="inner" title={item.name} style={{ minWidth: 148 }}>
+                  <Card size="small" type="inner" title={item.JOB_TITLE ? item.name+' '+item.JOB_TITLE : item.name} style={{ minWidth: 148 }}>
                     <p>
-                      <Button icon={<PlusOutlined />} onClick={e => { addField('SIGN', {}, item); }}>{formatMessage({id: 'input.sign'})}</Button>
-                      {/* {inputValue.get(item.key)? inputValue.get(item.key).sign : '0' } */}
-                      {boxData.filter(e => e.key === item.key)[0].sign}
+                      <Badge count={boxData.filter(e => e.key === item.key)[0].sign}>
+                        <Button icon={<PlusOutlined />} onClick={e => { addField('SIGN', {}, item); }}>{formatMessage({id: 'input.sign'})}</Button>
+                      </Badge>
+                      {/* {boxData.filter(e => e.key === item.key)[0].sign} */}
                     </p>
                     <p>
-                      <Button icon={<PlusOutlined />} onClick={e => { addField('TEXT', {}, item); }}>{formatMessage({id: 'input.text'})}</Button>
-                      {/* {inputValue.get(item.key)? inputValue.get(item.key).text : '0' } */}
-                      {boxData.filter(e => e.key === item.key)[0].text}
+                      <Badge count={boxData.filter(e => e.key === item.key)[0].text}>
+                        <Button icon={<PlusOutlined />} onClick={e => { addField('TEXT', {}, item); }}>{formatMessage({id: 'input.text'})}</Button>
+                      </Badge>
+                      {/* {boxData.filter(e => e.key === item.key)[0].text} */}
                     </p>
                   </Card>
                 </List.Item>

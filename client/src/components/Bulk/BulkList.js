@@ -165,11 +165,11 @@ const BulkList = () => {
       render: (text,row) => <div style={{ wordWrap: 'break-word', wordBreak: 'break-word' }}><FileOutlined /> {text}</div>, // 여러 필드 동시 표시에 사용
     },
     {
-      title: '완료/전체 건수',
+      title: '진행 건수',
       dataIndex: 'total',
       sorter: true,
       key: 'total',
-      width: '125px',
+      width: '135px',
       expandable: true,
       render: (text,row) => <div>({filterSigned(row['docs']).length} / {row['docs'].length})</div>
     },

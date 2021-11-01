@@ -161,8 +161,9 @@ const Assign = () => {
       
       const key = temp._id
       const name = temp.name
+      const JOB_TITLE = temp.JOB_TITLE
 
-      dispatch(addSignee({ key, name }));
+      dispatch(addSignee({ key, name, JOB_TITLE }));
     }
 
     if(target.length > 0) {

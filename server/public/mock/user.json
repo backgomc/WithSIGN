@@ -8,5 +8,6 @@
     {"name": "장용남", "password": "11111", "DEPART_CODE": "A15800", "OFFICE_CODE": "7831", "JOB_TITLE": "계장", "SABUN": "P2010063"},
     {"name": "이창준", "password": "11111", "DEPART_CODE": "A15700", "OFFICE_CODE": "7831", "JOB_TITLE": "팀장", "SABUN": "P0710049"},
     {"name": "김정훈", "password": "11111", "DEPART_CODE": "A15700", "OFFICE_CODE": "7831", "JOB_TITLE": "차장", "SABUN": "P0710027"},
-    {"name": "차헌영", "password": "11111", "DEPART_CODE": "A15700", "OFFICE_CODE": "7831", "JOB_TITLE": "과장", "SABUN": "P1610006"}
+    {"name": "차헌영", "password": "11111", "DEPART_CODE": "A15700", "OFFICE_CODE": "7831", "JOB_TITLE": "과장", "SABUN": "P1610006"},
+    {"name": "빈혜란", "password": "11111", "DEPART_CODE": "A15700", "OFFICE_CODE": "7831", "JOB_TITLE": "과장", "SABUN": "P2150029"}
 ]

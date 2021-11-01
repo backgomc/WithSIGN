@@ -236,7 +236,7 @@ const BulkDetail = ({location}) => {
       responsive: ["sm"],
       sorter: false,
       key: 'status',
-      width: '100px',
+      width: '105px',
       defaultFilteredValue: location.state.status? [location.state.status]: [],
       filters: [
         {
@@ -270,7 +270,7 @@ const BulkDetail = ({location}) => {
       ...getColumnSearchProps('user'),
       // sorter: true,
       key: 'user',
-      width: '115px',
+      width: '120px',
       expandable: true,
       onFilter: (value, row) =>
         filterUsers(row['users'][0])[0].name
