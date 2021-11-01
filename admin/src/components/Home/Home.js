@@ -1,24 +1,17 @@
 import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
-import { Table, Input, Space, Button, Popconfirm } from "antd";
+import { Table, Input, Space, Button, Popconfirm } from 'antd';
 import Highlighter from 'react-highlight-words';
 import { SearchOutlined } from '@ant-design/icons';
 import { useSelector, useDispatch } from 'react-redux';
 import { selectUser } from '../../app/infoSlice';
 import { navigate } from '@reach/router';
-import { setDocToView } from '../ViewDocument/ViewDocumentSlice';
-import { setDocToSign } from '../SignDocument/SignDocumentSlice';
 import Moment from 'react-moment';
-import moment from 'moment';
 import 'moment/locale/ko';
-// import { DocumentType, DocumentTypeText, DOCUMENT_SIGNED, DOCUMENT_TOSIGN, DOCUMENT_SIGNING, DOCUMENT_CANCELED } from './DocumentType';
-// import TemplateExpander from "./TemplateExpander";
-import {
-  FileOutlined
-} from '@ant-design/icons';
+import { FileOutlined} from '@ant-design/icons';
 import { PageContainer } from '@ant-design/pro-layout';
 import 'antd/dist/antd.css';
-import { useIntl } from "react-intl";
+import { useIntl } from 'react-intl';
 
 
 const TemplateList = () => {
@@ -42,7 +35,7 @@ const TemplateList = () => {
   const searchInput = useRef<Input>(null)
 
   const handleTableChange = (pagination, filters, sorter) => {
-    console.log("handleTableChange called")
+    console.log('handleTableChange called')
     console.log(filters)
     fetch({
       sortField: sorter.field,
@@ -82,7 +75,7 @@ const TemplateList = () => {
       _ids: selectedRowKeys
     }
 
-    console.log("param:" + param)
+    console.log('param:' + param)
     const res = await axios.post('/api/admin/templates/delete', param)
     if (res.data.success) {
       // alert('삭제 되었습니다.')
@@ -207,7 +200,7 @@ const TemplateList = () => {
         // if (text){
         //   return <Moment format='YYYY/MM/DD HH:mm'>{text}</Moment>
         // } else {
-          return <Moment format='YYYY/MM/DD HH:mm'>{row["registeredTime"]}</Moment>
+          return <Moment format="YYYY/MM/DD HH:mm">{row['registeredTime']}</Moment>
         // }
       } 
     },
@@ -241,7 +234,7 @@ const TemplateList = () => {
     //     key: i,
     //     templateTitle: `template title ${i}`,
     //     name: `Edward King ${i}`,
-    //     requestedTime: `2021-07-02T05:46:40.769+00:00`,
+    //     requestedTime: '2021-07-02T05:46:40.769+00:00',
     //   });
     // }
     // setData(data);

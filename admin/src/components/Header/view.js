@@ -42,7 +42,7 @@ const HeaderComponent = ({collapsed, setCollapsed}) => {
       <Menu.Divider />
       <Menu.Item key="12">
         <Link to="" onClick={() => {
-          axios.post(`/api/users/logout`).then(response => {
+          axios.post('/api/users/logout').then(response => {
             if (response.status === 200) {
               dispatch(setUser(null));
               navigate('/');

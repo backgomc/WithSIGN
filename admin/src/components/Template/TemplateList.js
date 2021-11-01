@@ -1,29 +1,20 @@
 import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
-import { Table, Input, Space, Button, Popconfirm } from "antd";
+import { Table, Input, Space, Button, Popconfirm } from 'antd';
 import Highlighter from 'react-highlight-words';
 import { SearchOutlined } from '@ant-design/icons';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { selectUser } from '../../app/infoSlice';
 import { navigate } from '@reach/router';
-import { setDocToView } from '../ViewDocument/ViewDocumentSlice';
-import { setDocToSign } from '../SignDocument/SignDocumentSlice';
 import Moment from 'react-moment';
-import moment from 'moment';
 import 'moment/locale/ko';
-// import { DocumentType, DocumentTypeText, DOCUMENT_SIGNED, DOCUMENT_TOSIGN, DOCUMENT_SIGNING, DOCUMENT_CANCELED } from './DocumentType';
-// import TemplateExpander from "./TemplateExpander";
-import {
-  FileOutlined
-} from '@ant-design/icons';
+import { FileOutlined } from '@ant-design/icons';
 import { PageContainer } from '@ant-design/pro-layout';
 import 'antd/dist/antd.css';
-import { useIntl } from "react-intl";
-
+import { useIntl } from 'react-intl';
 
 const TemplateList = () => {
 
-  const dispatch = useDispatch();
   const user = useSelector(selectUser);
 
   const { _id } = user;
@@ -42,7 +33,7 @@ const TemplateList = () => {
   const searchInput = useRef<Input>(null)
 
   const handleTableChange = (pagination, filters, sorter) => {
-    console.log("handleTableChange called")
+    console.log('handleTableChange called')
     console.log(filters)
     fetch({
       sortField: sorter.field,
@@ -82,7 +73,7 @@ const TemplateList = () => {
       _ids: selectedRowKeys
     }
 
-    console.log("param:" + param)
+    console.log('param:' + param)
     const res = await axios.post('/api/admin/templates/delete', param)
     if (res.data.success) {
       // alert('삭제 되었습니다.')
@@ -205,9 +196,9 @@ const TemplateList = () => {
       key: 'requestedTime',
       render: (text, row) => {
         // if (text){
-        //   return <Moment format='YYYY/MM/DD HH:mm'>{text}</Moment>
+        //   return <Moment format="YYYY/MM/DD HH:mm">{text}</Moment>
         // } else {
-          return <Moment format='YYYY/MM/DD HH:mm'>{row["registeredTime"]}</Moment>
+          return <Moment format="YYYY/MM/DD HH:mm">{row['registeredTime']}</Moment>
         // }
       } 
     },
@@ -281,7 +272,7 @@ const TemplateList = () => {
           </span>
           ],
         }}
-        content={'자주 사용하는 문서를 미리 등록할 수 있습니다.'}
+        content={'회사에서 공통으로 사용하는 문서를 등록할 수 있습니다.'}
         footer={[
         ]}
     >

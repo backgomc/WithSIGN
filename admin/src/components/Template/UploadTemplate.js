@@ -35,7 +35,7 @@ const UploadTemplate = () => {
     setLoading(true);
     // 템플릿 업로드 
     // 1. FILE-SAVE
-    const referenceString = 'template/${_id}${Date.now()}.pdf';
+    const referenceString = `template/${_id}${Date.now()}.pdf`;
     const formData = new FormData()
     formData.append('path', 'template')
     formData.append('file', file, referenceString)
@@ -156,7 +156,7 @@ const UploadTemplate = () => {
                   beforeUpload: file => {
                     if (file.type !== 'application/pdf') {
                       console.log(file.type)
-                      message.error('${file.name} is not a pdf file');
+                      message.error(`${file.name} is not a pdf file`);
                       return Upload.LIST_IGNORE;
                     }
                     setFile(file);

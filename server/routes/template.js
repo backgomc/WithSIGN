@@ -34,6 +34,8 @@ router.post('/templates', (req, res) => {
   const type = req.body.type 
   if (type && type === 'C') {
     orParam = [{"type": "C"}]
+  } else {
+    orParam = [{"type": ""}]
   }
 
   // 단어검색 

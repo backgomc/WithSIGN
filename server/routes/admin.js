@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const { Document } = require("../models/Document");
 const { Template } = require('../models/Template');
 const fs = require('fs');
 const config = require('../config/key');
@@ -19,12 +20,71 @@ const config = require('../config/key');
 
 // 사용자 관리 > 목록
 router.post('/user/list', (req, res) => {
-  return res.json({ success: true, message: '/user/list' })
+  const current = req.body.pagination.current
+  const pageSize = req.body.pagination.pageSize
+  var start = 0
+  if (current > 1) {
+    start = (current - 1) * pageSize
+  }
+
+  var order = "requestedTime" 
+  var dir = "desc"
+  if (req.body.sortField) {
+    order = req.body.sortField
+  }
+  if (req.body.sortOrder) {
+    if (req.body.sortOrder == "ascend"){
+      dir = "asc"
+    } else {
+      dir = "desc"
+    }
+  }
+
+  var recordsTotal = 0;
+  
+  var andParam = {};
+  var orParam = {};
+
+  // 문서제목 검색
+  if (req.body.docTitle) {
+    andParam['docTitle'] = { $regex: '.*' + req.body.docTitle[0] + '.*', $options: 'i' }
+  }
+
+  Document.countDocuments(andParam).or(orParam).exec(function(err, count) {
+    recordsTotal = count;
+    console.log("recordsTotal:"+recordsTotal)
+    
+    Document
+    .find(andParam).or(orParam)
+    .sort({[order] : dir})    //asc:오름차순 desc:내림차순
+    .skip(Number(start))
+    .limit(Number(pageSize))
+    // .populate("user", {name: 1, email: 2})
+    .populate({
+      path: "user", 
+      select: {name: 1, JOB_TITLE: 2, image: 3},
+      // match: { name : searchName? searchName : !'' }
+    })
+    .populate({
+      path: "users", 
+      select: {name: 1, JOB_TITLE: 2}
+    })
+    .exec((err, documents) => {
+        // console.log(documents);
+        // documents = documents.filter(function(document) {
+        //   return document.user
+        // });
+        if (err) return res.json({success: false, error: err});
+        return res.json({ success: true, documents: documents, total:recordsTotal })
+    })
+  })
 })
+
 // 사용자 관리 > 상세
 router.post('/user/info', (req, res) => {
   return res.json({ success: true, message: 'user/info' })
 })
+
 // 사용자 관리 > 변경(권한)
 router.post('/user/update', (req, res) => {
   return res.json({ success: true, message: '/user/update' })
@@ -32,8 +92,67 @@ router.post('/user/update', (req, res) => {
 
 // 문서 관리 > 목록
 router.post('/document/list', (req, res) => {
-  return res.json({ success: true, message: '/document/list' })
+  const status = req.body.status
+  const current = req.body.pagination.current
+  const pageSize = req.body.pagination.pageSize
+  var start = 0
+  if (current > 1) {
+    start = (current - 1) * pageSize
+  }
+
+  var order = "requestedTime" 
+  var dir = "desc"
+  if (req.body.sortField) {
+    order = req.body.sortField
+  }
+  if (req.body.sortOrder) {
+    if (req.body.sortOrder == "ascend"){
+      dir = "asc"
+    } else {
+      dir = "desc"
+    }
+  }
+
+  var recordsTotal = 0;
+  
+  var andParam = {};
+  var orParam = {};
+
+  // 문서제목 검색
+  if (req.body.docTitle) {
+    andParam['docTitle'] = { $regex: '.*' + req.body.docTitle[0] + '.*', $options: 'i' }
+  }
+
+  Document.countDocuments(andParam).or(orParam).exec(function(err, count) {
+    recordsTotal = count;
+    console.log("recordsTotal:"+recordsTotal)
+    
+    Document
+    .find(andParam).or(orParam)
+    .sort({[order] : dir})    //asc:오름차순 desc:내림차순
+    .skip(Number(start))
+    .limit(Number(pageSize))
+    // .populate("user", {name: 1, email: 2})
+    .populate({
+      path: "user", 
+      select: {name: 1, JOB_TITLE: 2, image: 3},
+      // match: { name : searchName? searchName : !'' }
+    })
+    .populate({
+      path: "users", 
+      select: {name: 1, JOB_TITLE: 2}
+    })
+    .exec((err, documents) => {
+        // console.log(documents);
+        // documents = documents.filter(function(document) {
+        //   return document.user
+        // });
+        if (err) return res.json({success: false, error: err});
+        return res.json({ success: true, documents: documents, total:recordsTotal })
+    })
+  })
 })
+
 // 문서 관리 > 상세
 router.post('/document/info', (req, res) => {
   return res.json({ success: true, message: '/document/info' })
