@@ -1,32 +1,22 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Table, Input, Space, Button, Popconfirm } from "antd";
+import { Table, Input, Space, Button, Popconfirm } from 'antd';
 import Highlighter from 'react-highlight-words';
 import { SearchOutlined } from '@ant-design/icons';
-import { useSelector, useDispatch } from 'react-redux';
-import { selectUser } from '../../app/infoSlice';
+// import { useSelector } from 'react-redux';
+// import { selectUser } from '../../app/infoSlice';
 import { navigate } from '@reach/router';
-import { setDocToView } from '../ViewDocument/ViewDocumentSlice';
-import { setDocToSign } from '../SignDocument/SignDocumentSlice';
 import Moment from 'react-moment';
-import moment from 'moment';
 import 'moment/locale/ko';
-// import { DocumentType, DocumentTypeText, DOCUMENT_SIGNED, DOCUMENT_TOSIGN, DOCUMENT_SIGNING, DOCUMENT_CANCELED } from './DocumentType';
-// import TemplateExpander from "./TemplateExpander";
-import {
-  FileOutlined
-} from '@ant-design/icons';
+import { FileOutlined } from '@ant-design/icons';
 import { PageContainer } from '@ant-design/pro-layout';
 import 'antd/dist/antd.css';
-import { useIntl } from "react-intl";
-
+import { useIntl } from 'react-intl';
 
 const TemplateList = () => {
 
-  const dispatch = useDispatch();
-  const user = useSelector(selectUser);
+  // const user = useSelector(selectUser);
 
-  const { _id } = user;
   const [searchText, setSearchText] = useState('');
   const [searchedColumn, setSearchedColumn] = useState('');
   const [data, setData] = useState([]);
@@ -39,17 +29,16 @@ const TemplateList = () => {
   const [visiblePopconfirm, setVisiblePopconfirm] = useState(false);
 
   const { formatMessage } = useIntl();
-  const searchInput = useRef<Input>(null)
+  // const searchInput = useRef<Input>(null);
 
   const handleTableChange = (pagination, filters, sorter) => {
-    console.log("handleTableChange called")
+    console.log('handleTableChange called')
     console.log(filters)
     fetch({
       sortField: sorter.field,
       sortOrder: sorter.order,
       pagination,
       ...filters,
-      uid: _id
     });
   };
 
@@ -58,7 +47,7 @@ const TemplateList = () => {
 
     axios.post('/api/admin/templates/list', params).then(response => {
 
-      console.log(response)
+      console.log(response);
       if (response.data.success) {
         const templates = response.data.templates;
 
@@ -68,7 +57,7 @@ const TemplateList = () => {
 
       } else {
           setLoading(false);
-          alert(response.data.error)
+          alert(response.data.error);
       }
 
     });
@@ -82,19 +71,18 @@ const TemplateList = () => {
       _ids: selectedRowKeys
     }
 
-    console.log("param:" + param)
-    const res = await axios.post('/api/admin/templates/delete', param)
+    console.log('param:' + param);
+    const res = await axios.post('/api/admin/templates/delete', param);
     if (res.data.success) {
-      // alert('삭제 되었습니다.')
+      // alert('삭제 되었습니다.');
     } else {
-      // alert('삭제 실패 하였습니다.')
+      // alert('삭제 실패 하였습니다.');
     }
 
     setSelectedRowKeys([]);
-    setHasSelected(false)
+    setHasSelected(false);
 
     fetch({
-      uid: _id,
       pagination,
     });
 
@@ -120,12 +108,12 @@ const TemplateList = () => {
             size="small"
             style={{ width: 90 }}
           >
-            Search
+            검색
           </Button>
           <Button onClick={() => handleReset(clearFilters)} size="small" style={{ width: 90 }}>
-            Reset
+            초기화
           </Button>
-          <Button
+          {/* <Button
             type="link"
             size="small"
             onClick={() => {
@@ -134,8 +122,8 @@ const TemplateList = () => {
               setSearchedColumn(dataIndex)
             }}
           >
-            Filter
-          </Button>
+            필터
+          </Button> */}
         </Space>
       </div>
     ),
@@ -205,21 +193,20 @@ const TemplateList = () => {
       key: 'requestedTime',
       render: (text, row) => {
         // if (text){
-        //   return <Moment format='YYYY/MM/DD HH:mm'>{text}</Moment>
+        //   return <Moment format="YYYY/MM/DD HH:mm">{text}</Moment>
         // } else {
-          return <Moment format='YYYY/MM/DD HH:mm'>{row["registeredTime"]}</Moment>
+          return <Moment format="YYYY/MM/DD HH:mm">{row['registeredTime']}</Moment>
         // }
       } 
     },
   ];
 
-
   const rowSelection = {
     selectedRowKeys,
     onChange : selectedRowKeys => {
       console.log('selectedRowKeys changed: ', selectedRowKeys);
-      setSelectedRowKeys(selectedRowKeys)
-      setHasSelected(selectedRowKeys.length > 0)
+      setSelectedRowKeys(selectedRowKeys);
+      setHasSelected(selectedRowKeys.length > 0);
     },
     // selections: [
     //   Table.SELECTION_ALL,
@@ -231,8 +218,7 @@ const TemplateList = () => {
   useEffect(() => {
 
     fetch({
-      uid: _id,
-      pagination,
+      pagination
     });
 
     // const data = [];
@@ -246,7 +232,8 @@ const TemplateList = () => {
     // }
     // setData(data);
 
-  }, [_id]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div>
@@ -281,7 +268,7 @@ const TemplateList = () => {
           </span>
           ],
         }}
-        content={'자주 사용하는 문서를 미리 등록할 수 있습니다.'}
+        content={'회사에서 공통으로 사용하는 문서를 등록할 수 있습니다.'}
         footer={[
         ]}
     >

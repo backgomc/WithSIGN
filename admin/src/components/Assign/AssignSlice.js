@@ -8,8 +8,8 @@ export const AssignSlice = createSlice({
     documentTitle: null,
     template: null,
     templateTitle: null,
-    documentType: "PC",
-    sendType: "G" // G:일반 / B:벌크방식
+    documentType: 'PC',
+    sendType: 'G' // G:일반 / B:벌크방식
   },
   reducers: {
     addSignee: (state, action) => {

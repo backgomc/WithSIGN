@@ -23,24 +23,21 @@ const UploadTemplate = () => {
   const [disableNext, setDisableNext] = useState(true);
 
   const user = useSelector(selectUser);
-  const { email, _id } = user;
+  const { _id } = user;
 
-  useEffect(() => {
-  }, []);
-
+  useEffect(() => {}, []);
 
   const onFinish = async (values) => {
-    console.log(values)
 
     setLoading(true);
+    
     // 템플릿 업로드 
     // 1. FILE-SAVE
-    const referenceString = 'template/${_id}${Date.now()}.pdf';
-    const formData = new FormData()
-    formData.append('path', 'template')
-    formData.append('file', file, referenceString)
-    const res = await axios.post('/api/storage/upload', formData)
-    console.log(res)
+    const referenceString = `template/${_id}${Date.now()}.pdf`;
+    const formData = new FormData();
+    formData.append('path', 'template');
+    formData.append('file', file, referenceString);
+    await axios.post('/api/storage/upload', formData);
 
     // 2. DB-SAVE
     let body = {
@@ -49,11 +46,10 @@ const UploadTemplate = () => {
       type: 'C',
       docRef: referenceString
     }
-    console.log(body)
-    const res2 = await axios.post('/api/admin/templates/insert', body)
+    await axios.post('/api/admin/templates/insert', body);
 
     setLoading(false);
-    navigate('/templateList')
+    navigate('/templateList');
   }
 
   return (
@@ -71,14 +67,7 @@ const UploadTemplate = () => {
         ghost: false,
         breadcrumb: {
           routes: [
-            // {
-            //   path: '/',
-            //   breadcrumbName: '템플릿',
-            // },
-            // {
-            //   path: '/',
-            //   breadcrumbName: '템플릿 등록',
-            // },
+
           ],
         },
         extra: [
@@ -98,7 +87,6 @@ const UploadTemplate = () => {
     >
       <br></br>
       <ProCard direction='column' ghost gutter={[0, 16]}>
-
         <ProCard
           tabs={{
             type: 'card',
@@ -124,16 +112,13 @@ const UploadTemplate = () => {
                 }
               }}
               onValuesChange={(changeValues) => {
-                console.log('onValuesChange called')
-                console.log(changeValues)
-                console.log(form.getFieldValue('dragger'))
-                console.log(form.getFieldValue('documentTitle'))
+                console.log('onValuesChange called');
+                console.log(form.getFieldValue('dragger'));
+                console.log(form.getFieldValue('documentTitle'));
                 if (form.getFieldValue('dragger') && form.getFieldValue('documentTitle').length > 0) {
-                  setDisableNext(false)
-                  console.log('AA')
+                  setDisableNext(false);
                 } else {
-                  setDisableNext(true)
-                  console.log('BB')
+                  setDisableNext(true);
                 }
               }}
             >
@@ -146,24 +131,24 @@ const UploadTemplate = () => {
                 fieldProps={{
                   onChange: (info) => {
                     console.log(info.file, info.fileList);
-                    if (info.fileList.length == 0) {
+                    if (info.fileList.length === 0) {
                       form.setFieldsValue({
                         documentTitle: '',
-                      })
-                      setDisableNext(true)
+                      });
+                      setDisableNext(true);
                     }
                   },
                   beforeUpload: file => {
                     if (file.type !== 'application/pdf') {
-                      console.log(file.type)
-                      message.error('${file.name} is not a pdf file');
+                      console.log(file.type);
+                      message.error(`${file.name} is not a pdf file`);
                       return Upload.LIST_IGNORE;
                     }
                     setFile(file);
                     
                     form.setFieldsValue({
                       documentTitle: file.name.replace(/\.[^/.]+$/, ''),
-                    })
+                    });
                         
                     return false;
                   }

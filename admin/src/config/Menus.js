@@ -1,6 +1,6 @@
-// import { useMemo } from "react"
+// import { useMemo } from 'react'
 import React from 'react';
-import { useIntl } from "react-intl";
+import { useIntl } from 'react-intl';
 import { CopyOutlined, FileAddOutlined, SettingOutlined, FileTextOutlined, HighlightOutlined } from '@ant-design/icons';
 
 export default function Menus() {
