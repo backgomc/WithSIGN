@@ -4,10 +4,10 @@ import { useDispatch } from 'react-redux';
 import { navigate, Link } from '@reach/router';
 // import { loginUser } from '../../api/api'
 import { setUser } from '../../app/infoSlice';
-
+import Header from './Header';
 import { Checkbox, Button, Form, Input } from 'antd';
 import Icon, { UserOutlined, EyeOutlined, LockOutlined } from '@ant-design/icons';
-import logo from '../../assets/images/logo.svg';
+// import logo from '../../assets/images/logo.svg';
 import styles from './login.module.css';
 // import './login.css';
 // const FormItem = Form.Item;
@@ -40,7 +40,7 @@ function Login(props) {
         console.log(values)
 
         let body = {
-            email: values.email,
+            SABUN: values.SABUN,
             password: values.password
         }
 
@@ -82,25 +82,7 @@ function Login(props) {
 
     return (
         <>
-        <div className={styles.header}>
-          <div className={styles['header-wrapper']}>
-            <header>
-              <a href="/">
-                <img src={logo} alt="ant design mini" />
-                <h2>{formatMessage({id: 'AppName'})}</h2>
-              </a>
-              <div className={styles['nav-wrapper']}>
-                <nav>
-                  <ul>
-                    <li>
-                      <Link to="/register">{formatMessage({id: 'Register'})}</Link>
-                    </li>
-                  </ul>
-                </nav>
-              </div>
-            </header>
-          </div>
-        </div>
+        <Header></Header>
         <div className={styles.content}>
             <Form
             name="normal_login"
@@ -112,15 +94,15 @@ function Login(props) {
             >
             <h3>{formatMessage({id: 'Login'})}</h3>
             <Form.Item
-                name="email"
+                name="SABUN"
                 rules={[
                 {
                     required: true,
-                    message: formatMessage({id: 'input.email'}),
+                    message: formatMessage({id: 'input.SABUN'}),
                 },
                 ]}
             >
-                <Input prefix={<UserOutlined className="site-form-item-icon" />} placeholder="Email" />
+                <Input prefix={<UserOutlined className="site-form-item-icon" />} size="large" placeholder="사번" />
             </Form.Item>
             <Form.Item
                 name="password"
@@ -135,6 +117,7 @@ function Login(props) {
                 prefix={<LockOutlined className="site-form-item-icon" />}
                 type="password"
                 placeholder="Password"
+                size="large"
                 />
                 {/* <Input.Password  /> */}
             </Form.Item>
@@ -149,10 +132,10 @@ function Login(props) {
             </Form.Item>
         
             <Form.Item>
-                <Button type="primary" htmlType="submit" className={styles['login-form-button']}>
+                <Button type="primary" htmlType="submit" className={styles['login-form-button']} size="large">
                 {formatMessage({id: 'Login'})}
                 </Button>
-                {formatMessage({id: 'Or'})} <Link to="/register">{formatMessage({id: 'Regist'})}</Link>
+                {/* {formatMessage({id: 'Or'})} <Link to="/register">{formatMessage({id: 'Regist'})}</Link> */}
             </Form.Item>
             </Form>
         </div>

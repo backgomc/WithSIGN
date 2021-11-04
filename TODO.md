@@ -129,9 +129,11 @@
 * 약관 동의 - 처음 로그인 시 ...
 * 메뉴얼 
 # 폰트 적용 - 윈도우에서 화면 깨짐 방지 
+# DRM 암호화 해제 연동
 
 
-782-486856
+git clone https://github.com/gobitfly/etherchain-light --recursive
+
 
 http://localhost:5000/api/bulk/addBulk
 {

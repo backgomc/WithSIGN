@@ -27,6 +27,7 @@ import "moment/locale/ko";
 import styles from './Home.css';
 import { Pie, measureTextWidth } from '@ant-design/charts';
 import banner from '../../assets/images/banner.png'
+import docu from '../../assets/images/docu.svg'
 const { Divider } = ProCard;
 
 const Home = () => {
@@ -117,6 +118,13 @@ const Home = () => {
   //   }
   //   setLoadingNotice(false);
   // }
+
+  const IconLink = ({ src, text }) => (
+    <a style={{marginRight:'16px', lineHeight:'24px'}}>
+      <img style={{marginRight:'8px'}} src={src} alt={text} />
+      {text}
+    </a>
+  );
 
   const headerTitle = (
     <Space size={3}>    
@@ -443,7 +451,13 @@ const Home = () => {
   const direct = (
     <ProCard title="바로 가기">
       <Space>
-        <Button onClick={()=> {navigate('/auditCheck')}} icon={<FileProtectOutlined />}>문서 진본 확인</Button>
+        <Link to='/auditCheck'>
+        <IconLink
+          src={docu}
+          text="문서 진본 확인"
+        />
+        </Link>
+        {/* <Button onClick={()=> {navigate('/auditCheck')}} icon={<FileProtectOutlined />}>문서 진본 확인</Button> */}
       </Space>
     </ProCard>
   )
