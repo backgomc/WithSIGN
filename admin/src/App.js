@@ -17,6 +17,7 @@ import Login from './components/Login/Login';
 import Register from './components/Register/Register';
 import '@ant-design/pro-layout/dist/layout.css';
 import 'antd/dist/antd.css';
+import './App.css';
 
 const App = () => {
   

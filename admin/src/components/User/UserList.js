@@ -258,21 +258,21 @@ const UserList = () => {
               // },
             ],
           },
-          extra: [           
-          <Button type="primary" onClick={() => {navigate('/uploadTemplate');}}>
-            템플릿 등록
-          </Button>,
-          <Popconfirm title="삭제하시겠습니까？" okText="네" cancelText="아니오" visible={visiblePopconfirm} onConfirm={deleteTemplate} onCancel={() => {setVisiblePopconfirm(false);}}>
-            <Button type="primary" danger disabled={!hasSelected} onClick={()=>{setVisiblePopconfirm(true);}}>
-              삭제
-            </Button>
-          </Popconfirm>,
-          <span>
-            {hasSelected ? `${selectedRowKeys.length} 개의 문서가 선택됨` : ''}
-          </span>
-          ],
+          // extra: [           
+          // <Button type="primary" onClick={() => {navigate('/uploadTemplate');}}>
+          //   사용자 등록
+          // </Button>,
+          // <Popconfirm title="삭제하시겠습니까？" okText="네" cancelText="아니오" visible={visiblePopconfirm} onConfirm={deleteTemplate} onCancel={() => {setVisiblePopconfirm(false);}}>
+          //   <Button type="primary" danger disabled={!hasSelected} onClick={()=>{setVisiblePopconfirm(true);}}>
+          //     삭제
+          //   </Button>
+          // </Popconfirm>,
+          // <span>
+          //   {hasSelected ? `${selectedRowKeys.length} 명의 사용자가 선택됨` : ''}
+          // </span>
+          // ],
         }}
-        content={'회사에서 공통으로 사용하는 문서를 등록할 수 있습니다.'}
+        // content={'회사에서 공통으로 사용하는 문서를 등록할 수 있습니다.'}
         footer={[
         ]}
     >

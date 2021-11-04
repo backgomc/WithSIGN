@@ -1,123 +1,87 @@
 import React, {useState} from 'react';
 import { Tooltip, Tag, Timeline, Button } from 'antd';
 import Moment from 'react-moment';
-import { useSelector, useDispatch } from 'react-redux';
-import { selectUser } from '../../app/infoSlice';
+// import { useSelector } from 'react-redux';
+// import { selectUser } from '../../app/infoSlice';
 import { CheckCircleOutlined, CloseCircleOutlined, ClockCircleOutlined } from '@ant-design/icons';
-import { DocumentType, DOCUMENT_SIGNED, DOCUMENT_TOSIGN, DOCUMENT_SIGNING, DOCUMENT_CANCELED } from './DocumentType';
+import { DocumentType, DOCUMENT_SIGNED } from './DocumentType';
 import ProCard from '@ant-design/pro-card';
 import RcResizeObserver from 'rc-resize-observer';
 import '@ant-design/pro-card/dist/card.css';
 import 'antd/dist/antd.css';
-import { setDocToView } from '../ViewDocument/ViewDocumentSlice';
+// import { setDocToView } from '../ViewDocument/ViewDocumentSlice';
 import { navigate } from '@reach/router';
 
 const DocumentExpander = (props) => {
 
-    const dispatch = useDispatch();
+    // const dispatch = useDispatch();
     const [responsive, setResponsive] = useState(false);
-    const { item } = props
-    const user = useSelector(selectUser);
-    const { _id } = user;
+    const { item } = props;
+    // const user = useSelector(selectUser);
+    // const { _id } = user;
 
     const getSignInfo = (user) => {
         return (
             <div>
-                {/* {user.name} {getSignedTime(user)} */}
                 {user.name} {user.JOB_TITLE}
             </div>
-        )
+        );
     }
 
-    const getSignedTime = (user) => {
-        if ((item.signedBy.some(e => e.user === user._id))) {
-            return  (
-                <Tag icon={<CheckCircleOutlined />} color="default">
-                    <Moment format='YYYY/MM/DD HH:mm'>
-                        {item.signedBy.filter(e => e.user === user._id)[0].signedTime}
-                    </Moment>
-                </Tag>
-            )
-        } else {
-            return (
-            <Tag icon={<ClockCircleOutlined />} color="success">
-                서명 대기
-            </Tag>
-            )
-        }
-    }
-
-    const timeFormat = (org) => {
-        return (
-            <Moment format='YYYY/MM/DD HH:mm'>{org}</Moment>
-        )
-    }
-
-    const actionDocument = () => {
-        switch (DocumentType({uid: _id, document: item})) {
-            case DOCUMENT_CANCELED:
-                return (
-                    <Button
-                        // loading={isUploading(row)}
-                        onClick={() => {        
-                        const docId = item["_id"]
-                        const docRef = item["docRef"]
-                        const docTitle = item["docTitle"]
-                        dispatch(setDocToView({ docRef, docId, docTitle }));
-                        navigate(`/viewDocument`);
-                    }}>문서조회</Button>
-                    )
-            case DOCUMENT_SIGNED:
-                return (
-                <Button
-                    // loading={isUploading(row)}
-                    onClick={() => {        
-                    const docId = item["_id"]
-                    const docRef = item["docRef"]
-                    const docTitle = item["docTitle"]
-                    dispatch(setDocToView({ docRef, docId, docTitle }));
-                    navigate(`/viewDocument`);
-                }}>문서조회</Button>
-                )
-            case DOCUMENT_TOSIGN:
-                return (
-                <Button type="primary" onClick={() => {
-                    const docId = item["_id"]
-                    const docRef = item["docRef"]
-                    const docTitle = item["docTitle"]
-                    dispatch(setDocToView({ docRef, docId, docTitle }));
-                    navigate(`/signDocument`);
-                }}>서명하기</Button>
-                );
-            case DOCUMENT_SIGNING:
-                return (
-                <Button onClick={() => {        
-                    const docId = item["_id"]
-                    const docRef = item["docRef"]
-                    const docTitle = item["docTitle"]
-                    dispatch(setDocToView({ docRef, docId, docTitle }));
-                    navigate(`/viewDocument`);
-                }}>문서조회</Button>
-                );
-            default:
-                return (
-                <div></div>
-                )
-            }
-    }
+    // const actionDocument = () => {
+    //     switch (DocumentType({uid: _id, document: item})) {
+    //         case DOCUMENT_CANCELED:
+    //             return (
+    //                 <Button
+    //                     // loading={isUploading(row)}
+    //                     onClick={() => {        
+    //                     const docId = item["_id"]
+    //                     const docRef = item["docRef"]
+    //                     const docTitle = item["docTitle"]
+    //                     dispatch(setDocToView({ docRef, docId, docTitle }));
+    //                     navigate('/viewDocument');
+    //                 }}>문서조회</Button>
+    //                 );
+    //         case DOCUMENT_SIGNED:
+    //             return (
+    //             <Button
+    //                 // loading={isUploading(row)}
+    //                 onClick={() => {        
+    //                 const docId = item["_id"]
+    //                 const docRef = item["docRef"]
+    //                 const docTitle = item["docTitle"]
+    //                 dispatch(setDocToView({ docRef, docId, docTitle }));
+    //                 navigate('/viewDocument');
+    //             }}>문서조회</Button>
+    //             );
+    //         case DOCUMENT_SIGNING:
+    //             return (
+    //             <Button onClick={() => {        
+    //                 const docId = item["_id"]
+    //                 const docRef = item["docRef"]
+    //                 const docTitle = item["docTitle"]
+    //                 dispatch(setDocToView({ docRef, docId, docTitle }));
+    //                 navigate('/viewDocument');
+    //             }}>문서조회</Button>
+    //             );
+    //         default:
+    //             return (
+    //             <div></div>
+    //             );
+    //         }
+    // }
 
     const activeHistory = (user) => {
         
         if ((item.signedBy.some(e => e.user === user._id))) {
-            return  (
+            return (
                 <Timeline.Item dot={<CheckCircleOutlined className="timeline-clock-icon" />} color="gray">
-                    <b>{user.name} {user.JOB_TITLE}</b> 서명 완료 &nbsp; 
+                    <b>{user.name} {user.JOB_TITLE}</b> 서명 완료 &nbsp;
                     <Tag color="#918F8F">
-                    <Moment format='YYYY/MM/DD HH:mm'>{item.signedBy.filter(e => e.user === user._id)[0].signedTime}</Moment>
+                        <Moment format='YYYY/MM/DD HH:mm'>{item.signedBy.filter(e => e.user === user._id)[0].signedTime}</Moment>
                     </Tag>
-                    {/* <Badge count={timeFormat(item.signedBy.filter(e => e.user === user._id)[0].signedTime)} style={{ backgroundColor: 'grey' }}/> */}
                 </Timeline.Item>
-            )
+            );
         } else if ((item.canceledBy.some(e => e.user === user._id))) {
             return (
                 <Timeline.Item dot={<CloseCircleOutlined className="timeline-clock-icon" />} color="red">
@@ -129,13 +93,13 @@ const DocumentExpander = (props) => {
                     </Tooltip>
                     <br></br>{item.canceledBy.filter(e => e.user === user._id)[0].message}
                 </Timeline.Item>
-            )
+            );
         } else {
             return (
                 <Timeline.Item dot={<ClockCircleOutlined className="timeline-clock-icon" />}>
                     <b>{user.name} {user.JOB_TITLE}</b> 서명 필요
                 </Timeline.Item>
-            )
+            );
         }
     }
 
@@ -167,7 +131,7 @@ const DocumentExpander = (props) => {
                     </ProCard>
                     <ProCard split="vertical">
                     <ProCard title="서명 요청시간"><Moment format='YYYY/MM/DD HH:mm'>{item.requestedTime}</Moment></ProCard>
-                    <ProCard title="서명 상태"><DocumentType uid={_id} document={item} /></ProCard>
+                    <ProCard title="서명 상태"><DocumentType document={item} /></ProCard>
                     </ProCard>
                 </ProCard>
             </ProCard>
@@ -187,12 +151,12 @@ const DocumentExpander = (props) => {
             </ProCard>
             
 
-            {DocumentType({uid: _id, document: item}) == DOCUMENT_SIGNED ?
+            {DocumentType({document: item}) === DOCUMENT_SIGNED ?
                 <ProCard title="">
                     <div style={{height:"40px"}}>                 
                         <Button
                             onClick={() => {         
-                                navigate(`/audit`, { state: { item: item } } );
+                                navigate('/audit', { state: { item: item } } );
                         }}>
                             진본 확인 증명서
                         </Button> 

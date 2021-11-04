@@ -2,19 +2,14 @@ import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
 import { Table, Input, Space, Button } from 'antd';
 import Highlighter from 'react-highlight-words';
-import {
-  SearchOutlined,
-  FileOutlined,
-} from '@ant-design/icons';
-
-import { useSelector, useDispatch } from 'react-redux';
-import { selectUser } from '../../app/infoSlice';
+import { SearchOutlined,FileOutlined } from '@ant-design/icons';
+import { useDispatch } from 'react-redux';
+// import { selectUser } from '../../app/infoSlice';
 import { navigate } from '@reach/router';
 import { setDocToView } from '../ViewDocument/ViewDocumentSlice';
-import { setDocToSign } from '../SignDocument/SignDocumentSlice';
 import moment from 'moment';
 import 'moment/locale/ko';
-import { DocumentType, DocumentTypeBadge, DOCUMENT_SIGNED, DOCUMENT_TOSIGN, DOCUMENT_SIGNING, DOCUMENT_CANCELED } from './DocumentType';
+import { DocumentType, DocumentTypeBadge, DOCUMENT_SIGNED, DOCUMENT_SIGNING, DOCUMENT_CANCELED } from './DocumentType';
 import DocumentExpander from './DocumentExpander';
 import { PageContainer } from '@ant-design/pro-layout';
 import 'antd/dist/antd.css';
@@ -25,9 +20,9 @@ moment.locale('ko');
 const DocumentList = ({location}) => {
 
   const dispatch = useDispatch();
-  const user = useSelector(selectUser);
+  // const user = useSelector(selectUser);
 
-  const { _id } = user;
+  // const { _id } = user;
   const [searchText, setSearchText] = useState('');
   const [searchedColumn, setSearchedColumn] = useState('');
   // const [status, setStatus] = useState(null);
@@ -48,7 +43,7 @@ const DocumentList = ({location}) => {
       sortOrder: sorter.order,
       pagination,
       ...filters,
-      user: _id,
+      // user: _id,
       // status:status  //필터에 포함되어 있음 
     });
   };
@@ -173,10 +168,6 @@ const DocumentList = ({location}) => {
           value: DOCUMENT_SIGNED,
         },
         {
-          text: DOCUMENT_TOSIGN,
-          value: DOCUMENT_TOSIGN,
-        },
-        {
           text: DOCUMENT_SIGNING,
           value: DOCUMENT_SIGNING,
         },
@@ -185,10 +176,10 @@ const DocumentList = ({location}) => {
           value: DOCUMENT_CANCELED,
         },
       ],
-      onFilter: (value, record) => DocumentType({uid: _id, document: record}).indexOf(value) === 0,
+      onFilter: (value, record) => DocumentType({document: record}).indexOf(value) === 0,
       render: (_,row) => {
         return (
-            <DocumentTypeBadge uid={_id} document={row} />
+            <DocumentTypeBadge document={row} />
           )
       },
     },
@@ -251,7 +242,7 @@ const DocumentList = ({location}) => {
       width: '50px',
       responsive: ['xs'],
       render: (_,row) => {
-        switch (DocumentType({uid: _id, document: row})) {
+        switch (DocumentType({document: row})) {
           case DOCUMENT_CANCELED:
             return (
               <Button
@@ -278,16 +269,6 @@ const DocumentList = ({location}) => {
                 navigate('/viewDocument');
               }}>문서</Button>
             )
-          case DOCUMENT_TOSIGN:
-            return (
-              <Button type='primary' onClick={() => {
-                const docId = row['_id']
-                const docRef = row['docRef']
-                const docType = row['docType']
-                dispatch(setDocToSign({ docRef, docId, docType }));
-                navigate('/signDocument');
-              }}>서명</Button>
-            );
           case DOCUMENT_SIGNING:
             return (
               <Button onClick={() => {        
@@ -317,11 +298,11 @@ const DocumentList = ({location}) => {
     // }
 
     fetch({
-      user: _id,
       pagination,
       status:location.state.status
     });
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
