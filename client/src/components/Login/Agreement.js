@@ -16,9 +16,10 @@ import { PageContainer } from '@ant-design/pro-layout';
 import 'antd/dist/antd.css';
 
 
-function Agreement(props) {
+function Agreement({location}) {
     const dispatch = useDispatch();
     const { formatMessage } = useIntl();
+    const user = location.state.user;
 
     const [terms, setTerms] = useState();
     const [privacy, setPrivacy] = useState();
@@ -64,24 +65,21 @@ function Agreement(props) {
 
     }, []);
 
-    const onFinish = (values) => {
-        console.log(values)
+    const fetchAgree = () => {
+      let body = {
+          user: user,
+          terms: termsChecked,
+          privacy: privacyChecked
+      }
 
-        let body = {
-            SABUN: values.SABUN,
-            password: values.password
-        }
-
-        axios.post('/api/users/login', body).then(response => {
-
-            console.log(response)
-            if (response.data.success) {
-                navigate('/');
-                dispatch(setUser(response.data.user));
-            } else {
-                alert('Login Failed')
-            }
-          });
+      axios.post('/api/users/updateAgreement', body).then(response => {
+          console.log(response)
+          if (response.data.success) {
+            navigate('/resetPassword', { state: {user: response.data.user}})
+          } else {
+            alert('약관 동의 실패')
+          }
+        });
     }
 
     const onChangeTotal = (e) => {
@@ -125,7 +123,7 @@ function Agreement(props) {
 
     
     const modalTerms = (
-      <Modal title="이용약관" visible={termsModalVisible} footer={[
+      <Modal title="이용약관" visible={termsModalVisible} onCancel={() => {setTermsModalVisible(false)}} footer={[
         <Button key="back" onClick={() => {setTermsModalVisible(false)}}>
           닫기
         </Button>
@@ -140,7 +138,7 @@ function Agreement(props) {
     )
 
     const modalPrivacy = (
-      <Modal title="개인정보 수집 및 이용" visible={privacyModalVisible} footer={[
+      <Modal title="개인정보 수집 및 이용" visible={privacyModalVisible} onCancel={() => {setPrivacyModalVisible(false)}} footer={[
         <Button key="back" onClick={() => {setPrivacyModalVisible(false)}}>
           닫기
         </Button>
@@ -155,7 +153,7 @@ function Agreement(props) {
     )
 
     const modalPolicy = (
-      <Modal title="개인정보처리방침" visible={policyModalVisible} footer={[
+      <Modal title="개인정보처리방침" visible={policyModalVisible} onCancel={() => {setPolicyModalVisible(false)}} footer={[
         <Button key="back" onClick={() => {setPolicyModalVisible(false)}}>
           닫기
         </Button>
@@ -243,7 +241,7 @@ function Agreement(props) {
             <Button onClick={() => {navigate('/');}}>
               이전
             </Button>,    
-            <Button type="primary" onClick={() => {navigate('/updateAgreement');}} disabled={disableNext}>
+            <Button type="primary" onClick={fetchAgree} disabled={disableNext}>
               약관 동의
             </Button>
             ],

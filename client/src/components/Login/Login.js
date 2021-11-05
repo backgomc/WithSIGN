@@ -47,12 +47,19 @@ function Login(props) {
         axios.post('/api/users/login', body).then(response => {
 
             console.log(response)
+
             if (response.data.success) {
-                navigate('/');
+
                 dispatch(setUser(response.data.user));
+                navigate('/');
+
             } else {
-                alert('Login Failed')
-            }
+                if (response.data.user) {   // 약관 동의 절차 필요
+                    navigate('/agreement', { state: {user: response.data.user}})
+                } else {
+                    alert(response.data.message ? response.data.message : 'login failed !')
+                }
+            } 
           });
     }
 

@@ -167,6 +167,19 @@
     /* padding: 40px 0px;  */
     /* border-radius: 50%; */
   }
+
+  .middleCard {
+    /* 이하 필수 설정 */
+    position: absolute;
+    left: 50%; top: 28%;
+    transform: translate(-50%, -50%);
+    /* text-align: center; */
+    /* 이하 꾸밈 설정 */
+    background: white;
+    min-width: 450px;
+    /* padding: 40px 0px;  */
+    /* border-radius: 50%; */
+  }
   
 .login-form h3 {
     height: 20px;

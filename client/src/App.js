@@ -19,7 +19,6 @@ import BoardList from './components/Board/BoardList';
 import BoardDetail from './components/Board/BoardDetail';
 import Sign from './components/Sign';
 import View from './components/View';
-import PasswordReset from './components/PasswordReset/PasswordReset';
 import Welcome from './components/Welcome';
 import Home from './components/Home/Home';
 import Footer from './components/Footer/Footer';
@@ -27,6 +26,7 @@ import Test from './components/Test/Test';
 import Test2 from './components/Test/Test2';
 import Login from './components/Login/Login';
 import Agreement from './components/Login/Agreement';
+import ResetPassword from './components/Login/ResetPassword';
 import Register from './components/Register/Register';
 import Setting from './components/Setting/Setting';
 import MySign from './components/MySign/MySign';
@@ -156,9 +156,9 @@ const App = () => {
       {/* <Header /> */}
       <Router>
         <Login path="/" />
-        <Agreement path="/agreement" />
         <Register path="register" />
-        <PasswordReset path="passwordReset" />
+        <ResetPassword path="resetPassword" />
+        <Agreement path="/agreement" />
       </Router>
     </div>
   );

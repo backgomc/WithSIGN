@@ -83,7 +83,12 @@ router.post('/login', (req, res) => {
         // console.log('isMatch',isMatch)
   
         if (!isMatch)
-          return res.json({ success: false, message: "비밀번호가 틀렸습니다." })
+          return res.json({ success: false, message: "비밀번호가 일치하지 않습니다." })
+
+        console.log('user:'+user)
+        console.log(typeof user.terms)
+        if (!user.terms || !user.privacy)
+          return res.json({ success: false, user: user._id, message: "약관 동의가 필요합니다." })
   
         //비밀번호 까지 맞다면 토큰을 생성하기.
         user.generateToken((err, user) => {
@@ -329,6 +334,33 @@ router.post('/updateUser', (req, res) => {
 
 })
 
+// 유저 업데이트 : 약관
+router.post('/updateAgreement', (req, res) => {
+
+  console.log("user:"+req.body.user)
+  console.log("terms:"+req.body.terms)
+  console.log("privacy:"+req.body.privacy)
+
+  if (!req.body.user || !req.body.terms || !req.body.privacy) {
+      return res.json({ success: false, message: "input value not enough!" })
+  } 
+
+  const user = req.body.user
+  const terms = req.body.terms
+  const privacy = req.body.privacy
+  const time = new Date()
+
+  User.updateOne({ _id: user }, {terms: terms, privacy: privacy, agreeTime: time}, (err, result) => {
+    if (err) {
+      console.log(err);
+      return res.json({ success: false, message: err })
+    } else {
+      return res.json({ success: true, user: user })
+    }
+  })
+
+})
+
 
 // 유저 비밀번호 : updatePassword
 router.post('/updatePassword', (req, res) => {
@@ -336,7 +368,7 @@ router.post('/updatePassword', (req, res) => {
   console.log("user:"+req.body.user)
   console.log("current:"+req.body.currentPassword)
   console.log("password:"+req.body.password)
-
+  
   if (!req.body.user || !req.body.password || !req.body.currentPassword) {
       return res.json({ success: false, message: "input value not enough!" })
   } 

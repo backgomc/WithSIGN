@@ -57,6 +57,17 @@ const userSchema = mongoose.Schema({
     use: {
         type: Boolean,
         default: true
+    },
+    terms: { 
+        type: Boolean, 
+        default: false
+    },
+    privacy: { 
+        type: Boolean, 
+        default: false 
+    },
+    agreeTime: {
+         type: Date 
     }
 })
 

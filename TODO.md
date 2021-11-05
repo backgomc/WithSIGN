@@ -145,6 +145,7 @@ http://localhost:5000/api/bulk/addBulk
     "signed"    : false
 }
 
+192.168.161.25
 
 # docker 
 * 수동파일 배포
