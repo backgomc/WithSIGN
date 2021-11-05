@@ -368,6 +368,7 @@ router.post('/updatePassword', (req, res) => {
   console.log("user:"+req.body.user)
   console.log("current:"+req.body.currentPassword)
   console.log("password:"+req.body.password)
+  console.log("isNew:"+req.body.isNew)
   
   if (!req.body.user || !req.body.password || !req.body.currentPassword) {
       return res.json({ success: false, message: "input value not enough!" })
@@ -376,6 +377,7 @@ router.post('/updatePassword', (req, res) => {
   const user = req.body.user
   const currentPassword = req.body.currentPassword
   const password = req.body.password
+  const isNew = req.body.isNew
 
   // 현재 비밀번호 일치 여부 확인 
   User.findOne({ _id: user }, (err, user) => {
@@ -389,6 +391,9 @@ router.post('/updatePassword', (req, res) => {
 
     //요청된 이메일이 데이터 베이스에 있다면 비밀번호가 맞는 비밀번호 인지 확인.
     user.comparePassword(currentPassword, (err, isMatch) => {
+
+      if (isNew) isMatch = true // 신규 비밀번호 지정시는 비교 패스 시켜줌
+      
       if (!isMatch)
         return res.json({ success: false, message: "현재 비밀번호가 일치하지 않습니다!" })
 

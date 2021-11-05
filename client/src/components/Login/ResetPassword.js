@@ -42,7 +42,8 @@ function ResetPassword({location}) {
       // 비밀번호 변경 API Call
       let param = {
           user: user,
-          currentPassword: '11111',
+          currentPassword: 'temp',
+          isNew: true,
           password: values.password
   
       }  
