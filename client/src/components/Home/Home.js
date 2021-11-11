@@ -7,7 +7,8 @@ import { setDocToSign } from '../SignDocument/SignDocumentSlice';
 import { setSendType } from '../Assign/AssignSlice';
 import axios from 'axios';
 import BoardCard from '../Board/BoardCard';
-import ProCard from '@ant-design/pro-card';
+import FAQCard from '../Board/FAQCard';
+import ProCard, { StatisticCard, StatisticProps } from '@ant-design/pro-card';
 import RcResizeObserver from 'rc-resize-observer';
 import { PageContainer } from '@ant-design/pro-layout';
 import { Badge, Button, Card, Empty, List, Space, Statistic, Avatar, Row, Col, Progress } from 'antd';
@@ -26,18 +27,28 @@ import moment from "moment";
 import "moment/locale/ko";
 import styles from './Home.css';
 import { Pie, measureTextWidth } from '@ant-design/charts';
-import banner from '../../assets/images/banner.png'
+import banner from '../../assets/images/sub_top1.png'
 import docu from '../../assets/images/docu.svg'
+import { DocumentType, DocumentTypeText, DocumentTypeBadge, DocumentTypeIcon, DOCUMENT_SIGNED, DOCUMENT_TOSIGN, DOCUMENT_SIGNING, DOCUMENT_CANCELED } from '../Lists/DocumentType';
+
+
 const { Divider } = ProCard;
 
 const Home = () => {
 
+  const [tab, setTab] = useState('2');
   const [loadingToSign, setLoadingToSign] = useState(false);
   const [loadingSigning, setLoadingSigning] = useState(false);
+  const [loadingTotal, setLoadingTotal] = useState(false);
+  const [loadingCanceled, setLoadingCanceled] = useState(false);
+  const [loadingSigned, setLoadingSigned] = useState(false);
   const [loadingStatics, setLoadingStatics] = useState(false);
   // const [loadingNotice, setLoadingNotice] = useState(false);
   const [documentsToSign, setDocumentsToSign] = useState([]);
   const [documentsSigning, setDocumentsSigning] = useState([]);
+  const [documentsTotal, setDocumentsTotal] = useState([]);
+  const [documentsCanceled, setDocumentsCanceled] = useState([]);
+  const [documentsSigned, setDocumentsSigned] = useState([]);
   // const [notice, setNotice] = useState([]);
   const [pagination, setPagination] = useState({current:1, pageSize:6});
   const [responsive, setResponsive] = useState(false);
@@ -56,6 +67,9 @@ const Home = () => {
     fetchToSign();
     fetchSigning();
     fetchStatics();
+    fetchTotal();
+    fetchCanceled();
+    fetchSigned();
     // fetchNotice();
   }, []);
 
@@ -87,6 +101,50 @@ const Home = () => {
       setDocumentsSigning(documents)
     }
     setLoadingSigning(false);
+  }
+
+  const fetchTotal = async () => {
+    setLoadingTotal(true);
+    let param = {
+      user: _id,
+      pagination
+    }
+    const res = await axios.post('/api/document/documents', param)
+    if (res.data.success) {
+      const documents = res.data.documents;
+      setDocumentsTotal(documents)
+    }
+    setLoadingTotal(false);
+  }
+
+  const fetchCanceled = async () => {
+    setLoadingCanceled(true);
+    let param = {
+      user: _id,
+      pagination,
+      status: '서명 취소'
+    }
+    const res = await axios.post('/api/document/documents', param)
+    if (res.data.success) {
+      const documents = res.data.documents;
+      setDocumentsCanceled(documents)
+    }
+    setLoadingCanceled(false);
+  }
+
+  const fetchSigned = async () => {
+    setLoadingSigned(true);
+    let param = {
+      user: _id,
+      pagination,
+      status: '서명 완료'
+    }
+    const res = await axios.post('/api/document/documents', param)
+    if (res.data.success) {
+      const documents = res.data.documents;
+      setDocumentsSigned(documents)
+    }
+    setLoadingSigned(false);
   }
 
   const fetchStatics = async () => {
@@ -127,10 +185,11 @@ const Home = () => {
   );
 
   const headerTitle = (
-    <Space size={3}>    
-      <Avatar size={38} icon={<UserOutlined />} />
-      <div>{name} {JOB_TITLE}</div>
-    </Space>
+    // <Space size={3}>    
+    //   <Avatar size={38} icon={<UserOutlined />} />
+    //   <div>{name} {JOB_TITLE}</div>
+    // </Space>
+    <div><img src={banner}></img></div>
   )
 
   const renderBadge = (count, active = false) => {
@@ -544,6 +603,260 @@ const Home = () => {
     </Card>
   )
 
+
+
+
+
+  const loadmore = (target) => {
+    return (
+      <div
+      style={{
+        textAlign: 'center',
+        marginTop: 12,
+        height: 32,
+        lineHeight: '32px',
+      }}
+      >
+        <Button onClick={() => { navigate('/documentList', { state: {status: target}})}}>더보기</Button>
+    </div>
+    ) 
+  }
+
+  const contentTotal = (
+    <ProCard
+      colSpan={{ xs: 24, sm: 12, md: 12, lg: 12, xl: 12 }}
+      style={{ marginBottom: 0, marginRight: 0, padding: 0 }}
+      // title={<div>서명 진행 문서 {renderBadge(signingNum, false)}</div>}
+      bordered={false}
+      headerBordered
+      // extra={<Link to="/documentList" state={{ status: '서명 진행' }}>더보기</Link>}
+      loading={loadingTotal}
+      bodyStyle={{ padding: 0 }}
+    >
+      <List
+        // bordered
+        style={{ paddingLeft: 10, paddingRight: 10}}
+        loadMore={totalNum > 6 ? loadmore('') : ''}
+        dataSource={documentsTotal}
+        renderItem={item => (
+          <List.Item>
+          <List.Item.Meta
+            avatar={<DocumentTypeText uid={_id} document={item} />}
+            title={
+              <Link to="/documentList" state={{ status: '', docId: item._id }}>
+                {item.docTitle}
+              </Link>
+            }
+            description={'by' + item.user.JOB_TITLE ? item.user.name + ' '+ item.user.JOB_TITLE : item.user.name}
+          />
+            <div><font color='grey'>{moment(item.requestedTime).fromNow()}</font></div> 
+          </List.Item>
+        )}
+      />
+    </ProCard>
+  )
+
+  const contentSigning = (
+    <ProCard
+      colSpan={{ xs: 24, sm: 12, md: 12, lg: 12, xl: 12 }}
+      style={{ marginBottom: 0, marginRight: 0, padding: 0 }}
+      // title={<div>서명 진행 문서 {renderBadge(signingNum, false)}</div>}
+      bordered={false}
+      headerBordered
+      // extra={<Link to="/documentList" state={{ status: '서명 진행' }}>더보기</Link>}
+      loading={loadingSigning}
+      bodyStyle={{ padding: 0 }}
+    >
+      <List
+        // bordered
+        style={{ paddingLeft: 10, paddingRight: 10}}
+        loadMore={signingNum > 6 ? loadmore('서명 진행') : ''}
+        dataSource={documentsSigning}
+        renderItem={item => (
+          <List.Item>
+          <List.Item.Meta
+            avatar={<FileOutlined />}
+            title={
+              <Link to="/documentList" state={{ status: '서명 진행', docId: item._id }}>
+                {item.docTitle}
+              </Link>
+            }
+            // description={item.user.JOB_TITLE ? item.user.name + ' '+ item.user.JOB_TITLE : item.user.name}
+            description={<Progress percent={Math.round((item.signedBy.length / item.users.length) * 100)} steps={item.users.length} status="active" />}
+          />
+            <div><font color='grey'>{moment(item.requestedTime).fromNow()}</font></div> 
+          </List.Item>
+        )}
+      />
+    </ProCard>
+  )
+
+  const contentToSign = (
+    <Card
+    style={{ marginBottom: 0, width:'100%'}}
+    // title={<div>서명 필요 문서 {renderBadge(toSignNum, true)}</div>}
+    bordered={false}
+    // extra={<Link to="/documentList" state={{ status: '서명 필요' }}>더보기</Link>}
+    loading={loadingToSign}
+    bodyStyle={{ padding: 0 }}
+  >
+    {documentsToSign.length == 0 ? <div style={{padding: 50}}><Empty image={Empty.PRESENTED_IMAGE_SIMPLE} /></div> :
+      documentsToSign.map(item => (
+        <Card.Grid style={{width:'50%'}} key={item._id}>
+          <Card bodyStyle={{ padding: 0 }} bordered={false}>
+            <Link to="/signDocument" onClick={() => {
+                  const docId = item._id;
+                  const docRef = item.docRef;
+                  const docType = item.docType;
+                  dispatch(setDocToSign({ docRef, docId, docType }));
+            }}>
+              <Card.Meta
+                // title={}
+                description={
+                  <div>
+                    <p><FileOutlined />&nbsp;&nbsp;<font color='black'>{item.docTitle}</font></p>
+                    {item.user.image ? <Avatar src={item.user.image} /> : <Avatar size={20} icon={<UserOutlined />} />} &nbsp;
+                    {item.user.JOB_TITLE ? item.user.name + ' '+ item.user.JOB_TITLE : item.user.name}
+                    <p>
+                      <span style={{color:'grey', flex:'0 0 auto', float:'right'}}>
+                        {moment(item.requestedTime).fromNow()}
+                      </span>
+                    </p>
+                  </div>
+                }
+              />
+            </Link>
+            </Card> 
+        </Card.Grid>
+      ))
+    }
+    </Card>
+  )
+
+  const contentCanceled = (
+    <ProCard
+      colSpan={{ xs: 24, sm: 12, md: 12, lg: 12, xl: 12 }}
+      style={{ marginBottom: 0, marginRight: 0, padding: 0 }}
+      bordered={false}
+      headerBordered
+      loading={loadingCanceled}
+      bodyStyle={{ padding: 0 }}
+    >
+      <List
+        // bordered
+        style={{ paddingLeft: 10, paddingRight: 10}}
+        loadMore={canceledNum > 6 ? loadmore('서명 취소') : ''}
+        dataSource={documentsCanceled}
+        renderItem={item => (
+          <List.Item>
+          <List.Item.Meta
+            avatar={<DocumentTypeText uid={_id} document={item} />}
+            title={
+              <Link to="/documentList" state={{ status: '서명 취소', docId: item._id }}>
+                {item.docTitle}
+              </Link>
+            }
+            description={'by' + item.user.JOB_TITLE ? item.user.name + ' '+ item.user.JOB_TITLE : item.user.name}
+          />
+            <div><font color='grey'>{moment(item.requestedTime).fromNow()}</font></div> 
+          </List.Item>
+        )}
+      />
+    </ProCard>
+  )
+
+  const contentSigned = (
+    <ProCard
+      colSpan={{ xs: 24, sm: 12, md: 12, lg: 12, xl: 12 }}
+      style={{ marginBottom: 0, marginRight: 0, padding: 0 }}
+      bordered={false}
+      headerBordered
+      loading={loadingSigned}
+      bodyStyle={{ padding: 0 }}
+    >
+      <List
+        // bordered
+        style={{ paddingLeft: 10, paddingRight: 10}}
+        loadMore={signedNum > 6 ? loadmore('서명 완료') : ''}
+        dataSource={documentsSigned}
+        renderItem={item => (
+          <List.Item>
+          <List.Item.Meta
+            avatar={<DocumentTypeText uid={_id} document={item} />}
+            title={
+              <Link to="/documentList" state={{ status: '서명 완료', docId: item._id }}>
+                {item.docTitle}
+              </Link>
+            }
+            description={'by' + item.user.JOB_TITLE ? item.user.name + ' '+ item.user.JOB_TITLE : item.user.name}
+          />
+            <div><font color='grey'>{moment(item.requestedTime).fromNow()}</font></div> 
+          </List.Item>
+        )}
+      />
+    </ProCard>
+  )
+
+
+  const items = [
+    { key: '1', title: '전체', value: totalNum, total: true },
+    { key: '2', status: 'processing', title: '내 서명 필요', value: toSignNum },
+    { key: '3', status: 'default', title: '상대 서명 진행중', value: signingNum },
+    { key: '4', status: 'error', title: '서명 취소됨', value: canceledNum },
+    { key: '5', status: 'success', title: '서명 완료', value: signedNum },
+  ];
+
+  const staticAllContent = (key) => {
+    if (key === '1') {
+      return contentTotal
+    } else if (key === '2') {
+      return contentToSign     
+    } else if (key === '3') {
+        return contentSigning     
+    } else if (key === '4') {
+        return contentCanceled
+    } else if (key === '5') {
+      return contentSigned
+    } else {
+      return contentTotal
+    }
+  }
+
+  const staticsAll = (
+    <ProCard
+      bodyStyle={{ padding:0 }}
+      tabs={{
+        activeKey: tab,
+        onChange: (key) => {
+          setTab(key)
+        },
+      }}
+    >
+      {items.map((item) => (
+        <ProCard.TabPane
+          style={{ width: '100%' }}
+          key={item.key}
+          tab={
+            <StatisticCard
+              statistic={{
+                title: item.title,
+                value: item.value,
+                status: item.status,
+              }}
+              style={{ width: 120, borderRight: item.total ? '1px solid #f0f0f0' : undefined }}
+            />
+          }
+        >
+
+          <div>
+            {staticAllContent(item.key)}
+          </div>
+          
+        </ProCard.TabPane>
+      ))}
+    </ProCard>
+  )
+
   return (
     <div>
       <PageContainer
@@ -600,14 +913,21 @@ const Home = () => {
 
       <Row gutter={24}>
           <Col xl={16} lg={24} md={24} sm={24} xs={24}>
-            {toSignCard}
-            {signing}<br></br>
+            {/* {toSignCard}
+            {signing}<br></br> */}
+            {staticsAll}<br></br>
+            <Row gutter={24}>
+              <Col xl={12} lg={24} md={24} sm={24} xs={24} style={{display: 'flex', paddingBottom: '20px'}}>
+                <BoardCard boardType={'notice'} boardName={'공지사항'}></BoardCard>
+              </Col>
+              <Col xl={12} lg={24} md={24} sm={24} xs={24} style={{display: 'flex', paddingBottom: '20px'}}>
+              <FAQCard boardType={'faq'} boardName={'FAQ'}></FAQCard>
+              </Col>
+            </Row>
           </Col>
           <Col xl={8} lg={24} md={24} sm={24} xs={24}>
             {pie}
-            <br></br>
-            {/* {noticeList} */}
-            <BoardCard boardType={'notice'} boardName={'공지사항'}></BoardCard>
+            {/* <BoardCard boardType={'notice'} boardName={'공지사항'}></BoardCard> */}
             <br></br>
             {direct}
           </Col>

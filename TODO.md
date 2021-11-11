@@ -126,11 +126,15 @@
 # react ie11 오류 해결
 # 감사추적증명서 만들기: 한글깨짐 ... 맥북에서 입력한 값만 깨짐 ... 자소 문제 아스키코드 확인 
 #  무료 폰트 모음:https://brunch.co.kr/@jmh5531/151
-* 약관 동의 - 처음 로그인 시 ...
+# 약관 동의 - 처음 로그인 시 ...
 * 메뉴얼 
 # 폰트 적용 - 윈도우에서 화면 깨짐 방지 
 # DRM 암호화 해제 연동
+* https://www.gettyimagesbank.com/ : 대시보드 이미지 찾기
+* PDFTron 결제 프로세스 확인
+* 
 
+438-6278-6998-0
 
 git clone https://github.com/gobitfly/etherchain-light --recursive
 

@@ -46,7 +46,7 @@ const documentSchema = mongoose.Schema({
         message: { type: String }
     }],
     canceled: {
-        type: Boolean 
+        type: Boolean, default: false 
     },
     signed: {
         type: Boolean

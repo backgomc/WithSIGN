@@ -47,8 +47,7 @@ export function DocumentTypeText(props) {
   
     if (document["signed"] == true) { 
         return (
-          // <Tag icon={<CheckCircleOutlined />} color="success">
-          <Tag icon={<CheckCircleOutlined />} color="#87d068">
+          <Tag icon={<CheckCircleOutlined />} color="success">
             {DOCUMENT_SIGNED}
           </Tag>
         )
@@ -69,7 +68,7 @@ export function DocumentTypeText(props) {
                 )
             } else {
               return (
-                <Tag icon={<SyncOutlined spin />} color="default">
+                <Tag icon={<SyncOutlined />} color="default">
                 {DOCUMENT_SIGNING}
                </Tag>
               )
@@ -112,7 +111,7 @@ export function DocumentTypeIcon(props) {
 
   if (document["signed"] == true) { 
       return (
-        <CheckCircleOutlined twoToneColor="#52c41a"/>
+        <CheckCircleOutlined twoToneColor="#87d068"/>
       )
   } else {
       if (document["canceled"] == true) {
@@ -127,7 +126,7 @@ export function DocumentTypeIcon(props) {
               )
           } else {
             return (
-              <ClockCircleTwoTone />
+              <ClockCircleTwoTone twoToneColor="#87d068" />
             )
           }
       }

@@ -29,6 +29,7 @@ import 'antd/dist/antd.css';
 import RcResizeObserver from 'rc-resize-observer';
 import { useIntl } from "react-intl";
 import { setSendType } from '../Assign/AssignSlice';
+import banner from '../../assets/images/sub_top2.png'
 
 moment.locale("ko");
 
@@ -163,10 +164,25 @@ const DocumentList = ({location}) => {
 
   const description = (
     <div>
-      <b><Badge status="processing" text="서명 필요" /></b> : 본인의 서명이 필요한 문서<br></br>
-      <b><Badge status="default" text="서명 진행" /></b> : 다른 서명 참여자의 서명이 진행 중인 문서<br></br>
-      <b><Badge status="error" text="서명 취소" /></b> : 서명 참여자 중 서명을 취소한 문서 <br></br>
-      <b><Badge status="success" text="서명 완료" /></b> : 모든 서명 참여자의 서명이 완료된 문서 
+      <table width='100%' style={{tableLayout:'fixed'}}>
+        <tr>
+          <td align='left' width='320px'>
+            <b><Badge status="processing" text="서명 필요" /></b> : 본인의 서명이 필요한 문서<br></br>
+            <b><Badge status="default" text="서명 진행" /></b> : 다른 서명 참여자의 서명이 진행 중인 문서<br></br>
+            <b><Badge status="error" text="서명 취소" /></b> : 서명 참여자 중 서명을 취소한 문서 <br></br>
+            <b><Badge status="success" text="서명 완료" /></b> : 모든 서명 참여자의 서명이 완료된 문서 
+          </td>
+          <td align='right'>
+          < img src={banner} width="500px" />
+          </td>
+        </tr>
+      </table>
+      {/* <div style={{textAlign:'left'}}>
+        <b><Badge status="processing" text="서명 필요" /></b> : 본인의 서명이 필요한 문서<br></br>
+        <b><Badge status="default" text="서명 진행" /></b> : 다른 서명 참여자의 서명이 진행 중인 문서<br></br>
+        <b><Badge status="error" text="서명 취소" /></b> : 서명 참여자 중 서명을 취소한 문서 <br></br>
+        <b><Badge status="success" text="서명 완료" /></b> : 모든 서명 참여자의 서명이 완료된 문서 
+      </div> */}
     </div>
   )
 
@@ -472,6 +488,8 @@ const DocumentList = ({location}) => {
       status:location.state.status
     });
 
+    console.log("location.state.docId:"+ location.state.docId)
+
   }, []);
 
   return (
@@ -499,10 +517,16 @@ const DocumentList = ({location}) => {
               navigate('/uploadDocument');
               }}>
               서명 요청
-            </Button>
+            </Button>,
             ],
         }}
         content={description}
+        // extraContent={
+        //   <img
+        //     src={banner}
+        //     width="100%"
+        //   />
+        // }
         footer={[
         ]}
     >
@@ -514,6 +538,7 @@ const DocumentList = ({location}) => {
         pagination={pagination}
         loading={loading}
         // expandable={expandableData}
+        defaultExpandedRowKeys={[location.state.docId]}
         expandedRowRender={row => <DocumentExpander item={row} />}
         expandRowByClick
         onRow={record => ({

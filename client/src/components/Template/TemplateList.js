@@ -19,7 +19,7 @@ import {
 import { PageContainer } from '@ant-design/pro-layout';
 import 'antd/dist/antd.css';
 import { useIntl } from "react-intl";
-
+import banner from '../../assets/images/sub_top4.png'
 
 const TemplateList = () => {
 
@@ -233,6 +233,21 @@ const TemplateList = () => {
     // ],
   };
 
+  const description = (
+    <div>
+      <table width='100%' style={{tableLayout:'fixed'}}>
+        <tr>
+          <td align='left' width='280px'>
+            자주 사용하는 문서를 미리 등록할 수 있습니다.
+          </td>
+          <td align='right'>
+          < img src={banner} />
+          </td>
+        </tr>
+      </table>
+    </div>
+  )
+
   useEffect(() => {
 
     fetch({
@@ -286,7 +301,7 @@ const TemplateList = () => {
           </span>
           ],
         }}
-        content={'자주 사용하는 문서를 미리 등록할 수 있습니다.'}
+        content={description}
         footer={[
         ]}
     >

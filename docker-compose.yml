@@ -28,6 +28,8 @@ services:
     # volumes: # 볼륨 설정
     #   - ./nginx/nginx.conf:/etc/nginx/nginx.conf
     #   - ./client/build:/usr/share/nginx/html
+    environment:
+      - NODE_ENV=production
  
   server:
     build: # Dockerfile 빌드
@@ -44,10 +46,10 @@ services:
       # - './server:/app'
       # - '/app/node_modules' 
       - type: bind 
-        # source: /Users/niceharu/Dev/Data/storage # local 경로
-        # target: /app/storage  # container 내부에서의 경로
-        source: /Users/niceharu/Dev/nhsign-docker/server # local 경로
-        target: /app  # container 내부에서의 경로
+        source: /Users/niceharu/Dev/Data/storage # local 경로
+        target: /app/storage  # container 내부에서의 경로
+        # source: /Users/niceharu/Dev/nhsign-docker/server # local 경로
+        # target: /app  # container 내부에서의 경로
     environment: # 환경변수 설정
       - NODE_ENV=production
       - CHOKIDAR_USEPOLLING=true

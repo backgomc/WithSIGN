@@ -287,6 +287,7 @@ router.post('/searchForDocumentToSign', (req, res) => {
       } else if (status == '서명 필요') {
         andParam['users'] = {$in:[user]}
         andParam['signed'] = false
+        andParam['canceled'] = false
         andParam['signedBy.user'] = {$ne:user}
         console.log("서명필요 called")
       } else if (status == '서명 완료') {
@@ -356,12 +357,12 @@ router.post('/statics', (req, res) => {
     totalNum = count;
     console.log("totalNum:"+totalNum);
 
-    Document.countDocuments({ "users": {$in:[user]}, "signed": false, "signedBy.user": {$ne:user} }).exec(function(err, count) {
+    Document.countDocuments({ "users": {$in:[user]}, "signed": false, "canceled": false, "signedBy.user": {$ne:user} }).exec(function(err, count) {
       if (err) return res.json({success: false, error: err});
       toSignNum = count;
       console.log("toSignNum:"+toSignNum);
 
-      Document.countDocuments({"signed": false})
+      Document.countDocuments({"signed": false, "canceled": false})
               .or([ {$and:[{"users": {$in:[user]}}, {"signedBy.user": user}]},  {$and:[{"user": user}, {"users": {$ne:user}}]} ])
               // .and([{"users": {$in:[user]}}, {"signedBy.user": user}])
               // .and([{"user": user}, {"users": {$ne:user}}])

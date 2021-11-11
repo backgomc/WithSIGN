@@ -179,7 +179,7 @@ function Agreement({location}) {
             extra={<Button type='link' style={{marginRight:-5}} size='small' onClick={() => {setTermsModalVisible(true)}}>전문보기</Button>}
           >
             <div
-              style={{overflowY:'scroll', height:'200px', padding:'15px'}}
+              style={{overflowY:'scroll', height:'18vh', padding:'15px'}}
               dangerouslySetInnerHTML={{
                 __html: terms
               }} 
@@ -195,7 +195,7 @@ function Agreement({location}) {
             extra={<Button type='link' style={{marginRight:-5}} size='small' onClick={() => {setPrivacyModalVisible(true)}}>전문보기</Button>}
           >
             <div
-              style={{overflowY:'scroll', height:'200px', padding:'15px'}}
+              style={{overflowY:'scroll', height:'18vh', padding:'15px'}}
               dangerouslySetInnerHTML={{
                 __html: privacy
               }} 
@@ -211,7 +211,7 @@ function Agreement({location}) {
             extra={<Button type='link' style={{marginRight:-5}} size='small' onClick={() => {setPolicyModalVisible(true)}}>전문보기</Button>}
           >
             <div
-              style={{overflowY:'scroll', height:'200px', padding:'15px'}}
+              style={{overflowY:'scroll', height:'18vh', padding:'15px'}}
               dangerouslySetInnerHTML={{
                 __html: policy
               }} 

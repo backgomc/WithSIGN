@@ -15,6 +15,7 @@ import ProCard from '@ant-design/pro-card';
 import 'antd/dist/antd.css';
 import '@ant-design/pro-card/dist/card.css';
 import { DownloadOutlined } from '@ant-design/icons';
+import { STORAGE_DIR } from '../../config/Config';
 
 const ViewDocument = () => {
   const [annotManager, setAnnotatManager] = useState(null);
@@ -123,7 +124,8 @@ const ViewDocument = () => {
           //   {formatMessage({id: 'document.download'})}
           // </Button>
           // AS-IS > TO-BE : 해시값 유지를 위해 서버에 파일을 다운로드 하도록 변경
-          <a href={process.env.REACT_APP_STORAGE_DIR+docRef} download={docTitle+'.pdf'}> 
+          // <a href={process.env.REACT_APP_STORAGE_DIR+docRef} download={docTitle+'.pdf'}> 
+          <a href={STORAGE_DIR+docRef} download={docTitle+'.pdf'}> 
             <Button key="3" type="primary" icon={<DownloadOutlined />}>
               {formatMessage({id: 'document.download'})}
             </Button>
