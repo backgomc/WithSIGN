@@ -243,4 +243,47 @@ router.post('/updateHash', (req, res) => {
     
 })
 
+
+// 파일 삭제
+router.post('/removeDocument', (req, res) => {
+
+    console.log("docId:"+req.body.docId)
+    console.log("user:"+req.body.user)
+  
+    if (!req.body.docId || !req.body.user) {
+        return res.json({ success: false, message: "input value not enough!" })
+    } 
+  
+    const docId = req.body.docId
+    const user = req.body.user
+
+    Document.findOne({ _id: docId }, (err, document) => {
+
+        if (document) {
+          const { docRef } = document;
+
+          const filePath = config.storageDIR+docRef
+          fs.access(filePath, fs.constants.F_OK, (err) => { // A
+            if (err) return console.log('삭제할 수 없는 파일입니다');
+          
+            fs.unlink(filePath, (err) => err ?  
+              console.log(err) : console.log(`${filePath} 를 정상적으로 삭제했습니다`));
+          });
+      
+          // DOCUMENT에 HASH 값 저장
+          Document.deleteOne({ _id: docId }, (err, result) => {
+              if (err) {
+                  res.json({ success: false, message: err });
+              } else {
+                  return res.json({ success: true })
+              }
+          });
+
+        } else {
+            res.json({ success: false, message: 'document not found!' });
+        }
+    })
+    
+})
+
 module.exports = router;

@@ -26,7 +26,7 @@ const SignDocument = () => {
   const [annotPosition, setAnnotPosition] = useState(0);
   const [loading, setLoading] = useState(false);
   const [responsive, setResponsive] = useState(false);
-  const [disableNext, setDisableNext] = useState(false);
+  const [disableNext, setDisableNext] = useState(true);
   const [visiblModal, setVisiblModal] = useState(false);
 
   // const dispatch = useDispatch();
@@ -91,7 +91,12 @@ const SignDocument = () => {
       };
 
       annotManager.on('annotationChanged', (annotations, action, { imported }) => {
-        console.log("annotationChanged called")
+        console.log("annotationChanged called(action):"+ action)
+
+        if (!imported && action === 'add') {  // 서명 및 입력값이 추가 된 경우
+          setDisableNext(false)
+        }
+
         if (imported && (action === 'add' || action === 'modify')) {
           annotations.forEach(function(annot) {
             if (annot instanceof Annotations.WidgetAnnotation) {

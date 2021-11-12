@@ -31,6 +31,7 @@ import Register from './components/Register/Register';
 import Setting from './components/Setting/Setting';
 import MySign from './components/MySign/MySign';
 import Audit from './components/Audit/Audit';
+import ResultPage from './components/ResultPage/ResultPage';
 import AuditCheck from './components/Audit/AuditCheck';
 import { setUser, selectUser } from './app/infoSlice';
 import ProLayout from '@ant-design/pro-layout';
@@ -146,6 +147,7 @@ const App = () => {
         <BoardDetail path="/boardDetail" />
         <Audit path="/audit" />
         <AuditCheck path="/auditCheck" />
+        <ResultPage path="/resultPage" />
       </Router>
   </ProLayout>
 

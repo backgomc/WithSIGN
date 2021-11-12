@@ -1,5 +1,6 @@
 import React, {useState} from 'react';
-import { Tooltip, Tag, Timeline, Button } from 'antd';
+import axios from 'axios';
+import { Tooltip, Tag, Timeline, Button, Popconfirm, Modal } from 'antd';
 import Moment from 'react-moment';
 import { useSelector, useDispatch } from 'react-redux';
 import { selectUser } from '../../app/infoSlice';
@@ -21,14 +22,58 @@ import 'antd/dist/antd.css';
 import { setDocToView } from '../ViewDocument/ViewDocumentSlice';
 import { setDocToSign } from '../SignDocument/SignDocumentSlice';
 import { navigate } from '@reach/router';
+import { withSuccess } from 'antd/lib/modal/confirm';
+
+const { confirm } = Modal;
 
 const DocumentExpander = (props) => {
 
     const dispatch = useDispatch();
     const [responsive, setResponsive] = useState(false);
+    const [loadingCancel, setLoadingCancel] = useState(false);
     const { item } = props
     const user = useSelector(selectUser);
     const { _id } = user;
+
+    const fetchCancel = async (docId) => {
+
+        console.log('fetchCancel called')
+        console.log(docId)
+
+        setLoadingCancel(true);
+        
+        let param = {
+          docId: docId,
+          user: _id
+        }
+    
+        const res = await axios.post('/api/storage/removeDocument', param)
+        setLoadingCancel(false);
+
+        if (res.data.success) {
+            navigate('/resultPage', { state: {status:'success', headerTitle:'요청 취소 결과', title:'요청 취소에 성공하였습니다.'}}); 
+        } else {
+            navigate('/resultPage', { state: {status:'error', headerTitle:'요청 취소 결과', title:'요청 취소에 실패하였습니다.', subTitle:'관리자에게 문의하세요!'}}); 
+        }
+        
+    }
+
+    const cancelDocument = async (docId) => {
+        confirm({
+            title: '서명 요청을 취소하시겠습니까??',
+            icon: <ExclamationCircleOutlined />,
+            content: '해당 문서가 영구 삭제됩니다.',
+            okText: '네',
+            okType: 'danger',
+            cancelText: '아니오',
+            onOk() {
+            fetchCancel(docId);
+            },
+            onCancel() {
+            console.log('Cancel');
+            },
+        });    
+    }
 
     const getSignInfo = (user) => {
         return (
@@ -149,6 +194,7 @@ const DocumentExpander = (props) => {
         }
     }
 
+
     return (
     <div>
       <RcResizeObserver
@@ -157,7 +203,32 @@ const DocumentExpander = (props) => {
             setResponsive(offset.width < 596);
       }}>
         <ProCard
-            title={item.docTitle}
+            // title={item.docTitle}
+            title={
+                DocumentType({uid: _id, document: item}) == DOCUMENT_SIGNED ?
+                <Button
+                onClick={() => {         
+                    navigate(`/audit`, { state: { item: item } } );
+                }}>
+                    진본 확인 증명서
+                </Button> : '', 
+                ((DocumentType({uid: _id, document: item}) == DOCUMENT_SIGNING || DocumentType({uid: _id, document: item}) == DOCUMENT_TOSIGN)  
+                && item.user._id === _id 
+                && item.signedBy.length - item.signedBy.filter(e => e.user === _id).length === 0) ?   
+                // <Popconfirm
+                //     placement="bottomRight"
+                //     title='요청 취소하시겠습니까? (해당 문서가 삭제됩니다.)'
+                //     onConfirm={() => {
+                //         fetchCancel(item._id)
+                //     }}
+                //     okText="네"
+                //     cancelText="아니오"
+                //     okButtonProps={{ loading: loadingCancel }}
+                // >
+                    <Button onClick={e => { cancelDocument(item._id) }}>요청 취소</Button>
+                // </Popconfirm>
+                 : ''
+            }
             extra=""
             bordered
             headerBordered
@@ -197,7 +268,7 @@ const DocumentExpander = (props) => {
             </ProCard>
             
 
-            {DocumentType({uid: _id, document: item}) == DOCUMENT_SIGNED ?
+            {/* {DocumentType({uid: _id, document: item}) == DOCUMENT_SIGNED ?
                 <ProCard title="">
                     <div style={{height:"40px"}}>                 
                         <Button
@@ -208,11 +279,9 @@ const DocumentExpander = (props) => {
                         </Button> 
 
                     </div>
-                    {/* <div style={{height:"40px"}}>
-                        {actionDocument()}
-                    </div> */}
                 </ProCard>
-            : ''}
+            : ''} */}
+
 
         </ProCard>
       </RcResizeObserver>
