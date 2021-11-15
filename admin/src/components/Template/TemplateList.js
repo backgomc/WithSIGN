@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import axiosInterceptor from '../../config/AxiosConfig';
 import { Table, Input, Space, Button, Popconfirm } from 'antd';
 import Highlighter from 'react-highlight-words';
 import { SearchOutlined } from '@ant-design/icons';
-// import { useSelector } from 'react-redux';
-// import { selectUser } from '../../app/infoSlice';
+import { useSelector } from 'react-redux';
+import { selectUser } from '../../app/infoSlice';
 import { navigate } from '@reach/router';
 import Moment from 'react-moment';
 import 'moment/locale/ko';
@@ -15,7 +15,7 @@ import { useIntl } from 'react-intl';
 
 const TemplateList = () => {
 
-  // const user = useSelector(selectUser);
+  const user = useSelector(selectUser);
 
   const [searchText, setSearchText] = useState('');
   const [searchedColumn, setSearchedColumn] = useState('');
@@ -32,20 +32,19 @@ const TemplateList = () => {
   // const searchInput = useRef<Input>(null);
 
   const handleTableChange = (pagination, filters, sorter) => {
-    console.log('handleTableChange called')
-    console.log(filters)
+    console.log('handleTableChange called');
     fetch({
       sortField: sorter.field,
       sortOrder: sorter.order,
       pagination,
-      ...filters,
+      ...filters
     });
   };
 
   const fetch = (params = {}) => {
     setLoading(true);
 
-    axios.post('/api/admin/templates/list', params).then(response => {
+    axiosInterceptor.post('/api/admin/templates/list', params).then(response => {
 
       console.log(response);
       if (response.data.success) {
@@ -57,10 +56,10 @@ const TemplateList = () => {
 
       } else {
           setLoading(false);
-          alert(response.data.error);
+          console.log(response.data.error);
       }
 
-    });
+    }).catch(error => { console.log(error);});
   };
 
   const deleteTemplate = async () => {
@@ -72,7 +71,7 @@ const TemplateList = () => {
     }
 
     console.log('param:' + param);
-    const res = await axios.post('/api/admin/templates/delete', param);
+    const res = await axiosInterceptor.post('/api/admin/templates/delete', param);
     if (res.data.success) {
       // alert('삭제 되었습니다.');
     } else {
@@ -83,7 +82,7 @@ const TemplateList = () => {
     setHasSelected(false);
 
     fetch({
-      pagination,
+      pagination
     });
 
   }
@@ -156,8 +155,8 @@ const TemplateList = () => {
 
   const handleSearch = (selectedKeys, confirm, dataIndex) => {
     confirm();
-    setSearchedColumn(selectedKeys[0])
-    setSearchedColumn(dataIndex)
+    setSearchedColumn(selectedKeys[0]);
+    setSearchedColumn(dataIndex);
   }
 
   const handleReset = clearFilters => {
@@ -268,9 +267,9 @@ const TemplateList = () => {
           </span>
           ],
         }}
-        content={'회사에서 공통으로 사용하는 문서를 등록할 수 있습니다.'}
-        footer={[
-        ]}
+        // content={'회사에서 공통으로 사용하는 문서를 등록할 수 있습니다.'}
+        // footer={[
+        // ]}
     >
       <br></br>
       <Table

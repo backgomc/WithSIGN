@@ -1,95 +1,48 @@
-import React, { useState, useRef } from 'react'
+import React from 'react'
 import axios from 'axios';
 import { useDispatch } from 'react-redux';
-import { navigate, Link } from '@reach/router';
-// import { loginUser } from '../../api/api'
+import { navigate } from '@reach/router';
 import { setUser } from '../../app/infoSlice';
-
-import { Checkbox, Button, Form, Input } from 'antd';
-import Icon, { UserOutlined, EyeOutlined, LockOutlined } from '@ant-design/icons';
+import { Button, Form, Input } from 'antd';
+import { UserOutlined, LockOutlined } from '@ant-design/icons';
 import logo from '../../assets/images/logo.svg';
 import styles from './login.module.css';
-// import './login.css';
-// const FormItem = Form.Item;
-
 import { useIntl } from "react-intl";
 
-
-function Login(props) {
+function Login() {
     const dispatch = useDispatch();
     const { formatMessage } = useIntl();
 
-    // const inputRef = useRef(null);
-    // const [Email, setEmail] = useState("")
-    // const [Password, setPassword] = useState("")
-
-    // const emitEmptyEmail = () => {
-    //     inputRef.current.focus();
-    //     setEmail('');
-    //   };
-    
-    // const onEmailHandler = (event) => {
-    //     setEmail(event.currentTarget.value)
-    // }
-
-    // const onPasswordHandler = (event) => {
-    //     setPassword(event.currentTarget.value)
-    // }
-
     const onFinish = (values) => {
-        console.log(values)
+        console.log(values);
 
         let body = {
-            email: values.email,
-            password: values.password
+          SABUN: values.SABUN,
+          password: values.password
         }
 
-        axios.post('/api/users/login', body).then(response => {
-
-            console.log(response)
-            if (response.data.success) {
-                navigate('/');
-                dispatch(setUser(response.data.user));
-            } else {
-                alert('Login Failed')
-            }
-          });
+        axios.post('/api/admin/login', body).then(response => {
+          if (response.data.success) {
+              dispatch(setUser(response.data.user));
+              localStorage.setItem('__rToken__', response.data.user.__rToken__);
+              navigate('/');
+          } else {
+              alert('Login Failed');
+          }
+        });
     }
 
-    // const gotoLogin = (event) => {
-    //     event.preventDefault();
-
-    //     let body = {
-    //         email: Email,
-    //         password: Password
-    //     }
-
-    //     axios.post('/api/users/login', body).then(response => {
-
-    //         console.log(response)
-    //         if (response.data.success) {
-    //             navigate('/');
-    //             dispatch(setUser(response.data.user));
-    //         } else {
-    //             alert('Login Failed')
-    //         }
-    //       });
-
-    // }
-
-    // const userEmailSuffix = Email ? <Icon type="close-circle" onClick={emitEmptyEmail} /> : null;
-
-
     return (
-        <>
+      <>
         <div className={styles.header}>
           <div className={styles['header-wrapper']}>
             <header>
               <a href="/">
                 <img src={logo} alt="ant design mini" />
                 <h2>{formatMessage({id: 'AppName'})}</h2>
+                <h5 style={{'color':'cyan'}}>{formatMessage({id: 'AppSubName'})}</h5>
               </a>
-              <div className={styles['nav-wrapper']}>
+              {/* <div className={styles['nav-wrapper']}>
                 <nav>
                   <ul>
                     <li>
@@ -97,7 +50,7 @@ function Login(props) {
                     </li>
                   </ul>
                 </nav>
-              </div>
+              </div> */}
             </header>
           </div>
         </div>
@@ -112,15 +65,15 @@ function Login(props) {
             >
             <h3>{formatMessage({id: 'Login'})}</h3>
             <Form.Item
-                name="email"
+                name="SABUN"
                 rules={[
                 {
                     required: true,
-                    message: formatMessage({id: 'input.email'}),
+                    message: formatMessage({id: 'input.SABUN'}),
                 },
                 ]}
             >
-                <Input prefix={<UserOutlined className="site-form-item-icon" />} placeholder="Email" />
+                <Input prefix={<UserOutlined className="site-form-item-icon" />} size="large" placeholder="사번" />
             </Form.Item>
             <Form.Item
                 name="password"
@@ -135,29 +88,28 @@ function Login(props) {
                 prefix={<LockOutlined className="site-form-item-icon" />}
                 type="password"
                 placeholder="Password"
+                size="large"
                 />
                 {/* <Input.Password  /> */}
             </Form.Item>
-            <Form.Item>
+            {/* <Form.Item>
                 <Form.Item name="remember" valuePropName="checked" noStyle>
                 <Checkbox>{formatMessage({id: 'RememberMe'})}</Checkbox>
                 </Form.Item>
-        
                 <a className="login-form-forgot" href="">
                   {formatMessage({id: 'ForgotPassword'})}
                 </a>
-            </Form.Item>
-        
+            </Form.Item> */}
             <Form.Item>
-                <Button type="primary" htmlType="submit" className={styles['login-form-button']}>
+                <Button type="primary" htmlType="submit" className={styles['login-form-button']} size="large">
                 {formatMessage({id: 'Login'})}
                 </Button>
-                {formatMessage({id: 'Or'})} <Link to="/register">{formatMessage({id: 'Regist'})}</Link>
+                {/* {formatMessage({id: 'Or'})} <Link to="/register">{formatMessage({id: 'Regist'})}</Link> */}
             </Form.Item>
             </Form>
         </div>
         <div className={styles['footer']}>
-          NH SIGN © NH INFORMATION SYSTEM 2021
+          WITH SIGN © NH INFORMATION SYSTEM 2021
         </div>
       </>
     )

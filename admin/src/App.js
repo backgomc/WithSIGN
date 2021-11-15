@@ -4,20 +4,23 @@ import { Router, navigate } from '@reach/router';
 import axios from 'axios';
 import { setUser, selectUser } from './app/infoSlice';
 import ProLayout from '@ant-design/pro-layout';
+import { useIntl } from "react-intl";
 import Menus from './config/Menus';
 import Home from './components/Home/Home';
 import UserList from './components/User/UserList';
+import BoardList from './components/Board/BoardList';
+import SystemManage from './components/System/SystemManage';
 import DocumentList from './components/Document/DocumentList';
+import ViewDocument from './components/Document/ViewDocument';
 import TemplateList from './components/Template/TemplateList';
 import UploadTemplate from './components/Template/UploadTemplate';
-import ViewDocument from './components/Document/ViewDocument';
 import Footer from './components/Footer/Footer';
-import { view as Header } from './components/Header';
+import Header from './components/Header/Header';
 import Login from './components/Login/Login';
-import Register from './components/Register/Register';
 import '@ant-design/pro-layout/dist/layout.css';
 import 'antd/dist/antd.css';
 import './App.css';
+
 
 const App = () => {
   
@@ -27,35 +30,47 @@ const App = () => {
   
   const user = useSelector(selectUser);
   const dispatch = useDispatch();
+  const { formatMessage } = useIntl();
 
-    const [pathname, setPathname] = useState('/');  // 시작 path
+  const [pathname, setPathname] = useState('/');  // 시작 path
   
-    useEffect(() => {
-
-    axios.get('/api/users/auth').then(response => {
-      if (response.data.isAuth) {
-        dispatch(setUser(response.data));
+  useEffect(() => {
+    // 1.인증 정보 조회
+    axios.get('/api/admin/auth').then(response => {
+      if (response.data.success) {
+        dispatch(setUser(response.data.user));
+        navigate('/');
       } else {
+        // 2. 토큰 만료 갱신
+        if ( response.data.message.indexOf('expired') > 0 ) {
+          let config = {
+            headers: {
+              'refresh-Token': localStorage.getItem('__rToken__')
+            }
+          }
+          axios.post('/api/admin/refresh', null, config).then(response => {
+            if ( response.data.success ) {
+              dispatch(setUser(response.data.user));
+              navigate('/');
+            }
+          });
+        }
+        // 3. 통합 로그인
         if (token) {
           let body = {
             token: token
           }
-          axios.post('/api/users/sso', body).then(response => {
+          axios.post('/api/admin/sso', body).then(response => {
             console.log(response);
             if ( response.data.isAuth ) {
               dispatch(setUser(response.data));
               navigate('/');
-            } else {
-              dispatch(setUser(null));
             }
           });
-        } else {
-          dispatch(setUser(null));  
         }
         dispatch(setUser(null));
       }
     });
-
   }, []);
 
   return user ? (
@@ -66,72 +81,65 @@ const App = () => {
       height: '100vh',
     }}
     >
-
-    <ProLayout
-      title="NHSign"
-      // logo="https://gw.alipayobjects.com/mdn/rms_b5fcc5/afts/img/A*1NHAQYduQiQAAAAAAAAAAABkARQnAQ" 로고 이미지 
-      menuHeaderRender={(logo, title) => (
-        <div
-          id="customize_menu_header"
-          onClick={() => {
-            navigate('/')
-          }}
-        >
-          {logo}
-          {title}
-        </div>
-      )}
-      {...Menus()}
-      location={{
-        pathname,
-      }}
-      style={{
-        height: 500,
-      }}
-      menuItemRender={(item, dom) => (
-        <a
-          onClick={() => {
-            setPathname(item.path)
-            navigate(item.path)
-          }}
-        >
-          {dom}
-        </a>
-      )}
-      rightContentRender={() => (
-        <div>
+      <ProLayout
+        title="With Sign"
+        // logo="https://gw.alipayobjects.com/mdn/rms_b5fcc5/afts/img/A*1NHAQYduQiQAAAAAAAAAAABkARQnAQ" 로고 이미지 
+        menuHeaderRender={(logo, title) => (
+          <div
+            id="customize_menu_header"
+            onClick={() => {
+              navigate('/')
+            }}
+          >
+            {logo}
+            {title}
+            <h5 style={{'color':'cyan', 'display':'inline-block'}}>&nbsp;{formatMessage({id: 'AppSubName'})}</h5>
+          </div>
+        )}
+        {...Menus()}
+        location={{
+          pathname,
+        }}
+        fixSiderbar={true}
+        menuItemRender={(item, dom) => (
+          // eslint-disable-next-line jsx-a11y/anchor-is-valid
+          <a
+            onClick={() => {
+              setPathname(item.path)
+              navigate(item.path)
+            }}
+          >
+            {dom}
+          </a>
+        )}
+        rightContentRender={() => (
           <Header />
-        </div>
-      )}
-      footerRender={() => (
-        <div>
+        )}
+        footerRender={() => (
           <Footer />
-        </div>
-      )}     
-  >
-    <Router>
-        <Home path="/" />
-        <UserList path="/userList" />
-        <DocumentList path="/documentList" />
-        <TemplateList path="/templateList" />
-        <UploadTemplate path="/uploadTemplate" />
-        <ViewDocument path="/viewDocument" />
-      </Router>
-  </ProLayout>
-
-  </div>
-
+        )}
+      >
+        <Router>
+          <Home path="/" />
+          <UserList path="/userList" />
+          <BoardList path="/boardList" />
+          <SystemManage path="/systemManage" />
+          <DocumentList path="/documentList" />
+          <ViewDocument path="/viewDocument" />
+          <TemplateList path="/templateList" />
+          <UploadTemplate path="/uploadTemplate" />
+        </Router>
+      </ProLayout>
+    </div>
   ) : (
     <div>
       {/* <Header /> */}
       <Router>
         <Login path="/" />
-        <Register path="/register" />
+        {/* <Register path="/register" /> */}
       </Router>
     </div>
   );
-
-
 }
 
 export default App;

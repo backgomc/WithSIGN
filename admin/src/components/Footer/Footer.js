@@ -1,12 +1,12 @@
 import React from 'react';
-import styles from './footer.module.css';
+// import styles from  './footer.module.css';
 
 const Footer = () => {
 
     return (
-      <div className={styles['footer']}>
-            NH SIGN © NH INFORMATION SYSTEM 2021
-      </div>
+      <footer class="ant-layout-footer">
+        <div class="ant-pro-global-footer-copyright" style={{"text-align": "center"}}>With SIGN © NH INFORMATION SYSTEM 2021</div>
+      </footer>
     );
 
 };
