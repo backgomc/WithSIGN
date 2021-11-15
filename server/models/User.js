@@ -42,6 +42,9 @@ const userSchema = mongoose.Schema({
     tokenExp: {
         type: Number
     },
+    adminJWT: {
+        type: String
+    },
     DEPART_CODE: {
         type: String
     },
