@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { STORAGE_DIR } from '../../config/Config';
 
 export const mergeAnnotations = async (docId, docRef, xfdf, isLast) => {
 
@@ -8,7 +9,7 @@ export const mergeAnnotations = async (docId, docRef, xfdf, isLast) => {
 
   // const storageRef = storage.ref();
   // const URL = await storageRef.child(docRef).getDownloadURL();
-  const URL = "/storage/" + docRef;
+  const URL = STORAGE_DIR + docRef;
   
   const main = async () => {
     const doc = await PDFNet.PDFDoc.createFromURL(URL);

@@ -56,6 +56,9 @@ const documentSchema = mongoose.Schema({
     },
     signedTime: {
         type: Date
+    },
+    thumbnail: {
+        type: String
     }
 })
 

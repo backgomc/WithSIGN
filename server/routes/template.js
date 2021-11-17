@@ -30,22 +30,19 @@ router.post('/templates', (req, res) => {
       return res.json({ success: false, message: "input value not enough!" })
   } 
 
+  var andParam = {};
   var orParam = [{"user": uid}]
   const type = req.body.type 
   if (type && type === 'C') {
     orParam = [{"type": "C"}]
-  } else {
-    orParam = [{"type": ""}]
-  }
+  } 
 
-  // 단어검색 
-  var searchStr;
-
+  console.log('req.body.docTitle:'+req.body.docTitle)
   if (req.body.docTitle) {
-    var regex = new RegExp(req.body.docTitle[0], "i")
-    searchStr = { $and: [{'docTitle': regex}] };
+    // TODO: 한글검색이 잘 안되는 문제
+    andParam['docTitle'] = { $regex: '.*' + req.body.docTitle[0] + '.*', $options: 'i' }
   } else {
-      searchStr = {};
+    andParam = {};
   }
 
   const current = req.body.pagination.current
@@ -70,12 +67,12 @@ router.post('/templates', (req, res) => {
 
   var recordsTotal = 0;
 
-  Template.countDocuments(searchStr).or(orParam).exec(function(err, count) {
+  Template.countDocuments(andParam).or(orParam).exec(function(err, count) {
     recordsTotal = count;
     console.log("recordsTotal:"+recordsTotal)
     
     Template
-    .find(searchStr).or(orParam)
+    .find(andParam).or(orParam)
     .sort({[order] : dir})    //asc:오름차순 desc:내림차순
     .skip(Number(start))
     .limit(Number(pageSize))

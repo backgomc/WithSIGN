@@ -58,7 +58,7 @@ const ViewDocument = () => {
       // const storageRef = storage.ref();
       // const URL = await storageRef.child(docRef).getDownloadURL();
       // console.log(URL);
-      const URL = "/storage/" + docRef;
+      const URL = STORAGE_DIR + docRef;
       console.log("URL:"+URL);      
       instance.docViewer.loadDocument(URL);
 

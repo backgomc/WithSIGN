@@ -6,7 +6,7 @@ const Header = () =>  {
     return (<Box display="flex" direction="row" paddingY={2} color={'lightGray'}>
     <Column span={10}>
       <Box padding={3}>
-        <Heading size="lg">NH Sign</Heading>
+        <Heading size="lg">With Sign</Heading>
       </Box>
     </Column>
     </Box>);

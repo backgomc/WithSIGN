@@ -170,7 +170,7 @@ function Agreement({location}) {
     const agreementBody = (
       // <div className={styles.contentAgree}>
       <div>
-        {/* <Card title={<Checkbox checked={totalChecked} onChange={onChangeTotal}>NHSign 이용약관, 개인정보 수집 및 이용에 모두 동의합니다.</Checkbox>}> */}
+        {/* <Card title={<Checkbox checked={totalChecked} onChange={onChangeTotal}>WithSign 이용약관, 개인정보 수집 및 이용에 모두 동의합니다.</Checkbox>}> */}
 
           <Card
             type="inner"
@@ -246,7 +246,7 @@ function Agreement({location}) {
             </Button>
             ],
           }}
-          content={<Checkbox checked={totalChecked} onChange={onChangeTotal} style={{marginTop:15}}><b>NHSign 이용약관, 개인정보 수집 및 이용에 모두 동의합니다.</b></Checkbox>}
+          content={<Checkbox checked={totalChecked} onChange={onChangeTotal} style={{marginTop:15}}><b>WithSign 이용약관, 개인정보 수집 및 이용에 모두 동의합니다.</b></Checkbox>}
           footer={[
           ]}
         >
@@ -259,7 +259,7 @@ function Agreement({location}) {
         </div>
 
         <div className={styles['footer']}>
-          NH SIGN © NH INFORMATION SYSTEM 2021
+          WITH SIGN © NH INFORMATION SYSTEM 2021
         </div>
       </>
     )

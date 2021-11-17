@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import axios from 'axios';
 import { navigate } from '@reach/router';
@@ -12,22 +12,69 @@ import ProForm, { ProFormUploadDragger, ProFormText } from '@ant-design/pro-form
 import '@ant-design/pro-card/dist/card.css';
 import 'antd/dist/antd.css';
 import '@ant-design/pro-form/dist/form.css';
+import WebViewer from '@pdftron/webviewer';
 
 const UploadTemplate = () => {
 
   const { formatMessage } = useIntl();
   const [form] = Form.useForm();
 
+  const [instance, setInstance] = useState(null)
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [disableNext, setDisableNext] = useState(true);
 
+  const [thumbnail, setThumbnail] = useState(null);
+
   const user = useSelector(selectUser);
   const { email, _id } = user;
+  const viewer = useRef(null);
 
   useEffect(() => {
+
+    // FILE Thumbnail 추출 
+    WebViewer(
+      {
+        path: 'webviewer',
+        disabledElements: [
+          'ribbons',
+          'toggleNotesButton',
+          'searchButton',
+          'menuButton',
+        ],
+      },
+      viewer.current,
+    )
+    .then(instance => {
+      setInstance(instance)
+
+      const { docViewer } = instance;
+      
+      docViewer.on('documentLoaded', () => {
+        console.log('documentLoaded called');
+        const doc = docViewer.getDocument();
+        const pageIdx = 1;
+
+        doc.loadThumbnailAsync(pageIdx, (thumbnail) => {
+          // thumbnail is a HTMLCanvasElement or HTMLImageElement
+          console.log("loadThumbnailAsync called")
+          console.log('thumbnail:'+thumbnail.toDataURL());
+
+          setThumbnail(thumbnail.toDataURL())
+        });
+
+      });
+    });
+
   }, []);
 
+  useEffect(() => {
+
+    if(instance && file) {
+      instance.docViewer.loadDocument(file);
+    }
+
+  }, [file]);
 
   const onFinish = async (values) => {
     console.log(values)
@@ -47,7 +94,8 @@ const UploadTemplate = () => {
       user: _id,
       docTitle: form.getFieldValue("documentTitle"),
       email: email,
-      docRef: referenceString
+      docRef: referenceString,
+      thumbnail: thumbnail
     }
     console.log(body)
     const res2 = await axios.post('/api/template/addTemplate', body)
@@ -151,6 +199,7 @@ const UploadTemplate = () => {
                         documentTitle: "",
                       })
                       setDisableNext(true)
+                      setThumbnail(null)
                     }
                   },
                   beforeUpload: file => {
@@ -164,6 +213,41 @@ const UploadTemplate = () => {
                     form.setFieldsValue({
                       documentTitle: file.name.replace(/\.[^/.]+$/, ""),
                     })
+
+                    // FILE Thumbnail 추출 
+                    // WebViewer(
+                    //   {
+                    //     path: 'webviewer',
+                    //     disabledElements: [
+                    //       'ribbons',
+                    //       'toggleNotesButton',
+                    //       'searchButton',
+                    //       'menuButton',
+                    //     ],
+                    //   },
+                    //   viewer.current,
+                    // )
+                    // .then(instance => {
+                    //   const { docViewer } = instance;
+                
+                    //   instance.docViewer.loadDocument(file);
+                      
+                    //   docViewer.on('documentLoaded', () => {
+                    //     console.log('documentLoaded called');
+                    //     const doc = docViewer.getDocument();
+                    //     const pageIdx = 1;
+                
+                
+                    //     doc.loadThumbnailAsync(pageIdx, (thumbnail) => {
+                    //       // thumbnail is a HTMLCanvasElement or HTMLImageElement
+                    //       console.log("loadThumbnailAsync called")
+                    //       console.log('thumbnail:'+thumbnail.toDataURL());
+                
+                    //       setThumbnail(thumbnail.toDataURL())
+                    //     });
+                
+                    //   });
+                    // });
                         
                     return false;
                   }
@@ -182,10 +266,14 @@ const UploadTemplate = () => {
 
             </ProForm>
 
+            <div><img src={thumbnail}></img></div>
+
           </ProCard.TabPane>
         </ProCard>
       </ProCard>
     </PageContainer>
+    
+    <div className="webviewer" ref={viewer} style={{display:'none'}}></div>
   </div>
   )
 

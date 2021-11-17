@@ -7,8 +7,6 @@ const { Bulk } = require("../models/Bulk");
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
-
-
 // const upload = multer({ dest: 'storage/docToSign/' })
 
 const storage = multer.diskStorage({

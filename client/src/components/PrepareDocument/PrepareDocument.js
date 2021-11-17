@@ -28,6 +28,7 @@ import ProCard from '@ant-design/pro-card';
 import 'antd/dist/antd.css';
 import '@ant-design/pro-card/dist/card.css';
 import logo from '../../assets/images/logo.svg';
+import { STORAGE_DIR } from '../../config/Config';
 
 const { Dragger } = Upload;
 
@@ -37,6 +38,7 @@ const PrepareDocument = () => {
   const [fileName, setFileName] = useState(null);
   const [loading, setLoading] = useState(false);
   const [responsive, setResponsive] = useState(false);
+  const [thumbnail, setThumbnail] = useState(null);
   // const [inputValue, _setInputValue] = useState([new Map()]);
 
   // event 안에서는 최신 state 값을 못 불러와서 ref 사용
@@ -174,11 +176,26 @@ const PrepareDocument = () => {
 
       if (documentType === 'TEMPLATE') {
         // instance.loadDocument("http://localhost:5000/storage/template/60f4fb1e580054126cf7eba51627367952105.pdf")
-        instance.loadDocument("/storage/"+template.docRef)
+        instance.loadDocument(STORAGE_DIR+template.docRef)
       } else if(documentType === 'PC') {
         instance.loadDocument(documentFile)
       }
 
+
+      docViewer.on('documentLoaded', () => {
+        console.log('documentLoaded called');
+        const doc = docViewer.getDocument();
+        const pageIdx = 1;
+
+        doc.loadThumbnailAsync(pageIdx, (thumbnail) => {
+          // thumbnail is a HTMLCanvasElement or HTMLImageElement
+          console.log("loadThumbnailAsync called")
+          // console.log('thumbnail:'+thumbnail.toDataURL());
+
+          setThumbnail(thumbnail.toDataURL())
+        });
+
+      });
 
       const annotManager = docViewer.getAnnotationManager();
 
@@ -567,7 +584,8 @@ const PrepareDocument = () => {
         xfdf: xfdf, 
         signedBy: signedBy,
         signed: signed,
-        signedTime: signedTime
+        signedTime: signedTime,
+        thumbnail: thumbnail
       }
       console.log("일반 전송")
       const res2 = await axios.post('/api/document/addDocumentToSign', body)
@@ -592,7 +610,8 @@ const PrepareDocument = () => {
           xfdf: xfdf, 
           signedBy: signedBy,
           signed: signed,
-          signedTime: signedTime
+          signedTime: signedTime,
+          thumbnail: thumbnail
         }
         const res = await axios.post('/api/document/addDocumentToSign', body)
         if (res.data.success) {

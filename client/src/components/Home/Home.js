@@ -11,7 +11,7 @@ import FAQCard from '../Board/FAQCard';
 import ProCard, { StatisticCard, StatisticProps } from '@ant-design/pro-card';
 import RcResizeObserver from 'rc-resize-observer';
 import { PageContainer } from '@ant-design/pro-layout';
-import { Badge, Button, Card, Empty, List, Space, Statistic, Avatar, Row, Col, Progress } from 'antd';
+import { Badge, Button, Card, Empty, List, Space, Statistic, Avatar, Row, Col, Progress, Tag } from 'antd';
 import 'antd/dist/antd.css';
 import '@ant-design/pro-card/dist/card.css';
 import {
@@ -733,6 +733,87 @@ const Home = () => {
     </Card>
   )
 
+  const contentToSignThumbnail = (
+    <Card
+    style={{ marginBottom: 0, width:'100%'}}
+    // title={<div>서명 필요 문서 {renderBadge(toSignNum, true)}</div>}
+    bordered={false}
+    // extra={<Link to="/documentList" state={{ status: '서명 필요' }}>더보기</Link>}
+    loading={loadingToSign}
+    bodyStyle={{ padding: 0 }}
+  >
+    {documentsToSign.length == 0 ? <div style={{padding: 50}}><Empty image={Empty.PRESENTED_IMAGE_SIMPLE} /></div> :
+      
+      <List
+      rowKey="id"
+      loading={loadingToSign}
+      grid={{ gutter: 24, lg: 3, md: 2, sm: 1, xs: 1 }}
+      dataSource={documentsToSign}
+      renderItem={item => (
+        <List.Item key={item._id}>
+          
+          <Link to="/signDocument" onClick={() => {
+            const docId = item._id;
+            const docRef = item.docRef;
+            const docType = item.docType;
+           dispatch(setDocToSign({ docRef, docId, docType }));
+          }}>
+            <ProCard 
+              hoverable
+              bordered
+              title={<div style={{ wordWrap: 'break-word', wordBreak: 'break-word', width: '200px' }}>{item.docTitle}</div>}
+              // tooltip={moment(item.requestedTime).fromNow() + ' ' + item.user.name + ' ' + item.user.JOB_TITLE + ' ' + '생성'}
+              // extra={moment(item.requestedTime).fromNow()}
+              // subTitle={<Tag color="#5BD8A6">private</Tag>}
+              // colSpan="200px" 
+              layout="center" 
+              style={{ minWidth: "200px", height: "auto" }}
+              actions={[
+                <div>{item.user.image ? <Avatar src={item.user.image} /> : <Avatar size={20} icon={<UserOutlined />} />} &nbsp; {item.user.name + ' ' + item.user.JOB_TITLE}</div>,
+                <div>{moment(item.requestedTime).fromNow()}</div>,
+                // <Button type="text" icon={<FormOutlined />} onClick={e => { signTemplate(item) }}>서명요청</Button>,
+                // <Button type="text" icon={<FilePdfOutlined />} onClick={e => { navigate('/previewPDF', {state: {docRef:item.docRef, docTitle:item.docTitle}}) }}>파일보기</Button>,
+                // <Button type="text" danger icon={<DeleteOutlined />} onClick={e => { deleteTemplateSingle(item._id) }}>삭제</Button>,
+              ]}>
+                <div><img src={item.thumbnail} style={{ maxWidth:'100%', height:'auto'}} /></div>
+            </ProCard>
+          </Link>
+        </List.Item>
+      )}
+      />
+
+      // documentsToSign.map(item => (
+      //   <Card.Grid style={{width:'50%'}} key={item._id}>
+      //     <Card bodyStyle={{ padding: 0 }} bordered={false}>
+      //       <Link to="/signDocument" onClick={() => {
+      //             const docId = item._id;
+      //             const docRef = item.docRef;
+      //             const docType = item.docType;
+      //             dispatch(setDocToSign({ docRef, docId, docType }));
+      //       }}>
+      //         <Card.Meta
+      //           // title={}
+      //           description={
+      //             <div>
+      //               <p><FileOutlined />&nbsp;&nbsp;<font color='black'>{item.docTitle}</font></p>
+      //               {item.user.image ? <Avatar src={item.user.image} /> : <Avatar size={20} icon={<UserOutlined />} />} &nbsp;
+      //               {item.user.JOB_TITLE ? item.user.name + ' '+ item.user.JOB_TITLE : item.user.name}
+      //               <p>
+      //                 <span style={{color:'grey', flex:'0 0 auto', float:'right'}}>
+      //                   {moment(item.requestedTime).fromNow()} ss
+      //                 </span>
+      //               </p>
+      //             </div>
+      //           }
+      //         />
+      //       </Link>
+      //       </Card> 
+      //   </Card.Grid>
+      // ))
+    }
+    </Card>
+  )
+
   const contentCanceled = (
     <ProCard
       colSpan={{ xs: 24, sm: 12, md: 12, lg: 12, xl: 12 }}
@@ -810,7 +891,7 @@ const Home = () => {
     if (key === '1') {
       return contentTotal
     } else if (key === '2') {
-      return contentToSign     
+      return contentToSignThumbnail     
     } else if (key === '3') {
         return contentSigning     
     } else if (key === '4') {

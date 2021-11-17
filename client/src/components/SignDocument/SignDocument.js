@@ -17,6 +17,7 @@ import ProCard from '@ant-design/pro-card';
 import 'antd/dist/antd.css';
 import '@ant-design/pro-card/dist/card.css';
 import { ExclamationCircleOutlined } from '@ant-design/icons';
+import { STORAGE_DIR } from '../../config/Config';
 
 const { confirm } = Modal;
 const { TextArea } = Input;
@@ -73,7 +74,7 @@ const SignDocument = () => {
       // const storageRef = storage.ref();
       // const URL = await storageRef.child(docRef).getDownloadURL();
       
-      const URL = "/storage/" + docRef;
+      const URL = STORAGE_DIR + docRef;
       docViewer.loadDocument(URL);
 
       const normalStyles = (widget) => {

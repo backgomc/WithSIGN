@@ -20,7 +20,10 @@ const templateSchema = mongoose.Schema({
     },
     updatedTime: {
         type: Date
-    }
+    },
+    thumbnail: {
+        type: String
+    },
 })
 
 const Template = mongoose.model('Template', templateSchema)

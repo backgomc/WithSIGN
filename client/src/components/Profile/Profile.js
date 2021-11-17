@@ -27,7 +27,7 @@ const ProfilePage = () => {
     <Box display="flex" direction="row" paddingY={2} color={'lightGray'}>
       <Column span={9}>
         <Box padding={3}>
-          <Link to="/" className='profileLink'><Heading size="lg">NH Sign</Heading></Link>
+          <Link to="/" className='profileLink'><Heading size="lg">With Sign</Heading></Link>
         </Box>
       </Column>
       <Column span={3}>

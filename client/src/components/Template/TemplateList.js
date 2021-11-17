@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
-import { Table, Input, Space, Button, Popconfirm } from "antd";
+import { Modal, Table, Input, Space, Button, Popconfirm, Tag, Progress, List, Pagination } from "antd";
 import Highlighter from 'react-highlight-words';
-import { SearchOutlined } from '@ant-design/icons';
+import { SearchOutlined, DeleteOutlined, FileOutlined, DownloadOutlined, EditOutlined, FormOutlined, FilePdfOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 import { useSelector, useDispatch } from 'react-redux';
 import { selectUser } from '../../app/infoSlice';
 import { navigate } from '@reach/router';
@@ -13,13 +13,23 @@ import moment from 'moment';
 import 'moment/locale/ko';
 // import { DocumentType, DocumentTypeText, DOCUMENT_SIGNED, DOCUMENT_TOSIGN, DOCUMENT_SIGNING, DOCUMENT_CANCELED } from './DocumentType';
 import TemplateExpander from "./TemplateExpander";
-import {
-  FileOutlined
-} from '@ant-design/icons';
+import { setTemplate, setDocumentType, setTemplateTitle, setTemplateType } from '../Assign/AssignSlice';
 import { PageContainer } from '@ant-design/pro-layout';
 import 'antd/dist/antd.css';
 import { useIntl } from "react-intl";
 import banner from '../../assets/images/sub_top4.png'
+
+import ProList from '@ant-design/pro-list';
+import { ProFormRadio } from '@ant-design/pro-form';
+import '@ant-design/pro-list/dist/list.css';
+
+import ProCard from '@ant-design/pro-card';
+import { CheckCard } from '@ant-design/pro-card';
+import '@ant-design/pro-card/dist/card.css';
+import '@ant-design/pro-form/dist/form.css';
+
+const { Search } = Input;
+const { confirm } = Modal;
 
 const TemplateList = () => {
 
@@ -32,8 +42,12 @@ const TemplateList = () => {
   const [data, setData] = useState([]);
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [hasSelected, setHasSelected] = useState(selectedRowKeys.length > 0);
+  const [cardActionProps, setCardActionProps] = useState('actions');
   
   const [pagination, setPagination] = useState({current:1, pageSize:10});
+  const [total, setTotal] = useState();
+  const [pageSize, setPageSize] = useState(10);
+
   const [loading, setLoading] = useState(false);
   // const [expandable, setExpandable] = useState();
   const [visiblePopconfirm, setVisiblePopconfirm] = useState(false);
@@ -64,6 +78,7 @@ const TemplateList = () => {
 
         setPagination({...params.pagination, total:response.data.total});
         setData(templates);
+        setTotal(response.data.total);
         setLoading(false);
 
       } else {
@@ -74,7 +89,7 @@ const TemplateList = () => {
     });
   };
 
-  const deleteTemplate = async () => {
+  const deleteTemplate = async (_id) => {
     
     setVisiblePopconfirm(false);
 
@@ -98,6 +113,40 @@ const TemplateList = () => {
       pagination,
     });
 
+  }
+
+  const deleteTemplateSingle = async (templateId) => {
+    console.log("_id:"+_id)
+    confirm({
+      title: '삭제하시겠습니까?',
+      icon: <ExclamationCircleOutlined />,
+      content: '해당 템플릿이 영구 삭제됩니다.',
+      okText: '네',
+      okType: 'danger',
+      cancelText: '아니오',
+      onOk() {
+        axios.post('/api/template/deleteTemplate', {_ids: [templateId]}).then(response => {
+          if (response.data.success) {
+            fetch({
+              uid: _id,
+              pagination,
+            });
+          }
+        })
+      },
+      onCancel() {
+        console.log('Cancel');
+      },
+    });    
+  }
+
+  const signTemplate = (item) => {
+    console.log(item._id);
+    dispatch(setDocumentType('TEMPLATE'))
+    dispatch(setTemplateType('M'))
+    dispatch(setTemplateTitle(item.docTitle))
+    dispatch(setTemplate(item))
+    navigate('/assign');
   }
 
   const getColumnSearchProps = dataIndex => ({
@@ -179,6 +228,14 @@ const TemplateList = () => {
   
   const columns = [
     {
+      title: '',
+      dataIndex: 'thumbnail',
+      sorter: true,
+      key: 'thumbnail',
+      expandable: true,
+      render: (text,row) => <div><img src={text} /></div>,
+    },
+    {
       title: '템플릿 이름',
       dataIndex: 'docTitle',
       sorter: true,
@@ -233,6 +290,18 @@ const TemplateList = () => {
     // ],
   };
 
+  const onSearch = value => {
+
+    fetch({
+      pagination: {current: 1, pageSize: pageSize},
+      uid: _id,
+      docTitle: value,
+      // docTitle: value.normalize('NFC')
+    });
+
+  }
+
+
   const description = (
     <div>
       <table width='100%' style={{tableLayout:'fixed'}}>
@@ -248,6 +317,92 @@ const TemplateList = () => {
     </div>
   )
 
+  const cardData = data.map((item) => ({
+    title: item.docTitle,
+    subTitle: <Tag color="#5BD8A6">private</Tag>,
+    actions: [<a key="run">서명 요청</a>, <a key="delete">삭제</a>],
+    // avatar: 'https://gw.alipayobjects.com/zos/antfincdn/UCSiy1j6jx/xingzhuang.svg',
+    content: (
+      <div
+        style={{
+          flex: 1,
+        }}
+      >
+        <div
+          style={{
+            width: 100
+          }}
+        >
+          <img src={item.thumbnail} />
+        </div>
+      </div>
+    ),
+  }));
+
+
+
+  const tableMode = (
+    <Table
+      rowKey={ item => { return item._id } }
+      columns={columns}
+      dataSource={data}
+      pagination={pagination}
+      loading={loading}
+      expandedRowRender={row => <TemplateExpander item={row} />}
+      expandRowByClick
+      rowSelection={rowSelection}
+      onRow={record => ({
+        onClick: e => {
+          // console.log(`user clicked on row ${record.t1}!`);
+        }
+      })}
+      onChange={handleTableChange}
+    />
+  )
+
+  const cardMode = (
+    <List
+    rowKey="id"
+    loading={loading}
+    grid={{ gutter: 24, lg: 3, md: 2, sm: 1, xs: 1 }}
+    dataSource={data}
+    // onChange={handlePageChange}
+    pagination={{
+      onChange: page => {
+        console.log('page:'+page);
+        fetch({
+          pagination: {current: page, pageSize: pageSize},
+          uid: _id
+        });
+      },
+      pageSize: pageSize,
+      total: total
+    }}
+    // pagination={pagination}
+    renderItem={item => (
+      <List.Item key={item._id}>
+        <ProCard 
+          hoverable
+          bordered
+          title={<div style={{ wordWrap: 'break-word', wordBreak: 'break-word', width: '200px' }}>{item.docTitle}</div>}
+          // tooltip={moment(item.requestedTime).fromNow() + ' ' + item.user.name + ' ' + item.user.JOB_TITLE + ' ' + '생성'}
+          // extra={moment(item.requestedTime).fromNow()}
+          subTitle={<Tag color="#5BD8A6">private</Tag>}
+          colSpan="300px" 
+          layout="center" 
+          style={{ minWidth: "300px", height: "500px" }}
+          actions={[
+            <Button type="text" icon={<FormOutlined />} onClick={e => { signTemplate(item) }}>서명요청</Button>,
+            <Button type="text" icon={<FilePdfOutlined />} onClick={e => { navigate('/previewPDF', {state: {docRef:item.docRef, docTitle:item.docTitle}}) }}>파일보기</Button>,
+            <Button type="text" danger icon={<DeleteOutlined />} onClick={e => { deleteTemplateSingle(item._id) }}>삭제</Button>,
+          ]}>
+            <div><img src={item.thumbnail} /></div>
+        </ProCard>
+      </List.Item>
+    )}
+    />
+  )
+
   useEffect(() => {
 
     fetch({
@@ -255,18 +410,8 @@ const TemplateList = () => {
       pagination,
     });
 
-    // const data = [];
-    // for (let i = 0; i < 46; i++) {
-    //   data.push({
-    //     key: i,
-    //     templateTitle: `template title ${i}`,
-    //     name: `Edward King ${i}`,
-    //     requestedTime: `2021-07-02T05:46:40.769+00:00`,
-    //   });
-    // }
-    // setData(data);
-
   }, [_id]);
+
 
   return (
     <div>
@@ -287,18 +432,19 @@ const TemplateList = () => {
               // },
             ],
           },
-          extra: [           
+          extra: [  
+          <Search style={{ width: 200 }} placeholder="문서명 검색" onSearch={onSearch} enterButton />,           
           <Button type="primary" onClick={() => {navigate('/uploadTemplate');}}>
             템플릿 등록
           </Button>,
-          <Popconfirm title="삭제하시겠습니까？" okText="네" cancelText="아니오" visible={visiblePopconfirm} onConfirm={deleteTemplate} onCancel={() => {setVisiblePopconfirm(false);}}>
-            <Button type="primary" danger disabled={!hasSelected} onClick={()=>{setVisiblePopconfirm(true);}}>
-              삭제
-            </Button>
-          </Popconfirm>,
-          <span>
-            {hasSelected ? `${selectedRowKeys.length} 개의 문서가 선택됨` : ''}
-          </span>
+          // <Popconfirm title="삭제하시겠습니까？" okText="네" cancelText="아니오" visible={visiblePopconfirm} onConfirm={deleteTemplate} onCancel={() => {setVisiblePopconfirm(false);}}>
+          //   <Button type="primary" danger disabled={!hasSelected} onClick={()=>{setVisiblePopconfirm(true);}}>
+          //     삭제
+          //   </Button>
+          // </Popconfirm>,
+          // <span>
+          //   {hasSelected ? `${selectedRowKeys.length} 개의 문서가 선택됨` : ''}
+          // </span>
           ],
         }}
         content={description}
@@ -306,22 +452,9 @@ const TemplateList = () => {
         ]}
     >
       <br></br>
-      <Table
-        rowKey={ item => { return item._id } }
-        columns={columns}
-        dataSource={data}
-        pagination={pagination}
-        loading={loading}
-        expandedRowRender={row => <TemplateExpander item={row} />}
-        expandRowByClick
-        rowSelection={rowSelection}
-        onRow={record => ({
-          onClick: e => {
-            // console.log(`user clicked on row ${record.t1}!`);
-          }
-        })}
-        onChange={handleTableChange}
-      />
+
+      {/* {tableMode} */}
+      {cardMode}
 
     </PageContainer>
     </div>

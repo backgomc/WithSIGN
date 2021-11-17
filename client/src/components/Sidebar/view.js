@@ -40,7 +40,7 @@ const Sidebar = ({collapsed}) => {
       <div className={styles.logo}>
         <a href="/">
           <img src={logo} alt="logo" />
-          <h1>NH Sign</h1>
+          <h1>With Sign</h1>
         </a>
       </div>
       {/* <div className={styles.logo}>

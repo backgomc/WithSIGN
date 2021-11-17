@@ -191,7 +191,7 @@ function Register(props) {
             </Form>
         </div>
         <div className={styles['footer']}>
-          NH SIGN © NH INFORMATION SYSTEM 2021
+          WITH SIGN © NH INFORMATION SYSTEM 2021
         </div>
       </>
     )

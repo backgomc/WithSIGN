@@ -12,6 +12,7 @@ import SignList from './components/Lists/SignList';
 import SignedList from './components/Lists/SignedList';
 import DocumentList from './components/Lists/DocumentList';
 import TemplateList from './components/Template/TemplateList';
+import PreviewPDF from './components/Template/PreviewPDF';
 import UploadTemplate from './components/Template/UploadTemplate';
 import BulkList from './components/Bulk/BulkList';
 import BulkDetail from './components/Bulk/BulkDetail';
@@ -21,7 +22,7 @@ import Sign from './components/Sign';
 import View from './components/View';
 import Welcome from './components/Welcome';
 import Home from './components/Home/Home';
-import Footer from './components/Footer/Footer';
+// import Footer from './components/Footer/Footer';
 import Test from './components/Test/Test';
 import Test2 from './components/Test/Test2';
 import Login from './components/Login/Login';
@@ -31,10 +32,12 @@ import Register from './components/Register/Register';
 import Setting from './components/Setting/Setting';
 import MySign from './components/MySign/MySign';
 import Audit from './components/Audit/Audit';
+import Terms from './components/Login/Terms';
+import Policy from './components/Login/Policy';
 import ResultPage from './components/ResultPage/ResultPage';
 import AuditCheck from './components/Audit/AuditCheck';
 import { setUser, selectUser } from './app/infoSlice';
-import ProLayout from '@ant-design/pro-layout';
+import ProLayout, { DefaultFooter } from '@ant-design/pro-layout';
 import Menus from './config/Menus';
 import '@ant-design/pro-layout/dist/layout.css';
 import 'antd/dist/antd.css';
@@ -72,7 +75,7 @@ const App = () => {
     >
 
     <ProLayout
-      title="NHSign"
+      title="WithSign"
       // logo="https://gw.alipayobjects.com/mdn/rms_b5fcc5/afts/img/A*1NHAQYduQiQAAAAAAAAAAABkARQnAQ" 로고 이미지 
       menuHeaderRender={(logo, title) => (
         <div
@@ -92,11 +95,11 @@ const App = () => {
       style={{
         // height: 500,
       }}
-      // menuExtraRender={() =>
-      //   <div>
-      //     <Button type="primary" style={{ width: '100%'}}>서명 요청</Button>
-      //   </div>
-      // }
+      menuExtraRender={() =>
+        <div>
+          <Button type="primary" style={{ width: '100%' }} onClick={() => {navigate('/uploadDocument')}}>서명 요청</Button>
+        </div>
+      }
       // menuFooterRender={() =>
       //   <div style={{ height: '80px'}}>
       //     <Button style={{ width: '80%'}}>서명 요청</Button>
@@ -120,35 +123,45 @@ const App = () => {
           <Header />
         </div>
       )}
-      // footerRender={() => (
-      //   <div>
-      //     <Footer />
-      //   </div>
-      // )}     
+      footerRender={() => (
+        // <div>
+        //   <Footer />
+        // </div>
+        <DefaultFooter
+          links={[
+            { key: '이용약관', title: '이용약관', href: 'terms' },
+            { key: '개인정보처리방침', title: '개인정보처리방침', href: 'policy' },
+          ]}
+          copyright="WITH SIGN © NH INFORMATION SYSTEM 2021"
+        />
+      )}     
   >
     <Router>
-        <Home path="/" />
-        <Assign path="/assign" />
-        <UploadDocument path="/uploadDocument" />
-        <Preparation path="/prepareDocument" />
-        <SignList path="/signList" />
-        <SignedList path="/signedList" />
-        <DocumentList path="/documentList" />
-        <TemplateList path="/templateList" />
-        <UploadTemplate path="/uploadTemplate" />
-        <BulkList path="/bulkList" />
-        <BulkDetail path="/bulkDetail" />
-        <MySign path="mySign" />
-        <Sign path="/signDocument" />
-        <View path="/viewDocument" />
-        <Setting path="/setting" />
-        <Test2 path="/test" />
-        <BoardList path="/customer" />
-        <BoardDetail path="/boardDetail" />
-        <Audit path="/audit" />
-        <AuditCheck path="/auditCheck" />
-        <ResultPage path="/resultPage" />
-      </Router>
+      <Home path="/" />
+      <Assign path="/assign" />
+      <UploadDocument path="/uploadDocument" />
+      <Preparation path="/prepareDocument" />
+      <SignList path="/signList" />
+      <SignedList path="/signedList" />
+      <DocumentList path="/documentList" />
+      <TemplateList path="/templateList" />
+      <UploadTemplate path="/uploadTemplate" />
+      <BulkList path="/bulkList" />
+      <BulkDetail path="/bulkDetail" />
+      <MySign path="mySign" />
+      <Sign path="/signDocument" />
+      <View path="/viewDocument" />
+      <Setting path="/setting" />
+      <Test2 path="/test" />
+      <BoardList path="/customer" />
+      <BoardDetail path="/boardDetail" />
+      <Audit path="/audit" />
+      <AuditCheck path="/auditCheck" />
+      <ResultPage path="/resultPage" />
+      <Terms path="/terms" />
+      <Policy path="/policy" />
+      <PreviewPDF path="/previewPDF" />
+    </Router>
   </ProLayout>
 
   </div>

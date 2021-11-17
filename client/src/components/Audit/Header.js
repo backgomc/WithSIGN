@@ -48,7 +48,7 @@ export default () => (
     </View>
     <View style={styles.linkColumn}>
       <Link href="/" style={styles.link}>
-        NHSign
+        WithSign
       </Link>
     </View>
   </View>
