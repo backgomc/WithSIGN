@@ -8,6 +8,22 @@ const { hexCrypto } = require('../common/utils');
 const config = require('../config/key');
 const { generateToken, ValidateToken, renewalToken } = require('../middleware/adminAuth');
 
+const java = require('java');
+const jarFilePath1 = __dirname+'/../lib/INICrypto_v4.0.12.jar';
+const jarFilePath2 = __dirname+'/../lib/INISAFECore_v2.1.23.jar';
+const jarFilePath3 = __dirname+'/../lib/INISAFEPKI_v1.1.13jar';
+const jarFilePath4 = __dirname+'/../lib/INISAFEToolSet_v1.0.2.jar';
+const jarFilePath5 = __dirname+'/../lib/nls_v4.1.3.jar';
+const jarFilePath6 = __dirname+'/../lib/NH_SSO.jar';
+const jarFilePath7 = __dirname+'/../lib/log4j-1.2.16.jar';
+java.classpath.push(jarFilePath1);
+java.classpath.push(jarFilePath2);
+java.classpath.push(jarFilePath3);
+java.classpath.push(jarFilePath4);
+java.classpath.push(jarFilePath5);
+java.classpath.push(jarFilePath6);
+java.classpath.push(jarFilePath7);
+
 // -- 로그인/아웃 --
 // /api/admin/auth        (GET)
 // /api/admin/sso
@@ -18,6 +34,7 @@ const { generateToken, ValidateToken, renewalToken } = require('../middleware/ad
 // /api/admin/user/list
 // /api/admin/user/info
 // /api/admin/user/update (권한 변경)
+// /api/admin/user/delete (퇴사 처리)
 // /api/admin/user/sync   (연계 수동)
 // -- 부서 관리 --
 // /api/admin/org/list
@@ -58,6 +75,44 @@ router.get('/auth', ValidateToken, (req, res) => {
 
 // SSO Token -> 사번 추출 -> 사용자 검색 -> 로그인
 router.post('/sso', (req, res) => {
+  var LoginUtil = java.import('com.nonghyupit.sso.LoginUtil');
+  var sabun = LoginUtil.getIdSync(req.body.token);
+  console.log('token : ' + req.body.token);
+  console.log('sabun : ' + sabun);
+
+  var uid;
+  if (sabun) {
+    uid = hexCrypto(sabun);
+  } else {
+    return res.json({ success: false, message: '잘못된 ID입니다.'});
+  }
+  console.log('uid: '+ uid);
+
+  User.findOne({ uid: uid }, (err, user) => {
+    if (err) return res.json({ success: false, error: err });
+    if (user) {
+      // 토큰 생성
+      var {accessToken, refreshToken} = generateToken(user);
+      User.updateOne({ _id: user._id }, {adminJWT: refreshToken}, (err, result) => {
+        if (err) return res.json({ success: false, message: err });
+        console.log(result);
+        res.cookie('__aToken__', accessToken,  { httpOnly: true, maxAge: 60*60*1000 });
+        res.status(200).json({
+          success: true,
+          user: {
+            _id: user._id,
+            name: user.name,
+            JOB_TITLE: user.JOB_TITLE,
+            DEPART_CODE: user.DEPART_CODE,
+            OFFICE_CODE: user.OFFICE_CODE,
+            __rToken__: refreshToken
+          }
+        });
+      });
+    } else {
+      return res.json({ success: false, message: '입력하신 ID에 해당하는 유저가 없습니다.'});
+    }
+  });
 });
 
 // 토큰 갱신
@@ -122,7 +177,7 @@ router.post('/login', (req, res) => {
       User.updateOne({ _id: user._id }, {adminJWT: refreshToken}, (err, result) => {
         if (err) return res.json({ success: false, message: err });
         console.log(result);
-        res.cookie('__aToken__', accessToken,  { httpOnly: true, maxAge: 24*60*1000 });
+        res.cookie('__aToken__', accessToken,  { httpOnly: true, maxAge: 60*60*1000 });
         res.status(200).json({
           success: true,
           user: {
@@ -141,8 +196,9 @@ router.post('/login', (req, res) => {
 
 // 로그아웃
 router.post('/logout', ValidateToken, (req, res) => {
-  User.findOneAndUpdate({ uid: req.user.uid }, { adminJWT: '' }, (err) => {
+  User.findOneAndUpdate({ _id: req.body._id }, { adminJWT: '' }, (err) => {
     if (err) return res.json({ success: false, err });
+    res.cookie('__aToken__', '__aToken__', { httpOnly: true, maxAge: 0 });
     return res.status(200).send({success: true});
   });
 });
@@ -211,6 +267,21 @@ router.post('/user/info', ValidateToken, (req, res) => {
 // 사용자 관리 > 변경(권한)
 router.post('/user/update', ValidateToken, (req, res) => {
   return res.json({ success: true, message: '/user/update' });
+});
+
+// 사용자 관리 > 삭제(퇴사)
+router.post('/user/delete', ValidateToken, (req, res) => {
+  if (!req.body._ids) {
+    return res.json({ success: false, message: 'input value not enough!' });
+  }
+
+  const _ids = req.body._ids;
+
+  // DB 삭제
+  Template.deleteMany({ _id: { $in: _ids } }, function (err) {
+    if (err) { return res.json({ success: false, err }); }
+    return res.status(200).json({ success: true });
+  });
 });
 
 // 문서 관리 > 목록
@@ -377,7 +448,6 @@ router.post('/templates/insert', ValidateToken, (req, res) => {
 
 // 템플릿 관리 > 삭제
 router.post('/templates/delete', ValidateToken, (req, res) => {
-
   if (!req.body._ids) {
     return res.json({ success: false, message: 'input value not enough!' });
   }

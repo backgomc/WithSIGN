@@ -43,8 +43,9 @@ const HeaderComponent = () => {
         <Link to="" onClick={() => {
           axios.post('/api/admin/logout').then(response => {
             if (response.status === 200) {
+              localStorage.removeItem('__rToken__');
               dispatch(setUser(null));
-              navigate('/');
+              navigate('/login');
             } else {
               alert('Log Out Failed');
             }

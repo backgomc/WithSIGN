@@ -14,9 +14,9 @@ function renewalToken (req, res, next) {
     var accessToken  = req.cookies.__aToken__;
     var refreshToken = req.headers['refresh-token'];
     jwt.verify(refreshToken, 'WITHSIGN', function (err) {
-        if ( err ) return res.json({ success: false, message: err.message });
+        if (err) return res.json({ success: false, message: err.message, isAuth: false });
         jwt.verify(accessToken, 'WITHSIGN', {ignoreExpiration: true}, function (err, payload) {
-            if ( err ) return res.json({ success: false, message: err.message });
+            if (err) return res.json({ success: false, message: err.message, isAuth: false });
             req.body._id = payload._id;
             req.body._tk = jwt.sign({_id: payload._id}, 'WITHSIGN', {expiresIn: '1m'});
             console.log('OK');
@@ -30,7 +30,7 @@ function ValidateToken (req, res, next) {
     console.log('__aToken__ : ' + req.cookies.__aToken__);
     var token = req.cookies.__aToken__;
     jwt.verify(token, 'WITHSIGN', function (err, payload) {
-        if ( err ) return res.status(200).json({ success: false, message: err.message });
+        if (err) return res.status(200).json({ success: false, message: err.message, isAuth: false });
         req.body._id = payload._id;
         next();
     });

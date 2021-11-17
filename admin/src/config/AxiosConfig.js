@@ -18,14 +18,14 @@ axiosInterceptor.interceptors.request.use(
 // 요청 후
 axiosInterceptor.interceptors.response.use(
     async response => {
-        var originalRequest = response.config;
-        if ( response.data.message && response.data.message.indexOf('expired') > 0 ) {
-            // 토큰 만료 시
+        // 토큰 관련 실패
+        if (response.data.success === false && response.data.isAuth === false) {
+            let originalRequest = response.config;
             let config = {
                 headers: {'refresh-Token': localStorage.getItem('__rToken__')}
             }
-            var resp = await axios.post('/api/admin/refresh', null, config);
-            if ( resp.data.success ) {
+            let resp = await axios.post('/api/admin/refresh', null, config);
+            if (resp.data.success) {
                 resp = await axios(originalRequest);
                 response = resp;
             } else {
@@ -33,6 +33,7 @@ axiosInterceptor.interceptors.response.use(
                 window.location.href = '/';
             }
         }
+        // 그외 모두 통과
         return response;
     },
     error => {
