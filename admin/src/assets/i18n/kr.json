@@ -1,5 +1,6 @@
 {
 	"AppName": "With Sign",
+	"AppSubName": "관리자",
 	"Cancel": "취소",
 	"Confirm": "Confirm",
 	"Delete": "Delete",
@@ -34,6 +35,7 @@
 	"Regist": "신규 가입",
 	"Or": "또는",
 	"input.email": "이메일을 입력하세요!",
+	"input.SABUN": "사번을 입력하세요!",
 	"input.password": "비밀번호를 입력하세요!",
 	"input.documentTitle": "문서 제목을 입력하세요!",
 	"input.name": "이름을 입력하세요!",
@@ -72,5 +74,7 @@
 	"document.check": "문서 진본 확인",
 	"user.manage": "사용자 관리",
 	"document.manage": "문서 관리",
-	"template.manage": "템플릿 관리"
+	"template.manage": "템플릿 관리",
+	"board.manage": "게시판 관리",
+	"system.manage": "시스템 관리"
 }

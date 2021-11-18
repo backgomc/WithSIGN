@@ -1,15 +1,45 @@
 const express = require('express');
 const router = express.Router();
-const { Document } = require("../models/Document");
+const { Document } = require('../models/Document');
 const { Template } = require('../models/Template');
 const { User } = require('../models/User');
 const fs = require('fs');
+const { hexCrypto } = require('../common/utils');
 const config = require('../config/key');
+const { generateToken, ValidateToken, renewalToken } = require('../middleware/adminAuth');
 
+const java = require('java');
+const jarFilePath1 = __dirname+'/../lib/INICrypto_v4.0.12.jar';
+const jarFilePath2 = __dirname+'/../lib/INISAFECore_v2.1.23.jar';
+const jarFilePath3 = __dirname+'/../lib/INISAFEPKI_v1.1.13jar';
+const jarFilePath4 = __dirname+'/../lib/INISAFEToolSet_v1.0.2.jar';
+const jarFilePath5 = __dirname+'/../lib/nls_v4.1.3.jar';
+const jarFilePath6 = __dirname+'/../lib/NH_SSO.jar';
+const jarFilePath7 = __dirname+'/../lib/log4j-1.2.16.jar';
+java.classpath.push(jarFilePath1);
+java.classpath.push(jarFilePath2);
+java.classpath.push(jarFilePath3);
+java.classpath.push(jarFilePath4);
+java.classpath.push(jarFilePath5);
+java.classpath.push(jarFilePath6);
+java.classpath.push(jarFilePath7);
+
+// -- 로그인/아웃 --
+// /api/admin/auth        (GET)
+// /api/admin/sso
+// /api/admin/refresh
+// /api/admin/login
+// /api/admin/logout
 // -- 사용자 관리 --
 // /api/admin/user/list
 // /api/admin/user/info
-// /api/admin/user/update
+// /api/admin/user/update (권한 변경)
+// /api/admin/user/delete (퇴사 처리)
+// /api/admin/user/sync   (연계 수동)
+// -- 부서 관리 --
+// /api/admin/org/list
+// /api/admin/org/info
+// /api/admin/org/sync    (연계 수동)
 // -- 문서 관리 --
 // /api/admin/document/list
 // /api/admin/document/info
@@ -19,8 +49,245 @@ const config = require('../config/key');
 // /api/admin/templates/insert
 // /api/admin/templates/delete
 
+// 인증 여부 확인
+router.get('/auth', ValidateToken, (req, res) => {
+  var uid = req.body._id;
+  User.findOne({ _id: uid }, (err, user) => {
+    if (err) return res.json({ success: false, error: err });
+    if (!user) {
+      return res.json({
+        success: false,
+        message: '입력하신 ID에 해당하는 유저가 없습니다.'
+      });
+    }
+    return res.status(200).json({
+      success: true,
+      user: {
+        _id: user._id,
+        name: user.name,
+        JOB_TITLE: user.JOB_TITLE,
+        DEPART_CODE: user.DEPART_CODE,
+        OFFICE_CODE: user.OFFICE_CODE
+      }
+    });
+  });
+});
+
+// SSO Token -> 사번 추출 -> 사용자 검색 -> 로그인
+router.post('/sso', (req, res) => {
+  var LoginUtil = java.import('com.nonghyupit.sso.LoginUtil');
+  var sabun = LoginUtil.getIdSync(req.body.token);
+  console.log('token : ' + req.body.token);
+  console.log('sabun : ' + sabun);
+
+  var uid;
+  if (sabun) {
+    uid = hexCrypto(sabun);
+  } else {
+    return res.json({ success: false, message: '잘못된 ID입니다.'});
+  }
+  console.log('uid: '+ uid);
+
+  User.findOne({ uid: uid }, (err, user) => {
+    if (err) return res.json({ success: false, error: err });
+    if (user) {
+      // 토큰 생성
+      var {accessToken, refreshToken} = generateToken(user);
+      User.updateOne({ _id: user._id }, {adminJWT: refreshToken}, (err, result) => {
+        if (err) return res.json({ success: false, message: err });
+        console.log(result);
+        res.cookie('__aToken__', accessToken,  { httpOnly: true, maxAge: 60*60*1000 });
+        res.status(200).json({
+          success: true,
+          user: {
+            _id: user._id,
+            name: user.name,
+            JOB_TITLE: user.JOB_TITLE,
+            DEPART_CODE: user.DEPART_CODE,
+            OFFICE_CODE: user.OFFICE_CODE,
+            __rToken__: refreshToken
+          }
+        });
+      });
+    } else {
+      return res.json({ success: false, message: '입력하신 ID에 해당하는 유저가 없습니다.'});
+    }
+  });
+});
+
+// 토큰 갱신
+router.post('/refresh', renewalToken, (req, res) => {
+  var _id = req.body._id;
+  var _tk = req.body._tk;
+  console.log(_tk);
+  User.findOne({ _id: _id, adminJWT: req.headers['refresh-token'] }, (err, user) => {
+    console.log(user);
+    if (err) return res.json({ success: false, error: err });
+    if (!user) return res.json({ success: false, message: 'No User!!' });
+    res.cookie('__aToken__', _tk,  { httpOnly: true, maxAge: 60*60*1000 });
+    res.status(200).json({
+      success: true,
+      user: {
+        _id: user._id,
+        name: user.name,
+        JOB_TITLE: user.JOB_TITLE,
+        DEPART_CODE: user.DEPART_CODE,
+        OFFICE_CODE: user.OFFICE_CODE
+      }
+    });
+  });
+});
+
+// 로그인
+router.post('/login', (req, res) => {
+
+  var uid;
+  if (req.body.SABUN) {
+    uid = hexCrypto(req.body.SABUN);
+  } else if (req.body.email) {
+    uid = hexCrypto(req.body.email);
+  } else {
+    return res.json({
+      success: false,
+      message: '잘못된 ID입니다.'
+    });
+  }
+  console.log('uid: '+ uid);
+
+  // 사용자 검색 (사번 또는 이메일)
+  User.findOne({ uid: uid }, (err, user) => {
+    if (err) return res.json({ success: false, error: err });
+    if (!user) {
+      return res.json({
+        success: false,
+        message: '입력하신 ID에 해당하는 유저가 없습니다.'
+      });
+    }
+
+    // 비밀번호 확인
+    user.comparePassword(req.body.password, (err, isMatch) => {
+      if (err) return res.json({ success: false, error: err });
+      if (!isMatch) return res.json({ success: false, message: '비밀번호가 일치하지 않습니다.' });
+      if (!user.terms || !user.privacy) return res.json({ success: false, user: user._id, message: '약관 동의가 필요합니다.' });
+
+      // 토큰 생성
+      var {accessToken, refreshToken} = generateToken(user);
+      
+      // Refresh 토큰 DB 저장
+      User.updateOne({ _id: user._id }, {adminJWT: refreshToken}, (err, result) => {
+        if (err) return res.json({ success: false, message: err });
+        console.log(result);
+        res.cookie('__aToken__', accessToken,  { httpOnly: true, maxAge: 60*60*1000 });
+        res.status(200).json({
+          success: true,
+          user: {
+            _id: user._id,
+            name: user.name,
+            JOB_TITLE: user.JOB_TITLE,
+            DEPART_CODE: user.DEPART_CODE,
+            OFFICE_CODE: user.OFFICE_CODE,
+            __rToken__: refreshToken
+          }
+        });
+      });
+    });
+  });
+});
+
+// 로그아웃
+router.post('/logout', ValidateToken, (req, res) => {
+  User.findOneAndUpdate({ _id: req.body._id }, { adminJWT: '' }, (err) => {
+    if (err) return res.json({ success: false, err });
+    res.cookie('__aToken__', '__aToken__', { httpOnly: true, maxAge: 0 });
+    return res.status(200).send({success: true});
+  });
+});
+
 // 사용자 관리 > 목록
-router.post('/user/list', (req, res) => {
+router.post('/user/list', ValidateToken, async (req, res) => {
+console.log(req.cookies);
+  // 페이징 처리
+  const current = req.body.pagination.current;
+  const pageSize = req.body.pagination.pageSize;
+  var start = 0;
+  if (current > 1) {
+    start = (current - 1) * pageSize;
+  }
+
+  var order = 'name';
+  var dir = 'desc';
+  if (req.body.sortField) {
+    order = req.body.sortField;
+  }
+  if (req.body.sortOrder) {
+    if (req.body.sortOrder == 'ascend') {
+      dir = 'asc';
+    } else {
+      dir = 'desc';
+    }
+  }
+
+  // 단어검색 
+  var searchStr = {};
+
+  console.log(searchStr);
+
+  // 전체 건수
+  var totalCount = await User.countDocuments(searchStr).exec();
+
+  User
+    .aggregate([
+      {
+        $lookup: {
+          from: 'orgs',
+          localField: 'DEPART_CODE',
+          foreignField: 'DEPART_CODE',
+          as: 'orgInfo'
+        }
+      },
+      {
+        $match: searchStr
+      }
+    ])
+    .sort({ [order]: dir })   //asc:오름차순 desc:내림차순
+    .skip(Number(start))
+    .limit(Number(pageSize))
+    .exec((err, documents) => {
+      // console.log(documents);
+      if (err) return res.json({ success: false, error: err });
+      return res.json({ success: true, documents: documents, total: totalCount });
+    });
+});
+
+// 사용자 관리 > 상세
+router.post('/user/info', ValidateToken, (req, res) => {
+  return res.json({ success: true, message: 'user/info' });
+});
+
+// 사용자 관리 > 변경(권한)
+router.post('/user/update', ValidateToken, (req, res) => {
+  return res.json({ success: true, message: '/user/update' });
+});
+
+// 사용자 관리 > 삭제(퇴사)
+router.post('/user/delete', ValidateToken, (req, res) => {
+  if (!req.body._ids) {
+    return res.json({ success: false, message: 'input value not enough!' });
+  }
+
+  const _ids = req.body._ids;
+
+  // DB 삭제
+  Template.deleteMany({ _id: { $in: _ids } }, function (err) {
+    if (err) { return res.json({ success: false, err }); }
+    return res.status(200).json({ success: true });
+  });
+});
+
+// 문서 관리 > 목록
+router.post('/document/list', ValidateToken, async (req, res) => {
+
+  // 페이징 처리
   const current = req.body.pagination.current;
   const pageSize = req.body.pagination.pageSize;
   var start = 0;
@@ -40,59 +307,6 @@ router.post('/user/list', (req, res) => {
       dir = 'desc';
     }
   }
-
-  var recordsTotal = 0;
-
-  var andParam = {};
-  var orParam = {};
-
-  // 문서제목 검색
-  if (req.body.docTitle) {
-    andParam['docTitle'] = { $regex: '.*' + req.body.docTitle[0] + '.*', $options: 'i' }
-  }
-
-  Document.countDocuments(andParam).or(orParam).exec(function (err, count) {
-    recordsTotal = count;
-    console.log('recordsTotal:' + recordsTotal);
-
-    Document
-      .find(andParam).or(orParam)
-      .sort({ [order]: dir })    //asc:오름차순 desc:내림차순
-      .skip(Number(start))
-      .limit(Number(pageSize))
-      // .populate('user', {name: 1, email: 2})
-      .populate({
-        path: 'user',
-        select: { name: 1, JOB_TITLE: 2, image: 3 },
-        // match: { name : searchName? searchName : !'' }
-      })
-      .populate({
-        path: 'users',
-        select: { name: 1, JOB_TITLE: 2 }
-      })
-      .exec((err, documents) => {
-        // console.log(documents);
-        // documents = documents.filter(function(document) {
-        //   return document.user
-        // });
-        if (err) return res.json({ success: false, error: err });
-        return res.json({ success: true, documents: documents, total: recordsTotal });
-      });
-  });
-});
-
-// 사용자 관리 > 상세
-router.post('/user/info', (req, res) => {
-  return res.json({ success: true, message: 'user/info' });
-});
-
-// 사용자 관리 > 변경(권한)
-router.post('/user/update', (req, res) => {
-  return res.json({ success: true, message: '/user/update' });
-});
-
-// 문서 관리 > 목록
-router.post('/document/list', async (req, res) => {
 
   // 단어검색 
   var searchStr = {};
@@ -114,26 +328,6 @@ router.post('/document/list', async (req, res) => {
     searchStr['user'] = { $in: userIds };
   }
 
-  const current = req.body.pagination.current;
-  const pageSize = req.body.pagination.pageSize;
-  var start = 0;
-  if (current > 1) {
-    start = (current - 1) * pageSize;
-  }
-
-  var order = 'requestedTime';
-  var dir = 'desc';
-  if (req.body.sortField) {
-    order = req.body.sortField;
-  }
-  if (req.body.sortOrder) {
-    if (req.body.sortOrder == 'ascend') {
-      dir = 'asc';
-    } else {
-      dir = 'desc';
-    }
-  }
-
   console.log(searchStr);
 
   // 전체 건수
@@ -153,19 +347,40 @@ router.post('/document/list', async (req, res) => {
       select: { name: 1, JOB_TITLE: 2 }
     })
     .exec((err, documents) => {
-      console.log(documents);
+      // console.log(documents);
       if (err) return res.json({ success: false, error: err });
       return res.json({ success: true, documents: documents, total: totalCount });
     });
 });
 
 // 문서 관리 > 상세
-router.post('/document/info', (req, res) => {
+router.post('/document/info', ValidateToken, (req, res) => {
   return res.json({ success: true, message: '/document/info' });
 });
 
 // 템플릿 관리 > 목록
-router.post('/templates/list', async (req, res) => {
+router.post('/templates/list', ValidateToken, async (req, res) => {
+
+  // 페이징 처리
+  const current = req.body.pagination.current;
+  const pageSize = req.body.pagination.pageSize;
+  var start = 0;
+  if (current > 1) {
+    start = (current - 1) * pageSize;
+  }
+
+  var order = 'registeredTime';
+  var dir = 'desc';
+  if (req.body.sortField) {
+    order = req.body.sortField;
+  }
+  if (req.body.sortOrder) {
+    if (req.body.sortOrder == 'ascend') {
+      dir = 'asc';
+    } else {
+      dir = 'desc';
+    }
+  }
 
   // 단어검색 
   var searchStr = {};
@@ -190,26 +405,6 @@ router.post('/templates/list', async (req, res) => {
   // 공통 템플릿
   searchStr['type'] = 'C';
 
-  const current = req.body.pagination.current;
-  const pageSize = req.body.pagination.pageSize;
-  var start = 0;
-  if (current > 1) {
-    start = (current - 1) * pageSize;
-  }
-
-  var order = 'registeredTime';
-  var dir = 'desc';
-  if (req.body.sortField) {
-    order = req.body.sortField;
-  }
-  if (req.body.sortOrder) {
-    if (req.body.sortOrder == 'ascend') {
-      dir = 'asc';
-    } else {
-      dir = 'desc';
-    }
-  }
-
   console.log(searchStr);
 
   // 전체 건수
@@ -231,12 +426,12 @@ router.post('/templates/list', async (req, res) => {
 });
 
 // 템플릿 관리 > 상세
-router.post('/templates/info', (req, res) => {
+router.post('/templates/info', ValidateToken, (req, res) => {
   return res.json({ success: true, message: '/templates/info' });
 });
 
 // 템플릿 관리 > 등록
-router.post('/templates/insert', (req, res) => {
+router.post('/templates/insert', ValidateToken, (req, res) => {
   if (!req.body.user) {
     return res.json({ success: false, message: 'input value not enough!' });
   }
@@ -252,8 +447,7 @@ router.post('/templates/insert', (req, res) => {
 });
 
 // 템플릿 관리 > 삭제
-router.post('/templates/delete', (req, res) => {
-
+router.post('/templates/delete', ValidateToken, (req, res) => {
   if (!req.body._ids) {
     return res.json({ success: false, message: 'input value not enough!' });
   }

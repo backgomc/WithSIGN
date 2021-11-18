@@ -1,5 +1,5 @@
-import React, { useEffect, useState, useRef } from 'react';
-import axios from 'axios';
+import React, { useEffect, useState } from 'react';
+import axiosInterceptor from '../../config/AxiosConfig';
 import { Table, Input, Space, Button } from 'antd';
 import Highlighter from 'react-highlight-words';
 import { SearchOutlined,FileOutlined } from '@ant-design/icons';
@@ -17,7 +17,7 @@ import { useIntl } from 'react-intl';
 
 moment.locale('ko');
 
-const DocumentList = ({location}) => {
+const DocumentList = () => {
 
   const dispatch = useDispatch();
   // const user = useSelector(selectUser);
@@ -29,31 +29,28 @@ const DocumentList = ({location}) => {
   const [data, setData] = useState([]);
   const [pagination, setPagination] = useState({current:1, pageSize:10});
   const [loading, setLoading] = useState(false);
-  const [responsive, setResponsive] = useState(false);
+  // const [responsive, setResponsive] = useState(false);
   
   const { formatMessage } = useIntl();
-  const searchInput = useRef<Input>(null)
+  // const searchInput = useRef<Input>(null);
 
   const handleTableChange = (pagination, filters, sorter) => {
-    console.log('handleTableChange called')
-    // console.log('status:'+status)
-    console.log('filters.status:'+filters.status)
+    console.log('handleTableChange called');
+    console.log('filters.status:'+filters.status);
     fetch({
       sortField: sorter.field,
       sortOrder: sorter.order,
       pagination,
-      ...filters,
-      // user: _id,
-      // status:status  //필터에 포함되어 있음 
+      ...filters
     });
   };
 
   const fetch = (params = {}) => {
     setLoading(true);
 
-    axios.post('/api/admin/document/list', params).then(response => {
+    axiosInterceptor.post('/api/admin/document/list', params).then(response => {
 
-      console.log(response)
+      console.log(response);
       if (response.data.success) {
         const docs = response.data.documents;
 
@@ -63,7 +60,7 @@ const DocumentList = ({location}) => {
 
       } else {
           setLoading(false);
-          alert(response.data.error)
+          console.log(response.data.error);
       }
 
     });
@@ -136,8 +133,8 @@ const DocumentList = ({location}) => {
 
   const handleSearch = (selectedKeys, confirm, dataIndex) => {
     confirm();
-    setSearchedColumn(selectedKeys[0])
-    setSearchedColumn(dataIndex)
+    setSearchedColumn(selectedKeys[0]);
+    setSearchedColumn(dataIndex);
   }
 
   const handleReset = clearFilters => {
@@ -161,7 +158,7 @@ const DocumentList = ({location}) => {
       sorter: false,
       key: 'status',
       width: '110px',
-      defaultFilteredValue: location.state.status? [location.state.status]: [],
+      // defaultFilteredValue: location.state.status? [location.state.status]: [],
       filters: [
         {
           text: DOCUMENT_SIGNED,
@@ -291,15 +288,14 @@ const DocumentList = ({location}) => {
 
   useEffect(() => {
 
-    console.log('useEffect called')
+    console.log('useEffect called');
 
     // if (location.state.status) {
     //   setStatus(location.state.status)
     // }
 
     fetch({
-      pagination,
-      status:location.state.status
+      pagination
     });
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -319,8 +315,8 @@ const DocumentList = ({location}) => {
           },
         }}
         // content={description}
-        footer={[
-        ]}
+        // footer={[
+        // ]}
     >
       <br></br>
       <Table

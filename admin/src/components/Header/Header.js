@@ -1,8 +1,7 @@
 import React from 'react';
 import axios from 'axios';
 import { Dropdown, Menu } from 'antd';
-import Icon, { SettingOutlined, PoweroffOutlined, MenuUnfoldOutlined, 
-  MenuFoldOutlined, UserOutlined, CaretDownOutlined, GlobalOutlined } from '@ant-design/icons';
+import { SettingOutlined, PoweroffOutlined, UserOutlined, CaretDownOutlined, GlobalOutlined } from '@ant-design/icons';
 import { navigate, Link } from '@reach/router';
 import styles from './header.module.css';
 import { useDispatch, useSelector } from 'react-redux';
@@ -20,11 +19,11 @@ const languageList = [
   },
 ]
 
-const HeaderComponent = ({collapsed, setCollapsed}) => {
+const HeaderComponent = () => {
   const dispatch = useDispatch();
 
   const user = useSelector(selectUser);
-  const { name, photoURL, email } = user;
+  const { name } = user;
 
   const localLang = useSelector(selectLang);
 
@@ -35,19 +34,20 @@ const HeaderComponent = ({collapsed, setCollapsed}) => {
   const menu = (
     <Menu>
       <Menu.Item key="11">
-        <Link to="/home/setting">
+        <Link to="/systemManage">
           <SettingOutlined />&nbsp;설정
         </Link>
       </Menu.Item>
       <Menu.Divider />
       <Menu.Item key="12">
         <Link to="" onClick={() => {
-          axios.post('/api/users/logout').then(response => {
+          axios.post('/api/admin/logout').then(response => {
             if (response.status === 200) {
+              localStorage.removeItem('__rToken__');
               dispatch(setUser(null));
-              navigate('/');
+              navigate('/login');
             } else {
-              alert('Log Out Failed')
+              alert('Log Out Failed');
             }
           });
         }}>
@@ -58,7 +58,6 @@ const HeaderComponent = ({collapsed, setCollapsed}) => {
   );
 
   return (
-    <div className={styles['header-wrapper']}>
       <div className={styles['header-user-info']}>
         <Dropdown key="1" overlay={menu}>
           <span className={styles['header-dropdown-link']}>
@@ -79,7 +78,6 @@ const HeaderComponent = ({collapsed, setCollapsed}) => {
           </span>
         </Dropdown>
       </div>
-    </div>
   );
 };
 

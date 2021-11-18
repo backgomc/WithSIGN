@@ -1,5 +1,6 @@
 {
 	"AppName": "With Sign",
+	"AppSubName": "Admin",
 	"Cancel": "Cancel",
 	"Confirm": "Confirm",
 	"Delete": "Delete",
@@ -34,6 +35,7 @@
 	"Regist": "regist now!",
 	"Or": "Or",
 	"input.email": "Please input your Email!",
+	"input.SABUN": "Please input your sabun!",
 	"input.password": "Please input your Password!",
 	"input.documentTitle": "Please input document title!",
 	"input.name": "Please input your Name!",
@@ -51,7 +53,9 @@
 	"document.massList": "Mass Transfer",
 	"Next": "Next",
 	"input.fileupload": "Click or drag file to this area to upload",
+	"input.fileupload.image": "",
 	"input.fileupload.support": "Support File: pdf",
+	"input.fileupload.support.image": "",
 	"input.fileupload.volume": "Maximum volume: 5Mb",
 	"input.sign": "add sign",
 	"input.text": "add text",
@@ -60,7 +64,17 @@
 	"Initialize": "Initialize",
 	"Save": "Save",
 	"Sign": "Sign",
+	"sign.complete": "",
+	"document.download": "",
+	"sign.management": "",
+	"sign.cancel": "",
+	"Back": "",
+	"Customer": "",
+	"Notice": "",
+	"document.check": "",
 	"user.manage": "User",
 	"document.manage": "Document",
-	"template.manage": "Template"
+	"template.manage": "Template",
+	"board.manage": "Board",
+	"system.manage": "System"
 }
