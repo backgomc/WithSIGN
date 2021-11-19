@@ -388,7 +388,8 @@ const DocumentList = ({location}) => {
                 const docId = row["_id"]
                 const docRef = row["docRef"]
                 const docType = row["docType"]
-                dispatch(setDocToSign({ docRef, docId, docType }));
+                const docUser = row["user"]
+                dispatch(setDocToSign({ docRef, docId, docType, docUser }));
                 navigate(`/signDocument`);
               }}>서명</Button>
             );
@@ -450,7 +451,8 @@ const DocumentList = ({location}) => {
                 const docId = row["_id"]
                 const docRef = row["docRef"]
                 const docType = row["docType"]
-                dispatch(setDocToSign({ docRef, docId, docType }));
+                const docUser = row["user"]
+                dispatch(setDocToSign({ docRef, docId, docType, docUser }));
                 navigate(`/signDocument`);
               }}>서명하기</Button>
             );

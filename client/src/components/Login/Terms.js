@@ -46,7 +46,7 @@ function Terms() {
           ]}
         >
           <div
-            style={{height:'100%', padding:'0px'}}
+            style={{height:'100%', padding:'0px', fontSize:'calc(13px + .2vw)'}}
             dangerouslySetInnerHTML={{
               __html: terms
             }} 

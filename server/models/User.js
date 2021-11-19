@@ -71,7 +71,15 @@ const userSchema = mongoose.Schema({
     },
     agreeTime: {
          type: Date 
-    }
+    },
+    paperless: {
+        type: Number,
+        default: 0
+    },
+    docCount: {
+        type: Number,
+        default: 0
+    },
 })
 
 

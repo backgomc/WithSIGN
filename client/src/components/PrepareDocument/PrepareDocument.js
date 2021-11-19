@@ -12,7 +12,7 @@ import { navigate } from '@reach/router';
 //   Button,
 //   SelectList,
 // } from 'gestalt';
-import { Upload, message, Badge, Button, Row, Col, List, Card } from 'antd';
+import { Upload, message, Badge, Button, Row, Col, List, Card, Checkbox } from 'antd';
 import Icon from '@ant-design/icons';
 import { InboxOutlined, HighlightOutlined, PlusOutlined } from '@ant-design/icons';
 import { resetAssignAll, selectAssignees, resetSignee, selectDocumentFile, selectDocumentTitle, resetDocumentFile, resetDocumentTitle, selectTemplate, resetTemplate, selectDocumentType, resetDocumentType, selectTemplateTitle, selectSendType } from '../Assign/AssignSlice';
@@ -39,6 +39,8 @@ const PrepareDocument = () => {
   const [loading, setLoading] = useState(false);
   const [responsive, setResponsive] = useState(false);
   const [thumbnail, setThumbnail] = useState(null);
+  const [pageCount, setPageCount] = useState(0);
+  const [observers, setObservers] = useState([]);
   // const [inputValue, _setInputValue] = useState([new Map()]);
 
   // event 안에서는 최신 state 값을 못 불러와서 ref 사용
@@ -184,6 +186,8 @@ const PrepareDocument = () => {
 
       docViewer.on('documentLoaded', () => {
         console.log('documentLoaded called');
+        setPageCount(docViewer.getPageCount());
+
         const doc = docViewer.getDocument();
         const pageIdx = 1;
 
@@ -280,7 +284,13 @@ const PrepareDocument = () => {
         var check = false
         boxData.map(box => {
         //{ key:user.key, sign:0, text:0 };
-          if(box.sign === 0 && box.text === 0) check = true
+        //observers.filter(v => v != item.key)
+
+        //TODO: 체크박스도 조건 추가하기
+          // if(box.sign === 0 && box.text === 0 && observers.filter(v => v == box.key).count == 0) { 
+          if(box.sign === 0 && box.text === 0) { 
+            check = true
+          }
         });
         setDisableNext(check)
 
@@ -585,7 +595,9 @@ const PrepareDocument = () => {
         signedBy: signedBy,
         signed: signed,
         signedTime: signedTime,
-        thumbnail: thumbnail
+        thumbnail: thumbnail,
+        pageCount: pageCount,
+        observers: observers
       }
       console.log("일반 전송")
       const res2 = await axios.post('/api/document/addDocumentToSign', body)
@@ -611,7 +623,9 @@ const PrepareDocument = () => {
           signedBy: signedBy,
           signed: signed,
           signedTime: signedTime,
-          thumbnail: thumbnail
+          thumbnail: thumbnail,
+          pageCount: pageCount,
+          observers: observers
         }
         const res = await axios.post('/api/document/addDocumentToSign', body)
         if (res.data.success) {
@@ -717,8 +731,8 @@ const PrepareDocument = () => {
         <Row gutter={[24, 24]}>
           <Col span={responsive ? 24 : 5}>
 
-            {(sendType === 'G') ? (<div>
-
+            {/* 일반 발송 */}
+            {(sendType === 'G') ? (<div>  
               <List
               rowKey="id"
               loading={loading}
@@ -740,11 +754,31 @@ const PrepareDocument = () => {
                       </Badge>
                       {/* {boxData.filter(e => e.key === item.key)[0].text} */}
                     </p>
+                    {/* 옵저버 기능 추가 */}
+                    <p>
+                      <Checkbox onChange={e => {
+
+                        console.log('called observer:'+item.key)
+                        console.log('checked = ', e.target.checked);
+
+                        if (e.target.checked) {
+                          // observer 추가 
+                          setObservers([...observers, item.key])
+                        } else {
+                          // observer 삭제
+                          setObservers(observers.filter(v => v != item.key))
+                          // TODO: 입력한 값 삭제, 입력 버튼 비활성화
+                        }
+
+                        console.log('observers:'+ observers)
+                      }}>Observer</Checkbox>
+                    </p>
                   </Card>
                 </List.Item>
               }
               />
 
+            {/* 대량 발송 */}
             </div>) : (<div>
 
               <Card size="small" type="inner" title="서명 참여자" style={{ minWidth: 148 }}>

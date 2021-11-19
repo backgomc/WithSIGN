@@ -461,4 +461,29 @@ router.post('/insertUsers', (req, res) => {
 })
 
 
+// paperless 업데이트 : 받은 숫자를 더해준다.
+router.post('/paperless', (req, res) => {
+
+  console.log("user:"+req.body.user)
+  console.log("paperless:"+req.body.paperless)
+
+  if (!req.body.user || !req.body.paperless) {
+      return res.json({ success: false, message: "input value not enough!" })
+  } 
+
+  const user = req.body.user
+  const paperless = req.body.paperless
+
+  User.updateOne({ _id: user }, {$inc: {paperless: paperless, docCount: 1} }, (err, result) => {
+    if (err) {
+      console.log(err);
+      return res.json({ success: false, message: err })
+    } else {
+      return res.json({ success: true })
+    }
+  })
+
+})
+
+
 module.exports = router;

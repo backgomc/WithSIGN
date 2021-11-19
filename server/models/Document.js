@@ -59,6 +59,13 @@ const documentSchema = mongoose.Schema({
     },
     thumbnail: {
         type: String
+    },
+    pageCount: {
+        type: Number,
+        default: 1
+    },
+    observers: {
+        type: Array
     }
 })
 

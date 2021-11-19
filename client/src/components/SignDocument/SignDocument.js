@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector, useDispatch, useStore } from 'react-redux';
 import axios from 'axios';
 import { navigate } from '@reach/router';
 // import { Box, Column, Heading, Row, Stack, Button } from 'gestalt';
@@ -29,19 +29,21 @@ const SignDocument = () => {
   const [responsive, setResponsive] = useState(false);
   const [disableNext, setDisableNext] = useState(true);
   const [visiblModal, setVisiblModal] = useState(false);
+  const [pageCount, setPageCount] = useState(0);
 
   // const dispatch = useDispatch();
   // const uploading = useSelector(selectUploading);
   const doc = useSelector(selectDocToSign);
   const user = useSelector(selectUser);
-  const { docRef, docId, docType } = doc;
-  const { email, _id } = user;
+  const { docRef, docId, docType, docUser } = doc;
+  const { _id } = user;
   const { formatMessage } = useIntl();
   
   const viewer = useRef(null);
   const cancelMessage = useRef({});
 
   useEffect(() => {
+
     WebViewer(
       {
         path: 'webviewer',
@@ -76,6 +78,11 @@ const SignDocument = () => {
       
       const URL = STORAGE_DIR + docRef;
       docViewer.loadDocument(URL);
+
+      docViewer.on('documentLoaded', () => {
+        console.log('documentLoaded called');
+        setPageCount(docViewer.getPageCount());
+      });
 
       const normalStyles = (widget) => {
         if (widget instanceof Annotations.TextWidgetAnnotation) {
@@ -254,6 +261,7 @@ const SignDocument = () => {
 
     setLoading(true);
 
+    console.log('pageCount:'+pageCount)
     // field: true 를 해줘야 텍스트 값도 저장됨
     const xfdf = await annotManager.exportAnnotations({ widgets: false, links: false, fields: true,	annotList: annotManager.getAnnotationsList() });
     // await updateDocumentToSign(docId, email, xfdf);
@@ -279,6 +287,10 @@ const SignDocument = () => {
         console.log("start merge")
         await mergeAnnotations(docId, res.data.docRef, res.data.xfdfArray, res.data.isLast)
         console.log("end merge")
+
+        // 서명 요청자 paperless 수 증가 시킴
+        await axios.post('/api/users/paperless', {user: docUser._id, paperless: pageCount})
+
         setLoading(false);
       } else {
         console.log("updateDocumentToSign error")
@@ -304,7 +316,7 @@ const SignDocument = () => {
         },
         extra: [
           <Button key="3" onClick={() => {navigate(`/documentList`);}}>{formatMessage({id: 'document.list'})}</Button>,
-          <Button key="1" type="primary" danger onClick={() => cancelSigning()}>
+          <Button key="1" danger onClick={() => cancelSigning()}>
             {formatMessage({id: 'sign.cancel'})}
           </Button>,
           <Button key="2" type="primary" onClick={() => completeSigning()} disabled={disableNext}>
