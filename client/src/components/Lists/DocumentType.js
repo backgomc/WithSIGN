@@ -18,6 +18,7 @@ export const DOCUMENT_SIGNED = "서명 완료";
 export const DOCUMENT_TOSIGN = "서명 필요";
 export const DOCUMENT_SIGNING = "서명 진행";
 export const DOCUMENT_CANCELED = "서명 취소";
+export const DOCUMENT_TOCONFIRM = "확인 필요";
 
 export function DocumentType(props) {
 
@@ -31,8 +32,9 @@ export function DocumentType(props) {
         } else {
             // if (document["users"].includes(uid) && !document["signedBy"].includes(uid)) {
             // if (document["users"].some(e => e._id === uid) && !document["signedBy"].includes(uid)) {
-              if (document["users"].some(e => e._id === uid) && !document["signedBy"].some(e => e.user === uid)) {
+            if (document["users"].some(e => e._id === uid) && !document["signedBy"].some(e => e.user === uid)) {
               return DOCUMENT_TOSIGN;
+              // return (document["observers"] && document["observers"].includes(uid)) ? DOCUMENT_TOCONFIRM : DOCUMENT_TOSIGN;
             } else {
               return DOCUMENT_SIGNING;
             }
@@ -94,7 +96,8 @@ export function DocumentTypeBadge(props) {
           // if (document["users"].some(e => e._id === uid) && !document["signedBy"].includes(uid)) {
             if (document["users"].some(e => e._id === uid) && !document["signedBy"].some(e => e.user === uid)) {
               return (
-                <b><Badge status="processing" text={DOCUMENT_TOSIGN} /></b>
+                <b><Badge status="processing" text={(document["observers"] && document["observers"].includes(uid)) ? DOCUMENT_TOCONFIRM : DOCUMENT_TOSIGN} /></b>
+                // {(row["observers"] && row["observers"].includes(_id) ? '확인' : '서명')}
               )
           } else {
             return (

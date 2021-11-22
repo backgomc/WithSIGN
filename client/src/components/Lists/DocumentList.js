@@ -22,7 +22,7 @@ import { setDocToSign } from '../SignDocument/SignDocumentSlice';
 import Moment from 'react-moment';
 import moment from "moment";
 import "moment/locale/ko";
-import { DocumentType, DocumentTypeText, DocumentTypeBadge, DocumentTypeIcon, DOCUMENT_SIGNED, DOCUMENT_TOSIGN, DOCUMENT_SIGNING, DOCUMENT_CANCELED } from './DocumentType';
+import { DocumentType, DocumentTypeText, DocumentTypeBadge, DocumentTypeIcon, DOCUMENT_SIGNED, DOCUMENT_TOSIGN, DOCUMENT_SIGNING, DOCUMENT_CANCELED, DOCUMENT_TOCONFIRM } from './DocumentType';
 import DocumentExpander from "./DocumentExpander";
 import { PageContainer } from '@ant-design/pro-layout';
 import 'antd/dist/antd.css';
@@ -37,6 +37,7 @@ const DocumentList = ({location}) => {
 
   const dispatch = useDispatch();
   const user = useSelector(selectUser);
+  const { formatMessage } = useIntl();
 
   const { _id } = user;
   const [searchText, setSearchText] = useState('');
@@ -46,8 +47,7 @@ const DocumentList = ({location}) => {
   const [pagination, setPagination] = useState({current:1, pageSize:10});
   const [loading, setLoading] = useState(false);
   const [responsive, setResponsive] = useState(false);
-  
-  const { formatMessage } = useIntl();
+
   const searchInput = useRef<Input>(null)
 
   const handleTableChange = (pagination, filters, sorter) => {
@@ -389,9 +389,10 @@ const DocumentList = ({location}) => {
                 const docRef = row["docRef"]
                 const docType = row["docType"]
                 const docUser = row["user"]
-                dispatch(setDocToSign({ docRef, docId, docType, docUser }));
+                const observers = row["observers"]
+                dispatch(setDocToSign({ docRef, docId, docType, docUser, observers }));
                 navigate(`/signDocument`);
-              }}>서명</Button>
+              }}>{(row["observers"] && row["observers"].includes(_id) ? '확인' : '서명')}</Button>
             );
           case DOCUMENT_SIGNING:
             return (
@@ -452,9 +453,10 @@ const DocumentList = ({location}) => {
                 const docRef = row["docRef"]
                 const docType = row["docType"]
                 const docUser = row["user"]
-                dispatch(setDocToSign({ docRef, docId, docType, docUser }));
+                const observers = row["observers"]
+                dispatch(setDocToSign({ docRef, docId, docType, docUser, observers }));
                 navigate(`/signDocument`);
-              }}>서명하기</Button>
+              }}>{(row["observers"] && row["observers"].includes(_id) ? '확인하기' : '서명하기')}</Button>
             );
           case DOCUMENT_SIGNING:
             return (

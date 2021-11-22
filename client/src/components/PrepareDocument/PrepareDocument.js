@@ -65,7 +65,7 @@ const PrepareDocument = () => {
     return { value: user.key, label: user.name };
   });
   const box = assignees.map(user => {
-    return { key:user.key, sign:0, text:0 };
+    return { key:user.key, sign:0, text:0, observer:0 };
   });
   const box_bulk = [{key:'bulk', sign:0, text:0}]
 
@@ -260,39 +260,43 @@ const PrepareDocument = () => {
         } else if (action === 'modify') {
           console.log('this change modified annotations');
         } else if (action === 'delete') {
-          console.log('deleted annotation');
+          console.log('deleted annotation:'+ annotations);
 
-          const name = annotations[0].custom.name //sample: 6156a3c9c7f00c0d4ace4744_SIGN_
-          const user = name.split('_')[0]
+          // annotation 이 동시 삭제되는 경우 처리 : observer 체크 시 
+          annotations.map(annotation => {
+            const name = annotation.custom.name //sample: 6156a3c9c7f00c0d4ace4744_SIGN_
+            const user = name.split('_')[0]
+  
+            const member = boxData.filter(e => e.key === user)[0]
+  
+            if (name.includes('SIGN')) {
+              member.sign = member.sign - 1
+            } else if (name.includes('TEXT')) {
+              member.text = member.text - 1
+            }
+  
+            const newBoxData = boxData.slice()
+            newBoxData[boxData.filter(e => e.key === user).index] = member 
+            
+            setBoxData(newBoxData)
+          })
 
-          const member = boxData.filter(e => e.key === user)[0]
-
-          if (name.includes('SIGN')) {
-            member.sign = member.sign - 1
-          } else if (name.includes('TEXT')) {
-            member.text = member.text - 1
-          }
-
-          const newBoxData = boxData.slice()
-          newBoxData[boxData.filter(e => e.key === user).index] = member 
-          
-          setBoxData(newBoxData)
 
         }
 
         // 유효성 체크 
-        var check = false
-        boxData.map(box => {
-        //{ key:user.key, sign:0, text:0 };
-        //observers.filter(v => v != item.key)
+        // var check = false
+        // boxData.map(box => {
+        // //{ key:user.key, sign:0, text:0 };
+        // //observers.filter(v => v != item.key)
 
-        //TODO: 체크박스도 조건 추가하기
-          // if(box.sign === 0 && box.text === 0 && observers.filter(v => v == box.key).count == 0) { 
-          if(box.sign === 0 && box.text === 0) { 
-            check = true
-          }
-        });
-        setDisableNext(check)
+        // //TODO: 체크박스도 조건 추가하기
+        //   // if(box.sign === 0 && box.text === 0 && observers.filter(v => v == box.key).count == 0) { 
+        //   if(box.sign === 0 && box.text === 0) { 
+        //     check = true
+        //   }
+        // });
+        // setDisableNext(check)
 
       })
 
@@ -306,6 +310,31 @@ const PrepareDocument = () => {
       // };
     });
   }, []);
+
+  // observers.filter(v => v == box.key).count === 0
+  useEffect(() => {
+
+    // 유효성 체크 
+    var check = false
+    boxData.map(box => {
+    //{ key:user.key, sign:0, text:0 };
+    //observers.filter(v => v != item.key)
+
+      // if(box.sign === 0 && box.text === 0 && observers.filter(v => v == box.key).count == 0) {
+      if (sendType === 'B') {
+        if(box.sign === 0 && box.text === 0) { 
+          check = true
+        }
+      } else {
+        if(box.sign === 0 && box.text === 0 && box.observer === 0) { 
+          check = true
+        }
+      }
+
+    });
+    setDisableNext(check)
+
+  }, [boxData]);
 
   const applyFields = async () => {
 
@@ -584,6 +613,18 @@ const PrepareDocument = () => {
     const signedTime = '';
 
     if (sendType === 'G') { // 일반
+
+      //users 배열 위치 조정: observer 가 제일 아래로 가도록 한다.
+      observers.map(observer => {
+        if (users.includes(observer)) {
+          const idx = users.indexOf(observer)
+          const item = users.splice(idx, 1) 
+          users.splice(users.length, 0, item[0])
+
+          console.log('result:'+users)
+        }
+      })
+
       let body = {
         user: _id,
         docTitle: (documentType === "PC") ? documentTitle : templateTitle,
@@ -744,13 +785,13 @@ const PrepareDocument = () => {
                   <Card size="small" type="inner" title={item.JOB_TITLE ? item.name+' '+item.JOB_TITLE : item.name} style={{ minWidth: 148 }}>
                     <p>
                       <Badge count={boxData.filter(e => e.key === item.key)[0].sign}>
-                        <Button icon={<PlusOutlined />} onClick={e => { addField('SIGN', {}, item); }}>{formatMessage({id: 'input.sign'})}</Button>
+                        <Button block disabled={observers.filter(v => v === item.key).length > 0} icon={<PlusOutlined />} onClick={e => { addField('SIGN', {}, item); }}>{formatMessage({id: 'input.sign'})}</Button>
                       </Badge>
                       {/* {boxData.filter(e => e.key === item.key)[0].sign} */}
                     </p>
                     <p>
                       <Badge count={boxData.filter(e => e.key === item.key)[0].text}>
-                        <Button icon={<PlusOutlined />} onClick={e => { addField('TEXT', {}, item); }}>{formatMessage({id: 'input.text'})}</Button>
+                        <Button block disabled={observers.filter(v => v === item.key).length > 0} icon={<PlusOutlined />} onClick={e => { addField('TEXT', {}, item); }}>{formatMessage({id: 'input.text'})}</Button>
                       </Badge>
                       {/* {boxData.filter(e => e.key === item.key)[0].text} */}
                     </p>
@@ -764,14 +805,43 @@ const PrepareDocument = () => {
                         if (e.target.checked) {
                           // observer 추가 
                           setObservers([...observers, item.key])
+                          
+                          // boxData 갱신
+                          const member = boxData.filter(e => e.key === item.key)[0]
+                          member.observer = member.observer + 1
+                          const newBoxData = boxData.slice()
+                          newBoxData[boxData.filter(e => e.key === item.key).index] = member 
+                          setBoxData(newBoxData)
+
+                          // annotation 삭제
+                          const { Annotations, docViewer } = instance;
+                          const annotManager = docViewer.getAnnotationManager();
+                          const annotationsList = annotManager.getAnnotationsList();
+                          const annotsToDelete = [];
+
+                          annotationsList.map(async (annot, index) => {
+                            console.log("annot.custom.name:"+annot.custom.name)
+                            if (annot.custom.name.includes(item.key)) {
+                              annotsToDelete.push(annot)
+                            }
+                          })
+
+                          annotManager.deleteAnnotations(annotsToDelete, null, true);
+
                         } else {
                           // observer 삭제
                           setObservers(observers.filter(v => v != item.key))
-                          // TODO: 입력한 값 삭제, 입력 버튼 비활성화
+                          
+                          // boxData 갱신
+                          const member = boxData.filter(e => e.key === item.key)[0]
+                          member.observer = member.observer - 1
+                          const newBoxData = boxData.slice()
+                          newBoxData[boxData.filter(e => e.key === item.key).index] = member 
+                          setBoxData(newBoxData)
+
                         }
 
-                        console.log('observers:'+ observers)
-                      }}>Observer</Checkbox>
+                      }}>서명 없이 문서 확인</Checkbox>
                     </p>
                   </Card>
                 </List.Item>

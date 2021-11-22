@@ -23,6 +23,9 @@ const { confirm } = Modal;
 const { TextArea } = Input;
 
 const SignDocument = () => {
+
+  const { formatMessage } = useIntl();
+
   const [annotManager, setAnnotatManager] = useState(null);
   const [annotPosition, setAnnotPosition] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -30,19 +33,25 @@ const SignDocument = () => {
   const [disableNext, setDisableNext] = useState(true);
   const [visiblModal, setVisiblModal] = useState(false);
   const [pageCount, setPageCount] = useState(0);
+  const [textSign, setTextSign] = useState(formatMessage({id: 'sign.complete'}))
 
   // const dispatch = useDispatch();
   // const uploading = useSelector(selectUploading);
   const doc = useSelector(selectDocToSign);
   const user = useSelector(selectUser);
-  const { docRef, docId, docType, docUser } = doc;
+  const { docRef, docId, docType, docUser, observers } = doc;
   const { _id } = user;
-  const { formatMessage } = useIntl();
   
   const viewer = useRef(null);
   const cancelMessage = useRef({});
 
   useEffect(() => {
+
+    console.log('observers:'+observers)
+    if(observers && observers.includes(_id)) {
+      setDisableNext(false)
+      setTextSign('확인 완료')
+    }
 
     WebViewer(
       {
@@ -320,7 +329,7 @@ const SignDocument = () => {
             {formatMessage({id: 'sign.cancel'})}
           </Button>,
           <Button key="2" type="primary" onClick={() => completeSigning()} disabled={disableNext}>
-            {formatMessage({id: 'sign.complete'})}
+            {textSign}
           </Button>,
         ],
       }}

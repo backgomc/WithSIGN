@@ -794,7 +794,8 @@ const Home = () => {
             const docRef = item.docRef;
             const docType = item.docType;
             const docUser = item.user;
-           dispatch(setDocToSign({ docRef, docId, docType, docUser }));
+            const observers = item.observers;
+           dispatch(setDocToSign({ docRef, docId, docType, docUser, observers }));
           }}>
             <ProCard 
               hoverable

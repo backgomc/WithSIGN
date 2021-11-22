@@ -13,7 +13,7 @@ import {
     MinusCircleOutlined,
     InfoCircleOutlined,
   } from '@ant-design/icons';
-import { DocumentType, DocumentTypeText, DOCUMENT_SIGNED, DOCUMENT_TOSIGN, DOCUMENT_SIGNING, DOCUMENT_CANCELED } from './DocumentType';
+import { DocumentType, DocumentTypeText, DOCUMENT_SIGNED, DOCUMENT_TOSIGN, DOCUMENT_SIGNING, DOCUMENT_CANCELED, DOCUMENT_TOCONFIRM } from './DocumentType';
 import ProCard from '@ant-design/pro-card';
 import RcResizeObserver from 'rc-resize-observer';
 import '@ant-design/pro-card/dist/card.css';
@@ -188,7 +188,7 @@ const DocumentExpander = (props) => {
         } else {
             return (
                 <Timeline.Item dot={<ClockCircleOutlined className="timeline-clock-icon" />}>
-                    <b>{user.name} {user.JOB_TITLE}</b> 서명 필요
+                    <b>{user.name} {user.JOB_TITLE}</b> {(item.observers && item.observers.includes(user._id)) ? '확인 필요' : '서명 필요'}
                 </Timeline.Item>
             )
         }
@@ -248,7 +248,7 @@ const DocumentExpander = (props) => {
                     </ProCard>
                     <ProCard split="vertical">
                     <ProCard title="서명 요청시간"><Moment format='YYYY/MM/DD HH:mm'>{item.requestedTime}</Moment></ProCard>
-                    <ProCard title="서명 상태"><DocumentType uid={_id} document={item} /></ProCard>
+                    <ProCard title="서명 상태">{(DocumentType({uid: _id, document: item}) == DOCUMENT_TOSIGN && item.observers && item.observers.includes(_id)) ? DOCUMENT_TOCONFIRM : <DocumentType uid={_id} document={item} />}</ProCard>
                     </ProCard>
                 </ProCard>
             </ProCard>
