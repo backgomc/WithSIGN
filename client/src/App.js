@@ -43,6 +43,8 @@ import '@ant-design/pro-layout/dist/layout.css';
 import 'antd/dist/antd.css';
 import { setSendType } from './components/Assign/AssignSlice';
 import './App.css';
+import LogoImage from './assets/images/logo_withsign1.png'
+import LogoText from './assets/images/logo_withsign2.png'
 
 const App = () => {
   const user = useSelector(selectUser);
@@ -75,8 +77,10 @@ const App = () => {
     >
 
     <ProLayout
-      title="WithSign"
+      title="With Sign"
       // logo="https://gw.alipayobjects.com/mdn/rms_b5fcc5/afts/img/A*1NHAQYduQiQAAAAAAAAAAABkARQnAQ" 로고 이미지 
+      // title={LogoText}
+      logo={LogoImage}
       menuHeaderRender={(logo, title) => (
         <div
           id="customize_menu_header"
@@ -86,6 +90,7 @@ const App = () => {
         >
           {logo}
           {title}
+          {/* <img src={LogoText} />  */}
         </div>
       )}
       {...Menus()}

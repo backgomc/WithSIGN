@@ -55,15 +55,49 @@ const UploadTemplate = () => {
         const doc = docViewer.getDocument();
         const pageIdx = 1;
 
-        doc.loadThumbnailAsync(pageIdx, (thumbnail) => {
-          // thumbnail is a HTMLCanvasElement or HTMLImageElement
-          console.log("loadThumbnailAsync called")
-          console.log('thumbnail:'+thumbnail.toDataURL());
+        // doc.loadThumbnailAsync(pageIdx, (thumbnail) => {
+        //   // thumbnail is a HTMLCanvasElement or HTMLImageElement
+        //   console.log("loadThumbnailAsync called")
+        //   console.log('thumbnail:'+thumbnail.toDataURL());
 
-          setThumbnail(thumbnail.toDataURL())
-        });
+        //   setThumbnail(thumbnail.toDataURL())
+        // });
+
+        doc.loadCanvasAsync(({
+          pageNumber: 1,
+          // zoom: 0.21, // render at twice the resolution //mac: 0.21 window: ??
+          width: 300,  // mac 300
+          drawComplete: async (thumbnail) => {
+            // const pageNumber = 1;
+            // optionally comment out "drawAnnotations" below to exclude annotations
+            // await instance.docViewer.getAnnotationManager().drawAnnotations(pageNumber, thumbnail);
+            // thumbnail is a HTMLCanvasElement or HTMLImageElement
+            console.log('thumbnail:'+thumbnail.toDataURL());
+            setThumbnail(thumbnail.toDataURL())
+          }
+        }));
 
       });
+
+
+      // docViewer.on('annotationsLoaded', () => {
+      //   console.log('annotationsLoaded called');
+      //   const doc = docViewer.getDocument();
+      //   const pageIdx = 1;
+      //   doc.loadCanvasAsync(({
+      //     pageNumber: 1,
+      //     zoom: 2, // render at twice the resolution
+      //     drawComplete: async (thumbnail) => {
+      //       // const pageNumber = 1;
+      //       // optionally comment out "drawAnnotations" below to exclude annotations
+      //       // await instance.docViewer.getAnnotationManager().drawAnnotations(pageNumber, thumbnail);
+      //       // thumbnail is a HTMLCanvasElement or HTMLImageElement
+      //       console.log('thumbnail:'+thumbnail);
+      //       setThumbnail(thumbnail.toDataURL())
+      //     }
+      //  }));
+      // });
+
     });
 
   }, []);
@@ -76,8 +110,14 @@ const UploadTemplate = () => {
 
   }, [file]);
 
+
   const onFinish = async (values) => {
     console.log(values)
+
+    if (!thumbnail) {
+      console.log('waiting thumbnail!')
+      return
+    }
 
     setLoading(true);
     // 템플릿 업로드 
@@ -274,6 +314,7 @@ const UploadTemplate = () => {
     </PageContainer>
     
     <div className="webviewer" ref={viewer} style={{display:'none'}}></div>
+    {/* <div className="webviewer" ref={viewer}></div> */}
   </div>
   )
 

@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
-import { Modal, Table, Input, Space, Button, Popconfirm, Tag, Progress, List, Pagination } from "antd";
+import { Modal, Table, Input, Space, Button, Popconfirm, Tag, Progress, List, Pagination, Card } from "antd";
 import Highlighter from 'react-highlight-words';
 import { SearchOutlined, DeleteOutlined, FileOutlined, DownloadOutlined, EditOutlined, FormOutlined, FilePdfOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 import { useSelector, useDispatch } from 'react-redux';
@@ -30,6 +30,7 @@ import '@ant-design/pro-form/dist/form.css';
 
 const { Search } = Input;
 const { confirm } = Modal;
+const { Meta } = Card;
 
 const TemplateList = () => {
 
@@ -384,19 +385,20 @@ const TemplateList = () => {
         <ProCard 
           hoverable
           bordered
-          title={<div style={{ wordWrap: 'break-word', wordBreak: 'break-word', width: '200px' }}>{item.docTitle}</div>}
+          title={<div style={{ wordWrap: 'break-word', wordBreak: 'break-word', maxWidth: "280px" }}>{item.docTitle} <Tag color="#5BD8A6">private</Tag></div>}
           // tooltip={moment(item.requestedTime).fromNow() + ' ' + item.user.name + ' ' + item.user.JOB_TITLE + ' ' + '생성'}
           // extra={moment(item.requestedTime).fromNow()}
-          subTitle={<Tag color="#5BD8A6">private</Tag>}
-          colSpan="300px" 
+          // subTitle={<Tag color="#5BD8A6">private</Tag>}
+          // colSpan="300px" 
           layout="center" 
-          style={{ minWidth: "300px", height: "500px" }}
+          style={{ minWidth: "300px", height: "100%" }}
+          bodyStyle={{ padding: "5px"}}
           actions={[
             <Button type="text" icon={<FormOutlined />} onClick={e => { signTemplate(item) }}>서명요청</Button>,
             <Button type="text" icon={<FilePdfOutlined />} onClick={e => { navigate('/previewPDF', {state: {docRef:item.docRef, docTitle:item.docTitle}}) }}>파일보기</Button>,
             <Button type="text" danger icon={<DeleteOutlined />} onClick={e => { deleteTemplateSingle(item._id) }}>삭제</Button>,
           ]}>
-            <div><img src={item.thumbnail} /></div>
+            <div><img src={item.thumbnail} style={{width: '280px'}} /></div>
         </ProCard>
       </List.Item>
     )}

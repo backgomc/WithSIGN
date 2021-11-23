@@ -189,15 +189,29 @@ const PrepareDocument = () => {
         setPageCount(docViewer.getPageCount());
 
         const doc = docViewer.getDocument();
-        const pageIdx = 1;
+        // const pageIdx = 1;
 
-        doc.loadThumbnailAsync(pageIdx, (thumbnail) => {
-          // thumbnail is a HTMLCanvasElement or HTMLImageElement
-          console.log("loadThumbnailAsync called")
-          // console.log('thumbnail:'+thumbnail.toDataURL());
+        // doc.loadThumbnailAsync(pageIdx, (thumbnail) => {
+        //   // thumbnail is a HTMLCanvasElement or HTMLImageElement
+        //   console.log("loadThumbnailAsync called")
+        //   // console.log('thumbnail:'+thumbnail.toDataURL());
 
-          setThumbnail(thumbnail.toDataURL())
-        });
+        //   setThumbnail(thumbnail.toDataURL())
+        // });
+
+        doc.loadCanvasAsync(({
+          pageNumber: 1,
+          // zoom: 0.21, // render at twice the resolution //mac: 0.21 window: ??
+          width: 300,  // 윈도우 기준으로 맞춤. 맥에서는 해상도가 더 크게 나옴
+          drawComplete: async (thumbnail) => {
+            // const pageNumber = 1;
+            // optionally comment out "drawAnnotations" below to exclude annotations
+            // await instance.docViewer.getAnnotationManager().drawAnnotations(pageNumber, thumbnail);
+            // thumbnail is a HTMLCanvasElement or HTMLImageElement
+            // console.log('thumbnail:'+thumbnail.toDataURL());
+            setThumbnail(thumbnail.toDataURL())
+          }
+        }));
 
       });
 
