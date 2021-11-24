@@ -43,6 +43,7 @@ const Home = () => {
   const [loadingCanceled, setLoadingCanceled] = useState(false);
   const [loadingSigned, setLoadingSigned] = useState(false);
   const [loadingStatics, setLoadingStatics] = useState(false);
+  const [loadingPaperless, setLoadingPaperless] = useState(false);
   // const [loadingNotice, setLoadingNotice] = useState(false);
   const [documentsToSign, setDocumentsToSign] = useState([]);
   const [documentsSigning, setDocumentsSigning] = useState([]);
@@ -57,6 +58,8 @@ const Home = () => {
   const [signingNum, setSigningNum] = useState(0);
   const [canceledNum, setCanceledNum] = useState(0);
   const [signedNum, setSignedNum] = useState(0);
+  const [paperlessNum, setPaperlessNum] = useState(0);
+  const [docNum, setDocNum] = useState(0);
 
   const dispatch = useDispatch();
   const user = useSelector(selectUser);
@@ -70,6 +73,7 @@ const Home = () => {
     fetchTotal();
     fetchCanceled();
     fetchSigned();
+    fetchPaperless();
     // fetchNotice();
   }, []);
 
@@ -161,6 +165,19 @@ const Home = () => {
       setSignedNum(res.data.signedNum)
     }
     setLoadingStatics(false);
+  }
+
+  const fetchPaperless = async () => {
+    setLoadingPaperless(true);
+    let param = {
+      user: _id
+    }
+    const res = await axios.post('/api/users/paperless', param)
+    if (res.data.success) {
+      setPaperlessNum(res.data.paperless)
+      setDocNum(res.data.docCount)
+    }
+    setLoadingPaperless(false);
   }
 
   // const fetchNotice = async () => {
@@ -505,6 +522,47 @@ const Home = () => {
 
   const pie = (
     <ProCard title="문서 통계"><Pie {...config} /></ProCard>
+  )
+
+  const paperless = (
+    // <ProCard 
+    //   title="My Paperless"
+    //   loading={loadingPaperless}
+    //   tooltip="본인이 서명 요청한 문서가 서명 완료된 경우"
+    // >
+    //   {paperlessNum}
+    // </ProCard>
+
+    <StatisticCard.Group loading={loadingPaperless} title='절약 건수' tooltip='본인이 서명 요청하여 완료된 건수를 기준으로 산정'>
+      <StatisticCard
+        statistic={{
+          title: '페이퍼리스',
+          value: paperlessNum,
+          icon: (
+            <img
+              style={{display: 'block', width: 42, height: 42}}
+              src="https://gw.alipayobjects.com/mdn/rms_7bc6d8/afts/img/A*dr_0RKvVzVwAAAAAAAAAAABkARQnAQ"
+              alt="icon"
+            />
+          ),
+        }}
+      />
+      <StatisticCard
+        statistic={{
+          title: '문서',
+          // tip: '본인이 서명 요청하여 완료된 건수를 기준으로 산정',
+          value: docNum,
+          icon: (
+            <img
+              style={{display: 'block', width: 42, height: 42}}
+              src="https://gw.alipayobjects.com/mdn/rms_7bc6d8/afts/img/A*-jVKQJgA1UgAAAAAAAAAAABkARQnAQ"
+              alt="icon"
+            />
+          ),
+        }}
+      />
+    </StatisticCard.Group>
+
   )
 
   const direct = (
@@ -982,6 +1040,29 @@ const Home = () => {
 
   return (
     <div>
+      {/* <div style={{padding:0, marginTop:'-24px', marginLeft:'-24px', marginRight:'-24px', marginBottom:'24px'}}>
+        <img src={banner} />
+      </div>
+
+      <Row gutter={24}>
+          <Col xl={16} lg={24} md={24} sm={24} xs={24}>
+            {staticsAll}<br></br>
+            <Row gutter={24}>
+              <Col xl={12} lg={24} md={24} sm={24} xs={24} style={{display: 'flex', paddingBottom: '20px'}}>
+                <BoardCard boardType={'notice'} boardName={'공지사항'}></BoardCard>
+              </Col>
+              <Col xl={12} lg={24} md={24} sm={24} xs={24} style={{display: 'flex', paddingBottom: '20px'}}>
+              <FAQCard boardType={'faq'} boardName={'FAQ'}></FAQCard>
+              </Col>
+            </Row>
+          </Col>
+          <Col xl={8} lg={24} md={24} sm={24} xs={24}>
+            {pie}
+            <br></br>
+            {direct}
+          </Col>
+      </Row> */}
+      
       <PageContainer
         ghost
         header={{
@@ -1019,25 +1100,8 @@ const Home = () => {
         ]}
       >
       <br/>
-      {/* <RcResizeObserver
-      key="resize-observer"
-      onResize={(offset) => {
-        setResponsive(offset.width < 596);
-      }}
-      >
-        <Row gutter={[24, 24]}>
-          <Col span={responsive ? 24 : 16}>{toSignCard}</Col>
-          <Col span={responsive ? 24 : 8}>{pie}</Col>
-          <Col span={responsive ? 24 : 12} style={{display: 'flex'}}>{signing}</Col>
-          <Col span={responsive ? 24 : 12} style={{display: 'flex'}}>{noticeList}</Col>
-        </Row>
-
-      </RcResizeObserver> */}
-
       <Row gutter={24}>
           <Col xl={16} lg={24} md={24} sm={24} xs={24}>
-            {/* {toSignCard}
-            {signing}<br></br> */}
             {staticsAll}<br></br>
             <Row gutter={24}>
               <Col xl={12} lg={24} md={24} sm={24} xs={24} style={{display: 'flex', paddingBottom: '20px'}}>
@@ -1050,7 +1114,8 @@ const Home = () => {
           </Col>
           <Col xl={8} lg={24} md={24} sm={24} xs={24}>
             {pie}
-            {/* <BoardCard boardType={'notice'} boardName={'공지사항'}></BoardCard> */}
+            <br></br>
+            {paperless}
             <br></br>
             {direct}
           </Col>

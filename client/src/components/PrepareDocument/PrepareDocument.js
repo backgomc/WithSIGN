@@ -612,7 +612,7 @@ const PrepareDocument = () => {
 
     setLoading(true);
     // TO-BE
-    // 1.FILE SAVE
+    // 1.SAVE FILE
     const formData = new FormData()
     // formData.append('path', 'docToSign/')
     formData.append('path', path)
@@ -620,7 +620,14 @@ const PrepareDocument = () => {
     const res = await axios.post(`/api/storage/upload`, formData)
     console.log(res)
 
-    // 2. DB SAVE
+    // 2. SAVE THUMBNAIL
+    const resThumbnail = await axios.post('/api/document/addThumbnail', {user: _id, thumbnail: thumbnail})
+    var thumbnailUrl = '';
+    if (resThumbnail.data.success) {
+      thumbnailUrl = resThumbnail.data.thumbnail 
+    }
+
+    // 3. SAVE DOCUMENT
     const signed = false;
     const xfdf = [];
     const signedBy = [];
@@ -650,7 +657,7 @@ const PrepareDocument = () => {
         signedBy: signedBy,
         signed: signed,
         signedTime: signedTime,
-        thumbnail: thumbnail,
+        thumbnail: thumbnailUrl,
         pageCount: pageCount,
         observers: observers
       }
@@ -678,7 +685,7 @@ const PrepareDocument = () => {
           signedBy: signedBy,
           signed: signed,
           signedTime: signedTime,
-          thumbnail: thumbnail,
+          thumbnail: thumbnailUrl,
           pageCount: pageCount,
           observers: observers
         }

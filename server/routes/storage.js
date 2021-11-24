@@ -266,6 +266,17 @@ router.post('/removeDocument', (req, res) => {
           
             fs.unlink(filePath, (err) => err ?  
               console.log(err) : console.log(`${filePath} 를 정상적으로 삭제했습니다`));
+
+              // 썸네일도 삭제하기 (벌크가 아닌 경우만 삭제: 벌크인 경우 다른 문서가 같이 참조하므로 ...)
+              if(document.docType === 'G') {
+                  const thumbnailPath = document.thumbnail
+                fs.access(thumbnailPath, fs.constants.F_OK, (err) => { // A
+                    if (err) return console.log('삭제할 수 없는 파일입니다');
+                  
+                    fs.unlink(thumbnailPath, (err) => err ?  
+                      console.log(err) : console.log(`${thumbnailPath} 를 정상적으로 삭제했습니다`));
+                });
+              }
           });
       
           // DOCUMENT에 HASH 값 저장

@@ -226,7 +226,7 @@ const Test = () => {
   }, []);
 
   return (
-    <div style={{padding:8}}>
+    <div style={{padding:0, marginTop:'-24px', marginLeft:'-24px', marginRight:'-24px'}}>
 
       <TreeTransfer 
           dataSource={data}

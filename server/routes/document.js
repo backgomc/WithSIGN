@@ -2,16 +2,15 @@ const express = require('express');
 const router = express.Router();
 const { Document } = require("../models/Document");
 const requestIp = require('request-ip');
+const fs = require('fs');
+const config = require("../config/key");
+const { generateRandomName, makeFolder, today } = require('../common/utils');
 
-
-// 신규 문서 등록
+// 신규 문서 등록  
 router.post('/addDocumentToSign', (req, res) => {
 
-  console.log("req.body.user:"+req.body.user)
-  console.log("req.body.docRef:"+req.body.docRef)
-
   if (!req.body.user || !req.body.docRef) {
-      return res.json({ success: false, message: "input value not enough!" })
+    return res.json({ success: false, message: "input value not enough!" })
   } 
 
   const document = new Document(req.body)
@@ -23,7 +22,71 @@ router.post('/addDocumentToSign', (req, res) => {
       documentId: document._id
     })
   })
+
+  // console.log("req.body.user:"+req.body.user)
+  // console.log("req.body.docRef:"+req.body.docRef)
+
+  // if (!req.body.user || !req.body.docRef) {
+  //     return res.json({ success: false, message: "input value not enough!" })
+  // } 
+
+  // const document = new Document(req.body)
+
+  // // 썸네일 이미지는 스토리지에 올리기
+  // const base64Data = document.thumbnail.split(';base64,').pop();
+
+  // const newDir = config.storageDIR + 'thumbnails/' + today() + '/';
+  // makeFolder(newDir);
+  // const fullPath = newDir+generateRandomName()+'.png';
+  // console.log('fullPath:'+fullPath)
+
+  // fs.writeFile(fullPath, base64Data, {encoding: 'base64'}, function(err) {
+  //   if (err) return res.json({ success: false, err })
+  //   console.log('File created');
+
+  //   document.thumbnail = fullPath
+  //   document.save((err, document) => {
+  //     if (err) return res.json({ success: false, err })
+  //     return res.status(200).json({
+  //       success: true,
+  //       documentId: document._id
+  //     })
+  //   })
+
+  // });  
 })
+
+// 썸네일 저장
+router.post('/addThumbnail', (req, res) => {
+
+  console.log("req.body.user:"+req.body.user)
+
+  if (!req.body.user || !req.body.thumbnail) {
+      return res.json({ success: false, message: "input value not enough!" })
+  } 
+
+  const thumbnail = req.body.thumbnail
+  // 썸네일 이미지는 스토리지에 올리기
+  const base64Data = thumbnail.split(';base64,').pop();
+
+  const newDir = config.storageDIR + 'thumbnails/' + today() + '/';
+  makeFolder(newDir);
+  const fullPath = newDir+generateRandomName()+'.png';
+  console.log('fullPath:'+fullPath)
+
+  fs.writeFile(fullPath, base64Data, {encoding: 'base64'}, function(err) {
+    if (err) return res.json({ success: false, err })
+    console.log('File created');
+
+    return res.status(200).json({
+      success: true,
+      thumbnail: fullPath
+    })
+
+  });  
+  
+})
+
 
 // 문서 상태 변경 (사인) : updateDocumentToSign
 router.post('/updateDocumentToSign', (req, res) => {

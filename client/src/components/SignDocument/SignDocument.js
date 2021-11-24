@@ -298,7 +298,9 @@ const SignDocument = () => {
         console.log("end merge")
 
         // 서명 요청자 paperless 수 증가 시킴
-        await axios.post('/api/users/paperless', {user: docUser._id, paperless: pageCount})
+        if(res.data.isLast) {
+          await axios.post('/api/users/updatePaperless', {user: docUser._id, paperless: pageCount})
+        }
 
         setLoading(false);
       } else {

@@ -157,7 +157,7 @@ const App = () => {
       <Sign path="/signDocument" />
       <View path="/viewDocument" />
       <Setting path="/setting" />
-      <Test2 path="/test" />
+      <Test path="/test" />
       <BoardList path="/customer" />
       <BoardDetail path="/boardDetail" />
       <Audit path="/audit" />

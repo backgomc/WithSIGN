@@ -462,7 +462,7 @@ router.post('/insertUsers', (req, res) => {
 
 
 // paperless 업데이트 : 받은 숫자를 더해준다.
-router.post('/paperless', (req, res) => {
+router.post('/updatePaperless', (req, res) => {
 
   console.log("user:"+req.body.user)
   console.log("paperless:"+req.body.paperless)
@@ -480,6 +480,29 @@ router.post('/paperless', (req, res) => {
       return res.json({ success: false, message: err })
     } else {
       return res.json({ success: true })
+    }
+  })
+
+})
+
+// paperless : paperless 정보를 리턴한다.
+router.post('/paperless', (req, res) => {
+
+  if (!req.body.user) {
+      return res.json({ success: false, message: "input value not enough!" })
+  } 
+
+  const user = req.body.user
+
+  User
+  .findOne({ _id: user })
+  .exec(function(err, result) {
+
+    if (err) {
+      console.log(err);
+      return res.json({ success: false, message: err })
+    } else {
+      return res.json({ success: true, paperless: result.paperless, docCount: result.docCount })
     }
   })
 

@@ -3,6 +3,7 @@ const router = express.Router();
 const { Template } = require("../models/Template");
 const fs = require('fs');
 const config = require("../config/key");
+const { generateRandomName, makeFolder, today } = require('../common/utils');
 
 // 템플릿 등록
 router.post('/addTemplate', (req, res) => {
@@ -12,13 +13,29 @@ router.post('/addTemplate', (req, res) => {
     } 
 
     const template = new Template(req.body)
-  
-    template.save((err, documentInfo) => {
+
+    // 썸네일 이미지는 스토리지에 올리기
+    const base64Data = template.thumbnail.split(';base64,').pop();
+
+    const newDir = config.storageDIR + 'thumbnails/' + today() + '/';
+    makeFolder(newDir);
+    const fullPath = newDir+generateRandomName()+'.png';
+    console.log('fullPath:'+fullPath)
+
+    fs.writeFile(fullPath, base64Data, {encoding: 'base64'}, function(err) {
       if (err) return res.json({ success: false, err })
-      return res.status(200).json({
-        success: true
+      console.log('File created');
+
+      template.thumbnail = fullPath
+      template.save((err, documentInfo) => {
+        if (err) return res.json({ success: false, err })
+        return res.status(200).json({
+          success: true
+        })
       })
-    })
+
+    });  
+
 })
 
 // 템플릿 목록
@@ -109,7 +126,16 @@ router.post('/deleteTemplate', (req, res) => {
                console.error(err);
                return res.json({ success: false, err });                                    
            }                                                          
-          console.log('File has been Deleted');                           
+          console.log('File has been Deleted');    
+          
+          // 썸네일 이미지 삭제 
+          fs.access(template.thumbnail, fs.constants.F_OK, (err) => { // A
+            if (err) return console.log('삭제할 수 없는 파일입니다');
+          
+            fs.unlink(template.thumbnail, (err) => err ?  
+              console.log(err) : console.log(`${template.thumbnail} 를 정상적으로 삭제했습니다`));
+          });
+
        });
     });
 

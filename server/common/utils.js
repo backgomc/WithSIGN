@@ -1,5 +1,6 @@
 
 const crypto = require('crypto');
+const fs = require('fs');
 
 const ENCRYPTION_KEY = 'nacf1234'
 const IV_LENGTH = 16;
@@ -55,4 +56,32 @@ function decrypt(text) {
 	return decrypted.toString();
 }
 
-module.exports = { hexCrypto, encrypt, decrypt };
+const generateRandomName = () => {
+    let n = 10  //10 자리
+    let str = ''
+    for (let i = 0; i < n; i++) {
+      str += Math.floor(Math.random() * 10)
+    }
+    return str
+}
+
+const makeFolder = (dir) => {
+    if(!fs.existsSync(dir)) {
+        fs.mkdirSync(dir);
+    }
+}
+
+const today = () => {
+    var today = new Date();
+    var year = today.getFullYear();
+    var month = ('0' + (today.getMonth() + 1)).slice(-2);
+    var day = ('0' + today.getDate()).slice(-2);
+    var dateString = year + month  + day;
+
+    console.log(dateString);
+    return dateString;
+}
+
+
+
+module.exports = { hexCrypto, encrypt, decrypt, generateRandomName, makeFolder, today };
