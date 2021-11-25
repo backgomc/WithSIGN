@@ -1040,7 +1040,7 @@ const Home = () => {
 
   return (
     <div>
-      {/* <div style={{padding:0, marginTop:'-24px', marginLeft:'-24px', marginRight:'-24px', marginBottom:'24px'}}>
+      <div style={{background: 'white',padding:0, marginTop:'-24px', marginLeft:'-24px', marginRight:'-24px', marginBottom:'24px'}}>
         <img src={banner} />
       </div>
 
@@ -1059,11 +1059,13 @@ const Home = () => {
           <Col xl={8} lg={24} md={24} sm={24} xs={24}>
             {pie}
             <br></br>
+            {paperless}
+            <br></br>
             {direct}
           </Col>
-      </Row> */}
+      </Row>
       
-      <PageContainer
+      {/* <PageContainer
         ghost
         header={{
           title: headerTitle,
@@ -1121,7 +1123,7 @@ const Home = () => {
           </Col>
       </Row>
 
-      </PageContainer>
+      </PageContainer> */}
     </div>
   );
 };

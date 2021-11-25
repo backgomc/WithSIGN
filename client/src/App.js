@@ -100,11 +100,11 @@ const App = () => {
       style={{
         // height: 500,
       }}
-      menuExtraRender={() =>
-        <div>
-          <Button type="primary" style={{ width: '100%' }} onClick={() => {navigate('/uploadDocument')}}>서명 요청</Button>
-        </div>
-      }
+      // menuExtraRender={() =>
+      //   <div>
+      //     <Button type="primary" style={{ width: '100%' }} onClick={() => {navigate('/uploadDocument')}}>서명 요청</Button>
+      //   </div>
+      // }
       // menuFooterRender={() =>
       //   <div style={{ height: '80px'}}>
       //     <Button style={{ width: '80%'}}>서명 요청</Button>

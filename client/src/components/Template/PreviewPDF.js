@@ -7,7 +7,6 @@ import { Button } from 'antd';
 import { useIntl } from "react-intl";
 import { PageContainer } from '@ant-design/pro-layout';
 import WebViewer from '@pdftron/webviewer';
-import { STORAGE_DIR } from '../../config/Config';
 import 'antd/dist/antd.css';
 import '@ant-design/pro-card/dist/card.css';
 
@@ -46,7 +45,8 @@ const PreviewPDF = ({location}) => {
 
       const { docViewer } = instance;
 
-      const URL = STORAGE_DIR + docRef;      
+      // DISTO
+      const URL = '/' + docRef;      
       instance.docViewer.loadDocument(URL);
       
       docViewer.on('documentLoaded', () => {

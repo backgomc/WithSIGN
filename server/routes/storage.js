@@ -7,6 +7,9 @@ const { Bulk } = require("../models/Bulk");
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
+const { makeFolder } = require('../common/utils');
+
+
 // const upload = multer({ dest: 'storage/docToSign/' })
 
 const storage = multer.diskStorage({
@@ -15,13 +18,23 @@ const storage = multer.diskStorage({
         console.log("req.body.isLast:"+req.body.isLast)
         
         if(req.body.path) {
+
+            var newDir = ''
+            // 스토리지 폴더가 포함된 경우 제외시킴 (문서 Merge 시 해당됨)
+            if (req.body.path.includes(config.storageDIR)) {
+                newDir = req.body.path
+            } else {
+                newDir = config.storageDIR + req.body.path;
+            }
+
+            console.log('newDir:'+newDir)
+            
             // 폴더가 없으면 폴더생성 
-            const newDir = config.storageDIR + req.body.path;
             makeFolder(newDir);
 
-            cb(null, config.storageDIR + req.body.path);
+            cb(null, newDir);
         } else {
-            cb(null, config.storageDIR + 'docToSign/');
+            cb(null, config.storageDIR + 'documents/');
         }
     },
     filename: (req, file, cb) => {
@@ -57,12 +70,6 @@ const storageTemp = multer.diskStorage({
 const upload = multer({storage});
 // const uploadTemp = multer({storageTemp});
 const uploadTemp = multer({ dest: config.storageDIR + 'temp/' })
-
-const makeFolder = (dir) => {
-    if(!fs.existsSync(dir)) {
-        fs.mkdirSync(dir);
-    }
-}
 
 // 신규 문서 등록
 router.post('/upload', upload.single('file'), (req, res) => {
@@ -104,14 +111,16 @@ router.post('/copyBulk', (req, res) => {
                   console.log("docRef:"+docRef)
 
                   // 1. 폴더 생성
-                  const newDir = config.storageDIR + 'docToSign/' + bulkId
+                  const newDir = config.storageDIR + config.documentDIR + bulkId
                   makeFolder(newDir);
 
                   // 기존 파일명 가져오기
                   // const fileName = path.basename(docRef);
 
                   // 2. 파일 복사
-                  const orgPath = config.storageDIR + docRef
+                  // DISTO
+                //   const orgPath = config.storageDIR + docRef
+                  const orgPath = docRef
                   const newPath = newDir + '/' + docId + ".pdf"
 
                   console.log("orgPath:"+orgPath)
@@ -122,7 +131,8 @@ router.post('/copyBulk', (req, res) => {
                     console.log('file copied!');
 
                     // 3. document 파일 위치 업데이트 
-                    Document.updateOne({ _id: docId }, {docRef: 'docToSign/' + bulkId + '/' + docId + ".pdf"}, (err, result) => {
+                    // DISTO
+                    Document.updateOne({ _id: docId }, {docRef: config.storageDIR + config.documentDIR + bulkId + '/' + docId + ".pdf"}, (err, result) => {
                         if (err) {
                             res.json({ success: false, message: err });
                         } else {
@@ -152,7 +162,9 @@ router.post('/checkHashByDocRef', (req, res) => {
     } 
     const docRef = req.body.docRef 
 
-    const file_buffer = fs.readFileSync(config.storageDIR+docRef);
+    // DISTO
+    // const file_buffer = fs.readFileSync(config.storageDIR+docRef);
+    const file_buffer = fs.readFileSync(docRef);
 
     const hash = crypto.createHash('md5');
     hash.update(file_buffer);
@@ -217,7 +229,9 @@ router.post('/updateHash', (req, res) => {
         if (document) {
           const { docRef } = document;
 
-          const file_buffer = fs.readFileSync(config.storageDIR+docRef);
+          //DISTO
+        //   const file_buffer = fs.readFileSync(config.storageDIR+docRef);
+        const file_buffer = fs.readFileSync(docRef);
 
           const hash = crypto.createHash('md5');
           hash.update(file_buffer);
@@ -260,7 +274,9 @@ router.post('/removeDocument', (req, res) => {
         if (document) {
           const { docRef } = document;
 
-          const filePath = config.storageDIR+docRef
+          // DISTO
+        //   const filePath = config.storageDIR+docRef
+          const filePath = docRef
           fs.access(filePath, fs.constants.F_OK, (err) => { // A
             if (err) return console.log('삭제할 수 없는 파일입니다');
           

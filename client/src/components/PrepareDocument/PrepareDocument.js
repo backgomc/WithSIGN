@@ -35,7 +35,7 @@ const { Dragger } = Upload;
 const PrepareDocument = () => {
   const [instance, setInstance] = useState(null);
   const [dropPoint, setDropPoint] = useState(null);
-  const [fileName, setFileName] = useState(null);
+  // const [fileName, setFileName] = useState(null);
   const [loading, setLoading] = useState(false);
   const [responsive, setResponsive] = useState(false);
   const [thumbnail, setThumbnail] = useState(null);
@@ -178,7 +178,9 @@ const PrepareDocument = () => {
 
       if (documentType === 'TEMPLATE') {
         // instance.loadDocument("http://localhost:5000/storage/template/60f4fb1e580054126cf7eba51627367952105.pdf")
-        instance.loadDocument(STORAGE_DIR+template.docRef)
+
+        // /storage/... (O) storage/...(X)
+        instance.loadDocument('/'+template.docRef)
       } else if(documentType === 'PC') {
         instance.loadDocument(documentFile)
       }
@@ -578,13 +580,15 @@ const PrepareDocument = () => {
   }
 
   const uploadForSigning = async () => {
-    // upload the PDF with fields as AcroForm
-    // const storageRef = storage.ref();
-    // const referenceString = `docToSign/${_id}${Date.now()}.pdf`;
-    const referenceString = `docToSign/${getToday()}/${_id}${Date.now()}.pdf`;
-    var reg = new RegExp('(.*\/).*')
-    var path = reg.exec(referenceString)[1];
-    console.log("path:"+path)
+
+    // const referenceString = `docToSign/${getToday()}/${_id}${Date.now()}.pdf`;
+    // var reg = new RegExp('(.*\/).*')
+    // var path = reg.exec(referenceString)[1];
+    // console.log("path:"+path)
+
+    const filename = `${_id}${Date.now()}.pdf`
+    const path = `documents/${getToday()}`
+
 
     // 1. 파일 저장
     // 2. DB 저장
@@ -616,9 +620,15 @@ const PrepareDocument = () => {
     const formData = new FormData()
     // formData.append('path', 'docToSign/')
     formData.append('path', path)
-    formData.append('file', blob, referenceString)
+    formData.append('file', blob, filename)
     const res = await axios.post(`/api/storage/upload`, formData)
     console.log(res)
+
+    // 업로드 후 파일 경로 가져오기  
+    var docRef = ''
+    if (res.data.success){
+      docRef = res.data.file.path 
+    }
 
     // 2. SAVE THUMBNAIL
     const resThumbnail = await axios.post('/api/document/addThumbnail', {user: _id, thumbnail: thumbnail})
@@ -650,7 +660,7 @@ const PrepareDocument = () => {
         user: _id,
         docTitle: (documentType === "PC") ? documentTitle : templateTitle,
         // email: email,
-        docRef: referenceString,
+        docRef: docRef,
         // emails: emails,
         users: users,
         xfdf: xfdf, 
@@ -678,7 +688,7 @@ const PrepareDocument = () => {
           docTitle: (documentType === "PC") ? documentTitle : templateTitle,
           docType: "B",
           // email: email,
-          docRef: referenceString,
+          docRef: docRef,
           // emails: emails,
           users: [item],
           xfdf: xfdf, 

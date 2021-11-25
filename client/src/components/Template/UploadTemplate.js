@@ -122,19 +122,24 @@ const UploadTemplate = () => {
     setLoading(true);
     // 템플릿 업로드 
     // 1. FILE-SAVE
-    const referenceString = `template/${_id}${Date.now()}.pdf`;
+    const filename = `${_id}${Date.now()}.pdf`
     const formData = new FormData()
-    formData.append('path', 'template')
-    formData.append('file', file, referenceString)
+    formData.append('path', 'templates')
+    formData.append('file', file, filename)
     const res = await axios.post(`/api/storage/upload`, formData)
-    console.log(res)
+
+    // 업로드 후 파일 경로 가져오기  
+    var docRef = ''
+    if (res.data.success){
+      docRef = res.data.file.path 
+    }
 
     // 2. DB-SAVE
     let body = {
       user: _id,
       docTitle: form.getFieldValue("documentTitle"),
       email: email,
-      docRef: referenceString,
+      docRef: docRef,
       thumbnail: thumbnail
     }
     console.log(body)

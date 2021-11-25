@@ -1,1 +1,1 @@
-export const STORAGE_DIR="/storage/";
+export const STORAGE_DIR="storage/";

@@ -121,7 +121,9 @@ router.post('/deleteTemplate', (req, res) => {
   .exec((err, rows) => {
     rows.forEach(template => {
       console.log(template.docRef)
-      fs.unlink(config.storageDIR + template.docRef, function (err) {            
+      //DISTO
+      // fs.unlink(config.storageDIR + template.docRef, function (err) {    
+      fs.unlink(template.docRef, function (err) {            
            if (err) {                                                 
                console.error(err);
                return res.json({ success: false, err });                                    

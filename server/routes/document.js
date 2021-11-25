@@ -69,7 +69,7 @@ router.post('/addThumbnail', (req, res) => {
   // 썸네일 이미지는 스토리지에 올리기
   const base64Data = thumbnail.split(';base64,').pop();
 
-  const newDir = config.storageDIR + 'thumbnails/' + today() + '/';
+  const newDir = config.storageDIR + config.thumbnailDIR + today() + '/';
   makeFolder(newDir);
   const fullPath = newDir+generateRandomName()+'.png';
   console.log('fullPath:'+fullPath)

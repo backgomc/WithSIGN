@@ -1,4 +1,6 @@
 module.exports = {
     mongoURI: "mongodb://mongo/nhsign",
-    storageDIR: "storage/"
+    storageDIR: "storage/",
+    documentDIR: "documents/",
+    thumbnailDIR: "thumbnails/"
 }

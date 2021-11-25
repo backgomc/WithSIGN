@@ -67,7 +67,7 @@ const generateRandomName = () => {
 
 const makeFolder = (dir) => {
     if(!fs.existsSync(dir)) {
-        fs.mkdirSync(dir);
+        fs.mkdirSync(dir, { recursive: true });
     }
 }
 
