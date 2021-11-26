@@ -872,7 +872,7 @@ const PrepareDocument = () => {
 
                         }
 
-                      }}>서명 없이 문서 확인</Checkbox>
+                      }}>서명 없이 문서 수신</Checkbox>
                     </p>
                   </Card>
                 </List.Item>

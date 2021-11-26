@@ -41,15 +41,20 @@ const TemplateList = () => {
   const [searchText, setSearchText] = useState('');
   const [searchedColumn, setSearchedColumn] = useState('');
   const [data, setData] = useState([]);
+  const [dataPublic, setDataPublic] = useState([]);
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [hasSelected, setHasSelected] = useState(selectedRowKeys.length > 0);
   const [cardActionProps, setCardActionProps] = useState('actions');
   
   const [pagination, setPagination] = useState({current:1, pageSize:10});
   const [total, setTotal] = useState();
+  const [totalPublic, setTotalPublic] = useState();
   const [pageSize, setPageSize] = useState(10);
 
+  const [tab, setTab] = useState('private');
+
   const [loading, setLoading] = useState(false);
+  const [loadingPublic, setLoadingPublic] = useState(false);
   // const [expandable, setExpandable] = useState();
   const [visiblePopconfirm, setVisiblePopconfirm] = useState(false);
 
@@ -84,6 +89,28 @@ const TemplateList = () => {
 
       } else {
           setLoading(false);
+          alert(response.data.error)
+      }
+
+    });
+  };
+
+  const fetchPublic = (params = {}) => {
+    setLoadingPublic(true);
+
+    axios.post('/api/template/templates', params).then(response => {
+
+      console.log(response)
+      if (response.data.success) {
+        const templates = response.data.templates;
+
+        setPagination({...params.pagination, total:response.data.total});
+        setDataPublic(templates);
+        setTotalPublic(response.data.total);
+        setLoadingPublic(false);
+
+      } else {
+        setLoadingPublic(false);
           alert(response.data.error)
       }
 
@@ -395,8 +422,53 @@ const TemplateList = () => {
           bodyStyle={{ padding: "5px"}}
           actions={[
             <Button type="text" icon={<FormOutlined />} onClick={e => { signTemplate(item) }}>서명요청</Button>,
-            <Button type="text" icon={<FilePdfOutlined />} onClick={e => { navigate('/previewPDF', {state: {docRef:item.docRef, docTitle:item.docTitle}}) }}>파일보기</Button>,
+            <Button type="text" icon={<FilePdfOutlined />} onClick={e => { navigate('/previewPDF', {state: {docRef:item.docRef, docTitle:item.docTitle}}) }}>문서보기</Button>,
             <Button type="text" danger icon={<DeleteOutlined />} onClick={e => { deleteTemplateSingle(item._id) }}>삭제</Button>,
+          ]}>
+            <div><img src={item.thumbnail} style={{width: '280px'}} /></div>
+        </ProCard>
+      </List.Item>
+    )}
+    />
+  )
+
+  const cardModePublic = (
+    <List
+    rowKey="id"
+    loading={loadingPublic}
+    grid={{ gutter: 24, lg: 3, md: 2, sm: 1, xs: 1 }}
+    dataSource={dataPublic}
+    // onChange={handlePageChange}
+    pagination={{
+      onChange: page => {
+        console.log('page:'+page);
+        fetch({
+          pagination: {current: page, pageSize: pageSize},
+          uid: _id,
+          type: 'C'
+        });
+      },
+      pageSize: pageSize,
+      total: total
+    }}
+    // pagination={pagination}
+    renderItem={item => (
+      <List.Item key={item._id}>
+        <ProCard 
+          hoverable
+          bordered
+          title={<div style={{ wordWrap: 'break-word', wordBreak: 'break-word', maxWidth: "280px" }}>{item.docTitle} <Tag color="#519BE3">public</Tag></div>}
+          // tooltip={moment(item.requestedTime).fromNow() + ' ' + item.user.name + ' ' + item.user.JOB_TITLE + ' ' + '생성'}
+          // extra={moment(item.requestedTime).fromNow()}
+          // subTitle={<Tag color="#5BD8A6">private</Tag>}
+          // colSpan="300px" 
+          layout="center" 
+          style={{ minWidth: "300px", height: "100%" }}
+          bodyStyle={{ padding: "5px"}}
+          actions={[
+            <Button type="text" icon={<FormOutlined />} onClick={e => { signTemplate(item) }}>서명요청</Button>,
+            <Button type="text" icon={<FilePdfOutlined />} onClick={e => { navigate('/previewPDF', {state: {docRef:item.docRef, docTitle:item.docTitle}}) }}>문서보기</Button>,
+            // <Button type="text" danger icon={<DeleteOutlined />} onClick={e => { deleteTemplateSingle(item._id) }}>삭제</Button>,
           ]}>
             <div><img src={item.thumbnail} style={{width: '280px'}} /></div>
         </ProCard>
@@ -410,6 +482,12 @@ const TemplateList = () => {
     fetch({
       uid: _id,
       pagination,
+    });
+
+    fetchPublic({
+      uid: _id,
+      pagination,
+      type: 'C'
     });
 
   }, [_id]);
@@ -449,6 +527,17 @@ const TemplateList = () => {
           // </span>
           ],
         }}
+        tabList={[
+          {
+            tab: '내 템플릿',
+            key: 'private',
+          },
+          {
+            tab: '회사 템플릿',
+            key: 'public',
+          },
+        ]}
+        onTabChange={(key)=>{setTab(key)}}
         content={description}
         footer={[
         ]}
@@ -456,7 +545,9 @@ const TemplateList = () => {
       <br></br>
 
       {/* {tableMode} */}
-      {cardMode}
+      {/* {cardMode} */}
+
+      {tab === 'private' ? cardMode : cardModePublic}
 
     </PageContainer>
     </div>

@@ -146,7 +146,7 @@
   - DB에 STORAGE_DIR 포함 fullpath 저장
   - 스토리지 위치 변경 시는 config 변경
   - config STORAGE_DIR 변경시 nginx proxy 설정 변경
-* 대량발송 후 서명요청시 ... 대량발송 플래그 남아있음
+# 대량발송 후 서명요청시 ... 대량발송 플래그 남아있음
 # 대량발송 후 서명 완료 시 서명이 안보임
 
 

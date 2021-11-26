@@ -67,6 +67,7 @@ export const AssignSlice = createSlice({
       state.templateTitle = null;
       state.templateType = null;
       state.signees = [];
+      state.sendType = null;
     },
   },
 });

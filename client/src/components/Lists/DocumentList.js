@@ -392,7 +392,7 @@ const DocumentList = ({location}) => {
                 const observers = row["observers"]
                 dispatch(setDocToSign({ docRef, docId, docType, docUser, observers }));
                 navigate(`/signDocument`);
-              }}>{(row["observers"] && row["observers"].includes(_id) ? '확인' : '서명')}</Button>
+              }}>{(row["observers"] && row["observers"].includes(_id) ? '수신' : '서명')}</Button>
             );
           case DOCUMENT_SIGNING:
             return (
@@ -456,7 +456,7 @@ const DocumentList = ({location}) => {
                 const observers = row["observers"]
                 dispatch(setDocToSign({ docRef, docId, docType, docUser, observers }));
                 navigate(`/signDocument`);
-              }}>{(row["observers"] && row["observers"].includes(_id) ? '확인하기' : '서명하기')}</Button>
+              }}>{(row["observers"] && row["observers"].includes(_id) ? '문서수신' : '서명하기')}</Button>
             );
           case DOCUMENT_SIGNING:
             return (

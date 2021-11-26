@@ -27,8 +27,12 @@ import moment from "moment";
 import "moment/locale/ko";
 import styles from './Home.css';
 import { Pie, measureTextWidth } from '@ant-design/charts';
-import banner from '../../assets/images/sub_top1.png'
-import docu from '../../assets/images/docu.svg'
+import banner from '../../assets/images/sub_top1.png';
+import docu from '../../assets/images/docu.svg';
+import iconPaperless from '../../assets/images/icon_save1.png';
+import iconDocument from '../../assets/images/icon_save2.png';
+import iconCheck from '../../assets/images/icon_check.png';
+import iconManual from '../../assets/images/icon_manual.png';
 import { DocumentType, DocumentTypeText, DocumentTypeBadge, DocumentTypeIcon, DOCUMENT_SIGNED, DOCUMENT_TOSIGN, DOCUMENT_SIGNING, DOCUMENT_CANCELED } from '../Lists/DocumentType';
 
 
@@ -196,8 +200,8 @@ const Home = () => {
 
   const IconLink = ({ src, text }) => (
     <a style={{marginRight:'16px', lineHeight:'24px'}}>
-      <img style={{marginRight:'8px'}} src={src} alt={text} />
-      {text}
+      <img style={{marginRight:'8px', width:'42px', height:'42px'}} src={src} alt={text} />
+      <font color='#373737'>{text}</font>
     </a>
   );
 
@@ -541,7 +545,8 @@ const Home = () => {
           icon: (
             <img
               style={{display: 'block', width: 42, height: 42}}
-              src="https://gw.alipayobjects.com/mdn/rms_7bc6d8/afts/img/A*dr_0RKvVzVwAAAAAAAAAAABkARQnAQ"
+              // src="https://gw.alipayobjects.com/mdn/rms_7bc6d8/afts/img/A*dr_0RKvVzVwAAAAAAAAAAABkARQnAQ"
+              src={iconPaperless}
               alt="icon"
             />
           ),
@@ -555,7 +560,8 @@ const Home = () => {
           icon: (
             <img
               style={{display: 'block', width: 42, height: 42}}
-              src="https://gw.alipayobjects.com/mdn/rms_7bc6d8/afts/img/A*-jVKQJgA1UgAAAAAAAAAAABkARQnAQ"
+              src={iconDocument}
+              // src="https://gw.alipayobjects.com/mdn/rms_7bc6d8/afts/img/A*-jVKQJgA1UgAAAAAAAAAAABkARQnAQ"
               alt="icon"
             />
           ),
@@ -570,10 +576,15 @@ const Home = () => {
       <Space>
         <Link to='/auditCheck'>
         <IconLink
-          src={docu}
+          src={iconCheck}
           text="문서 진본 확인"
         />
         </Link>
+
+        <IconLink
+          src={iconManual}
+          text="사용자 매뉴얼"
+        />
         {/* <Button onClick={()=> {navigate('/auditCheck')}} icon={<FileProtectOutlined />}>문서 진본 확인</Button> */}
       </Space>
     </ProCard>

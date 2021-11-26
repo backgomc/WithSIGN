@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { navigate, Link } from '@reach/router';
-import { List } from 'antd';
+import { List, Tag } from 'antd';
 import { useSelector, useDispatch } from 'react-redux';
 import ProCard from '@ant-design/pro-card';
 import 'antd/dist/antd.css';
@@ -59,15 +59,19 @@ const BoardCard = (props) => {
                 renderItem={item => (
                 <List.Item>
                 <List.Item.Meta
-                    avatar={<NotificationOutlined style={{ fontSize: 16 }} />}
+                    // avatar={<NotificationOutlined />}
+                    // avatar={<Tag color="red">new</Tag>}
                     title={
                     <Link to="/boardDetail" state={{ boardId: item._id }}>
+                        {moment.duration(moment(new Date()).diff(moment(item.registeredTime))).asHours() < 168 ? <Tag color="red">new</Tag> : ''}  
                         {item.title}
                     </Link>
                     }
                     // description={item.user.JOB_TITLE ? item.user.name + ' '+ item.user.JOB_TITLE : item.user.name}
                 />
                     <div><font color='grey'>{moment(item.registeredTime).fromNow()}</font></div>
+
+                    
                 </List.Item>
                 )}
             />

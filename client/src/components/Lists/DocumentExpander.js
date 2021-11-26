@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
 import axios from 'axios';
-import { Tooltip, Tag, Timeline, Button, Popconfirm, Modal } from 'antd';
+import { Tooltip, Tag, Timeline, Button, Popconfirm, Modal, Badge } from 'antd';
 import Moment from 'react-moment';
 import { useSelector, useDispatch } from 'react-redux';
 import { selectUser } from '../../app/infoSlice';
@@ -166,19 +166,19 @@ const DocumentExpander = (props) => {
         if ((item.signedBy.some(e => e.user === user._id))) {
             return  (
                 <Timeline.Item dot={<CheckCircleOutlined className="timeline-clock-icon" />} color="gray">
-                    <b>{user.name} {user.JOB_TITLE}</b> 서명 완료 &nbsp; 
-                    <Tag color="#918F8F">
+                    <font color='#A7A7A9'><b>{user.name} {user.JOB_TITLE}</b> {(item.observers && item.observers.includes(user._id)) ? '수신 완료' : '서명 완료'}</font> &nbsp; 
+                    <Tag color="#BABABC">
                     <Moment format='YYYY/MM/DD HH:mm'>{item.signedBy.filter(e => e.user === user._id)[0].signedTime}</Moment>
                     </Tag>
-                    {/* <Badge count={timeFormat(item.signedBy.filter(e => e.user === user._id)[0].signedTime)} style={{ backgroundColor: 'grey' }}/> */}
+                    {/* <Badge count={<Moment format='YYYY/MM/DD HH:mm'>{item.signedBy.filter(e => e.user === user._id)[0].signedTime}</Moment>}/> */}
                 </Timeline.Item>
             )
         } else if ((item.canceledBy.some(e => e.user === user._id))) {
             return (
                 <Timeline.Item dot={<CloseCircleOutlined className="timeline-clock-icon" />} color="red">
-                    <b>{user.name} {user.JOB_TITLE}</b> 서명 취소 &nbsp;
+                    <font color='#A7A7A9'><b>{user.name} {user.JOB_TITLE}</b>  {(item.observers && item.observers.includes(user._id)) ? '수신 취소' : '서명 취소'} &nbsp;</font>
                     <Tooltip placement="right" title={item.canceledBy.filter(e => e.user === user._id)[0].message}>
-                        <Tag color="#918F8F" >
+                        <Tag color="#BABABC" >
                             <Moment format='YYYY/MM/DD HH:mm'>{item.canceledBy.filter(e => e.user === user._id)[0].canceledTime}</Moment>
                         </Tag>
                     </Tooltip>
@@ -188,31 +188,23 @@ const DocumentExpander = (props) => {
         } else {
             return (
                 <Timeline.Item dot={<ClockCircleOutlined className="timeline-clock-icon" />}>
-                    <b>{user.name} {user.JOB_TITLE}</b> {(item.observers && item.observers.includes(user._id)) ? '확인 필요' : '서명 필요'}
+                    <font color='#1890FF'><b>{user.name} {user.JOB_TITLE}</b> {(item.observers && item.observers.includes(user._id)) ? '수신 필요' : '서명 필요'}</font>
                 </Timeline.Item>
             )
         }
     }
 
-
-    return (
-    <div>
-      <RcResizeObserver
-        key="resize-observer"
-        onResize={(offset) => {
-            setResponsive(offset.width < 596);
-      }}>
-        <ProCard
-            // title={item.docTitle}
-            title={
-                DocumentType({uid: _id, document: item}) == DOCUMENT_SIGNED ?
+    const buttonList = (
+        <div>
+            {DocumentType({uid: _id, document: item}) == DOCUMENT_SIGNED ?
                 <Button
                 onClick={() => {         
                     navigate(`/audit`, { state: { item: item } } );
                 }}>
                     진본 확인 증명서
-                </Button> : '', 
-                ((DocumentType({uid: _id, document: item}) == DOCUMENT_SIGNING || DocumentType({uid: _id, document: item}) == DOCUMENT_TOSIGN)  
+                </Button> : '' 
+            }
+            {((DocumentType({uid: _id, document: item}) == DOCUMENT_SIGNING || DocumentType({uid: _id, document: item}) == DOCUMENT_TOSIGN)  
                 && item.user._id === _id 
                 && item.signedBy.length - item.signedBy.filter(e => e.user === _id).length === 0) ?   
                 // <Popconfirm
@@ -229,6 +221,19 @@ const DocumentExpander = (props) => {
                 // </Popconfirm>
                  : ''
             }
+        </div>
+    )
+
+    return (
+    <div>
+      <RcResizeObserver
+        key="resize-observer"
+        onResize={(offset) => {
+            setResponsive(offset.width < 596);
+      }}>
+        <ProCard
+            // title={item.docTitle}
+            title={buttonList}
             extra=""
             bordered
             headerBordered
@@ -256,8 +261,8 @@ const DocumentExpander = (props) => {
                 <Timeline>
                     {/* <Timeline.Item label={<Moment format='YYYY/MM/DD HH:mm'>{item.requestedTime}</Moment>}><b>{item.user.name}</b>님 서명 요청</Timeline.Item> */}
                     <Timeline.Item color="gray">
-                        <b>{item.user.name} {item.user.JOB_TITLE}</b> 서명 요청 &nbsp;  
-                        <Tag color="#918F8F"><Moment format='YYYY/MM/DD HH:mm'>{item.requestedTime}</Moment></Tag>
+                        <font color='#A7A7A9'><b>{item.user.name} {item.user.JOB_TITLE}</b> 서명 요청 </font> &nbsp;  
+                        <Tag color="#BABABC"><Moment format='YYYY/MM/DD HH:mm'>{item.requestedTime}</Moment></Tag>
                     </Timeline.Item>
                     {
                         item.users.map((user) => (

@@ -77,6 +77,7 @@ const App = () => {
     >
 
     <ProLayout
+      // navTheme="light"
       title="With Sign"
       // logo="https://gw.alipayobjects.com/mdn/rms_b5fcc5/afts/img/A*1NHAQYduQiQAAAAAAAAAAABkARQnAQ" 로고 이미지 
       // title={LogoText}
@@ -100,16 +101,21 @@ const App = () => {
       style={{
         // height: 500,
       }}
-      // menuExtraRender={() =>
-      //   <div>
-      //     <Button type="primary" style={{ width: '100%' }} onClick={() => {navigate('/uploadDocument')}}>서명 요청</Button>
-      //   </div>
-      // }
+
+      menuExtraRender={({ collapsed }) =>
+        !collapsed && (
+          <div>
+            <Button type="primary" style={{ width: '100%', background: '#1A4D7D', border:'0' }} onClick={() => {navigate('/uploadDocument')}}>서명 요청</Button>
+          </div>
+        )
+      }  
+
       // menuFooterRender={() =>
       //   <div style={{ height: '80px'}}>
       //     <Button style={{ width: '80%'}}>서명 요청</Button>
       //   </div>
       // }
+      
       menuItemRender={(item, dom) => (
         <a
           onClick={() => {
