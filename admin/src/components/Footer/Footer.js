@@ -3,11 +3,11 @@ import React from 'react';
 
 const Footer = () => {
 
-    return (
-      <div className={styles['footer']}>
-            WITH SIGN © NH INFORMATION SYSTEM 2021
-      </div>
-    );
+  return (
+    <footer class="ant-layout-footer">
+      <div class="ant-pro-global-footer-copyright" style={{"text-align": "center"}}>With SIGN © NH INFORMATION SYSTEM 2021</div>
+    </footer>
+  );
 
 };
 

@@ -5,9 +5,9 @@ import { navigate } from '@reach/router';
 import { setUser } from '../../app/infoSlice';
 import { Button, Form, Input } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
-import logo from '../../assets/images/logo.svg';
 import styles from './login.module.css';
 import { useIntl } from "react-intl";
+import LogoImage from '../../assets/images/logo_withsign.png'
 
 function Login() {
     const dispatch = useDispatch();
@@ -38,7 +38,7 @@ function Login() {
           <div className={styles['header-wrapper']}>
             <header>
               <a href="/">
-                <img src={logo} alt="ant design mini" />
+                <img src={LogoImage} alt="With Sign" />
                 <h2>{formatMessage({id: 'AppName'})}</h2>
                 <h5 style={{'color':'cyan'}}>{formatMessage({id: 'AppSubName'})}</h5>
               </a>

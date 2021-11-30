@@ -35,7 +35,7 @@ const UploadTemplate = () => {
     // 1. FILE-SAVE
     const referenceString = `template/${_id}${Date.now()}.pdf`;
     const formData = new FormData();
-    formData.append('path', 'template');
+    formData.append('path', 'templates');
     formData.append('file', file, referenceString);
     await axios.post('/api/storage/upload', formData);
 

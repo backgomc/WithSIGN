@@ -1,17 +1,20 @@
 import React, { useEffect, useState } from 'react';
-import axiosInterceptor from '../../config/AxiosConfig';
-import { PageContainer } from '@ant-design/pro-layout';
-import { Table, Tag, Space } from 'antd';
 import { useIntl } from 'react-intl';
+import { Table, Button, Space, Modal } from 'antd';
+import { ExclamationCircleOutlined } from '@ant-design/icons';
+import { PageContainer } from '@ant-design/pro-layout';
+import axiosInterceptor from '../../config/AxiosConfig';
+
+const { confirm } = Modal;
 
 const UserList = () => {
+console.log('UserList');
+  const { formatMessage } = useIntl();
 
   const [pagination, setPagination] = useState({current:1, pageSize:10});
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState([]);
-
-  const { formatMessage } = useIntl();
-
+  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const handleTableChange = (pagination, filters, sorter) => {
     console.log('handleTableChange called');
     fetch({
@@ -23,10 +26,8 @@ const UserList = () => {
   };
 
   const fetch = async (params = {}) => {
-    console.log(0);
     setLoading(true);
     axiosInterceptor.post('/api/admin/user/list', params).then(response => {
-      console.log(2);
       if (response.data.success) {
         const docs = response.data.documents;
         setPagination({...params.pagination, total:response.data.total});
@@ -38,6 +39,24 @@ const UserList = () => {
       }
     });
   };
+
+  const retireUser = async (item) => {
+    console.log(item);
+    confirm({
+      title: '퇴사 처리 하시겠습니까?',
+      icon: <ExclamationCircleOutlined />,
+      // content: '',
+      okText: '네',
+      okType: 'danger',
+      cancelText: '아니오',
+      onOk() {
+        // fetchDelete();
+      },
+      onCancel() {
+        console.log('Cancel');
+      }
+    });
+  }
 
   const columns = [
     {
@@ -63,17 +82,31 @@ const UserList = () => {
       dataIndex: 'JOB_TITLE',
     },
     {
-      title: '패스워드 초기화',
+      title: '관리',
       key: 'action',
-      render: (text, record) => (
+      render: (row) => (
         <Space size="middle">
-          <a>Invite {record.name}</a>
-          <a>Delete</a>
+          <a><Button type="primary">초기화</Button></a>
+          <Button  danger onClick={e => { retireUser(row); }}>퇴사</Button>
         </Space>
       ),
     },
   ];
-  
+
+  const rowSelection = {
+    // selectedRowKeys,
+    // onChange : selectedRowKeys => {
+    //   console.log('selectedRowKeys changed: ', selectedRowKeys);
+    //   setSelectedRowKeys(selectedRowKeys);
+    //   setHasSelected(selectedRowKeys.length > 0);
+    // },
+    selections: [
+      Table.SELECTION_ALL,
+      Table.SELECTION_INVERT,
+      Table.SELECTION_NONE,
+    ],
+  };
+
   useEffect(() => {
     console.log('useEffect called');
     fetch({
@@ -107,6 +140,7 @@ const UserList = () => {
           dataSource={data}
           pagination={pagination}
           loading={loading}
+          rowSelection={rowSelection}
           onChange={handleTableChange}
         />
 

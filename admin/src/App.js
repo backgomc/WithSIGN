@@ -20,6 +20,7 @@ import Login from './components/Login/Login';
 import '@ant-design/pro-layout/dist/layout.css';
 import 'antd/dist/antd.css';
 import './App.css';
+import LogoImage from './assets/images/logo_withsign.png'
 
 const App = () => {
   
@@ -44,36 +45,45 @@ const App = () => {
         dispatch(setUser(response.data.user));
         navigate('/');
       } else {
-        // 2. 토큰 만료 갱신
-        if (response.data.success == false && response.data.isAuth == false) {
-          let config = {
-            headers: {
-              'refresh-Token': localStorage.getItem('__rToken__')
+        if (localStorage.getItem('__rToken__') || token) {
+          // 2. 토큰 만료 갱신
+          if (localStorage.getItem('__rToken__')) {
+            let config = {
+              headers: {
+                'refresh-Token': localStorage.getItem('__rToken__')
+              }
             }
+            axios.post('/api/admin/refresh', null, config).then(response => {
+              if (response.data.success) {
+                dispatch(setUser(response.data.user));
+                navigate('/');
+              } else {
+                dispatch(setUser(null));
+                navigate('/login');
+              }
+            });
           }
-          axios.post('/api/admin/refresh', null, config).then(response => {
-            if (response.data.success) {
-              dispatch(setUser(response.data.user));
-              navigate('/');
+          // 3. 통합 로그인
+          if (token) {
+            let body = {
+              token: token
             }
-          });
-        }
-        // 3. 통합 로그인
-        if (token) {
-          let body = {
-            token: token
+            axios.post('/api/admin/sso', body).then(response => {
+              console.log(response);
+              if (response.data.success) {
+                dispatch(setUser(response.data));
+                localStorage.setItem('__rToken__', response.data.user.__rToken__);
+                navigate('/');
+              } else {
+                dispatch(setUser(null));
+                navigate('/login');
+              }
+            });
           }
-          axios.post('/api/admin/sso', body).then(response => {
-            console.log(response);
-            if (response.data.success) {
-              dispatch(setUser(response.data));
-              localStorage.setItem('__rToken__', response.data.user.__rToken__);
-              navigate('/');
-            }
-          });
+        } else {
+          dispatch(setUser(null));
+          navigate('/login');
         }
-        dispatch(setUser(null));
-        navigate('/login');
       }
     });
   }, []);
@@ -88,7 +98,8 @@ const App = () => {
     >
       <ProLayout
         title="With Sign"
-        // logo="https://gw.alipayobjects.com/mdn/rms_b5fcc5/afts/img/A*1NHAQYduQiQAAAAAAAAAAABkARQnAQ" 로고 이미지 
+        // logo="https://gw.alipayobjects.com/mdn/rms_b5fcc5/afts/img/A*1NHAQYduQiQAAAAAAAAAAABkARQnAQ" 로고 이미지
+        logo={LogoImage}
         menuHeaderRender={(logo, title) => (
           <div
             id="customize_menu_header"

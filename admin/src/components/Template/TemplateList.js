@@ -16,6 +16,7 @@ import { useIntl } from 'react-intl';
 const TemplateList = () => {
 
   const user = useSelector(selectUser);
+  const { formatMessage } = useIntl();
 
   const [searchText, setSearchText] = useState('');
   const [searchedColumn, setSearchedColumn] = useState('');
@@ -28,7 +29,6 @@ const TemplateList = () => {
   // const [expandable, setExpandable] = useState();
   const [visiblePopconfirm, setVisiblePopconfirm] = useState(false);
 
-  const { formatMessage } = useIntl();
   // const searchInput = useRef<Input>(null);
 
   const handleTableChange = (pagination, filters, sorter) => {

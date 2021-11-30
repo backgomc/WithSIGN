@@ -157,7 +157,7 @@ const DocumentList = () => {
       dataIndex: 'status',
       sorter: false,
       key: 'status',
-      width: '110px',
+      // width: '110px',
       // defaultFilteredValue: location.state.status? [location.state.status]: [],
       filters: [
         {
@@ -186,7 +186,7 @@ const DocumentList = () => {
       dataIndex: ['user', 'name'],
       sorter: (a, b) => a.user.name.localeCompare(b.user.name),
       key: 'name',
-      width: '110px',
+      // width: '110px',
       ...getColumnSearchProps('name'),
       onFilter: (value, record) =>
       record['user']['name']
@@ -199,6 +199,17 @@ const DocumentList = () => {
           </React.Fragment>
         )
       } 
+    },
+    {
+      title: '요청 일시',
+      dataIndex: 'requestedTime',
+      responsive: ['sm'],
+      sorter: true,
+      key: 'requestedTime',
+      // width: '100px',
+      render: (text, row) => {
+          return (<font color='#787878'>{moment(row['requestedTime']).fromNow()}</font>)
+      }
     },
     {
       title: '요청자',
@@ -222,22 +233,10 @@ const DocumentList = () => {
       } 
     },
     {
-      title: '요청 일시',
-      dataIndex: 'requestedTime',
-      responsive: ['sm'],
-      sorter: true,
-      key: 'requestedTime',
-      width: '100px',
-      render: (text, row) => {
-          return (<font color='#787878'>{moment(row['requestedTime']).fromNow()}</font>)
-      } 
-    },
-    {
       title: '',
       // dataIndex: 'docRef',
       key: 'action',
-      width: '50px',
-      responsive: ['xs'],
+      // width: '50px',
       render: (_,row) => {
         switch (DocumentType({document: row})) {
           case DOCUMENT_CANCELED:
