@@ -38,6 +38,8 @@
 	"input.SABUN": "사번을 입력하세요!",
 	"input.password": "비밀번호를 입력하세요!",
 	"input.documentTitle": "문서 제목을 입력하세요!",
+	"input.boardTitle": "게시글 제목을 입력하세요!",
+	"input.boardContent": "게시글 내용을 입력하세요!",
 	"input.name": "이름을 입력하세요!",
 	"confirm.password": "비밀번호를 확인하세요!",
 	"nomatch.password": "비밀번호가 일치하지 않습니다!",
@@ -71,5 +73,6 @@
 	"Back": "이전",
 	"Customer": "고객 지원",
 	"Notice": "공지사항",
-	"document.check": "문서 진본 확인"
+	"document.check": "문서 진본 확인",
+	"Opinion": "의견 보내기"
 }

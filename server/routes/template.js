@@ -48,19 +48,20 @@ router.post('/templates', (req, res) => {
   } 
 
   var andParam = {};
-  var orParam = [{"user": uid}]
+  var orParam = {};
   const type = req.body.type 
   if (type && type === 'C') {
-    orParam = [{"type": "C"}]
-  } 
+    andParam['type'] = 'C'
+  } else {
+    andParam['user'] = uid
+    andParam['type'] = {$ne : 'C'}
+  }
 
   console.log('req.body.docTitle:'+req.body.docTitle)
   if (req.body.docTitle) {
     // TODO: 한글검색이 잘 안되는 문제
     andParam['docTitle'] = { $regex: '.*' + req.body.docTitle[0] + '.*', $options: 'i' }
-  } else {
-    andParam = {};
-  }
+  } 
 
   const current = req.body.pagination.current
   const pageSize = req.body.pagination.pageSize

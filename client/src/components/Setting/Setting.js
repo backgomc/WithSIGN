@@ -320,7 +320,7 @@ const Setting = () => {
           title="공지사항"
           bordered={false}
           headerBordered
-          extra={<Link to="/customer">더보기</Link>}
+          extra={<Link to="/boardList">더보기</Link>}
           // loading={loadingNotice}
           bodyStyle={{ padding: 10 }}
           >

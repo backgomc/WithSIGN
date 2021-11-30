@@ -171,7 +171,11 @@ const TemplateList = () => {
   const signTemplate = (item) => {
     console.log(item._id);
     dispatch(setDocumentType('TEMPLATE'))
-    dispatch(setTemplateType('M'))
+    if (tab === 'private') {
+      dispatch(setTemplateType('M'))
+    } else {
+      dispatch(setTemplateType('C'))
+    }
     dispatch(setTemplateTitle(item.docTitle))
     dispatch(setTemplate(item))
     navigate('/assign');
@@ -320,12 +324,20 @@ const TemplateList = () => {
 
   const onSearch = value => {
 
-    fetch({
-      pagination: {current: 1, pageSize: pageSize},
-      uid: _id,
-      docTitle: value,
-      // docTitle: value.normalize('NFC')
-    });
+    if (tab === 'private') {
+      fetch({
+        pagination: {current: 1, pageSize: pageSize},
+        uid: _id,
+        docTitle: value
+      });
+    } else {
+      fetchPublic({
+        pagination: {current: 1, pageSize: pageSize},
+        uid: _id,
+        docTitle: value,
+        type: 'C'
+      });
+    }
 
   }
 

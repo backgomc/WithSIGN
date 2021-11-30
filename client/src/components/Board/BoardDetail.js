@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
-import { Table, Input, Space, Button, Descriptions } from "antd";
+import { Table, Input, Space, Button, Descriptions, Form } from "antd";
 import Highlighter from 'react-highlight-words';
 import { SearchOutlined } from '@ant-design/icons';
 import { useSelector, useDispatch } from 'react-redux';
@@ -15,10 +15,11 @@ import {
   FileOutlined
 } from '@ant-design/icons';
 import { PageContainer } from '@ant-design/pro-layout';
-import 'antd/dist/antd.css';
 import { useIntl } from "react-intl";
 import ProCard from '@ant-design/pro-card';
-
+import ProForm, { ProFormUploadDragger, ProFormText, ProFormTextArea } from '@ant-design/pro-form';
+import '@ant-design/pro-form/dist/form.css';
+import 'antd/dist/antd.css';
 
 const BoardDetail = ({location}) => {
 
@@ -42,6 +43,7 @@ const BoardDetail = ({location}) => {
 
   const { formatMessage } = useIntl();
   const searchInput = useRef<Input>(null)
+  const [form] = Form.useForm();
 
   const handleTableChange = (pagination, filters, sorter) => {
     console.log("handleTableChange called")
@@ -72,6 +74,58 @@ const BoardDetail = ({location}) => {
 
     });
   };
+
+  // const Editor = () => (
+  //   <>
+  //     <ProForm 
+  //       form={form}
+  //       onFinish={onFinish}
+  //       submitter={{
+  //         searchConfig: {
+  //           submitText: '등록',
+  //         },      
+  //         // Configure the properties of the button
+  //         resetButtonProps: {
+  //           // style: {
+  //           //   // Hide the reset button
+  //           //   display: 'none',
+  //           // },
+  //         },
+  //         submitButtonProps: {
+  //           style: {
+  //             // Hide the reset button
+  //             // display: 'none',
+  //           },
+  //         }
+  //       }}
+  //       onValuesChange={(changeValues) => {
+  //         console.log("onValuesChange called")
+  //         console.log(changeValues)
+  //         // console.log('form.getFieldValue("title"):'+form.getFieldValue("title"))
+
+  //         if (form.getFieldValue("content")) {
+  //           // setDisableNext(false)
+  //           console.log("AA")
+  //         } else {
+  //           // setDisableNext(true)
+  //           console.log("BB")
+  //         }
+  //       }}
+  //     >
+
+  //       <ProFormTextArea 
+  //         // label="내용" 
+  //         name="content"
+  //         // width="lg"
+  //         fieldProps={{showCount: true, allowClear: true, rows: '5'}}
+  //         rules={[{ autoSize: true, required: true, message: formatMessage({id: 'input.boardContent'}) }]}
+  //       />
+
+  //     </ProForm>
+
+  //   </>
+  // );
+
 
   const getColumnSearchProps = dataIndex => ({
 
@@ -162,23 +216,6 @@ const BoardDetail = ({location}) => {
       boardId: boardId  
     });
 
-    // const data = [];
-    // for (let i = 0; i < 46; i++) {
-    //   data.push({
-    //     key: i,
-    //     templateTitle: `template title ${i}`,
-    //     name: `Edward King ${i}`,
-    //     requestedTime: `2021-07-02T05:46:40.769+00:00`,
-    //   });
-    // }
-    // setData(data);
-
-    // console.log("useEffect called")
-    // console.log("bulk:"+bulk)
-
-    //TODO 테이블 데이터 셋팅
-    // setData(bulk.docs) 
-
   }, []);
 
   return (
@@ -206,10 +243,29 @@ const BoardDetail = ({location}) => {
         ]}
     >
 
-      <ProCard direction="column" ghost gutter={[0, 16]}>
-        <ProCard style={{ height: '78vh' }}>{board.content}</ProCard>
+      <ProCard direction="column" style={{ height: '100%' }}>
+        <pre>
+          <div
+            style={{height:'100%', padding:'10px', fontSize:'calc(13px + .2vw)'}}
+            dangerouslySetInnerHTML={{
+              __html: board.content
+            }} 
+          
+          />
+        </pre>
       </ProCard>
 
+      {/* <div style={{background: 'white', marginTop: '25px', padding: '20px'}}>
+      {data.length > 0 && <CommentList />}
+        <Comment
+          avatar={<Avatar src="https://joeschmoe.io/api/v1/random" alt="Han Solo" />}
+          content={
+            <Editor
+            />
+          }
+        />
+      </div> */}
+      
         {/* <div
           style={{
             height: '100vh',

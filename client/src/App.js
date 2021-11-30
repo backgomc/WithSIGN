@@ -18,6 +18,8 @@ import BulkList from './components/Bulk/BulkList';
 import BulkDetail from './components/Bulk/BulkDetail';
 import BoardList from './components/Board/BoardList';
 import BoardDetail from './components/Board/BoardDetail';
+import BoardWrite from './components/Board/BoardWrite';
+import OpinionList from './components/Board/OpinionList';
 import Sign from './components/Sign';
 import View from './components/View';
 import Welcome from './components/Welcome';
@@ -164,7 +166,7 @@ const App = () => {
       <View path="/viewDocument" />
       <Setting path="/setting" />
       <Test path="/test" />
-      <BoardList path="/customer" />
+      <BoardList path="/boardList" />
       <BoardDetail path="/boardDetail" />
       <Audit path="/audit" />
       <AuditCheck path="/auditCheck" />
@@ -172,6 +174,8 @@ const App = () => {
       <Terms path="/terms" />
       <Policy path="/policy" />
       <PreviewPDF path="/previewPDF" />
+      <BoardWrite path="/boardWrite" />
+      <OpinionList path="/opinionList" />
     </Router>
   </ProLayout>
 

@@ -145,10 +145,10 @@ const Assign = () => {
 
 
   const onChange = (target) => {
-    // if (target.length > 5) {
-    //   message.error('서명참여자는 최대 5명까지 지정할 수 있습니다.');
-    //   return
-    // }
+    if (target.length > 10) {
+      message.error('서명참여자는 최대 10명까지 지정할 수 있습니다.');
+      return
+    }
 
     console.log("targetKeys:"+target)
 

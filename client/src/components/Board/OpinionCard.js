@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { navigate, Link } from '@reach/router';
-import { List, Tag } from 'antd';
+import { List, Tag, Avatar } from 'antd';
 import { useSelector, useDispatch } from 'react-redux';
 import ProCard from '@ant-design/pro-card';
 import 'antd/dist/antd.css';
@@ -9,10 +9,10 @@ import '@ant-design/pro-card/dist/card.css';
 import moment from "moment";
 import "moment/locale/ko";
 import {
-    NotificationOutlined
+    UserOutlined
 } from '@ant-design/icons';
 
-const BoardCard = (props) => {
+const OpinionCard = (props) => {
 
     
     const [loading, setLoading] = useState(false);
@@ -48,7 +48,7 @@ const BoardCard = (props) => {
             title={boardName}
             bordered={false}
             headerBordered
-            extra={<Link to="/boardList">더보기</Link>}
+            extra={<Link to="/boardList"  state={{ boardType: 'opinion', boardName: '의견 보내기', boardDetail: '개선 및 문의사항을 등록할 수 있습니다.' }}>더보기</Link>}
             loading={loading}
             bodyStyle={{ padding: 10 }}
         >
@@ -59,15 +59,13 @@ const BoardCard = (props) => {
                 renderItem={item => (
                 <List.Item>
                 <List.Item.Meta
-                    // avatar={<NotificationOutlined />}
-                    // avatar={<Tag color="red">new</Tag>}
+                    avatar={item.user.thumbnail ? <Avatar src={item.user.thumbnail} /> : <Avatar size={40} icon={<UserOutlined />} />}
                     title={
                     <Link to="/boardDetail" state={{ boardId: item._id }}>
-                        {moment.duration(moment(new Date()).diff(moment(item.registeredTime))).asHours() < 168 ? <Tag color="red">new</Tag> : ''}  
                         {item.title}
                     </Link>
                     }
-                    // description={item.user.JOB_TITLE ? item.user.name + ' '+ item.user.JOB_TITLE : item.user.name}
+                    description={item.user.JOB_TITLE ? item.user.name + ' '+ item.user.JOB_TITLE : item.user.name}
                 />
                     <div><font color='grey'>{moment(item.registeredTime).fromNow()}</font></div>
 
@@ -80,4 +78,4 @@ const BoardCard = (props) => {
 
 };
 
-export default BoardCard;
+export default OpinionCard;

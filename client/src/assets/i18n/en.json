@@ -38,6 +38,8 @@
 	"input.SABUN": "Please input your sabun!",
 	"input.password": "Please input your Password!",
 	"input.documentTitle": "Please input document title!",
+	"input.boardTitle": "Please input board title!",
+	"input.boardContent": "Please input board content!",
 	"input.name": "Please input your Name!",
 	"confirm.password": "Please confirm your password!",
 	"nomatch.password": "The two passwords that you entered do not match!",
@@ -71,5 +73,6 @@
 	"Back": "Back",
 	"Customer": "Customer",
 	"Notice": "Notice",
-	"document.check": "Check Document"
+	"document.check": "Check Document",
+	"Opinion": "Opinion"
 }

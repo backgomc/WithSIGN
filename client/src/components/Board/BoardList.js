@@ -17,12 +17,17 @@ import 'antd/dist/antd.css';
 import { useIntl } from "react-intl";
 
 
-const BoardList = () => {
+const BoardList = ({location}) => {
 
   const dispatch = useDispatch();
   const user = useSelector(selectUser);
-
   const { _id } = user;
+
+  const boardType = location.state?.boardType ? location.state.boardType : "notice";
+  const boardName = location.state?.boardName ? location.state.boardName : "Notice";
+  const boardDetail = location.state?.boardDetail ? location.state.boardDetail : "";
+  
+
   const [searchText, setSearchText] = useState('');
   const [searchedColumn, setSearchedColumn] = useState('');
   const [data, setData] = useState([]);
@@ -45,7 +50,8 @@ const BoardList = () => {
       sortOrder: sorter.order,
       pagination,
       ...filters,
-      uid: _id
+      uid: _id,
+      boardType: boardType
     });
   };
 
@@ -90,7 +96,7 @@ const BoardList = () => {
     setHasSelected(false)
 
     fetch({
-      boardType: 'notice',
+      boardType: boardType,
       pagination,
     });
 
@@ -116,10 +122,10 @@ const BoardList = () => {
             size="small"
             style={{ width: 90 }}
           >
-            Search
+            검색
           </Button>
           <Button onClick={() => handleReset(clearFilters)} size="small" style={{ width: 90 }}>
-            Reset
+            초기화
           </Button>
           <Button
             type="link"
@@ -237,7 +243,7 @@ const BoardList = () => {
   useEffect(() => {
 
     fetch({
-      boardType: 'notice',
+      boardType: boardType,
       pagination,
     });
 
@@ -259,7 +265,7 @@ const BoardList = () => {
     <PageContainer
         ghost
         header={{
-          title: formatMessage({id: 'Notice'}),
+          title: formatMessage({id: boardName}),
           ghost: false,
           breadcrumb: {
             routes: [
@@ -274,20 +280,20 @@ const BoardList = () => {
             ],
           },
           extra: [           
-          <Button type="primary" onClick={() => {navigate('/addBoard');}}>
-            게시글 등록
+          <Button type="primary" onClick={() => {navigate('/boardWrite', { state: {boardType:boardType, boardName:boardName}});}}>
+            등록
           </Button>,
-          <Popconfirm title="삭제하시겠습니까？" okText="네" cancelText="아니오" visible={visiblePopconfirm} onConfirm={deleteBoard} onCancel={() => {setVisiblePopconfirm(false);}}>
-            <Button type="primary" danger disabled={!hasSelected} onClick={()=>{setVisiblePopconfirm(true);}}>
-              삭제
-            </Button>
-          </Popconfirm>,
+          // <Popconfirm title="삭제하시겠습니까？" okText="네" cancelText="아니오" visible={visiblePopconfirm} onConfirm={deleteBoard} onCancel={() => {setVisiblePopconfirm(false);}}>
+          //   <Button type="primary" danger disabled={!hasSelected} onClick={()=>{setVisiblePopconfirm(true);}}>
+          //     삭제
+          //   </Button>
+          // </Popconfirm>,
           <span>
             {hasSelected ? `${selectedRowKeys.length} 개의 문서가 선택됨` : ''}
           </span>
           ],
         }}
-        content={'자주 사용하는 문서를 미리 등록할 수 있습니다.'}
+        content={boardDetail}
         footer={[
         ]}
     >

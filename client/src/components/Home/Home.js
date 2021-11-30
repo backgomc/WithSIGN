@@ -8,10 +8,11 @@ import { setSendType } from '../Assign/AssignSlice';
 import axios from 'axios';
 import BoardCard from '../Board/BoardCard';
 import FAQCard from '../Board/FAQCard';
+import OpinionCard from '../Board/OpinionCard';
 import ProCard, { StatisticCard, StatisticProps } from '@ant-design/pro-card';
 import RcResizeObserver from 'rc-resize-observer';
 import { PageContainer } from '@ant-design/pro-layout';
-import { Badge, Button, Card, Empty, List, Space, Statistic, Avatar, Row, Col, Progress, Tag } from 'antd';
+import { Badge, Button, Card, Empty, List, Space, Statistic, Avatar, Row, Col, Progress, Tag, Comment, Form, Input } from 'antd';
 import 'antd/dist/antd.css';
 import '@ant-design/pro-card/dist/card.css';
 import {
@@ -35,8 +36,8 @@ import iconCheck from '../../assets/images/icon_check.png';
 import iconManual from '../../assets/images/icon_manual.png';
 import { DocumentType, DocumentTypeText, DocumentTypeBadge, DocumentTypeIcon, DOCUMENT_SIGNED, DOCUMENT_TOSIGN, DOCUMENT_SIGNING, DOCUMENT_CANCELED } from '../Lists/DocumentType';
 
-
 const { Divider } = ProCard;
+const { TextArea } = Input;
 
 const Home = () => {
 
@@ -573,22 +574,86 @@ const Home = () => {
 
   const direct = (
     <ProCard title="바로 가기">
-      <Space>
-        <Link to='/auditCheck'>
-        <IconLink
-          src={iconCheck}
-          text="문서 진본 확인"
-        />
-        </Link>
-
-        <IconLink
-          src={iconManual}
-          text="사용자 매뉴얼"
-        />
-        {/* <Button onClick={()=> {navigate('/auditCheck')}} icon={<FileProtectOutlined />}>문서 진본 확인</Button> */}
-      </Space>
+      <Row>
+        <Col span={13}>
+          <Link to='/auditCheck'>
+          <IconLink
+            src={iconCheck}
+            text="문서 진본 확인"
+          />
+          </Link>
+        </Col>
+        <Col span={11}>
+          <IconLink
+            src={iconManual}
+            text="사용자 매뉴얼"
+          />
+        </Col>
+      </Row>
     </ProCard>
   )
+
+
+
+
+
+  // const [opinionValue, setOpinionValue] = useState();
+  // const [opinionSubmitting, setOpinionSubmitting] = useState(false);
+
+  // const handleChange = e => {
+  //   setOpinionValue(e.target.value);
+  // };
+
+  // const handleSubmit = () => {
+  //   if (!opinionValue) {
+  //     return;
+  //   }
+
+  //   setOpinionSubmitting(true)
+
+  //   setTimeout(() => {
+  //     setOpinionSubmitting(false)
+  //     setOpinionValue('')
+
+  //   }, 1000);
+  // };
+
+  // const Editor = ({ onChange, onSubmit, submitting, value }) => (
+  //   <>
+  //     <Form.Item>
+  //       <TextArea rows={4} onChange={onChange} value={value} />
+  //     </Form.Item>
+  //     <Form.Item>
+  //       <Button htmlType="submit" loading={submitting} onClick={onSubmit} type="primary">
+  //         의견 보내기
+  //       </Button>
+  //     </Form.Item>
+  //   </>
+  // );
+
+  // const opinion = (
+  //   <ProCard title="의견 보내기">
+  //       <Comment
+  //         avatar={<Avatar src="https://joeschmoe.io/api/v1/random" alt="Han Solo" />}
+  //         content={
+  //           <Editor
+  //             onChange={handleChange}
+  //             onSubmit={handleSubmit}
+  //             submitting={opinionSubmitting}
+  //             value={opinionValue}
+  //           />
+  //         }
+  //       />
+  //   </ProCard>
+  // )
+
+
+
+
+
+
+
+
 
   const toSignCard = (
     <Card
@@ -1063,7 +1128,9 @@ const Home = () => {
                 <BoardCard boardType={'notice'} boardName={'공지사항'}></BoardCard>
               </Col>
               <Col xl={12} lg={24} md={24} sm={24} xs={24} style={{display: 'flex', paddingBottom: '20px'}}>
-              <FAQCard boardType={'faq'} boardName={'FAQ'}></FAQCard>
+              {/* <FAQCard boardType={'faq'} boardName={'FAQ'}></FAQCard> */}
+              <OpinionCard boardType={'opinion'} boardName={'의견 보내기'}></OpinionCard>
+              
               </Col>
             </Row>
           </Col>
@@ -1073,6 +1140,8 @@ const Home = () => {
             {paperless}
             <br></br>
             {direct}
+            {/* <br></br>
+            {opinion} */}
           </Col>
       </Row>
       
