@@ -8,14 +8,17 @@ const { hexCrypto } = require('../common/utils');
 const config = require('../config/key');
 const { generateToken, ValidateToken, renewalToken } = require('../middleware/adminAuth');
 
+const restful = require('../common/restful');
+
 const java = require('java');
 const jarFilePath1 = __dirname+'/../lib/INICrypto_v4.0.12.jar';
 const jarFilePath2 = __dirname+'/../lib/INISAFECore_v2.1.23.jar';
 const jarFilePath3 = __dirname+'/../lib/INISAFEPKI_v1.1.13jar';
 const jarFilePath4 = __dirname+'/../lib/INISAFEToolSet_v1.0.2.jar';
 const jarFilePath5 = __dirname+'/../lib/nls_v4.1.3.jar';
-const jarFilePath6 = __dirname+'/../lib/NH_SSO.jar';
+const jarFilePath6 = __dirname+'/../lib/fasoo-jni-2.8.9u.jar';
 const jarFilePath7 = __dirname+'/../lib/log4j-1.2.16.jar';
+const jarFilePath8 = __dirname+'/../lib/NH_SIGN.jar';
 java.classpath.push(jarFilePath1);
 java.classpath.push(jarFilePath2);
 java.classpath.push(jarFilePath3);
@@ -23,6 +26,7 @@ java.classpath.push(jarFilePath4);
 java.classpath.push(jarFilePath5);
 java.classpath.push(jarFilePath6);
 java.classpath.push(jarFilePath7);
+java.classpath.push(jarFilePath8);
 
 // -- 로그인/아웃 --
 // /api/admin/auth        (GET)
@@ -34,7 +38,6 @@ java.classpath.push(jarFilePath7);
 // /api/admin/user/list
 // /api/admin/user/info
 // /api/admin/user/update (권한 변경)
-// /api/admin/user/delete (퇴사 처리)
 // /api/admin/user/sync   (연계 수동)
 // -- 부서 관리 --
 // /api/admin/org/list
@@ -48,6 +51,14 @@ java.classpath.push(jarFilePath7);
 // /api/admin/templates/info
 // /api/admin/templates/insert
 // /api/admin/templates/delete
+
+router.post('/ipronet', (req, res) => {
+  // restful.callOrgAPI();
+  // restful.callUserAPI();
+  // restful.callIpronetMSG('P1650047', 'P1810080;P0610003;P1650047');
+  var DocuUtil = java.import('com.nonghyupit.drm.DocuUtil');
+  DocuUtil.unpackagingSync('C:/Users/NHIT_LSW/Desktop/', 'MiNe.xlsx', 'C:/Users/NHIT_LSW/Desktop/TEST.xlsx');
+});
 
 // 인증 여부 확인
 router.get('/auth', ValidateToken, (req, res) => {
@@ -267,21 +278,6 @@ router.post('/user/info', ValidateToken, (req, res) => {
 // 사용자 관리 > 변경(권한)
 router.post('/user/update', ValidateToken, (req, res) => {
   return res.json({ success: true, message: '/user/update' });
-});
-
-// 사용자 관리 > 삭제(퇴사)
-router.post('/user/delete', ValidateToken, (req, res) => {
-  if (!req.body._ids) {
-    return res.json({ success: false, message: 'input value not enough!' });
-  }
-
-  const _ids = req.body._ids;
-
-  // DB 삭제
-  Template.deleteMany({ _id: { $in: _ids } }, function (err) {
-    if (err) { return res.json({ success: false, err }); }
-    return res.status(200).json({ success: true });
-  });
 });
 
 // 문서 관리 > 목록

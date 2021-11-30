@@ -14,7 +14,8 @@ const userSchema = mongoose.Schema({
     },
     name: {
         type: String,
-        maxlength: 50
+        maxlength: 50,
+        alias: 'NM_SAWON'
     },
     email: {
         type: String,
@@ -46,16 +47,23 @@ const userSchema = mongoose.Schema({
         type: String
     },
     DEPART_CODE: {
-        type: String
+        type: String,
+        alias: 'CODE_BUSEO'
     },
     OFFICE_CODE: {
         type: String
     },
+    JOB_CODE: {
+        type: String,
+        alias: 'CODE_JIKMYUNG'
+    },
     JOB_TITLE: {
-        type: String
+        type: String,
+        alias: 'NM_JIKMYUNG'
     },
     SABUN: {
-        type: String
+        type: String,
+        alias: 'NO_SAWON'
     },
     use: {
         type: Boolean,

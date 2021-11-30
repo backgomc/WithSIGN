@@ -98,7 +98,7 @@ router.post('/templates', (req, res) => {
       select: {name: 1, JOB_TITLE: 2}
     })
     .exec((err, data) => {
-        console.log(data);
+        // console.log(data);
         if (err) return res.json({success: false, error: err});
         return res.json({ success: true, templates: data, total:recordsTotal })
     })
