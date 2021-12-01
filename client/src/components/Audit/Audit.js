@@ -292,7 +292,7 @@ const Audit = ({location}) => {
           title: '진본 확인 증명서',
           // ghost: false,
           extra: [           
-          <Button onClick={() => navigate('/documentList')}>
+          <Button onClick={() => window.history.back()}>
             {formatMessage({id: 'Back'})}
           </Button>
           ],

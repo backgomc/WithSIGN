@@ -148,8 +148,11 @@
   - config STORAGE_DIR 변경시 nginx proxy 설정 변경
 # 대량발송 후 서명요청시 ... 대량발송 플래그 남아있음
 # 대량발송 후 서명 완료 시 서명이 안보임
-* 의견 보내기 (Q&A) 대시보드에 ... 
-
+# 의견 보내기 (Q&A) 대시보드에 ...  + 게시글 내용에 댓글 작업하기 (boardDetail)
+* 게시글 html 편집기 기능, 첨부 파일 기능 
+* 문서 첨부파일 기능 
+* 시작하기 -> 서명하기 또는 대량 발송 선택 팝업 
+* 사용자 매뉴얼 만들기
 
 git clone https://github.com/gobitfly/etherchain-light --recursive
 

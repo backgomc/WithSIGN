@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { navigate, Link } from '@reach/router';
-import { List, Tag, Avatar } from 'antd';
+import { List, Tag, Avatar, ConfigProvider, Empty, Button, Badge } from 'antd';
 import { useSelector, useDispatch } from 'react-redux';
 import ProCard from '@ant-design/pro-card';
 import 'antd/dist/antd.css';
@@ -34,7 +34,22 @@ const OpinionCard = (props) => {
           setData(boards)
         }
         setLoading(false);
-      }
+    }
+
+    const customizeRenderEmpty = () => (
+        <Empty
+            description={
+            <span>
+                개선 및 문의사항을 등록할 수 있습니다.
+                {/* <a href="#API">Description</a> */}
+            </span>
+            }
+        >
+        <Button type="primary" onClick={() => {navigate('/boardWrite', { state: {boardType:boardType, boardName:boardName}});}}>
+            등록하기
+        </Button>
+      </Empty>
+    );
 
 
     useEffect(() => {
@@ -48,21 +63,23 @@ const OpinionCard = (props) => {
             title={boardName}
             bordered={false}
             headerBordered
-            extra={<Link to="/boardList"  state={{ boardType: 'opinion', boardName: '의견 보내기', boardDetail: '개선 및 문의사항을 등록할 수 있습니다.' }}>더보기</Link>}
+            extra={<Link to="/boardList"  state={{ boardType: 'opinion', boardName: '문의하기', boardDetail: '개선 및 문의사항을 등록할 수 있습니다.' }}>더보기</Link>}
             loading={loading}
             bodyStyle={{ padding: 10 }}
         >
+            <ConfigProvider renderEmpty={customizeRenderEmpty}>
             <List
                 // bordered
                 style={{ paddingLeft: 24, paddingRight: 24}}
                 dataSource={data}
+                
                 renderItem={item => (
                 <List.Item>
                 <List.Item.Meta
                     avatar={item.user.thumbnail ? <Avatar src={item.user.thumbnail} /> : <Avatar size={40} icon={<UserOutlined />} />}
                     title={
                     <Link to="/boardDetail" state={{ boardId: item._id }}>
-                        {item.title}
+                        {item.title} <Badge count={item.comments.length} style={{ backgroundColor: '#52c41a' }} />
                     </Link>
                     }
                     description={item.user.JOB_TITLE ? item.user.name + ' '+ item.user.JOB_TITLE : item.user.name}
@@ -73,6 +90,7 @@ const OpinionCard = (props) => {
                 </List.Item>
                 )}
             />
+            </ConfigProvider>
         </ProCard>
     );
 

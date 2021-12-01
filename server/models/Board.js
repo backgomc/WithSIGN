@@ -20,7 +20,13 @@ const boardSchema = mongoose.Schema({
     },
     updatedTime: {
         type: Date
-    }
+    },
+    comments: [{
+        user: { type: Schema.Types.ObjectId, ref: 'User' },
+        registeredTime: {  type: Date, default: Date.now },
+        content: { type: String }
+    }],
+
 })
 
 const Board = mongoose.model('Board', boardSchema)

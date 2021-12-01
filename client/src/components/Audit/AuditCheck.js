@@ -85,7 +85,9 @@ const AuditCheck = () => {
           ],
         },
         extra: [
-          <Button key="1" onClick={() => {navigate(`/`);}}>이전</Button>,
+          <Button onClick={() => window.history.back()}>
+            {formatMessage({id: 'Back'})}
+          </Button>,
           <Button key="2" onClick={() => {form.resetFields();setResultDisplay('none');setDisableNext(true);}}>{formatMessage({id: 'Initialize'})}</Button>,
           <Button key="3" type="primary" onClick={() => form.submit()} disabled={disableNext}>
             {formatMessage({id: 'document.check'})}

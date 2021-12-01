@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
-import { Table, Input, Space, Button, Popconfirm } from "antd";
+import { Table, Input, Space, Button, Popconfirm, Badge } from "antd";
 import Highlighter from 'react-highlight-words';
 import { SearchOutlined } from '@ant-design/icons';
 import { useSelector, useDispatch } from 'react-redux';
@@ -27,7 +27,6 @@ const BoardList = ({location}) => {
   const boardName = location.state?.boardName ? location.state.boardName : "Notice";
   const boardDetail = location.state?.boardDetail ? location.state.boardDetail : "";
   
-
   const [searchText, setSearchText] = useState('');
   const [searchedColumn, setSearchedColumn] = useState('');
   const [data, setData] = useState([]);
@@ -187,7 +186,7 @@ const BoardList = ({location}) => {
       key: 'title',
       ...getColumnSearchProps('title'),
       expandable: true,
-      render: (text,row) => <div style={{ wordWrap: 'break-word', wordBreak: 'break-word' }}>{text}</div>, // 여러 필드 동시 표시에 사용
+      render: (text,row) => <div style={{ wordWrap: 'break-word', wordBreak: 'break-word' }}>{text} <Badge count={row.comments.length} style={{ backgroundColor: '#52c41a' }} /></div>, // 여러 필드 동시 표시에 사용
     },
     {
       title: '작성자',
@@ -279,7 +278,11 @@ const BoardList = ({location}) => {
               // },
             ],
           },
-          extra: [           
+          extra: [     
+          <Button onClick={() => window.history.back()}>
+            {formatMessage({id: 'Back'})}
+          </Button>, 
+          boardType == 'notice' ? '' :     
           <Button type="primary" onClick={() => {navigate('/boardWrite', { state: {boardType:boardType, boardName:boardName}});}}>
             등록
           </Button>,

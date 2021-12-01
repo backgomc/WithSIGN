@@ -355,7 +355,7 @@ const Setting = () => {
         >
 
           <Row gutter={24}>
-              <Col xl={10} lg={24} md={24} sm={24} xs={24}>
+              <Col xl={24} lg={24} md={24} sm={24} xs={24}>
 
                 <ProCard
                   title='사용자 정보 및 변경'
@@ -376,13 +376,12 @@ const Setting = () => {
                 </ProCard>
                 <br></br>
               </Col>
-              <Col xl={14} lg={24} md={24} sm={24} xs={24}>
-                {/* {faq()} */}
+              {/* <Col xl={14} lg={24} md={24} sm={24} xs={24}>
                 <BoardCard boardType={'notice'} boardName={'공지사항'}></BoardCard>
                 <br></br>
                 <FAQCard boardType={'faq'} boardName={'FAQ'}></FAQCard>
                 
-              </Col>
+              </Col> */}
           </Row>
 
         

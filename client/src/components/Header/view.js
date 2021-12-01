@@ -39,7 +39,7 @@ const HeaderComponent = ({collapsed, setCollapsed}) => {
   const menu = (
     <Menu>
       <Menu.Item key="11">
-        <Link to="/home/setting">
+        <Link to="/setting">
           <SettingOutlined />&nbsp;설정
         </Link>
       </Menu.Item>

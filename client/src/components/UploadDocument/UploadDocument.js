@@ -172,7 +172,7 @@ const UploadDocument = () => {
           </Button>,
         ],
       }}
-      content= { <ProCard style={{ background: '#ffffff'}} layout="center"><StepWrite current={0} /></ProCard> }
+      content= { <ProCard style={{ background: '#ffffff' }} layout="center"><StepWrite current={0} /></ProCard> }
       footer={[
         // <Button key="3" onClick={() => form.resetFields()}>초기화</Button>,
         // <Button key="2" type="primary" onClick={() => (tab === "tab1") ? form.submit() : templateNext()} disabled={disableNext}>

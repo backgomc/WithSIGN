@@ -20,6 +20,7 @@ import BoardList from './components/Board/BoardList';
 import BoardDetail from './components/Board/BoardDetail';
 import BoardWrite from './components/Board/BoardWrite';
 import OpinionList from './components/Board/OpinionList';
+import Customer from './components/Customer/Customer';
 import Sign from './components/Sign';
 import View from './components/View';
 import Welcome from './components/Welcome';
@@ -176,6 +177,7 @@ const App = () => {
       <PreviewPDF path="/previewPDF" />
       <BoardWrite path="/boardWrite" />
       <OpinionList path="/opinionList" />
+      <Customer path="/customer" />
     </Router>
   </ProLayout>
 

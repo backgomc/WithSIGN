@@ -74,6 +74,10 @@ router.post('/list', (req, res) => {
       path: "user", 
       select: {name: 1, JOB_TITLE: 2}
     })
+    .populate({
+      path: "comments.user", 
+      select: {name: 1, JOB_TITLE: 2}
+    })
     .exec((err, data) => {
         console.log(data);
         if (err) return res.json({success: false, error: err});
@@ -94,7 +98,12 @@ router.post('/detail', (req, res) => {
   .populate({
     path: "user", 
     select: {name: 1, JOB_TITLE: 2}
-  }).then((board, err) => {
+  })
+  .populate({
+    path: "comments.user", 
+    select: {name: 1, JOB_TITLE: 2, thumbnail: 3}
+  })
+  .then((board, err) => {
     if (err) return res.json({success: false, error: err});
     return res.json({ success: true, board: board })
   });
@@ -115,6 +124,36 @@ router.post('/delete', (req, res) => {
     return res.status(200).json({ success: true})     
   })
   
+})
+
+// 게시글 등록
+router.post('/addComment', (req, res) => {
+
+  if (!req.body.user || !req.body.boardId || !req.body.content) {
+      return res.json({ success: false, message: "input value not enough!" })
+  } 
+
+  const user = req.body.user 
+  const boardId =req.body.boardId
+  const content = req.body.content
+
+  Board.findOne({ _id: boardId })
+  .then((board, err) => {
+
+    const comment = {user: user, content: content}
+    board.comments.push(comment)
+
+    Board.updateOne({ _id: boardId }, {comments: board.comments}, (err, result) => {
+      if (err) {
+        console.log(err);
+        return res.json({ success: false, message: err })
+      } else {
+        return res.json({ success: true})
+      }
+    })
+
+  });
+
 })
 
 module.exports = router;
