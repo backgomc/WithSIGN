@@ -15,6 +15,7 @@ import ProCard from '@ant-design/pro-card';
 import 'antd/dist/antd.css';
 import '@ant-design/pro-card/dist/card.css';
 import { DownloadOutlined } from '@ant-design/icons';
+import { LICENSE_KEY } from '../../config/Config';
 
 const ViewDocument = () => {
   const [annotManager, setAnnotatManager] = useState(null);
@@ -36,6 +37,7 @@ const ViewDocument = () => {
     WebViewer(
       {
         path: 'webviewer',
+        licenseKey: LICENSE_KEY,
         disabledElements: [
           'ribbons',
           'toggleNotesButton',

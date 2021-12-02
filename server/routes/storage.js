@@ -71,21 +71,21 @@ const upload = multer({storage});
 // const uploadTemp = multer({storageTemp});
 const uploadTemp = multer({ dest: config.storageDIR + 'temp/' })
 
-const java = require('java');
+// const java = require('java');
 
-const jarFilePath1 = __dirname+'/../lib/fasoo-jni-2.8.9u.jar';
-const jarFilePath2 = __dirname+'/../lib/log4j-1.2.16.jar';
-const jarFilePath3 = __dirname+'/../lib/NH_SIGN.jar';
-java.classpath.push(jarFilePath1);
-java.classpath.push(jarFilePath2);
-java.classpath.push(jarFilePath3);
+// const jarFilePath1 = __dirname+'/../lib/fasoo-jni-2.8.9u.jar';
+// const jarFilePath2 = __dirname+'/../lib/log4j-1.2.16.jar';
+// const jarFilePath3 = __dirname+'/../lib/NH_SIGN.jar';
+// java.classpath.push(jarFilePath1);
+// java.classpath.push(jarFilePath2);
+// java.classpath.push(jarFilePath3);
 
 // 신규 문서 등록
 router.post('/upload', upload.single('file'), (req, res) => {
 
     if (req.file) {
-        var DocuUtil = java.import('com.nonghyupit.drm.DocuUtil');
-        console.log('DRM Unpackaging : ' + DocuUtil.unpackagingSync('./'+req.file.destination+'/', req.file.originalname));
+        // var DocuUtil = java.import('com.nonghyupit.drm.DocuUtil');
+        // console.log('DRM Unpackaging : ' + DocuUtil.unpackagingSync('./'+req.file.destination+'/', req.file.originalname));
         return res.json({ success: true, file: req.file })
     } else {
         return res.json({ success: false, message: "file upload failed"})

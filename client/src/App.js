@@ -108,7 +108,7 @@ const App = () => {
       menuExtraRender={({ collapsed }) =>
         !collapsed && (
           <div>
-            <Button type="primary" style={{ width: '100%', background: '#1A4D7D', border:'0' }} onClick={() => {navigate('/uploadDocument')}}>서명 요청</Button>
+            <Button type="primary" style={{ width: '100%', background: '#1A4D7D', border:'0' }} onClick={() => {dispatch(setSendType('G')); navigate('/uploadDocument');}}>서명 요청</Button>
           </div>
         )
       }  

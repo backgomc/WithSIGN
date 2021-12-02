@@ -17,6 +17,7 @@ import ProCard from '@ant-design/pro-card';
 import 'antd/dist/antd.css';
 import '@ant-design/pro-card/dist/card.css';
 import { ExclamationCircleOutlined } from '@ant-design/icons';
+import { LICENSE_KEY } from '../../config/Config';
 
 const { confirm } = Modal;
 const { TextArea } = Input;
@@ -55,6 +56,7 @@ const SignDocument = () => {
     WebViewer(
       {
         path: 'webviewer',
+        licenseKey: LICENSE_KEY,
         disabledElements: [
           'ribbons',
           'toggleNotesButton',

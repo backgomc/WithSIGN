@@ -1,8 +1,10 @@
 import axios from 'axios';
+import { LICENSE_KEY } from '../../config/Config';
 
 export const mergeAnnotations = async (docId, docRef, xfdf, isLast) => {
 
   const PDFNet = window.PDFNet;
+
   const CoreControls = window.CoreControls;
   CoreControls.setWorkerPath('webviewer/core');
 
@@ -67,5 +69,5 @@ export const mergeAnnotations = async (docId, docRef, xfdf, isLast) => {
   
   }
 
-  await PDFNet.runWithCleanup(main);
+  await PDFNet.runWithCleanup(main, LICENSE_KEY);
 };

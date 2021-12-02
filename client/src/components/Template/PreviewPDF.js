@@ -9,6 +9,7 @@ import { PageContainer } from '@ant-design/pro-layout';
 import WebViewer from '@pdftron/webviewer';
 import 'antd/dist/antd.css';
 import '@ant-design/pro-card/dist/card.css';
+import { LICENSE_KEY } from '../../config/Config';
 
 const PreviewPDF = ({location}) => {
 
@@ -30,6 +31,7 @@ const PreviewPDF = ({location}) => {
     WebViewer(
       {
         path: 'webviewer',
+        licenseKey: LICENSE_KEY,
         disabledElements: [
           'ribbons',
           'toggleNotesButton',

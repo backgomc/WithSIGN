@@ -28,7 +28,7 @@ import ProCard from '@ant-design/pro-card';
 import 'antd/dist/antd.css';
 import '@ant-design/pro-card/dist/card.css';
 import logo from '../../assets/images/logo.svg';
-import { STORAGE_DIR } from '../../config/Config';
+import { LICENSE_KEY } from '../../config/Config';
 
 const { Dragger } = Upload;
 
@@ -151,6 +151,7 @@ const PrepareDocument = () => {
     WebViewer(
       {
         path: 'webviewer',
+        licenseKey: LICENSE_KEY,
         disabledElements: [
           'ribbons',
           'toggleNotesButton',
@@ -161,7 +162,7 @@ const PrepareDocument = () => {
       viewer.current,
     ).then(instance => {
       const { iframeWindow, docViewer } = instance;
-
+      
       // select only the view group
       instance.setToolbarGroup('toolbarGroup-View');
 

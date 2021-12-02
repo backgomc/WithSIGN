@@ -22,7 +22,28 @@ import '@ant-design/pro-card/dist/card.css';
 import 'antd/dist/antd.css';
 import '@ant-design/pro-form/dist/form.css';
 
+import { Editor } from 'react-draft-wysiwyg';
+import styled from 'styled-components';
+import draftToHtml from 'draftjs-to-html';
+import { convertToRaw, EditorState } from 'draft-js';
+import 'react-draft-wysiwyg/dist/react-draft-wysiwyg.css';
+
 const { TextArea } = Input;
+
+const MyBlock = styled.div`
+  .wrapper-class{
+      width: 100%;
+      margin: 0 auto;
+      margin-bottom: 4rem;
+  }
+  .editor {
+    height: 500px !important;
+    border: 1px solid #f1f1f1 !important;
+    padding: 5px !important;
+    border-radius: 2px !important;
+  }
+`;
+
 
 const BoardWrite = ({location}) => {
 
@@ -48,8 +69,18 @@ const BoardWrite = ({location}) => {
   const { formatMessage } = useIntl();
   const searchInput = useRef<Input>(null)
 
+  const [editorState, setEditorState] = useState(EditorState.createEmpty());
+  const onEditorStateChange = (editorState) => {
+    // editorState에 값 설정
+    setEditorState(editorState);
+  };
+
+
   const onFinish = async (values) => {
     console.log(values)
+
+    console.log(editorState.getCurrentContent());
+    console.log(draftToHtml(convertToRaw(editorState.getCurrentContent())));
 
     setLoading(true);
 
@@ -58,7 +89,8 @@ const BoardWrite = ({location}) => {
       user: _id,
       boardType: boardType,
       title: form.getFieldValue("title"),
-      content: form.getFieldValue("content"),
+      // content: form.getFieldValue("content"),
+      content: draftToHtml(convertToRaw(editorState.getCurrentContent()))
     }
     console.log(body)
     const res = await axios.post('/api/board/add', body)
@@ -70,7 +102,16 @@ const BoardWrite = ({location}) => {
 
   useEffect(() => {
 
-  }, []);
+    console.log("ABC")
+    console.log("editorState.hasText:"+editorState.getCurrentContent().hasText())
+
+    if (form.getFieldValue("title") && editorState.getCurrentContent().hasText()) {
+      setDisableNext(false)
+    } else {
+      setDisableNext(true)
+    }
+    
+  }, [editorState]);
 
   return (
     <div>
@@ -94,7 +135,7 @@ const BoardWrite = ({location}) => {
         ]}
     >
     <br />
-    <ProCard direction="column" ghost gutter={[0, 16]}>
+    <ProCard direction="column" gutter={[0, 16]}>
       <ProForm 
         form={form}
         onFinish={onFinish}
@@ -118,12 +159,11 @@ const BoardWrite = ({location}) => {
           console.log(changeValues)
           // console.log('form.getFieldValue("title"):'+form.getFieldValue("title"))
 
-          if (form.getFieldValue("title") && form.getFieldValue("content")) {
+          // if (form.getFieldValue("title") && form.getFieldValue("content")) {
+          if (form.getFieldValue("title") && editorState.getCurrentContent().hasText()) {
             setDisableNext(false)
-            console.log("AA")
           } else {
             setDisableNext(true)
-            console.log("BB")
           }
         }}
       >
@@ -136,15 +176,44 @@ const BoardWrite = ({location}) => {
           rules={[{ required: true, message: formatMessage({id: 'input.boardTitle'}) }]}
         />
 
-        <ProFormTextArea 
+        {/* <ProFormTextArea 
           label="내용" 
           name="content"
           // width="lg"
           fieldProps={{showCount: true, allowClear: true, rows: '15'}}
           rules={[{ autoSize: true, required: true, message: formatMessage({id: 'input.boardContent'}) }]}
+        /> */}
+
+      <MyBlock>
+        <Editor
+          // 에디터와 툴바 모두에 적용되는 클래스
+          wrapperClassName="wrapper-class"
+          // 에디터 주변에 적용된 클래스
+          editorClassName="editor"
+          // 툴바 주위에 적용된 클래스
+          toolbarClassName="toolbar-class"
+          // 툴바 설정
+          toolbar={{
+            // inDropdown: 해당 항목과 관련된 항목을 드롭다운으로 나타낼것인지
+            list: { inDropdown: true },
+            textAlign: { inDropdown: true },
+            link: { inDropdown: true },
+            history: { inDropdown: false },
+          }} 
+          placeholder="내용을 작성해주세요."
+          // 한국어 설정
+          localization={{
+            locale: 'ko',
+          }}
+          // 초기값 설정
+          editorState={editorState}
+          // 에디터의 값이 변경될 때마다 onEditorStateChange 호출
+          onEditorStateChange={onEditorStateChange}
         />
+      </MyBlock>
 
       </ProForm>
+
     </ProCard>  
       
       

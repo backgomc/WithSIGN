@@ -13,6 +13,7 @@ import '@ant-design/pro-card/dist/card.css';
 import 'antd/dist/antd.css';
 import '@ant-design/pro-form/dist/form.css';
 import WebViewer from '@pdftron/webviewer';
+import { LICENSE_KEY } from '../../config/Config';
 
 const UploadTemplate = () => {
 
@@ -36,6 +37,7 @@ const UploadTemplate = () => {
     WebViewer(
       {
         path: 'webviewer',
+        licenseKey: LICENSE_KEY,
         disabledElements: [
           'ribbons',
           'toggleNotesButton',

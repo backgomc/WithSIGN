@@ -152,7 +152,10 @@
 * 게시글 html 편집기 기능, 첨부 파일 기능 
 * 문서 첨부파일 기능 
 * 시작하기 -> 서명하기 또는 대량 발송 선택 팝업 
-* 사용자 매뉴얼 만들기
+* 사용자 매뉴얼 페이지 만들기
+* PDFTron 계약서 전달 & 파수 검수확인서 전달
+* 게시글 작성 에디터 작업
+
 
 git clone https://github.com/gobitfly/etherchain-light --recursive
 
