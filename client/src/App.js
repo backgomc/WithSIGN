@@ -19,6 +19,7 @@ import BulkDetail from './components/Bulk/BulkDetail';
 import BoardList from './components/Board/BoardList';
 import BoardDetail from './components/Board/BoardDetail';
 import BoardWrite from './components/Board/BoardWrite';
+import BoardModify from './components/Board/BoardModify';
 import OpinionList from './components/Board/OpinionList';
 import Customer from './components/Customer/Customer';
 import Sign from './components/Sign';
@@ -176,6 +177,7 @@ const App = () => {
       <Policy path="/policy" />
       <PreviewPDF path="/previewPDF" />
       <BoardWrite path="/boardWrite" />
+      <BoardModify path="/boardModify" />
       <OpinionList path="/opinionList" />
       <Customer path="/customer" />
     </Router>

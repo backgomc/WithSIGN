@@ -126,6 +126,28 @@ router.post('/delete', (req, res) => {
   
 })
 
+// 게시글 수정
+router.post('/modify', (req, res) => {
+
+  if (!req.body.boardId || !req.body.title || !req.body.content) {
+    return res.json({ success: false, message: "input value not enough!" })
+  } 
+
+  const boardId =req.body.boardId
+  const title = req.body.title
+  const content = req.body.content
+
+  Board.updateOne({ _id: boardId }, {title: title, content: content}, (err, result) => {
+    if (err) {
+      console.log(err);
+      return res.json({ success: false, message: err })
+    } else {
+      return res.json({ success: true})
+    }
+  })
+  
+})
+
 // 게시글 등록
 router.post('/addComment', (req, res) => {
 
@@ -154,6 +176,37 @@ router.post('/addComment', (req, res) => {
 
   });
 
+})
+
+// 댓글 삭제 
+router.post('/deleteComment', (req, res) => {
+
+  if (!req.body.boardId || !req.body.commentId) {
+      return res.json({ success: false, message: "input value not enough!" })
+  } 
+
+  const boardId = req.body.boardId
+  const commentId = req.body.commentId
+
+  console.log("boardId:"+boardId)
+  console.log("commentId:"+commentId)
+
+  Board.findOne({ _id: boardId })
+  .then((board, err) => {
+
+    let filtered = board.comments.filter((element) => element._id != commentId);
+    console.log('filtered:'+filtered)
+    Board.updateOne({ _id: boardId }, {comments: filtered}, (err, result) => {
+      if (err) {
+        console.log(err);
+        return res.json({ success: false, message: err })
+      } else {
+        return res.json({ success: true})
+      }
+    })
+
+  });
+  
 })
 
 module.exports = router;

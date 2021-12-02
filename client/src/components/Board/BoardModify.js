@@ -25,7 +25,8 @@ import '@ant-design/pro-form/dist/form.css';
 import { Editor } from 'react-draft-wysiwyg';
 import styled from 'styled-components';
 import draftToHtml from 'draftjs-to-html';
-import { convertToRaw, EditorState } from 'draft-js';
+import htmlToDraft from 'html-to-draftjs';
+import { convertToRaw, EditorState, ContentState } from 'draft-js';
 import 'react-draft-wysiwyg/dist/react-draft-wysiwyg.css';
 
 const { TextArea } = Input;
@@ -45,24 +46,21 @@ const MyBlock = styled.div`
 `;
 
 
-const BoardWrite = ({location}) => {
+const BoardModify = ({location}) => {
 
   const dispatch = useDispatch();
   const user = useSelector(selectUser);
   const { _id } = user;
+
+  const boardId = location.state?.boardId ? location.state.boardId : "";
   const boardType = location.state?.boardType ? location.state.boardType : "qna";
   const boardName = location.state?.boardName ? location.state.boardName : "게시글 작성";
 
   const [form] = Form.useForm();
 
   const [disableNext, setDisableNext] = useState(true);
-  const [searchText, setSearchText] = useState('');
-  const [searchedColumn, setSearchedColumn] = useState('');
-  const [data, setData] = useState([]);
-  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
-  const [hasSelected, setHasSelected] = useState(selectedRowKeys.length > 0);
-  
-  const [pagination, setPagination] = useState({current:1, pageSize:10});
+
+  const [board, setBoard] = useState({title: '', content: '', requestedTime: '', user: {name: '', JOB_TITLE:''}});  
   const [loading, setLoading] = useState(false);
 
 
@@ -75,6 +73,41 @@ const BoardWrite = ({location}) => {
     setEditorState(editorState);
   };
 
+  const fetch = (params = {}) => {
+    setLoading(true);
+
+    axios.post('/api/board/detail', params).then(response => {
+
+      console.log(response)
+      if (response.data.success) {
+        const board = response.data.board;
+        setBoard(board);
+
+        form.setFieldsValue({
+          title: board.title,
+        });
+
+        const htmlToEditor = `${board.content}`;
+        
+        const blocksFromHtml = htmlToDraft(htmlToEditor);
+        if (blocksFromHtml) {
+          const { contentBlocks, entityMap } = blocksFromHtml;
+          // https://draftjs.org/docs/api-reference-content-state/#createfromblockarray
+          const contentState = ContentState.createFromBlockArray(contentBlocks, entityMap);
+          // ContentState를 EditorState기반으로 새 개체를 반환.
+          // https://draftjs.org/docs/api-reference-editor-state/#createwithcontent
+          const editorState = EditorState.createWithContent(contentState);
+          setEditorState(editorState);
+        }
+
+        setLoading(false);
+      } else {
+          setLoading(false);
+          alert(response.data.error)
+      }
+
+    });
+  };
 
   const onFinish = async (values) => {
     console.log(values)
@@ -87,16 +120,19 @@ const BoardWrite = ({location}) => {
     // DB-SAVE
     let body = {
       user: _id,
-      boardType: boardType,
+      boardId: boardId,
+      // boardType: boardType,
       title: form.getFieldValue("title"),
       // content: form.getFieldValue("content"),
       content: draftToHtml(convertToRaw(editorState.getCurrentContent()))
     }
     console.log(body)
-    const res = await axios.post('/api/board/add', body)
+    const res = await axios.post('/api/board/modify', body)
 
     setLoading(false);
-    navigate('/boardList', { state: {boardType:boardType, boardName:boardName}}); 
+
+    window.history.back();
+    // navigate('/boardList', { state: {boardType:boardType, boardName:boardName}}); 
 
   }
 
@@ -125,6 +161,14 @@ const BoardWrite = ({location}) => {
       }
     );
   }
+
+  useEffect(() => {
+
+    fetch({
+      boardId: boardId  
+    });
+
+  }, []);
 
   useEffect(() => {
 
@@ -257,4 +301,4 @@ const BoardWrite = ({location}) => {
   );
 };
 
-export default BoardWrite;
+export default BoardModify;

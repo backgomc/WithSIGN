@@ -186,7 +186,7 @@ const BoardList = ({location}) => {
       key: 'title',
       ...getColumnSearchProps('title'),
       expandable: true,
-      render: (text,row) => <div style={{ wordWrap: 'break-word', wordBreak: 'break-word' }}>{text} <Badge count={row.comments.length} style={{ backgroundColor: '#52c41a' }} /></div>, // 여러 필드 동시 표시에 사용
+      render: (text,row) => <div style={{ wordWrap: 'break-word', wordBreak: 'break-word' }}>{text} <Badge count={row.comments.length} style={{ backgroundColor: '#1A4D7D' }} /></div>, // 여러 필드 동시 표시에 사용
     },
     {
       title: '작성자',

@@ -1,25 +1,35 @@
 import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
-import { Table, Input, Space, Button, Descriptions, Form, Comment, Avatar, List } from "antd";
+import { Table, Input, Space, Button, Descriptions, Form, Comment, Avatar, List, Divider, Modal } from "antd";
 import Highlighter from 'react-highlight-words';
-import { SearchOutlined } from '@ant-design/icons';
 import { useSelector, useDispatch } from 'react-redux';
 import { selectUser } from '../../app/infoSlice';
 import { navigate } from '@reach/router';
-import { setDocToView } from '../ViewDocument/ViewDocumentSlice';
 import Moment from 'react-moment';
 import moment from "moment";
 import 'moment/locale/ko';
-import { DocumentType, DocumentTypeText, DocumentTypeIcon, DOCUMENT_SIGNED, DOCUMENT_TOSIGN, DOCUMENT_SIGNING, DOCUMENT_CANCELED } from '../Lists/DocumentType';
 import {
-  UserOutlined
+  UserOutlined,
+  ExclamationCircleOutlined,
+  DeleteOutlined
 } from '@ant-design/icons';
 import { PageContainer } from '@ant-design/pro-layout';
 import { useIntl } from "react-intl";
 import ProCard from '@ant-design/pro-card';
-import ProForm, { ProFormUploadDragger, ProFormText, ProFormTextArea } from '@ant-design/pro-form';
+import ProForm, { ProFormTextArea } from '@ant-design/pro-form';
 import '@ant-design/pro-form/dist/form.css';
 import 'antd/dist/antd.css';
+import styled from 'styled-components';
+import Media from 'react-media';
+
+const { confirm } = Modal;
+
+const Container = styled.div`
+    padding: 30px;
+    width: 100%;
+    height: 100%;
+    background: white;
+    `;
 
 const BoardDetail = ({location}) => {
 
@@ -54,6 +64,8 @@ const BoardDetail = ({location}) => {
         var tempData = []
         board.comments.map(comment => {
           tempData.push({
+            _id: comment._id,
+            userId: comment.user._id,
             author: comment.user.name + ' ' + comment.user.JOB_TITLE,
             avatar: thumbnail ? <Avatar src={thumbnail} /> : <Avatar size={35} icon={<UserOutlined />} />,
             content: <pre>{comment.content}</pre>,
@@ -71,12 +83,77 @@ const BoardDetail = ({location}) => {
     });
   };
 
+  const fetchDeleteBoard = async (_id) => {
+    setLoading(true);
+    let param = {
+      _ids: [boardId]
+    }
+    
+    const res = await axios.post('/api/board/delete', param)
+    if (res.data.success) {
+      window.history.back();
+    }
+    setLoading(false);
+  }
+
+  const deleteBoard = async () => {
+    confirm({
+      title: '삭제하시겠습니까?',
+      icon: <ExclamationCircleOutlined />,
+      content: '해당 게시글이 영구 삭제됩니다.',
+      okText: '네',
+      okType: 'danger',
+      cancelText: '아니오',
+      onOk() {
+        fetchDeleteBoard();
+      },
+      onCancel() {
+        console.log('Cancel');
+      },
+    });    
+  }
+
+  const fetchDeleteComment = async (_id) => {
+    setLoading(true);
+    let param = {
+      commentId: _id,
+      boardId: boardId
+    }
+    
+    const res = await axios.post('/api/board/deleteComment', param)
+    if (res.data.success) {
+      fetch({
+        boardId: boardId  
+      });
+    }
+    setLoading(false);
+  }
+
+  const deleteComment = async (_id) => {
+    confirm({
+      title: '삭제하시겠습니까?',
+      icon: <ExclamationCircleOutlined />,
+      content: '해당 댓글이 영구 삭제됩니다.',
+      okText: '네',
+      okType: 'danger',
+      cancelText: '아니오',
+      onOk() {
+        fetchDeleteComment(_id);
+      },
+      onCancel() {
+        console.log('Cancel');
+      },
+    });    
+  }
+
   const CommentList = () => (
     <List
       dataSource={comments}
       header={`댓글 ${comments.length}`}
       itemLayout="horizontal"
-      renderItem={props => <Comment {...props} actions={[<span key="comment-nested-reply-to">Reply to</span>]}
+      renderItem={props => 
+        <Comment {...props} 
+          actions={[(_id === props.userId) ? <span key="comment-nested-reply-to" onClick={() => { deleteComment(props._id)}}>삭제</span> : '']}
       />}     
     />
   );
@@ -172,31 +249,52 @@ const BoardDetail = ({location}) => {
           extra: [           
           <Button onClick={() => window.history.back()}>
             {formatMessage({id: 'Back'})}
-          </Button>
+          </Button>,
+          (_id === board.user._id) ? <Button onClick={e => { {navigate('/boardModify', { state: {boardType:boardType, boardName:'게시글 수정', boardId:boardId}});} }}>수정</Button> : '',
+          (_id === board.user._id) ? <Button danger onClick={e => { deleteBoard() }}>삭제</Button> : ''
           ],
         }}
         content={
+          <>
           <Descriptions column={2} style={{ marginBottom: -16 }}>
             <Descriptions.Item label="작성자">{board.user.name} {board.user.JOB_TITLE}</Descriptions.Item>
             <Descriptions.Item label="작성 일시"><Moment format='YYYY/MM/DD HH:mm'>{board.requestedTime}</Moment></Descriptions.Item>
           </Descriptions>
+          <Divider style= {{marginBottom: '-24px', height: '10px'}}/>
+          </>
         }
         footer={[
         ]}
     >
-
-      <ProCard direction="column" style={{ height: '100%' }}>
-        <pre>
+      {/* <Divider style= {{marginTop: '-24px'}} /> */}
+      <ProCard direction="column" style={{ width: 'auto', height: '100%', marginTop: '-24px', marginLeft: '-24px', marginRight: '-24px' }}>
+        {/* <pre> */}
           <div
-            style={{height:'100%', padding:'10px', fontSize:'calc(13px + .2vw)'}}
+            // style={{height:'100%', padding:'10px', fontSize:'calc(13px + .2vw)'}}
             dangerouslySetInnerHTML={{
               __html: board.content
             }} 
           />
-        </pre>
+        {/* </pre> */}
       </ProCard>
 
-      <div style={{background: 'white', marginTop: '25px', padding: '20px'}}>
+      {/* <Media query="(max-width: 600px)" render={() =>(
+        <>
+        <Container>
+          <div dangerouslySetInnerHTML={{__html:board.content}}></div>
+          </Container>
+        </>
+      )}/>
+
+      <Media query="(min-width: 601px)" render={() => (
+        <Container>
+            <div dangerouslySetInnerHTML={{__html:board.content}}></div>
+        </Container>
+      )}/> */}
+
+
+      
+      <div style={{background: 'white', width: 'auto', marginTop: '0px', marginLeft: '-24px', marginRight: '-24px', padding: '20px'}}>
       {comments.length > 0 && <CommentList />}
         <Comment
           avatar={thumbnail ? <Avatar src={thumbnail} /> : <Avatar size={35} icon={<UserOutlined />} />}

@@ -79,7 +79,7 @@ const OpinionCard = (props) => {
                     avatar={item.user.thumbnail ? <Avatar src={item.user.thumbnail} /> : <Avatar size={40} icon={<UserOutlined />} />}
                     title={
                     <Link to="/boardDetail" state={{ boardId: item._id }}>
-                        {item.title} <Badge count={item.comments.length} style={{ backgroundColor: '#52c41a' }} />
+                        {item.title} <Badge count={item.comments.length} style={{ backgroundColor: '#1A4D7D' }} />
                     </Link>
                     }
                     description={item.user.JOB_TITLE ? item.user.name + ' '+ item.user.JOB_TITLE : item.user.name}
