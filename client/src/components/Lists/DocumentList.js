@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
+import useDidMountEffect from '../Common/useDidMountEffect';
 import axios from 'axios';
-import { Table, Input, Space, Button, Tag, Badge } from "antd";
+import { Table, Input, Space, Button, Checkbox, Badge, Switch } from "antd";
 import Highlighter from 'react-highlight-words';
 import {
   SearchOutlined,
@@ -13,7 +14,6 @@ import {
   MinusCircleOutlined,
   InfoCircleOutlined,
 } from '@ant-design/icons';
-
 import { useSelector, useDispatch } from 'react-redux';
 import { selectUser } from '../../app/infoSlice';
 import { navigate } from '@reach/router';
@@ -42,24 +42,30 @@ const DocumentList = ({location}) => {
   const { _id } = user;
   const [searchText, setSearchText] = useState('');
   const [searchedColumn, setSearchedColumn] = useState('');
-  // const [status, setStatus] = useState(null);
+  const [status, setStatus] = useState();
   const [data, setData] = useState([]);
   const [pagination, setPagination] = useState({current:1, pageSize:10});
   const [loading, setLoading] = useState(false);
+  const [includeBulk, setIncludeBulk] = useState(false);
   const [responsive, setResponsive] = useState(false);
 
   const searchInput = useRef<Input>(null)
+
+
 
   const handleTableChange = (pagination, filters, sorter) => {
     console.log("handleTableChange called")
     // console.log("status:"+status)
     console.log("filters.status:"+filters.status)
+    setStatus(filters.status)
+
     fetch({
       sortField: sorter.field,
       sortOrder: sorter.order,
       pagination,
       ...filters,
       user: _id,
+      includeBulk: includeBulk
       // status:status  //필터에 포함되어 있음 
     });
   };
@@ -166,8 +172,8 @@ const DocumentList = ({location}) => {
     <div>
       <table width='100%' style={{tableLayout:'fixed'}}>
         <tr>
-          <td align='left' width='320px'>
-            <b><Badge status="processing" text="서명 필요" /></b> : 본인의 서명이 필요한 문서<br></br>
+          <td align='left' width='350px'>
+            <b><Badge status="processing" text="서명/수신 필요" /></b> : 본인의 서명 또는 수신이 필요한 문서<br></br>
             <b><Badge status="default" text="서명 진행" /></b> : 다른 서명 참여자의 서명이 진행 중인 문서<br></br>
             <b><Badge status="error" text="서명 취소" /></b> : 서명 참여자 중 서명을 취소한 문서 <br></br>
             <b><Badge status="success" text="서명 완료" /></b> : 모든 서명 참여자의 서명이 완료된 문서 
@@ -482,6 +488,26 @@ const DocumentList = ({location}) => {
 
     console.log("useEffect called")
 
+    if (location.state.status) {
+      setStatus(location.state.status)
+    }
+
+    fetch({
+      user: _id,
+      pagination,
+      status:location.state.status,
+      includeBulk: includeBulk
+    });
+
+    console.log("location.state.docId:"+ location.state.docId)
+
+  }, []);
+
+  // 화면이 처음 로딩시에는 호출되지 않도록 함
+  useDidMountEffect(() => {
+
+    console.log("useEffect called includeBulk : " + includeBulk)
+    console.log("useEffect called status : " + status)
     // if (location.state.status) {
     //   setStatus(location.state.status)
     // }
@@ -489,12 +515,14 @@ const DocumentList = ({location}) => {
     fetch({
       user: _id,
       pagination,
-      status:location.state.status
+      status:location.state.status,
+      includeBulk: includeBulk,
+      status: status
     });
 
-    console.log("location.state.docId:"+ location.state.docId)
+    // console.log("location.state.docId:"+ location.state.docId)
 
-  }, []);
+  }, [includeBulk]);
 
   return (
     <div>
@@ -515,7 +543,16 @@ const DocumentList = ({location}) => {
               // },
             ],
           },
-          extra: [           
+          extra: [       
+            // <Switch
+            //   checkedChildren="대량전송 포함"
+            //   unCheckedChildren="대량전송 포함"
+            //   checked={includeBulk}
+            //   onChange={() => {
+            //     setIncludeBulk(!includeBulk);
+            //   }}
+            // />,    
+            <Checkbox checked={includeBulk} onChange={(e) => {setIncludeBulk(e.target.checked)}}>대량 전송 포함</Checkbox>,
             <Button type="primary" onClick={() => {
               dispatch(setSendType('G'));
               navigate('/uploadDocument');
@@ -534,7 +571,7 @@ const DocumentList = ({location}) => {
         footer={[
         ]}
     >
-      <br></br>
+      <br></br>      
       <Table
         rowKey={ item => { return item._id } }
         columns={columns}

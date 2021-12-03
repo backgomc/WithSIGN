@@ -348,6 +348,7 @@ const TemplateList = () => {
         <tr>
           <td align='left' width='280px'>
             자주 사용하는 문서를 미리 등록할 수 있습니다.
+            회사 템플릿 등록은 관리자에게 문의 해주세요.
           </td>
           <td align='right'>
           < img src={banner} />

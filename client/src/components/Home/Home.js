@@ -709,10 +709,11 @@ const Home = () => {
             const observers = item.observers;
            dispatch(setDocToSign({ docRef, docId, docType, docUser, observers }));
           }}>
+            <Badge.Ribbon text={(item.observers && item.observers.includes(_id)) ? '수신' : '서명'}>
             <ProCard 
               hoverable
               bordered
-              title={<div style={{ wordWrap: 'break-word', wordBreak: 'break-word', maxWidth: '280px' }}>{item.docTitle}</div>}
+              title={<div style={{ wordWrap: 'break-word', wordBreak: 'break-word', maxWidth: '250px' }}>{item.docTitle}</div>}
               // tooltip={moment(item.requestedTime).fromNow() + ' ' + item.user.name + ' ' + item.user.JOB_TITLE + ' ' + '생성'}
               // extra={moment(item.requestedTime).fromNow()}
               // subTitle={<Tag color="#5BD8A6">private</Tag>}
@@ -729,6 +730,7 @@ const Home = () => {
               ]}>
                 <div><img src={item.thumbnail} style={{ width:'280px'}} /></div>
             </ProCard>
+            </ Badge.Ribbon>
           </Link>
         </List.Item>
       )}
@@ -835,9 +837,9 @@ const Home = () => {
 
   const items = [
     { key: '1', title: '전체', value: totalNum, total: true },
-    { key: '2', status: 'processing', title: '내 서명 필요', value: toSignNum },
-    { key: '3', status: 'default', title: '상대 서명 진행중', value: signingNum },
-    { key: '4', status: 'error', title: '서명 취소됨', value: canceledNum },
+    { key: '2', status: 'processing', title: '서명/수신 필요', value: toSignNum },
+    { key: '3', status: 'default', title: '서명 진행', value: signingNum },
+    { key: '4', status: 'error', title: '서명 취소', value: canceledNum },
     { key: '5', status: 'success', title: '서명 완료', value: signedNum },
   ];
 

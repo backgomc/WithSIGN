@@ -37,7 +37,7 @@ const PaperlessCard = (props) => {
 
 
   return (
-    <StatisticCard.Group loading={loadingPaperless} title='절약 건수' tooltip='본인이 서명 요청하여 완료된 건수를 기준으로 산정'>
+    <StatisticCard.Group loading={loadingPaperless} title='절약 건수' tooltip='본인이 서명 요청자로 참여한 문서를 기준으로 산정'>
       <StatisticCard
         statistic={{
           title: '페이퍼리스',

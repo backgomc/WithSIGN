@@ -50,7 +50,7 @@ const SignDocument = () => {
     console.log('observers:'+observers)
     if(observers && observers.includes(_id)) {
       setDisableNext(false)
-      setTextSign('수신 완료')
+      setTextSign('문서 수신')
     }
 
     WebViewer(

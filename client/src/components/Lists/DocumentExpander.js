@@ -166,7 +166,7 @@ const DocumentExpander = (props) => {
         if ((item.signedBy.some(e => e.user === user._id))) {
             return  (
                 <Timeline.Item dot={<CheckCircleOutlined className="timeline-clock-icon" />} color="gray">
-                    <font color='#A7A7A9'><b>{user.name} {user.JOB_TITLE}</b> {(item.observers && item.observers.includes(user._id)) ? '수신 완료' : '서명 완료'}</font> &nbsp; 
+                    <font color='#A7A7A9'><b>{user.name} {user.JOB_TITLE}</b> {(item.observers && item.observers.includes(user._id)) ? '문서 수신' : '서명 완료'}</font> &nbsp; 
                     <Tag color="#BABABC">
                     <Moment format='YYYY/MM/DD HH:mm'>{item.signedBy.filter(e => e.user === user._id)[0].signedTime}</Moment>
                     </Tag>

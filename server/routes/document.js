@@ -343,28 +343,50 @@ router.post('/searchForDocumentToSign', (req, res) => {
 
     console.log("status:"+status)
 
-    if (status) {
+    var includeBulk = false;
+    if (req.body.includeBulk) {
+      includeBulk = req.body.includeBulk;
+    }
+
+    if (status && status != "") {
       if (status == '서명 진행') {
         andParam['signed'] = false
         orParam = [{$and:[{"users": {$in:[user]}}, {"signedBy.user": user}]},  {$and:[{"user": user}, {"users": {$ne:user}}]}]
+        if(!includeBulk) {
+          andParam['docType'] = "G"
+        }
       } else if (status == '서명 필요') {
         andParam['users'] = {$in:[user]}
         andParam['signed'] = false
         andParam['canceled'] = false
         andParam['signedBy.user'] = {$ne:user}
         console.log("서명필요 called")
+        // 서명 필요는 대량발송 건과 관계없이 다 보여준다.
+        // if(!includeBulk) {
+        //   andParam['docType'] = "G"
+        // }
       } else if (status == '서명 완료') {
         andParam['signed'] = true
         orParam = [{"users": {$in:[user]}}, {"user": user}];
+        if(!includeBulk) {
+          andParam['docType'] = "G"
+        }
         console.log("서명완료 called")
       } else if (status == '서명 취소') {
         andParam['canceled'] = true
         orParam = [{"users": {$in:[user]}}, {"user": user}];
+        if(!includeBulk) {
+          andParam['docType'] = "G"
+        }
         console.log("서명취소 called")
       }
     } else {  // 전체 목록 (status 배열에 복수개가 들어오면 전체 목록 호출)
-      orParam = [{"users": {$in:[user]}}, {"user": user}];
-      // orParam = [{"users": {$in:[user]}}, {$and:[{"user": user}, {"docType": "G"}]} ];  // 대량발송의 경우 본인이 서명참여하는 경우만 목록에서 조회시켜준다.
+
+      if(includeBulk) {
+        orParam = [{"users": {$in:[user]}}, {"user": user}];
+      } else { // 전체 목록의 경우 대량발송 포함이 아니어도 서명 필요 건은 포함해서 출력해 준다.
+        orParam = [{"users": {$in:[user]}}, {$and:[{"user": user}, {"docType": "G"}]} ];  
+      }
       console.log("전체목록 called")
     }
 
