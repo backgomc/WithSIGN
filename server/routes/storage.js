@@ -9,6 +9,7 @@ const path = require('path');
 const crypto = require('crypto');
 const { makeFolder } = require('../common/utils');
 
+const restful = require('../common/restful');
 
 // const upload = multer({ dest: 'storage/docToSign/' })
 
@@ -71,21 +72,10 @@ const upload = multer({storage});
 // const uploadTemp = multer({storageTemp});
 const uploadTemp = multer({ dest: config.storageDIR + 'temp/' })
 
-// const java = require('java');
-
-// const jarFilePath1 = __dirname+'/../lib/fasoo-jni-2.8.9u.jar';
-// const jarFilePath2 = __dirname+'/../lib/log4j-1.2.16.jar';
-// const jarFilePath3 = __dirname+'/../lib/NH_SIGN.jar';
-// java.classpath.push(jarFilePath1);
-// java.classpath.push(jarFilePath2);
-// java.classpath.push(jarFilePath3);
-
 // 신규 문서 등록
-router.post('/upload', upload.single('file'), (req, res) => {
-
+router.post('/upload', upload.single('file'), async (req, res) => {
     if (req.file) {
-        // var DocuUtil = java.import('com.nonghyupit.drm.DocuUtil');
-        // console.log('DRM Unpackaging : ' + DocuUtil.unpackagingSync('./'+req.file.destination+'/', req.file.originalname));
+        console.log(await restful.callDRMUnpackaging(req.file.destination, req.file.originalname));
         return res.json({ success: true, file: req.file })
     } else {
         return res.json({ success: false, message: "file upload failed"})
@@ -93,7 +83,7 @@ router.post('/upload', upload.single('file'), (req, res) => {
     
 })
 
-// bulk 파일 복사
+// bulk 파일 복사   
 // 1. docId로 문서 정보가져오기 : docRef
 // 2. docId로 bulkId 찾기
 // 3. 파일 복사하기 (ex: docToSign/docId -> bulkId/60dbfeec57e078050836b4741625204681539.pdf)
