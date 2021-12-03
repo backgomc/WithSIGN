@@ -15,7 +15,7 @@ import { navigate } from '@reach/router';
 import { Upload, message, Badge, Button, Row, Col, List, Card, Checkbox } from 'antd';
 import Icon from '@ant-design/icons';
 import { InboxOutlined, HighlightOutlined, PlusOutlined } from '@ant-design/icons';
-import { resetAssignAll, selectAssignees, resetSignee, selectDocumentFile, selectDocumentTitle, resetDocumentFile, resetDocumentTitle, selectTemplate, resetTemplate, selectDocumentType, resetDocumentType, selectTemplateTitle, selectSendType } from '../Assign/AssignSlice';
+import { selectDocumentTempPath, resetAssignAll, selectAssignees, resetSignee, selectDocumentFile, selectDocumentTitle, resetDocumentFile, resetDocumentTitle, selectTemplate, resetTemplate, selectDocumentType, resetDocumentType, selectTemplateTitle, selectSendType } from '../Assign/AssignSlice';
 import { selectUser } from '../../app/infoSlice';
 import WebViewer from '@pdftron/webviewer';
 // import 'gestalt/dist/gestalt.css';
@@ -59,6 +59,7 @@ const PrepareDocument = () => {
   const template = useSelector(selectTemplate);
   const templateTitle = useSelector(selectTemplateTitle);
   const sendType = useSelector(selectSendType);
+  const documentTempPath = useSelector(selectDocumentTempPath);
 
   const assignees = useSelector(selectAssignees);
   const assigneesValues = assignees.map(user => {
@@ -178,12 +179,11 @@ const PrepareDocument = () => {
       });
 
       if (documentType === 'TEMPLATE') {
-        // instance.loadDocument("http://localhost:5000/storage/template/60f4fb1e580054126cf7eba51627367952105.pdf")
-
         // /storage/... (O) storage/...(X)
         instance.loadDocument('/'+template.docRef)
       } else if(documentType === 'PC') {
-        instance.loadDocument(documentFile)
+        // instance.loadDocument(documentFile)
+        instance.loadDocument('/'+documentTempPath)
       }
 
 
@@ -729,6 +729,11 @@ const PrepareDocument = () => {
         console.log("Done saveBulk !!!");
       }
     }
+
+    //4. 임시파일삭제
+    if (documentType == 'PC') {
+      await axios.post(`/api/storage/deleteFile`, {target: documentTempPath})
+    } 
 
     dispatch(resetAssignAll());
     setLoading(false);

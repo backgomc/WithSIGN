@@ -14,7 +14,7 @@ COPY ./lib/Fasoopackager*.gz ./lib
 EXPOSE 4001
 
 # DRM 라이브러리 및 환경 설정 (hostid - dc0a5b8d)
-RUN tar -zxvf /app/lib/Fasoopackager.tar.gz -C /app/lib
+RUN tar -zxvf /app/lib/Fasoopackager*.gz -C /app/lib
 ENV LD_LIBRARY_PATH=/app/lib
 COPY hostid /etc
 

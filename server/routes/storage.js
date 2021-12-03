@@ -312,4 +312,66 @@ router.post('/removeDocument', (req, res) => {
     
 })
 
+
+// 파일 삭제
+// target : 삭제 파일 경로 (storage/temp/test.pdf)
+router.post('/deleteFile', (req, res) => {
+
+    if (!req.body.target) {
+        return res.json({ success: false, message: "input value not enough!" })
+    } 
+    const target = req.body.target 
+    console.log('target:'+target)
+
+    try {
+        fs.access(target, fs.constants.F_OK, (err) => { // A
+            if (err) return res.json({ success: false, msg: '삭제할 수 없는 파일입니다' });
+
+            fs.unlink(target, (e) => {
+                if(err) {
+                  console.log(err);
+                  return res.json({ success: false, msg: e });
+                }
+                
+                console.log(`${target} 를 정상적으로 삭제했습니다`)
+                return res.json({ success: true });
+              });
+
+        });
+    } catch(e) {
+        console.log(e)
+        return res.json({ success: false, msg: e });
+    }    
+})
+
+// 파일 이동 
+// origin : 원본 파일 경로 (storage/temp/test.pdf)
+// target : 이동 파일 경로 (storage/..../test.pdf)
+router.post('/moveFile', (req, res) => {
+
+    if (!req.body.origin || !req.body.target) {
+        return res.json({ success: false, message: "input value not enough!" })
+    } 
+    const origin = req.body.origin 
+    const target = req.body.target 
+
+    console.log('origin:'+origin)
+    console.log('target:'+target)
+
+    fs.access(origin, fs.constants.F_OK, (err) => { // A
+      if (err) return console.log('not found origin file!');
+
+      const dirName = path.dirname(target)
+      makeFolder(dirName)
+    //   const fileName = path.basename(origin);
+    //   let newPath = config.storageDIR + target + '/' + fileName
+
+      fs.rename(origin, target, (err) => {
+        if (err) return console.log('failed move file!');
+        return res.json({ success: true, filePath: target })
+      })
+    });
+    
+})
+
 module.exports = router;

@@ -1,5 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
+import axios from 'axios';
 import { navigate } from '@reach/router';
 import { selectUser } from '../../app/infoSlice';
 import 'antd/dist/antd.css';
@@ -7,7 +8,7 @@ import { Tabs, Upload, message, Input, Space, Form, Button } from 'antd';
 // import { InboxOutlined, CheckOutlined } from '@ant-design/icons';
 import StepWrite from '../Step/StepWrite';
 import { useIntl } from "react-intl";
-import { setDocumentFile, setDocumentTitle, selectDocumentTitle, selectDocumentFile, setTemplate, setTemplateType, setDocumentType, selectDocumentType, selectTemplate, selectTemplateTitle, setTemplateTitle, selectSendType, selectTemplateType, resetTemplate, resetTemplateTitle } from '../Assign/AssignSlice';
+import { setDocumentFile, setDocumentTitle, selectDocumentTitle, setDocumentTempPath, selectDocumentFile, setTemplate, setTemplateType, setDocumentType, selectDocumentType, selectTemplate, selectTemplateTitle, setTemplateTitle, selectSendType, selectTemplateType, resetTemplate, resetTemplateTitle } from '../Assign/AssignSlice';
 import { PageContainer } from '@ant-design/pro-layout';
 import ProCard from '@ant-design/pro-card';
 import ProForm, { ProFormUploadDragger, ProFormText } from '@ant-design/pro-form';
@@ -33,6 +34,7 @@ const UploadDocument = () => {
   const [hiddenForm, setHiddenForm] = useState(true);
   const [disableNext, setDisableNext] = useState(true);
   const [tab, setTab] = useState("tab1");
+  const [loading, setLoading] = useState(false);
 
   const user = useSelector(selectUser);
   const { email, _id } = user;
@@ -44,6 +46,27 @@ const UploadDocument = () => {
   const templateTitle = useSelector(selectTemplateTitle);
   const sendType = useSelector(selectSendType);
   const templateType = useSelector(selectTemplateType);
+
+  const fetchUploadTempFile = async () => {
+    setLoading(true);
+
+    console.log("파일 임시 업로드 !")
+    const filename = `${_id}${Date.now()}.pdf`
+    const formData = new FormData()
+    formData.append('path', 'temp/')
+    formData.append('file', file, filename)
+
+    const res = await axios.post(`/api/storage/upload`, formData)
+    setLoading(false);
+
+    // 업로드 후 파일 경로 가져오기  
+    var docRef = ''
+    if (res.data.success){
+      if (res.data.file.path) {
+        dispatch(setDocumentTempPath(res.data.file.path))
+      }
+    }   
+  };
 
   useEffect(() => {
 
@@ -91,6 +114,15 @@ const UploadDocument = () => {
       templateRef_M.current.initTemplateUI();
     }
   }, [tab])
+
+  useEffect(() => {
+    console.log('useEffect[file] called')
+    // 템플릿 임시 업로드 
+    if (file) {
+      console.log('file ok')
+      fetchUploadTempFile();
+    }
+  }, [file]);
 
 
   const onFinish = (values) => {
@@ -167,7 +199,7 @@ const UploadDocument = () => {
         },
         extra: [
           <Button key="3" onClick={() => form.resetFields()}>초기화</Button>,
-          <Button key="2" type="primary" onClick={() => (tab === "tab1") ? form.submit() : templateNext()} disabled={disableNext}>
+          <Button key="2" type="primary" loading={loading} onClick={() => (tab === "tab1") ? form.submit() : templateNext()} disabled={disableNext}>
             {formatMessage({id: 'Next'})}
           </Button>,
         ],

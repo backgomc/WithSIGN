@@ -124,22 +124,27 @@ router.post('/deleteTemplate', (req, res) => {
       console.log(template.docRef)
       //DISTO
       // fs.unlink(config.storageDIR + template.docRef, function (err) {    
-      fs.unlink(template.docRef, function (err) {            
-           if (err) {                                                 
-               console.error(err);
-               return res.json({ success: false, err });                                    
-           }                                                          
-          console.log('File has been Deleted');    
-          
-          // 썸네일 이미지 삭제 
-          fs.access(template.thumbnail, fs.constants.F_OK, (err) => { // A
-            if (err) return console.log('삭제할 수 없는 파일입니다');
-          
-            fs.unlink(template.thumbnail, (err) => err ?  
-              console.log(err) : console.log(`${template.thumbnail} 를 정상적으로 삭제했습니다`));
-          });
+      try {
+        fs.unlink(template.docRef, function (err) {            
+          if (err) {                                                 
+              console.error(err);
+              return res.json({ success: false, err });                                    
+          }                                                          
+         console.log('File has been Deleted');    
+         
+         // 썸네일 이미지 삭제 
+         fs.access(template.thumbnail, fs.constants.F_OK, (err) => { // A
+           if (err) return console.log('삭제할 수 없는 파일입니다');
+         
+           fs.unlink(template.thumbnail, (err) => err ?  
+             console.log(err) : console.log(`${template.thumbnail} 를 정상적으로 삭제했습니다`));
+         });
 
-       });
+        });        
+      } catch(error) {
+        console.log(error)
+        return res.json({ success: false, error })
+      }
     });
 
     // DB 삭제

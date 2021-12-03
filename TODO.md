@@ -163,6 +163,9 @@
 * 서명 요청 완료 시 본인이 포함된 경우 바로 서명하기 기능
 * 서명 취소 건에 대하여 서명 요청자인 경우 문서 삭제 기능 넣기
 # 내 문서 목록에 대량 발송 건 포함 여부 체크 
+* 대량전송은 컴포넌트 입력 시 숫자가 안나옴
+# DRM 문서 적용 
+* 로그인 페이지 로고 입력
 
 
 git clone https://github.com/gobitfly/etherchain-light --recursive

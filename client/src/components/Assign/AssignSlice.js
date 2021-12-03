@@ -5,6 +5,7 @@ export const AssignSlice = createSlice({
   initialState: {
     signees: [],
     documentFile: null,
+    documentTempPath: null,
     documentTitle: null,
     template: null,
     templateTitle: null,
@@ -25,6 +26,12 @@ export const AssignSlice = createSlice({
     },
     resetDocumentFile: (state, action) => {
       state.documentFile = null;
+    },
+    setDocumentTempPath: (state, action) => {
+      state.documentTempPath = action.payload;
+    },
+    resetDocumentTempPath: (state, action) => {
+      state.documentTempPath = null;
     },
     setDocumentTitle: (state, action) => {
       state.documentTitle = action.payload;
@@ -62,6 +69,7 @@ export const AssignSlice = createSlice({
     resetAssignAll: (state, action) => {
       state.documentType = null;
       state.documentFile = null;
+      state.documentTempPath = null;
       state.documentTitle = null;
       state.template = null;
       state.templateTitle = null;
@@ -72,10 +80,11 @@ export const AssignSlice = createSlice({
   },
 });
 
-export const { addSignee, resetSignee, setDocumentFile, resetDocumentFile, setDocumentTitle, resetDocumentTitle, setTemplate, resetTemplate, setTemplateTitle, resetTemplateTitle, setDocumentType, resetDocumentType, setTemplateType, resetTemplateType, setSendType, resetAssignAll } = AssignSlice.actions;
+export const { addSignee, resetSignee, setDocumentFile, resetDocumentFile, setDocumentTitle, resetDocumentTitle, setTemplate, resetTemplate, setTemplateTitle, resetTemplateTitle, setDocumentType, resetDocumentType, setTemplateType, resetTemplateType, setSendType, resetAssignAll, setDocumentTempPath, resetDocumentTempPath } = AssignSlice.actions;
 
 export const selectAssignees = state => state.assign.signees;
 export const selectDocumentFile = state => state.assign.documentFile;
+export const selectDocumentTempPath = state => state.assign.documentTempPath;
 export const selectDocumentTitle = state => state.assign.documentTitle;
 export const selectTemplate = state => state.assign.template;
 export const selectTemplateTitle = state => state.assign.templateTitle;

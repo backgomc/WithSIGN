@@ -25,11 +25,37 @@ const UploadTemplate = () => {
   const [loading, setLoading] = useState(false);
   const [disableNext, setDisableNext] = useState(true);
 
+  const [tempFilePath, setTempFilePath] = useState(null);
   const [thumbnail, setThumbnail] = useState(null);
 
   const user = useSelector(selectUser);
   const { email, _id } = user;
   const viewer = useRef(null);
+
+  const fetchUploadTempFile = async () => {
+    setLoading(true);
+
+    console.log("파일 임시 업로드 !")
+    const filename = `${_id}${Date.now()}.pdf`
+    const formData = new FormData()
+    formData.append('path', 'temp/')
+    formData.append('file', file, filename)
+
+    const res = await axios.post(`/api/storage/upload`, formData)
+    setLoading(false);
+
+    // 업로드 후 파일 경로 가져오기  
+    var docRef = ''
+    if (res.data.success){
+      docRef = res.data.file.path 
+      setTempFilePath(docRef)
+    }
+    
+    if(instance && docRef) {
+      const URL = '/' + docRef;      
+      instance.docViewer.loadDocument(URL);
+    }
+  };
 
   useEffect(() => {
 
@@ -105,11 +131,13 @@ const UploadTemplate = () => {
   }, []);
 
   useEffect(() => {
-
-    if(instance && file) {
-      instance.docViewer.loadDocument(file);
+    console.log('useEffect[file] called')
+    // 템플릿 임시 업로드 
+    // FILE-SAVE
+    if (file) {
+      console.log('file ok')
+      fetchUploadTempFile();
     }
-
   }, [file]);
 
 
@@ -122,20 +150,30 @@ const UploadTemplate = () => {
     }
 
     setLoading(true);
-    // 템플릿 업로드 
-    // 1. FILE-SAVE
-    const filename = `${_id}${Date.now()}.pdf`
-    const formData = new FormData()
-    formData.append('path', 'templates')
-    formData.append('file', file, filename)
-    const res = await axios.post(`/api/storage/upload`, formData)
+    // 1. FILE-SAVE -> FILE-MOVE (파일 업로드 순간 서버 임시 폴더에 파일 저장함 : DRM 해제때문에)
+    // const filename = `${_id}${Date.now()}.pdf`
+    // const formData = new FormData()
+    // formData.append('path', 'templates')
+    // formData.append('file', file, filename)
+    // const res = await axios.post(`/api/storage/upload`, formData)
 
-    // 업로드 후 파일 경로 가져오기  
+    // // 업로드 후 파일 경로 가져오기  
+    // var docRef = ''
+    // if (res.data.success){
+    //   docRef = res.data.file.path 
+    // }
+
+    //1. FILE-MOVE
+    let param = {
+      origin: tempFilePath,
+      target: tempFilePath.replace('temp', 'templates')
+    }
+    const res = await axios.post(`/api/storage/moveFile`, param)
     var docRef = ''
     if (res.data.success){
-      docRef = res.data.file.path 
+      docRef = res.data.filePath
     }
-
+    
     // 2. DB-SAVE
     let body = {
       user: _id,
