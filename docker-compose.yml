@@ -7,9 +7,23 @@ services:
     container_name: nhsign_admin # 컨테이너 명
     restart: always
     ports:
-      - 3030:3030
+      - 3002:3002
     volumes: # 볼륨 설정
       - ./admin/build:/app/build
+
+  broker:
+    build: # Dockerfile 빌드
+      context: ./broker # Dockerfile 빌드 경로
+      args:
+      - SERVER_MODE=REAL
+      - JAR_VERSION=broker-0.0.1.jar
+    container_name: nhsign_broker # 컨테이너 명
+    restart: always
+    ports:
+      - 4001:4001
+    volumes: # 볼륨 설정
+      - ./broker/fsdinit/:/app/fsdinit
+      - ./server/storage/:/app/storage
 
   web:
     build: # Dockerfile 빌드
@@ -39,15 +53,16 @@ services:
     # expose:
     #   - 5000 # 도커 내부적 포트
     ports:
-      - 5000:5000
+      - 5001:5000
     depends_on:
       - mongo
     volumes: # 볼륨 설정
+    - ./server/storage/:/app/storage
       # - './server:/app'
       # - '/app/node_modules' 
-      - type: bind 
-        source: /Users/niceharu/Dev/Data/storage # local 경로
-        target: /app/storage  # container 내부에서의 경로
+      # - type: bind 
+        # source: /Users/niceharu/Dev/Data/storage # local 경로
+        # target: /app/storage  # container 내부에서의 경로
         # source: /Users/niceharu/Dev/nhsign-docker/server # local 경로
         # target: /app  # container 내부에서의 경로
     environment: # 환경변수 설정

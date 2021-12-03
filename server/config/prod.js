@@ -4,6 +4,7 @@ module.exports = {
     documentDIR: "documents/",
     thumbnailDIR: "thumbnails/",
     erpURI: "http://10.220.220.10",
+    drmURI: "http://broker:4001",
     ipronetURI: "http://10.220.220.13",
     ipronetID: "nhsign",
     ipronetPW: "nacf1234!"

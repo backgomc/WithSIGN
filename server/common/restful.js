@@ -119,6 +119,40 @@ let callUserAPI = async () => {
     }
 }
 
+let callDRMPackaging = async (filePath, fileName, target) => {
+    console.log('origin : ' + filePath + fileName);
+    console.log('target : ' + target);
+
+    try {
+        let url = config.drmURI+'/drm/packaging';
+        let body = {
+            filePath: './' + filePath,
+            fileName: fileName,
+            target: target
+        }
+        return await axios.post(url, body);
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+let callDRMUnpackaging = async (filePath, fileName, target) => {
+    console.log('origin : ' + filePath + fileName);
+    console.log('target : ' + target);
+
+    try {
+        let url = config.drmURI+'/drm/unpackaging';
+        let body = {
+            filePath: './' + filePath,
+            fileName: fileName,
+            target: target
+        }
+        return await axios.post(url, body);
+    } catch (err) {
+        console.error(err);
+    }
+}
+
 let callIpronetMSG = async (sendInfo, recvInfo, title, message) => {
     console.log('IPRONET SEND MESSAGE');
     try {
@@ -160,4 +194,4 @@ let callIpronetMSG = async (sendInfo, recvInfo, title, message) => {
     }
 }
 
-module.exports = {callOrgAPI, callUserAPI, callIpronetMSG}
+module.exports = {callOrgAPI, callUserAPI, callDRMPackaging, callDRMUnpackaging, callIpronetMSG}
