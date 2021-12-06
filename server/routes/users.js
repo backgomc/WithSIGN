@@ -197,7 +197,8 @@ router.post('/list', (req, res) => {
 
   User
   .find(searchStr)
-  .sort({"name" : 0})    //0:오름차순 -1:내림차순 //{order : dir};
+  // .sort({"name" : 0})    //0:오름차순 -1:내림차순 //{order : dir};
+  .sort({"JOB_CODE" : 0})    //0:오름차순 -1:내림차순 //{order : dir};
   .exec(function(err, results) {
 
       if (err) return next(err)
