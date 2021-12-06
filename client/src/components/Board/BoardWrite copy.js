@@ -22,55 +22,31 @@ import '@ant-design/pro-card/dist/card.css';
 import 'antd/dist/antd.css';
 import '@ant-design/pro-form/dist/form.css';
 
-// import { Editor } from 'react-draft-wysiwyg';
-// import styled from 'styled-components';
-// import draftToHtml from 'draftjs-to-html';
-// import { convertToRaw, EditorState } from 'draft-js';
-// import 'react-draft-wysiwyg/dist/react-draft-wysiwyg.css';
-
-// TOAST UI Editor import
-import 'codemirror/lib/codemirror.css';
-import '@toast-ui/editor/dist/toastui-editor.css';
-import { Editor } from '@toast-ui/react-editor';
-
-// TOAST UI Editor Plugins
-import Prism from 'prismjs';
-import 'prismjs/themes/prism.css';
-
-// color-syntax
-import 'tui-color-picker/dist/tui-color-picker.css';
-import '@toast-ui/editor-plugin-color-syntax/dist/toastui-editor-plugin-color-syntax.css';
-import colorSyntax from '@toast-ui/editor-plugin-color-syntax';
-
-// code-syntax
-import '@toast-ui/editor-plugin-code-syntax-highlight/dist/toastui-editor-plugin-code-syntax-highlight.css';
-// import codeSyntaxHighlight from '@toast-ui/editor-plugin-code-syntax-highlight';
-import codeSyntaxHighlight from '@toast-ui/editor-plugin-code-syntax-highlight/dist/toastui-editor-plugin-code-syntax-highlight-all.js';
-
-
-
-
+import { Editor } from 'react-draft-wysiwyg';
+import styled from 'styled-components';
+import draftToHtml from 'draftjs-to-html';
+import { convertToRaw, EditorState } from 'draft-js';
+import 'react-draft-wysiwyg/dist/react-draft-wysiwyg.css';
 
 const { TextArea } = Input;
 
-// const MyBlock = styled.div`
-//   .wrapper-class{
-//       width: 100%;
-//       margin: 0 auto;
-//       margin-bottom: 0rem;
-//   }
-//   .editor {
-//     height: 500px !important;
-//     border: 1px solid #f1f1f1 !important;
-//     padding: 5px !important;
-//     border-radius: 2px !important;
-//   }
-// `;
+const MyBlock = styled.div`
+  .wrapper-class{
+      width: 100%;
+      margin: 0 auto;
+      margin-bottom: 0rem;
+  }
+  .editor {
+    height: 500px !important;
+    border: 1px solid #f1f1f1 !important;
+    padding: 5px !important;
+    border-radius: 2px !important;
+  }
+`;
 
 
 const BoardWrite = ({location}) => {
 
-  const editorRef = useRef();
   const dispatch = useDispatch();
   const user = useSelector(selectUser);
   const { _id } = user;
@@ -93,33 +69,18 @@ const BoardWrite = ({location}) => {
   const { formatMessage } = useIntl();
   const searchInput = useRef<Input>(null)
 
-  // const [editorState, setEditorState] = useState(EditorState.createEmpty());
-  // const onEditorStateChange = (editorState) => {
-  //   // editorState에 값 설정
-  //   setEditorState(editorState);
-  // };
-
-  const onChangeTextHandler = () => {
-    console.log('changed !!!')
-    console.log(editorRef.current.getInstance().getHtml());
-
-    if (form.getFieldValue("title") && editorRef.current.getInstance().getHtml()) {
-      setDisableNext(false)
-    } else {
-      setDisableNext(true)
-    }
-  }
+  const [editorState, setEditorState] = useState(EditorState.createEmpty());
+  const onEditorStateChange = (editorState) => {
+    // editorState에 값 설정
+    setEditorState(editorState);
+  };
 
 
   const onFinish = async (values) => {
     console.log(values)
 
-    // console.log(editorState.getCurrentContent());
-    // console.log(draftToHtml(convertToRaw(editorState.getCurrentContent())));
-
-    const editorInstance = editorRef.current.getInstance();
-    const contentHtml = editorInstance.getHtml();
-    console.log('contentHtml:'+contentHtml)
+    console.log(editorState.getCurrentContent());
+    console.log(draftToHtml(convertToRaw(editorState.getCurrentContent())));
 
     setLoading(true);
 
@@ -128,8 +89,8 @@ const BoardWrite = ({location}) => {
       user: _id,
       boardType: boardType,
       title: form.getFieldValue("title"),
-      content: contentHtml,
-      // content: draftToHtml(convertToRaw(editorState.getCurrentContent()))
+      // content: form.getFieldValue("content"),
+      content: draftToHtml(convertToRaw(editorState.getCurrentContent()))
     }
     console.log(body)
     const res = await axios.post('/api/board/add', body)
@@ -165,19 +126,18 @@ const BoardWrite = ({location}) => {
     );
   }
 
-  // useEffect(() => {
+  useEffect(() => {
 
-  //   console.log("ABC")
-  //   // console.log("editorState.hasText:"+editorState.getCurrentContent().hasText())
+    console.log("ABC")
+    console.log("editorState.hasText:"+editorState.getCurrentContent().hasText())
 
-  //   // if (form.getFieldValue("title") && editorState.getCurrentContent().hasText()) {
-  //   if (form.getFieldValue("title")) {
-  //     setDisableNext(false)
-  //   } else {
-  //     setDisableNext(true)
-  //   }
+    if (form.getFieldValue("title") && editorState.getCurrentContent().hasText()) {
+      setDisableNext(false)
+    } else {
+      setDisableNext(true)
+    }
     
-  // }, []);
+  }, [editorState]);
 
   return (
     <div>
@@ -226,7 +186,7 @@ const BoardWrite = ({location}) => {
           // console.log('form.getFieldValue("title"):'+form.getFieldValue("title"))
 
           // if (form.getFieldValue("title") && form.getFieldValue("content")) {
-          if (form.getFieldValue("title") && editorRef.current.getInstance().getHtml()) {
+          if (form.getFieldValue("title") && editorState.getCurrentContent().hasText()) {
             setDisableNext(false)
           } else {
             setDisableNext(true)
@@ -250,7 +210,7 @@ const BoardWrite = ({location}) => {
           rules={[{ autoSize: true, required: true, message: formatMessage({id: 'input.boardContent'}) }]}
         /> */}
 
-      {/* <MyBlock>
+      <MyBlock>
         <Editor
           // 에디터와 툴바 모두에 적용되는 클래스
           wrapperClassName="wrapper-class"
@@ -283,18 +243,7 @@ const BoardWrite = ({location}) => {
           // 에디터의 값이 변경될 때마다 onEditorStateChange 호출
           onEditorStateChange={onEditorStateChange}
         />
-      </MyBlock> */}
-
-      <Editor
-          initialValue=""
-          usageStatistics={false}
-          ref={editorRef}
-          height="58vh"
-          initialEditType="wysiwyg" // wysiwyg | markdown
-          onChange={onChangeTextHandler}
-          // plugins={[colorSyntax]}
-          // plugins={[chart, codeSyntaxHighlight, colorSyntax, tableMergedCell, uml]}
-      />
+      </MyBlock>
 
       </ProForm>
 

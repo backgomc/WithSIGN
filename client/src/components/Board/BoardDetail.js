@@ -25,10 +25,13 @@ import Media from 'react-media';
 const { confirm } = Modal;
 
 const Container = styled.div`
-    padding: 30px;
+    padding: 0px;
     width: 100%;
     height: 100%;
     background: white;
+    img {
+      max-width: 100%;
+    }
     `;
 
 const BoardDetail = ({location}) => {
@@ -269,12 +272,14 @@ const BoardDetail = ({location}) => {
       {/* <Divider style= {{marginTop: '-24px'}} /> */}
       <ProCard direction="column" style={{ width: 'auto', height: '100%', marginTop: '-24px', marginLeft: '-24px', marginRight: '-24px' }}>
         {/* <pre> */}
+        <Container>
           <div
             // style={{height:'100%', padding:'10px', fontSize:'calc(13px + .2vw)'}}
             dangerouslySetInnerHTML={{
               __html: board.content
             }} 
           />
+        </Container>
         {/* </pre> */}
       </ProCard>
 

@@ -1,7 +1,7 @@
 
 import React from 'react';
 import styles from './login.module.css';
-import logo from '../../assets/images/logo.svg';
+import logo from '../../assets/images/logo_withsign1.png';
 import { useIntl } from "react-intl";
 
 const Header = () => {
@@ -12,7 +12,7 @@ const Header = () => {
         <div className={styles['header-wrapper']}>
           <header>
             <a href="/">
-              <img src={logo} alt="ant design mini" />
+              <img src={logo} alt="With Sign" />
               <h2>{formatMessage({id: 'AppName'})}</h2>
             </a>
             <div className={styles['nav-wrapper']}>

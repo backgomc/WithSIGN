@@ -1,36 +1,30 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import BoardCard from '../Board/BoardCard';
 import FAQCard from '../Board/FAQCard';
 import OpinionCard from '../Board/OpinionCard';
 import DirectCard from './DirectCard';
-import { Modal, Table, Input, Space, Button, Popconfirm, Tag, Progress, List, Row, Col, Card } from "antd";
+import { Modal, Input, Row, Col, Space } from "antd";
 import Highlighter from 'react-highlight-words';
 import { SearchOutlined, DeleteOutlined, FileOutlined, DownloadOutlined, EditOutlined, FormOutlined, FilePdfOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 import { useSelector, useDispatch } from 'react-redux';
 import { selectUser } from '../../app/infoSlice';
-import { navigate } from '@reach/router';
+import { navigate, Link } from '@reach/router';
 import Moment from 'react-moment';
 import moment from 'moment';
 import 'moment/locale/ko';
-
 import { PageContainer } from '@ant-design/pro-layout';
 import 'antd/dist/antd.css';
 import { useIntl } from "react-intl";
+import iconCheck from '../../assets/images/icon_check.png';
+import iconManual from '../../assets/images/icon_manual.png';
 
-import ProList from '@ant-design/pro-list';
-import { ProFormRadio } from '@ant-design/pro-form';
-
-import ProCard from '@ant-design/pro-card';
-import { CheckCard } from '@ant-design/pro-card';
-import '@ant-design/pro-list/dist/list.css';
-import '@ant-design/pro-card/dist/card.css';
-import '@ant-design/pro-form/dist/form.css';
-import BoardList from '../Board/BoardList';
-
-const { Search } = Input;
-const { confirm } = Modal;
-const { Meta } = Card;
+const IconLink = ({ src, text }) => (
+  <a style={{marginRight:'16px', lineHeight:'24px'}}>
+    <img style={{marginRight:'8px', width:'30px', height:'30px'}} src={src} alt={text} />
+    <font color='#373737'>{text}</font>
+  </a>
+);
 
 const Customer = () => {
 
@@ -42,6 +36,24 @@ const Customer = () => {
   const [loading, setLoading] = useState(false);
 
   const { formatMessage } = useIntl();
+
+
+  const description = (
+    <>
+    <Space size='middle'>
+    <IconLink
+      src={iconManual}
+      text="사용자 매뉴얼"
+    />
+    <Link to='/auditCheck'>
+    <IconLink
+      src={iconCheck}
+      text="문서 진본 확인"
+    />
+    </Link>
+    </Space>
+    </>
+  )
 
   useEffect(() => {
   }, []);
@@ -60,7 +72,7 @@ const Customer = () => {
           // extra: [  
           // ],
         }}
-        // content={description}
+        content={description}
         footer={[
         ]}
     >
@@ -76,7 +88,7 @@ const Customer = () => {
         <Col xl={12} lg={24} md={24} sm={24} xs={24}>
           <OpinionCard boardType={'opinion'} boardName={'문의하기'}></OpinionCard>
           <br></br>
-          <DirectCard></DirectCard>
+          {/* <DirectCard></DirectCard> */}
         </Col>
       </Row>
 

@@ -889,8 +889,16 @@ const PrepareDocument = () => {
             </div>) : (<div>
 
               <Card size="small" type="inner" title="서명 참여자" style={{ minWidth: 148 }}>
-                    <p><Button icon={<PlusOutlined />} onClick={e => { addField('SIGN', {}); }}>{formatMessage({id: 'input.sign'})}</Button></p>
-                    <p><Button icon={<PlusOutlined />} onClick={e => { addField('TEXT', {}); }}>{formatMessage({id: 'input.text'})}</Button></p>
+                    <p>
+                      <Badge count={boxData.filter(e => e.key === 'bulk')[0] ? boxData.filter(e => e.key === 'bulk')[0].sign : 0}>
+                        <Button icon={<PlusOutlined />} onClick={e => { addField('SIGN', {}); }}>{formatMessage({id: 'input.sign'})}</Button>
+                      </Badge>
+                    </p>
+                    <p>
+                      <Badge count={boxData.filter(e => e.key === 'bulk')[0] ? boxData.filter(e => e.key === 'bulk')[0].text : 0}>
+                        <Button icon={<PlusOutlined />} onClick={e => { addField('TEXT', {}); }}>{formatMessage({id: 'input.text'})}</Button>
+                      </Badge>
+                    </p>
               </Card>
 
             </div>)}  
