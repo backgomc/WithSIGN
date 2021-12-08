@@ -73,7 +73,7 @@ const SignDocument = () => {
       },
       viewer.current,
     ).then(async instance => {
-      const { docViewer, annotManager, Annotations } = instance;
+      const { docViewer, annotManager, Annotations, CoreControls } = instance;
       setAnnotatManager(annotManager);
 
       // set language
@@ -81,6 +81,7 @@ const SignDocument = () => {
 
       // select only the insert group
       instance.setToolbarGroup('toolbarGroup-Insert');
+      // CoreControls.setCustomFontURL("http://localhost:3000/SelfServeWebFontsV2/");
 
       // load document
       // const storageRef = storage.ref();
@@ -332,7 +333,7 @@ const SignDocument = () => {
           <Button key="1" danger onClick={() => cancelSigning()}>
             {formatMessage({id: 'sign.cancel'})}
           </Button>,
-          <Button key="2" type="primary" onClick={() => completeSigning()} disabled={disableNext}>
+          <Button key="2" type="primary" loading={loading} onClick={() => completeSigning()} disabled={disableNext}>
             {textSign}
           </Button>,
         ],

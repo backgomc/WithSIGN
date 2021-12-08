@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import useDidMountEffect from '../Common/useDidMountEffect';
 import axios from 'axios';
-import { Table, Input, Space, Button, Checkbox, Badge, Switch } from "antd";
+import { Table, Input, Space, Button, Checkbox, Badge } from "antd";
 import Highlighter from 'react-highlight-words';
 import {
   SearchOutlined,

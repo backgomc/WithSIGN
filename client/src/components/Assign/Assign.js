@@ -29,8 +29,6 @@ const Assign = () => {
   const [disableNext, setDisableNext] = useState(true);
   const [target, setTarget] = useState([]);
   const [source, setSource] = useState([]);
-
-
   const [users, setUsers] = useState([]);
 
   const insertUser = (org, users, depart_code) => {
@@ -145,9 +143,11 @@ const Assign = () => {
 
 
   const onChange = (target) => {
-    if (target.length > 10) {
-      message.error('서명참여자는 최대 10명까지 지정할 수 있습니다.');
-      return
+    if (sendType != 'B') {
+      if (target.length > 10) {
+        message.error('서명참여자는 최대 10명까지 지정할 수 있습니다.');
+        return
+      }
     }
 
     console.log("targetKeys:"+target)

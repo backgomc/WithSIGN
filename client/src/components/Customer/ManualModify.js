@@ -30,7 +30,7 @@ import { Editor } from '@toast-ui/react-editor';
 
 const { TextArea } = Input;
 
-const BoardModify = ({location}) => {
+const ManualModify = ({location}) => {
 
   const editorRef = useRef();
   const dispatch = useDispatch();
@@ -38,8 +38,8 @@ const BoardModify = ({location}) => {
   const { _id } = user;
 
   const boardId = location.state?.boardId ? location.state.boardId : "";
-  const boardType = location.state?.boardType ? location.state.boardType : "qna";
-  const boardName = location.state?.boardName ? location.state.boardName : "게시글 작성";
+  const boardType = 'manual';
+  const boardName = '메뉴얼 수정';
 
   const [form] = Form.useForm();
 
@@ -81,7 +81,7 @@ const BoardModify = ({location}) => {
     console.log('changed !!!')
     console.log(editorRef.current.getInstance().getHtml());
 
-    if (form.getFieldValue("title") && editorRef.current.getInstance().getHtml()) {
+    if (editorRef.current.getInstance().getHtml()) {
       setDisableNext(false)
     } else {
       setDisableNext(true)
@@ -101,7 +101,7 @@ const BoardModify = ({location}) => {
       user: _id,
       boardId: boardId,
       // boardType: boardType,
-      title: form.getFieldValue("title"),
+      title: '사용자 메뉴얼',
       // content: form.getFieldValue("content"),
       content: contentHtml
     }
@@ -170,36 +170,20 @@ const BoardModify = ({location}) => {
           // console.log('form.getFieldValue("title"):'+form.getFieldValue("title"))
 
           // if (form.getFieldValue("title") && form.getFieldValue("content")) {
-            if (form.getFieldValue("title") && editorRef.current.getInstance().getHtml()) {
+            if (editorRef.current.getInstance().getHtml()) {
             setDisableNext(false)
           } else {
             setDisableNext(true)
           }
         }}
       >
-        <ProFormText
-          name="title"
-          label="제목"
-          // width="md"
-          // tooltip="입력하신 템플릿명으로 표시됩니다."
-          placeholder="제목을 입력하세요."
-          rules={[{ required: true, message: formatMessage({id: 'input.boardTitle'}) }]}
-        />
-
-        {/* <ProFormTextArea 
-          label="내용" 
-          name="content"
-          // width="lg"
-          fieldProps={{showCount: true, allowClear: true, rows: '15'}}
-          rules={[{ autoSize: true, required: true, message: formatMessage({id: 'input.boardContent'}) }]}
-        /> */}
 
         <Editor
           initialValue=""
           usageStatistics={false}
           ref={editorRef}
-          height="58vh"
-          initialEditType="wysiwyg" // wysiwyg | markdown
+          height="65vh"
+          initialEditType="markdown" // wysiwyg | markdown
           onChange={onChangeTextHandler}
           // plugins={[colorSyntax]}
           // plugins={[chart, codeSyntaxHighlight, colorSyntax, tableMergedCell, uml]}
@@ -214,4 +198,4 @@ const BoardModify = ({location}) => {
   );
 };
 
-export default BoardModify;
+export default ManualModify;

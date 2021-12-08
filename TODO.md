@@ -170,8 +170,10 @@
 # https://ui.toast.com/tui-editor 로 에디터 변경
 * 조직정보 job 코드로 정렬 다시하기 
 * 매뉴얼 md 파일로 실시간 수정가능하게 ...
-
-
+* 대량 전송 요청일때는 최대 10명 풀기
+* 대량 전송 목록 페이징 잘 안됨
+* 입력 컴포넌트 텍스트 입력 시 내부망에서 오류 발생 Failed to execute 'send' on 'XMLHttpRequest': Failed to load 'https://www.pdftron.com/webfonts/v2/fonts.json'
+192.168.161.25
 
 git clone https://github.com/gobitfly/etherchain-light --recursive
 

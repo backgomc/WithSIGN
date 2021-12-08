@@ -5,6 +5,7 @@
   "dependencies": {
     "@ant-design/charts": "^1.2.14",
     "@ant-design/pro-card": "^1.18.1",
+    "@ant-design/pro-descriptions": "^1.10.9",
     "@ant-design/pro-layout": "^6.21.1",
     "@ant-design/pro-list": "^1.19.0",
     "@ant-design/pro-table": "^2.41.0",

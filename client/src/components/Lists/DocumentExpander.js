@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
 import axios from 'axios';
-import { Tooltip, Tag, Timeline, Button, Popconfirm, Modal, Badge } from 'antd';
+import { Tooltip, Tag, Timeline, Button, Popconfirm, Modal, Badge, Descriptions } from 'antd';
 import Moment from 'react-moment';
 import { useSelector, useDispatch } from 'react-redux';
 import { selectUser } from '../../app/infoSlice';
@@ -13,7 +13,7 @@ import {
     MinusCircleOutlined,
     InfoCircleOutlined,
   } from '@ant-design/icons';
-import { DocumentType, DocumentTypeText, DOCUMENT_SIGNED, DOCUMENT_TOSIGN, DOCUMENT_SIGNING, DOCUMENT_CANCELED, DOCUMENT_TOCONFIRM } from './DocumentType';
+import { DocumentTypeBadge, DocumentType, DocumentTypeText, DOCUMENT_SIGNED, DOCUMENT_TOSIGN, DOCUMENT_SIGNING, DOCUMENT_CANCELED, DOCUMENT_TOCONFIRM } from './DocumentType';
 import ProCard from '@ant-design/pro-card';
 import RcResizeObserver from 'rc-resize-observer';
 import '@ant-design/pro-card/dist/card.css';
@@ -24,7 +24,21 @@ import { setDocToSign } from '../SignDocument/SignDocumentSlice';
 import { navigate } from '@reach/router';
 import { withSuccess } from 'antd/lib/modal/confirm';
 
+import ProDescriptions from '@ant-design/pro-descriptions';
+import '@ant-design/pro-descriptions/dist/descriptions.css';
+import styled from 'styled-components';
+
 const { confirm } = Modal;
+
+const Container = styled.div`
+    padding: 0px;
+    width: 100%;
+    height: 100%;
+    img {
+      max-width: 100%;
+    }
+    th,td {border-bottom: 1px solid #edebeb; border-collapse:collapse;}
+    `;
 
 const DocumentExpander = (props) => {
 
@@ -226,7 +240,8 @@ const DocumentExpander = (props) => {
 
     return (
     <div>
-      <RcResizeObserver
+
+{/* <RcResizeObserver
         key="resize-observer"
         onResize={(offset) => {
             setResponsive(offset.width < 596);
@@ -259,7 +274,6 @@ const DocumentExpander = (props) => {
             </ProCard>
             <ProCard title="서명 현황">
                 <Timeline>
-                    {/* <Timeline.Item label={<Moment format='YYYY/MM/DD HH:mm'>{item.requestedTime}</Moment>}><b>{item.user.name}</b>님 서명 요청</Timeline.Item> */}
                     <Timeline.Item color="gray">
                         <font color='#A7A7A9'><b>{item.user.name} {item.user.JOB_TITLE}</b> 서명 요청 </font> &nbsp;  
                         <Tag color="#BABABC"><Moment format='YYYY/MM/DD HH:mm'>{item.requestedTime}</Moment></Tag>
@@ -271,30 +285,64 @@ const DocumentExpander = (props) => {
                     }
                 </Timeline>
             </ProCard>
-            
-
-            {/* {DocumentType({uid: _id, document: item}) == DOCUMENT_SIGNED ?
-                <ProCard title="">
-                    <div style={{height:"40px"}}>                 
-                        <Button
-                            onClick={() => {         
-                                navigate(`/audit`, { state: { item: item } } );
-                        }}>
-                            진본 확인 증명서
-                        </Button> 
-
-                    </div>
-                </ProCard>
-            : ''} */}
-
 
         </ProCard>
-      </RcResizeObserver>
-        
+      </RcResizeObserver> */}
+
+  <Container>
+  {/* style={{borderCollapse:'collapse'}} labelStyle={{border:'1px solid', borderColor:'grey', display:'table-cell'}} contentStyle={{background:'white', border:'1px solid', borderColor:'grey', display:'table-cell'}} */}
+    <ProDescriptions column={2} bordered title="상세 정보" tooltip="" contentStyle={{background:'white'}}>
+      <ProDescriptions.Item label="??" valueType="option">
+        {/* <Button key="primary" type="primary">
+          다운로드
+        </Button> */}
+        {buttonList}
+      </ProDescriptions.Item>
+      <ProDescriptions.Item span={2} label="문서명">
+        {item.docTitle}
+      </ProDescriptions.Item>
+      <ProDescriptions.Item label="요청자" tooltip="서명을 진행하기 위해 문서를 업로드하고 서명에 참여하는 서명 참여자들에게 문서를 전송한 사람">
+        {item.user.name} {item.user.JOB_TITLE}
+      </ProDescriptions.Item>
+      <ProDescriptions.Item label="참여자" tooltip="서명 요청자에 의해 문서에 서명해야 하는 사람">
+        {
+            item.users.map((user, index) => (
+                getSignInfo(user)
+            ))
+        }
+      </ProDescriptions.Item>
+      <ProDescriptions.Item label="진행 상태">
+        <DocumentTypeBadge uid={_id} document={item} />
+      </ProDescriptions.Item>
+
+      <ProDescriptions.Item label="요청시간">
+        <Moment format='YYYY/MM/DD HH:mm'>{item.requestedTime}</Moment>
+      </ProDescriptions.Item>
+      <ProDescriptions.Item label="진행 현황">
+          <br></br>
+        <Timeline>
+                {/* <Timeline.Item label={<Moment format='YYYY/MM/DD HH:mm'>{item.requestedTime}</Moment>}><b>{item.user.name}</b>님 서명 요청</Timeline.Item> */}
+                <Timeline.Item color="gray">
+                    <font color='#A7A7A9'><b>{item.user.name} {item.user.JOB_TITLE}</b> 서명 요청 </font> &nbsp;  
+                    <Tag color="#BABABC"><Moment format='YYYY/MM/DD HH:mm'>{item.requestedTime}</Moment></Tag>
+                </Timeline.Item>
+                {
+                    item.users.map((user) => (
+                        activeHistory(user)
+                    ))
+                }
+            </Timeline>
+      </ProDescriptions.Item>
+    </ProDescriptions>
+</Container>
+
+                
+
+
         {/* <Descriptions
         title="상세 정보"
         bordered
-        column={{ xxl: 2, xl: 2, lg: 2, md: 2, sm: 2, xs: 1 }}
+        // column={{ xxl: 2, xl: 2, lg: 2, md: 2, sm: 2, xs: 1 }}
       >
         <Descriptions.Item label="서명 요청자">{item.user.name}</Descriptions.Item>
         <Descriptions.Item label="서명 참여자">
