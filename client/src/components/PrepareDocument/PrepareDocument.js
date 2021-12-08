@@ -162,10 +162,11 @@ const PrepareDocument = () => {
       },
       viewer.current,
     ).then(instance => {
-      const { iframeWindow, docViewer } = instance;
+      const { iframeWindow, docViewer, CoreControls } = instance;
       
       // select only the view group
       instance.setToolbarGroup('toolbarGroup-View');
+      CoreControls.setCustomFontURL("file://localhost:3000/SelfServeWebFontsV2/");
 
       // set language
       instance.setLanguage('ko');
@@ -355,6 +356,7 @@ const PrepareDocument = () => {
 
   const applyFields = async () => {
 
+    console.log('applyFields called');
     // setLoading(true);
 
     const { Annotations, docViewer } = instance;

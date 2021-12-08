@@ -49,6 +49,8 @@ import { setSendType } from './components/Assign/AssignSlice';
 import './App.css';
 import LogoImage from './assets/images/logo_withsign1.png'
 import LogoText from './assets/images/logo_withsign2.png'
+import Manual from './components/Customer/Manual';
+import ManualModify from './components/Customer/ManualModify';
 
 const App = () => {
   const user = useSelector(selectUser);
@@ -180,6 +182,8 @@ const App = () => {
       <BoardModify path="/boardModify" />
       <OpinionList path="/opinionList" />
       <Customer path="/customer" />
+      <Manual path="/manual" />
+      <ManualModify path="/manualModify" />
     </Router>
   </ProLayout>
 

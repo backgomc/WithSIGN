@@ -41,10 +41,12 @@ const Customer = () => {
   const description = (
     <>
     <Space size='middle'>
+    <Link to='/manual'>
     <IconLink
       src={iconManual}
       text="사용자 매뉴얼"
     />
+    </Link>
     <Link to='/auditCheck'>
     <IconLink
       src={iconCheck}
