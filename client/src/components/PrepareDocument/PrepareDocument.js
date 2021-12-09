@@ -166,7 +166,7 @@ const PrepareDocument = () => {
       
       // select only the view group
       instance.setToolbarGroup('toolbarGroup-View');
-      CoreControls.setCustomFontURL("file://localhost:3000/SelfServeWebFontsV2/");
+      CoreControls.setCustomFontURL("/webfonts/");
 
       // set language
       instance.setLanguage('ko');
@@ -481,6 +481,7 @@ const PrepareDocument = () => {
       }),
     );
 
+    console.log('A')
     // delete old annotations
     annotManager.deleteAnnotations(annotsToDelete, null, true);
 
@@ -739,6 +740,8 @@ const PrepareDocument = () => {
 
     dispatch(resetAssignAll());
     setLoading(false);
+
+    // navigate('/prepareResult', { state: {status:'success', title:'서명 요청 처리되었습니다.'}}); 
     navigate('/');
   };
 

@@ -7,7 +7,8 @@ export const mergeAnnotations = async (docId, docRef, xfdf, isLast) => {
 
   const CoreControls = window.CoreControls;
   CoreControls.setWorkerPath('webviewer/core');
-
+  CoreControls.setCustomFontURL("/webfonts/");
+  
   // const storageRef = storage.ref();
   // const URL = await storageRef.child(docRef).getDownloadURL();
 

@@ -47,10 +47,11 @@ const ViewDocument = () => {
       viewer.current,
     ).then(async instance => {
 
-      const { annotManager, Annotations } = instance;
+      const { annotManager, Annotations, CoreControls } = instance;
 
       // select only the view group
       instance.setToolbarGroup('toolbarGroup-View');
+      CoreControls.setCustomFontURL("/webfonts/");
       // instance.setToolbarGroup('toolbarGroup-Insert');
 
       setInstance(instance);

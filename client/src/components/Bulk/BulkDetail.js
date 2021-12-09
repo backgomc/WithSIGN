@@ -437,7 +437,7 @@ const BulkDetail = ({location}) => {
         rowKey={ item => { return item._id } }
         columns={columns}
         dataSource={data}
-        pagination={pagination}
+        // pagination={pagination}
         loading={loading}
         // expandedRowRender={row => <BulkExpander item={row} />}
         // expandRowByClick

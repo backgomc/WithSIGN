@@ -81,7 +81,7 @@ const SignDocument = () => {
 
       // select only the insert group
       instance.setToolbarGroup('toolbarGroup-Insert');
-      // CoreControls.setCustomFontURL("http://localhost:3000/SelfServeWebFontsV2/");
+      CoreControls.setCustomFontURL("/webfonts/");
 
       // load document
       // const storageRef = storage.ref();
