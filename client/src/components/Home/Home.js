@@ -836,11 +836,11 @@ const Home = () => {
 
 
   const items = [
-    { key: '1', title: '전체', value: totalNum, total: true },
-    { key: '2', status: 'processing', title: '서명/수신 필요', value: toSignNum },
-    { key: '3', status: 'default', title: '서명 진행', value: signingNum },
-    { key: '4', status: 'error', title: '서명 취소', value: canceledNum },
-    { key: '5', status: 'success', title: '서명 완료', value: signedNum },
+    { key: '1', title: '전체', value: totalNum, total: true, lnk: 'https://gw.alipayobjects.com/mdn/rms_7bc6d8/afts/img/A*dr_0RKvVzVwAAAAAAAAAAABkARQnAQ' },
+    { key: '2', status: 'processing', title: '서명/수신 필요', value: toSignNum, lnk: 'https://gw.alipayobjects.com/mdn/rms_7bc6d8/afts/img/A*-jVKQJgA1UgAAAAAAAAAAABkARQnAQ' },
+    { key: '3', status: 'default', title: '서명 진행', value: signingNum, lnk: 'https://gw.alipayobjects.com/mdn/rms_7bc6d8/afts/img/A*FPlYQoTNlBEAAAAAAAAAAABkARQnAQ' },
+    { key: '4', status: 'error', title: '서명 취소', value: canceledNum, lnk: 'https://gw.alipayobjects.com/mdn/rms_7bc6d8/afts/img/A*pUkAQpefcx8AAAAAAAAAAABkARQnAQ'},
+    { key: '5', status: 'success', title: '서명 완료', value: signedNum, lnk: 'https://gw.alipayobjects.com/mdn/rms_7bc6d8/afts/img/A*dr_0RKvVzVwAAAAAAAAAAABkARQnAQ' },
   ];
 
   const staticAllContent = (key) => {
@@ -878,9 +878,20 @@ const Home = () => {
               statistic={{
                 title: item.title,
                 value: item.value,
-                status: item.status,
+                // status: item.status,
+                icon: (
+                  <img
+                    style={{
+                      display: 'block',
+                      width: 42,
+                      height: 42,
+                    }}
+                    src={item.lnk}
+                    alt="icon"
+                  />
+                ),
               }}
-              style={{ width: 120, borderRight: item.total ? '1px solid #f0f0f0' : undefined }}
+              style={{ borderRight: item.total ? '1px solid #f0f0f0' : undefined, textAlign: 'center'}}
             />
           }
         >
