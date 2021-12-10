@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Tooltip, Tag, Timeline, Button, Popconfirm, Modal, Badge, Descriptions } from 'antd';
 import Moment from 'react-moment';
@@ -13,7 +13,8 @@ import {
     MinusCircleOutlined,
     InfoCircleOutlined,
   } from '@ant-design/icons';
-import { DocumentTypeBadge, DocumentType, DocumentTypeText, DOCUMENT_SIGNED, DOCUMENT_TOSIGN, DOCUMENT_SIGNING, DOCUMENT_CANCELED, DOCUMENT_TOCONFIRM } from './DocumentType';
+import { DocumentTypeBadge, DocumentType, DocumentTypeText } from './DocumentType';
+import { DOCUMENT_SIGNED, DOCUMENT_TOSIGN, DOCUMENT_SIGNING, DOCUMENT_CANCELED, DOCUMENT_TOCONFIRM } from '../../common/Constants';
 import ProCard from '@ant-design/pro-card';
 import RcResizeObserver from 'rc-resize-observer';
 import '@ant-design/pro-card/dist/card.css';
@@ -45,17 +46,16 @@ const DocumentExpander = (props) => {
     const dispatch = useDispatch();
     const [responsive, setResponsive] = useState(false);
     const [loadingCancel, setLoadingCancel] = useState(false);
+    const [loadingOrgInfos, setLoadingOrgInfos] = useState(false);
+    const [orgInfos, setOrgInfos] = useState([]);
     const { item } = props
     const user = useSelector(selectUser);
     const { _id } = user;
 
     const fetchCancel = async (docId) => {
-
         console.log('fetchCancel called')
         console.log(docId)
-
         setLoadingCancel(true);
-        
         let param = {
           docId: docId,
           user: _id
@@ -69,8 +69,27 @@ const DocumentExpander = (props) => {
         } else {
             navigate('/resultPage', { state: {status:'error', headerTitle:'요청 취소 결과', title:'요청 취소에 실패하였습니다.', subTitle:'관리자에게 문의하세요!'}}); 
         }
-        
     }
+
+    const fetchOrgInfos = async () => {
+        console.log('fetchOrgInfos called')
+        setLoadingOrgInfos(true);
+        var DEPART_CODES = [];
+
+        item.users.map((user, index) => (
+            DEPART_CODES.push(user.DEPART_CODE)
+        ))
+        DEPART_CODES.push(item.user.DEPART_CODE)
+
+        const res = await axios.post('/api/users/orgInfos', {DEPART_CODES: DEPART_CODES})
+        
+        if (res.data.success) {
+            setOrgInfos(res.data.results)
+        }
+        
+        setLoadingOrgInfos(false);
+    }
+
 
     const cancelDocument = async (docId) => {
         confirm({
@@ -93,7 +112,7 @@ const DocumentExpander = (props) => {
         return (
             <div>
                 {/* {user.name} {getSignedTime(user)} */}
-                {user.name} {user.JOB_TITLE}
+                {user.name} {user.JOB_TITLE} {orgInfos.filter(e => e.DEPART_CODE == user.DEPART_CODE).length > 0 ? '['+orgInfos.filter(e => e.DEPART_CODE == user.DEPART_CODE)[0].DEPART_NAME+']' : ''}
             </div>
         )
     }
@@ -238,6 +257,13 @@ const DocumentExpander = (props) => {
         </div>
     )
 
+    useEffect(() => {
+        console.log("DocumentExpander useEffect called")
+        fetchOrgInfos();
+        
+    }, []);
+
+      
     return (
     <div>
 
@@ -302,7 +328,7 @@ const DocumentExpander = (props) => {
         {item.docTitle}
       </ProDescriptions.Item>
       <ProDescriptions.Item label="요청자" tooltip="서명을 진행하기 위해 문서를 업로드하고 서명에 참여하는 서명 참여자들에게 문서를 전송한 사람">
-        {item.user.name} {item.user.JOB_TITLE}
+        {item.user.name} {item.user.JOB_TITLE} {orgInfos.filter(e => e.DEPART_CODE == item.user.DEPART_CODE).length > 0 ? '['+orgInfos.filter(e => e.DEPART_CODE == item.user.DEPART_CODE)[0].DEPART_NAME+']' : ''}
       </ProDescriptions.Item>
       <ProDescriptions.Item label="참여자" tooltip="서명 요청자에 의해 문서에 서명해야 하는 사람">
         {

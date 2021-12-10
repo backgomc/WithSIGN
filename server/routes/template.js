@@ -50,9 +50,11 @@ router.post('/templates', (req, res) => {
   var andParam = {};
   var orParam = {};
   const type = req.body.type 
-  if (type && type === 'C') {
+  if (type && type === 'C') { // 회사
     andParam['type'] = 'C'
-  } else {
+  } else if (type && type === 'T') { // 전체
+    orParam = [{"user": uid}, {"type": 'C'}];
+  } else { // 개인
     andParam['user'] = uid
     andParam['type'] = {$ne : 'C'}
   }

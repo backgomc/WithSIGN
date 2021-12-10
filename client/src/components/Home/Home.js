@@ -36,7 +36,8 @@ import iconPaperless from '../../assets/images/icon_save1.png';
 import iconDocument from '../../assets/images/icon_save2.png';
 import iconCheck from '../../assets/images/icon_check.png';
 import iconManual from '../../assets/images/icon_manual.png';
-import { DocumentType, DocumentTypeText, DocumentTypeBadge, DocumentTypeIcon, DOCUMENT_SIGNED, DOCUMENT_TOSIGN, DOCUMENT_SIGNING, DOCUMENT_CANCELED } from '../Lists/DocumentType';
+import { DocumentType, DocumentTypeText, DocumentTypeBadge, DocumentTypeIcon } from '../Lists/DocumentType';
+import {DOCUMENT_TODO, DOCUMENT_SIGNED, DOCUMENT_TOSIGN, DOCUMENT_SIGNING, DOCUMENT_CANCELED, DOCUMENT_TOCONFIRM} from '../../common/Constants';
 
 const { Divider } = ProCard;
 const { TextArea } = Input;
@@ -89,7 +90,7 @@ const Home = () => {
     let param = {
       user: _id,
       pagination,
-      status: '서명 필요'
+      status: DOCUMENT_TOSIGN
     }
     const res = await axios.post('/api/document/documents', param)
     if (res.data.success) {
@@ -104,7 +105,7 @@ const Home = () => {
     let param = {
       user: _id,
       pagination,
-      status: '서명 진행'
+      status: DOCUMENT_SIGNING
     }
     const res = await axios.post('/api/document/documents', param)
     if (res.data.success) {
@@ -133,7 +134,7 @@ const Home = () => {
     let param = {
       user: _id,
       pagination,
-      status: '서명 취소'
+      status: DOCUMENT_CANCELED
     }
     const res = await axios.post('/api/document/documents', param)
     if (res.data.success) {
@@ -148,7 +149,7 @@ const Home = () => {
     let param = {
       user: _id,
       pagination,
-      status: '서명 완료'
+      status: DOCUMENT_SIGNED
     }
     const res = await axios.post('/api/document/documents', param)
     if (res.data.success) {
@@ -197,134 +198,134 @@ const Home = () => {
     );
   };
 
-  const extraContent = (
-    <ProCard.Group title="" direction='row' loading={loadingStatics}>
-      <ProCard>
-        <Link to='/documentList' state={{ status: '서명 필요' }}>
-          <Statistic title="서명 필요" value={toSignNum} valueStyle={{ color: '#3057cf' }} suffix="건" />
-        </Link>
-      </ProCard>
-      <Divider type='vertical' />
-      <ProCard>
-        <Link to='/documentList' state={{ status: '서명 진행' }}>
-          <Statistic title="서명 진행" value={signingNum} suffix="건" />
-        </Link>
-      </ProCard>
-      <Divider type='vertical' />
-      <ProCard>
-        <Link to='/documentList'>
-          <Statistic title="전체 문서" value={totalNum} suffix="건" />
-        </Link>
-      </ProCard>
-    </ProCard.Group>
-  ) 
+  // const extraContent = (
+  //   <ProCard.Group title="" direction='row' loading={loadingStatics}>
+  //     <ProCard>
+  //       <Link to='/documentList' state={{ status: '서명 필요' }}>
+  //         <Statistic title="서명 필요" value={toSignNum} valueStyle={{ color: '#3057cf' }} suffix="건" />
+  //       </Link>
+  //     </ProCard>
+  //     <Divider type='vertical' />
+  //     <ProCard>
+  //       <Link to='/documentList' state={{ status: '서명 진행' }}>
+  //         <Statistic title="서명 진행" value={signingNum} suffix="건" />
+  //       </Link>
+  //     </ProCard>
+  //     <Divider type='vertical' />
+  //     <ProCard>
+  //       <Link to='/documentList'>
+  //         <Statistic title="전체 문서" value={totalNum} suffix="건" />
+  //       </Link>
+  //     </ProCard>
+  //   </ProCard.Group>
+  // ) 
 
-  const tosign = (
-    <ProCard
-    colSpan={{ xs: 24, sm: 12, md: 12, lg: 12, xl: 12 }}
-    style={{ marginBottom: 0, marginRight: 0, padding: 0 }}
-    title="서명 필요 문서"
-    bordered={false}
-    headerBordered
-    extra={<Link to="/documentList" state={{ status: '서명 필요' }}>더보기</Link>}
-    loading={loadingToSign}
-    bodyStyle={{ padding: 10 }}
-    >
-      <List
-        // bordered
-        style={{ paddingLeft: 24, paddingRight: 24}}
-        dataSource={documentsToSign}
-        renderItem={item => (
-          <List.Item>
-          <List.Item.Meta
-            avatar={<FileOutlined />}
-            title={
-              <Link to="/signDocument" onClick={() => {
-                const docId = item._id;
-                const docRef = item.docRef;
-                const docType = item.docType;
-                dispatch(setDocToSign({ docRef, docId, docType }));
-              }}>
-                {item.docTitle}
-              </Link>
-            }
-            // description={item.user.JOB_TITLE ? item.user.name + ' '+ item.user.JOB_TITLE : item.user.name}
-          />
-          {/* <div><font color='grey'><Moment format='YYYY/MM/DD'>{item.requestedTime}</Moment></font></div> */}
-            <div><font color='grey'>{moment(item.requestedTime).fromNow()}</font></div>
-          </List.Item>
-        )}
-      />
-    </ProCard>
-  )
+  // const tosign = (
+  //   <ProCard
+  //   colSpan={{ xs: 24, sm: 12, md: 12, lg: 12, xl: 12 }}
+  //   style={{ marginBottom: 0, marginRight: 0, padding: 0 }}
+  //   title="서명 필요 문서"
+  //   bordered={false}
+  //   headerBordered
+  //   extra={<Link to="/documentList" state={{ status: '서명 필요' }}>더보기</Link>}
+  //   loading={loadingToSign}
+  //   bodyStyle={{ padding: 10 }}
+  //   >
+  //     <List
+  //       // bordered
+  //       style={{ paddingLeft: 24, paddingRight: 24}}
+  //       dataSource={documentsToSign}
+  //       renderItem={item => (
+  //         <List.Item>
+  //         <List.Item.Meta
+  //           avatar={<FileOutlined />}
+  //           title={
+  //             <Link to="/signDocument" onClick={() => {
+  //               const docId = item._id;
+  //               const docRef = item.docRef;
+  //               const docType = item.docType;
+  //               dispatch(setDocToSign({ docRef, docId, docType }));
+  //             }}>
+  //               {item.docTitle}
+  //             </Link>
+  //           }
+  //           // description={item.user.JOB_TITLE ? item.user.name + ' '+ item.user.JOB_TITLE : item.user.name}
+  //         />
+  //         {/* <div><font color='grey'><Moment format='YYYY/MM/DD'>{item.requestedTime}</Moment></font></div> */}
+  //           <div><font color='grey'>{moment(item.requestedTime).fromNow()}</font></div>
+  //         </List.Item>
+  //       )}
+  //     />
+  //   </ProCard>
+  // )
 
-  const signing = (
-    <ProCard
-    colSpan={{ xs: 24, sm: 12, md: 12, lg: 12, xl: 12 }}
-    style={{ marginBottom: 0, marginRight: 0, padding: 0 }}
-    title={<div>서명 진행 문서 {renderBadge(signingNum, false)}</div>}
-    bordered={false}
-    headerBordered
-    extra={<Link to="/documentList" state={{ status: '서명 진행' }}>더보기</Link>}
-    loading={loadingSigning}
-    bodyStyle={{ padding: 10 }}
-    >
-      <List
-        // bordered
-        style={{ paddingLeft: 24, paddingRight: 24}}
-        dataSource={documentsSigning}
-        renderItem={item => (
-          <List.Item>
-          <List.Item.Meta
-            avatar={<FileOutlined />}
-            title={
-              <Link to="/documentList" state={{ status: '서명 진행' }}>
-                {item.docTitle}
-              </Link>
-            }
-            // description={item.user.JOB_TITLE ? item.user.name + ' '+ item.user.JOB_TITLE : item.user.name}
-            description={<Progress percent={Math.round((item.signedBy.length / item.users.length) * 100)} steps={item.users.length} status="active" />}
-          />
-            <div><font color='grey'>{moment(item.requestedTime).fromNow()}</font></div> 
-          </List.Item>
-        )}
-      />
-    </ProCard>
-  )
+  // const signing = (
+  //   <ProCard
+  //   colSpan={{ xs: 24, sm: 12, md: 12, lg: 12, xl: 12 }}
+  //   style={{ marginBottom: 0, marginRight: 0, padding: 0 }}
+  //   title={<div>서명 진행 문서 {renderBadge(signingNum, false)}</div>}
+  //   bordered={false}
+  //   headerBordered
+  //   extra={<Link to="/documentList" state={{ status: '서명 진행' }}>더보기</Link>}
+  //   loading={loadingSigning}
+  //   bodyStyle={{ padding: 10 }}
+  //   >
+  //     <List
+  //       // bordered
+  //       style={{ paddingLeft: 24, paddingRight: 24}}
+  //       dataSource={documentsSigning}
+  //       renderItem={item => (
+  //         <List.Item>
+  //         <List.Item.Meta
+  //           avatar={<FileOutlined />}
+  //           title={
+  //             <Link to="/documentList" state={{ status: '서명 진행' }}>
+  //               {item.docTitle}
+  //             </Link>
+  //           }
+  //           // description={item.user.JOB_TITLE ? item.user.name + ' '+ item.user.JOB_TITLE : item.user.name}
+  //           description={<Progress percent={Math.round((item.signedBy.length / item.users.length) * 100)} steps={item.users.length} status="active" />}
+  //         />
+  //           <div><font color='grey'>{moment(item.requestedTime).fromNow()}</font></div> 
+  //         </List.Item>
+  //       )}
+  //     />
+  //   </ProCard>
+  // )
 
-  const statics = (
-      <ProCard.Group title="" direction='row' loading={loadingStatics}>
-      <ProCard>
-        <Link to='/documentList' state={{ status: '서명 필요' }}>
-          <Statistic title="서명 필요" value={toSignNum} valueStyle={{ color: '#3057cf' }} suffix="건" />
-        </Link>
-      </ProCard>
-      <Divider type='vertical' />
-      {/* <ProCard>
-        <Link to='/documentList' state={{ status: '서명 대기' }}>
-          <Statistic title="서명 대기" value={signingNum} suffix="건" />
-        </Link>
-      </ProCard>
-      <Divider type='vertical' />
-      <ProCard>
-        <Link to='/documentList' state={{ status: '서명 취소' }}>
-          <Statistic title="서명 취소" value={canceledNum} suffix="건" />
-        </Link>
-      </ProCard>
-      <Divider type='vertical' />
-      <ProCard>
-        <Link to='/documentList'>
-          <Statistic title="서명 완료" value={signedNum} suffix="건" />
-        </Link>
-      </ProCard>
-      <Divider type='vertical' /> */}
-      <ProCard>
-        <Link to='/documentList'>
-          <Statistic title="전체 문서" value={totalNum} suffix="건" />
-        </Link>
-      </ProCard>
-    </ProCard.Group>
-  )
+  // const statics = (
+  //     <ProCard.Group title="" direction='row' loading={loadingStatics}>
+  //     <ProCard>
+  //       <Link to='/documentList' state={{ status: '서명 필요' }}>
+  //         <Statistic title="서명 필요" value={toSignNum} valueStyle={{ color: '#3057cf' }} suffix="건" />
+  //       </Link>
+  //     </ProCard>
+  //     <Divider type='vertical' />
+  //     {/* <ProCard>
+  //       <Link to='/documentList' state={{ status: '서명 대기' }}>
+  //         <Statistic title="서명 대기" value={signingNum} suffix="건" />
+  //       </Link>
+  //     </ProCard>
+  //     <Divider type='vertical' />
+  //     <ProCard>
+  //       <Link to='/documentList' state={{ status: '서명 취소' }}>
+  //         <Statistic title="서명 취소" value={canceledNum} suffix="건" />
+  //       </Link>
+  //     </ProCard>
+  //     <Divider type='vertical' />
+  //     <ProCard>
+  //       <Link to='/documentList'>
+  //         <Statistic title="서명 완료" value={signedNum} suffix="건" />
+  //       </Link>
+  //     </ProCard>
+  //     <Divider type='vertical' /> */}
+  //     <ProCard>
+  //       <Link to='/documentList'>
+  //         <Statistic title="전체 문서" value={totalNum} suffix="건" />
+  //       </Link>
+  //     </ProCard>
+  //   </ProCard.Group>
+  // )
   
   function renderStatistic(containerWidth, text, style) {
     var _measureTextWidth = (0, measureTextWidth)(text, style),
@@ -349,19 +350,19 @@ const Home = () => {
   }
   var data = [
     {
-      type: '서명 필요',
+      type: DOCUMENT_TOSIGN,
       value: toSignNum,
     },
     {
-      type: '서명 진행',
+      type: DOCUMENT_SIGNING,
       value: signingNum,
     },
     {
-      type: '서명 취소',
+      type: DOCUMENT_CANCELED,
       value: canceledNum,
     },
     {
-      type: '서명 완료',
+      type: DOCUMENT_SIGNED,
       value: signedNum,
     },
   ];
@@ -371,13 +372,13 @@ const Home = () => {
     angleField: 'value',
     colorField: 'type',
     color: ({ type }) => {
-      if(type === '서명 취소'){
+      if(type === DOCUMENT_CANCELED){
         return '#e36e4d';
-      } else if(type === '서명 필요'){
+      } else if(type === DOCUMENT_TOSIGN){
         return '#6ca8fc';
-      } else if(type === '서명 진행'){
+      } else if(type === DOCUMENT_SIGNING){
         return '#cbcbcb';
-      } else if(type === '서명 완료'){
+      } else if(type === DOCUMENT_SIGNED){
         return '#9cd263';
       }
       return 'grey';
@@ -438,86 +439,86 @@ const Home = () => {
     <ProCard title="문서 통계"><Pie {...config} /></ProCard>
   )
 
-  const toSignCard = (
-    <Card
-    style={{ marginBottom: 24, width:'100%'}}
-    title={<div>서명 필요 문서 {renderBadge(toSignNum, true)}</div>}
-    bordered={false}
-    extra={<Link to="/documentList" state={{ status: '서명 필요' }}>더보기</Link>}
-    loading={loadingToSign}
-    bodyStyle={{ padding: 0 }}
-  >
-    {documentsToSign.length == 0 ? <div style={{padding: 50}}><Empty image={Empty.PRESENTED_IMAGE_SIMPLE} /></div> :
-      documentsToSign.map(item => (
-        <Card.Grid style={{width:'50%'}} key={item._id}>
-          <Card bodyStyle={{ padding: 0 }} bordered={false}>
-            {/* <Card.Meta
-              avatar={
-                item.user.image ? <Avatar src={item.user.image} /> : <Avatar size={35} icon={<UserOutlined />} />
-              }
-              title={item.user.JOB_TITLE ? item.user.name + ' '+ item.user.JOB_TITLE : item.user.name}
-              description={
-                <Link to="/signDocument" onClick={() => {
-                  const docId = item._id;
-                  const docRef = item.docRef;
-                  dispatch(setDocToSign({ docRef, docId }));
-                }}>
-                  <font color='#5D7092'>{item.docTitle}</font>
-                </Link>
-              }
-            /> */}
-            <Link to="/signDocument" onClick={() => {
-                  const docId = item._id;
-                  const docRef = item.docRef;
-                  const docType = item.docType;
-                  dispatch(setDocToSign({ docRef, docId, docType }));
-            }}>
-              <Card.Meta
-                // title={}
-                description={
-                  <div>
-                    <p><FileOutlined />&nbsp;&nbsp;<font color='black'>{item.docTitle}</font></p>
-                    {item.user.image ? <Avatar src={item.user.image} /> : <Avatar size={20} icon={<UserOutlined />} />} &nbsp;
-                    {item.user.JOB_TITLE ? item.user.name + ' '+ item.user.JOB_TITLE : item.user.name}
-                    <p>
-                      <span style={{color:'grey', flex:'0 0 auto', float:'right'}}>
-                        {moment(item.requestedTime).fromNow()}
-                      </span>
-                    </p>
-                  </div>
-                }
-              />
-            </Link>
-            {/* <span style={{color:'grey', flex:'0 0 auto', float:'right'}}>
-              {moment(item.requestedTime).fromNow()}
-            </span> */}
-            </Card>
+  // const toSignCard = (
+  //   <Card
+  //   style={{ marginBottom: 24, width:'100%'}}
+  //   title={<div>서명 필요 문서 {renderBadge(toSignNum, true)}</div>}
+  //   bordered={false}
+  //   extra={<Link to="/documentList" state={{ status: DOCUMENT_TOSIGN }}>더보기</Link>}
+  //   loading={loadingToSign}
+  //   bodyStyle={{ padding: 0 }}
+  // >
+  //   {documentsToSign.length == 0 ? <div style={{padding: 50}}><Empty image={Empty.PRESENTED_IMAGE_SIMPLE} /></div> :
+  //     documentsToSign.map(item => (
+  //       <Card.Grid style={{width:'50%'}} key={item._id}>
+  //         <Card bodyStyle={{ padding: 0 }} bordered={false}>
+  //           {/* <Card.Meta
+  //             avatar={
+  //               item.user.image ? <Avatar src={item.user.image} /> : <Avatar size={35} icon={<UserOutlined />} />
+  //             }
+  //             title={item.user.JOB_TITLE ? item.user.name + ' '+ item.user.JOB_TITLE : item.user.name}
+  //             description={
+  //               <Link to="/signDocument" onClick={() => {
+  //                 const docId = item._id;
+  //                 const docRef = item.docRef;
+  //                 dispatch(setDocToSign({ docRef, docId }));
+  //               }}>
+  //                 <font color='#5D7092'>{item.docTitle}</font>
+  //               </Link>
+  //             }
+  //           /> */}
+  //           <Link to="/signDocument" onClick={() => {
+  //                 const docId = item._id;
+  //                 const docRef = item.docRef;
+  //                 const docType = item.docType;
+  //                 dispatch(setDocToSign({ docRef, docId, docType }));
+  //           }}>
+  //             <Card.Meta
+  //               // title={}
+  //               description={
+  //                 <div>
+  //                   <p><FileOutlined />&nbsp;&nbsp;<font color='black'>{item.docTitle}</font></p>
+  //                   {item.user.image ? <Avatar src={item.user.image} /> : <Avatar size={20} icon={<UserOutlined />} />} &nbsp;
+  //                   {item.user.JOB_TITLE ? item.user.name + ' '+ item.user.JOB_TITLE : item.user.name}
+  //                   <p>
+  //                     <span style={{color:'grey', flex:'0 0 auto', float:'right'}}>
+  //                       {moment(item.requestedTime).fromNow()}
+  //                     </span>
+  //                   </p>
+  //                 </div>
+  //               }
+  //             />
+  //           </Link>
+  //           {/* <span style={{color:'grey', flex:'0 0 auto', float:'right'}}>
+  //             {moment(item.requestedTime).fromNow()}
+  //           </span> */}
+  //           </Card>
             
-        </Card.Grid>
-        // <Card.Grid style={{width:'33.3%'}} key={item._id}>
-        //   <Card bodyStyle={{ padding: 0 }} bordered={false}>
-        //     <Card.Meta
-        //       title={(
-        //         <div style={{
-        //           marginLeft: '0px', lineHeight: '24px', height: '24px', display: 'inline-block', verticalAlign: 'top', fontSize: '15px'
-        //         }}>
-        //           <Avatar size={22} icon={<UserOutlined />} />&nbsp;&nbsp;
-        //             {item.user.JOB_TITLE ? item.user.name + ' '+ item.user.JOB_TITLE : item.user.name}
-        //         </div>
-        //       )}
-        //       description={<Link to="/documentList" state={{ status: '서명 대기' }}>{item.docTitle}</Link>}
-        //     />
-        //     <div style={{height: '20px', display: 'flex', marginTop: '8px', overflow: 'hidden', fontSize: '12px', lineHeight: '20px', textAlign: 'right'}}>
-        //         <span style={{color:'grey', flex:'0 0 auto', float:'right'}}>
-        //           {moment(item.requestedTime).fromNow()}
-        //         </span>
-        //     </div>
-        //   </Card>
-        // </Card.Grid>
-      ))
-    }
-    </Card>
-  )
+  //       </Card.Grid>
+  //       // <Card.Grid style={{width:'33.3%'}} key={item._id}>
+  //       //   <Card bodyStyle={{ padding: 0 }} bordered={false}>
+  //       //     <Card.Meta
+  //       //       title={(
+  //       //         <div style={{
+  //       //           marginLeft: '0px', lineHeight: '24px', height: '24px', display: 'inline-block', verticalAlign: 'top', fontSize: '15px'
+  //       //         }}>
+  //       //           <Avatar size={22} icon={<UserOutlined />} />&nbsp;&nbsp;
+  //       //             {item.user.JOB_TITLE ? item.user.name + ' '+ item.user.JOB_TITLE : item.user.name}
+  //       //         </div>
+  //       //       )}
+  //       //       description={<Link to="/documentList" state={{ status: '서명 대기' }}>{item.docTitle}</Link>}
+  //       //     />
+  //       //     <div style={{height: '20px', display: 'flex', marginTop: '8px', overflow: 'hidden', fontSize: '12px', lineHeight: '20px', textAlign: 'right'}}>
+  //       //         <span style={{color:'grey', flex:'0 0 auto', float:'right'}}>
+  //       //           {moment(item.requestedTime).fromNow()}
+  //       //         </span>
+  //       //     </div>
+  //       //   </Card>
+  //       // </Card.Grid>
+  //     ))
+  //   }
+  //   </Card>
+  // )
 
   const loadmore = (target) => {
     return (
@@ -582,14 +583,14 @@ const Home = () => {
       <List
         // bordered
         style={{ paddingLeft: 10, paddingRight: 10}}
-        loadMore={signingNum > 6 ? loadmore('서명 진행') : ''}
+        loadMore={signingNum > 6 ? loadmore(DOCUMENT_SIGNING) : ''}
         dataSource={documentsSigning}
         renderItem={item => (
           <List.Item>
           <List.Item.Meta
             avatar={<FileOutlined />}
             title={
-              <Link to="/documentList" state={{ status: '서명 진행', docId: item._id }}>
+              <Link to="/documentList" state={{ status: DOCUMENT_SIGNING, docId: item._id }}>
                 {item.docTitle}
               </Link>
             }
@@ -603,47 +604,47 @@ const Home = () => {
     </ProCard>
   )
 
-  const contentToSign = (
-    <Card
-    style={{ marginBottom: 0, width:'100%'}}
-    // title={<div>서명 필요 문서 {renderBadge(toSignNum, true)}</div>}
-    bordered={false}
-    // extra={<Link to="/documentList" state={{ status: '서명 필요' }}>더보기</Link>}
-    loading={loadingToSign}
-    bodyStyle={{ padding: 0 }}
-  >
-    {documentsToSign.length == 0 ? <div style={{padding: 50}}><Empty image={Empty.PRESENTED_IMAGE_SIMPLE} /></div> :
-      documentsToSign.map(item => (
-        <Card.Grid style={{width:'50%'}} key={item._id}>
-          <Card bodyStyle={{ padding: 0 }} bordered={false}>
-            <Link to="/signDocument" onClick={() => {
-                  const docId = item._id;
-                  const docRef = item.docRef;
-                  const docType = item.docType;
-                  dispatch(setDocToSign({ docRef, docId, docType }));
-            }}>
-              <Card.Meta
-                // title={}
-                description={
-                  <div>
-                    <p><FileOutlined />&nbsp;&nbsp;<font color='black'>{item.docTitle}</font></p>
-                    {item.user.image ? <Avatar src={item.user.image} /> : <Avatar size={20} icon={<UserOutlined />} />} &nbsp;
-                    {item.user.JOB_TITLE ? item.user.name + ' '+ item.user.JOB_TITLE : item.user.name}
-                    <p>
-                      <span style={{color:'grey', flex:'0 0 auto', float:'right'}}>
-                        {moment(item.requestedTime).fromNow()}
-                      </span>
-                    </p>
-                  </div>
-                }
-              />
-            </Link>
-            </Card> 
-        </Card.Grid>
-      ))
-    }
-    </Card>
-  )
+  // const contentToSign = (
+  //   <Card
+  //   style={{ marginBottom: 0, width:'100%'}}
+  //   // title={<div>서명 필요 문서 {renderBadge(toSignNum, true)}</div>}
+  //   bordered={false}
+  //   // extra={<Link to="/documentList" state={{ status: '서명 필요' }}>더보기</Link>}
+  //   loading={loadingToSign}
+  //   bodyStyle={{ padding: 0 }}
+  // >
+  //   {documentsToSign.length == 0 ? <div style={{padding: 50}}><Empty image={Empty.PRESENTED_IMAGE_SIMPLE} /></div> :
+  //     documentsToSign.map(item => (
+  //       <Card.Grid style={{width:'50%'}} key={item._id}>
+  //         <Card bodyStyle={{ padding: 0 }} bordered={false}>
+  //           <Link to="/signDocument" onClick={() => {
+  //                 const docId = item._id;
+  //                 const docRef = item.docRef;
+  //                 const docType = item.docType;
+  //                 dispatch(setDocToSign({ docRef, docId, docType }));
+  //           }}>
+  //             <Card.Meta
+  //               // title={}
+  //               description={
+  //                 <div>
+  //                   <p><FileOutlined />&nbsp;&nbsp;<font color='black'>{item.docTitle}</font></p>
+  //                   {item.user.image ? <Avatar src={item.user.image} /> : <Avatar size={20} icon={<UserOutlined />} />} &nbsp;
+  //                   {item.user.JOB_TITLE ? item.user.name + ' '+ item.user.JOB_TITLE : item.user.name}
+  //                   <p>
+  //                     <span style={{color:'grey', flex:'0 0 auto', float:'right'}}>
+  //                       {moment(item.requestedTime).fromNow()}
+  //                     </span>
+  //                   </p>
+  //                 </div>
+  //               }
+  //             />
+  //           </Link>
+  //           </Card> 
+  //       </Card.Grid>
+  //     ))
+  //   }
+  //   </Card>
+  // )
 
   const contentToSignThumbnail = (
     <Card
@@ -697,7 +698,7 @@ const Home = () => {
       loading={loadingToSign}
       grid={{ gutter: 24, lg: 3, md: 2, sm: 1, xs: 1 }}
       dataSource={documentsToSign}
-      loadMore={toSignNum > 6 ? loadmore('서명 필요') : ''}
+      loadMore={toSignNum > 6 ? loadmore(DOCUMENT_TOSIGN) : ''}
       renderItem={item => (
         <List.Item key={item._id}>
 
@@ -781,14 +782,14 @@ const Home = () => {
       <List
         // bordered
         style={{ paddingLeft: 10, paddingRight: 10}}
-        loadMore={canceledNum > 6 ? loadmore('서명 취소') : ''}
+        loadMore={canceledNum > 6 ? loadmore(DOCUMENT_CANCELED) : ''}
         dataSource={documentsCanceled}
         renderItem={item => (
           <List.Item>
           <List.Item.Meta
             avatar={<DocumentTypeText uid={_id} document={item} />}
             title={
-              <Link to="/documentList" state={{ status: '서명 취소', docId: item._id }}>
+              <Link to="/documentList" state={{ status: DOCUMENT_CANCELED, docId: item._id }}>
                 {item.docTitle}
               </Link>
             }
@@ -814,14 +815,14 @@ const Home = () => {
       <List
         // bordered
         style={{ paddingLeft: 10, paddingRight: 10}}
-        loadMore={signedNum > 6 ? loadmore('서명 완료') : ''}
+        loadMore={signedNum > 6 ? loadmore(DOCUMENT_SIGNED) : ''}
         dataSource={documentsSigned}
         renderItem={item => (
           <List.Item>
           <List.Item.Meta
             avatar={<DocumentTypeText uid={_id} document={item} />}
             title={
-              <Link to="/documentList" state={{ status: '서명 완료', docId: item._id }}>
+              <Link to="/documentList" state={{ status: DOCUMENT_SIGNED, docId: item._id }}>
                 {item.docTitle}
               </Link>
             }
@@ -837,10 +838,10 @@ const Home = () => {
 
   const items = [
     { key: '1', title: '전체', value: totalNum, total: true, lnk: 'https://gw.alipayobjects.com/mdn/rms_7bc6d8/afts/img/A*dr_0RKvVzVwAAAAAAAAAAABkARQnAQ' },
-    { key: '2', status: 'processing', title: '서명/수신 필요', value: toSignNum, lnk: 'https://gw.alipayobjects.com/mdn/rms_7bc6d8/afts/img/A*-jVKQJgA1UgAAAAAAAAAAABkARQnAQ' },
-    { key: '3', status: 'default', title: '서명 진행', value: signingNum, lnk: 'https://gw.alipayobjects.com/mdn/rms_7bc6d8/afts/img/A*FPlYQoTNlBEAAAAAAAAAAABkARQnAQ' },
-    { key: '4', status: 'error', title: '서명 취소', value: canceledNum, lnk: 'https://gw.alipayobjects.com/mdn/rms_7bc6d8/afts/img/A*pUkAQpefcx8AAAAAAAAAAABkARQnAQ'},
-    { key: '5', status: 'success', title: '서명 완료', value: signedNum, lnk: 'https://gw.alipayobjects.com/mdn/rms_7bc6d8/afts/img/A*dr_0RKvVzVwAAAAAAAAAAABkARQnAQ' },
+    { key: '2', status: 'processing', title: DOCUMENT_TODO, value: toSignNum, lnk: 'https://gw.alipayobjects.com/mdn/rms_7bc6d8/afts/img/A*-jVKQJgA1UgAAAAAAAAAAABkARQnAQ' },
+    { key: '3', status: 'default', title: DOCUMENT_SIGNING, value: signingNum, lnk: 'https://gw.alipayobjects.com/mdn/rms_7bc6d8/afts/img/A*FPlYQoTNlBEAAAAAAAAAAABkARQnAQ' },
+    { key: '4', status: 'error', title: DOCUMENT_CANCELED, value: canceledNum, lnk: 'https://gw.alipayobjects.com/mdn/rms_7bc6d8/afts/img/A*pUkAQpefcx8AAAAAAAAAAABkARQnAQ'},
+    { key: '5', status: 'success', title: DOCUMENT_SIGNED, value: signedNum, lnk: 'https://gw.alipayobjects.com/mdn/rms_7bc6d8/afts/img/A*dr_0RKvVzVwAAAAAAAAAAABkARQnAQ' },
   ];
 
   const staticAllContent = (key) => {

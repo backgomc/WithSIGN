@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
-import { Modal, Table, Input, Space, Button, Popconfirm, Tag, Progress, List, Pagination, Card } from "antd";
+import { Tooltip, Badge, Modal, Table, Input, Space, Button, Popconfirm, Tag, Progress, List, Pagination, Card } from "antd";
 import Highlighter from 'react-highlight-words';
 import { SearchOutlined, DeleteOutlined, FileOutlined, DownloadOutlined, EditOutlined, FormOutlined, FilePdfOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 import { useSelector, useDispatch } from 'react-redux';
@@ -28,6 +28,27 @@ import { CheckCard } from '@ant-design/pro-card';
 import '@ant-design/pro-card/dist/card.css';
 import '@ant-design/pro-form/dist/form.css';
 
+import styled from 'styled-components';
+const CardTitle = styled.div`
+  // 한줄 자르기
+  display: inline-block; 
+  width: 260px; 
+  // white-space: nowrap; 
+  overflow: hidden; 
+  text-overflow: ellipsis;
+
+  // 여러줄 자르기 추가 속성 
+  position:relative;
+  white-space: normal; 
+  line-height: 1.2; 
+  height: 2.2em; 
+  text-align: left; 
+  word-wrap: break-word; 
+  display: -webkit-box; 
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+    `;
+
 const { Search } = Input;
 const { confirm } = Modal;
 const { Meta } = Card;
@@ -40,7 +61,9 @@ const TemplateList = () => {
   const { _id } = user;
   const [searchText, setSearchText] = useState('');
   const [searchedColumn, setSearchedColumn] = useState('');
+
   const [data, setData] = useState([]);
+  const [dataPrivate, setDataPrivate] = useState([]);
   const [dataPublic, setDataPublic] = useState([]);
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [hasSelected, setHasSelected] = useState(selectedRowKeys.length > 0);
@@ -48,12 +71,14 @@ const TemplateList = () => {
   
   const [pagination, setPagination] = useState({current:1, pageSize:10});
   const [total, setTotal] = useState();
+  const [totalPrivate, setTotalPrivate] = useState();
   const [totalPublic, setTotalPublic] = useState();
   const [pageSize, setPageSize] = useState(10);
 
-  const [tab, setTab] = useState('private');
+  const [tab, setTab] = useState('total');
 
   const [loading, setLoading] = useState(false);
+  const [loadingPrivate, setLoadingPrivate] = useState(false);
   const [loadingPublic, setLoadingPublic] = useState(false);
   // const [expandable, setExpandable] = useState();
   const [visiblePopconfirm, setVisiblePopconfirm] = useState(false);
@@ -64,7 +89,7 @@ const TemplateList = () => {
   const handleTableChange = (pagination, filters, sorter) => {
     console.log("handleTableChange called")
     console.log(filters)
-    fetch({
+    fetchPrivate({
       sortField: sorter.field,
       sortOrder: sorter.order,
       pagination,
@@ -73,7 +98,7 @@ const TemplateList = () => {
     });
   };
 
-  const fetch = (params = {}) => {
+  const fetchTotal = (params = {}) => {
     setLoading(true);
 
     axios.post('/api/template/templates', params).then(response => {
@@ -89,6 +114,28 @@ const TemplateList = () => {
 
       } else {
           setLoading(false);
+          alert(response.data.error)
+      }
+
+    });
+  };
+
+  const fetchPrivate = (params = {}) => {
+    setLoadingPrivate(true);
+
+    axios.post('/api/template/templates', params).then(response => {
+
+      console.log(response)
+      if (response.data.success) {
+        const templates = response.data.templates;
+
+        setPagination({...params.pagination, total:response.data.total});
+        setDataPrivate(templates);
+        setTotalPrivate(response.data.total);
+        setLoadingPrivate(false);
+
+      } else {
+        setLoadingPrivate(false);
           alert(response.data.error)
       }
 
@@ -136,7 +183,7 @@ const TemplateList = () => {
     setSelectedRowKeys([]);
     setHasSelected(false)
 
-    fetch({
+    fetchPrivate({
       uid: _id,
       pagination,
     });
@@ -155,9 +202,14 @@ const TemplateList = () => {
       onOk() {
         axios.post('/api/template/deleteTemplate', {_ids: [templateId]}).then(response => {
           if (response.data.success) {
-            fetch({
+            fetchPrivate({
               uid: _id,
               pagination,
+            });
+            fetchTotal({
+              uid: _id,
+              pagination,
+              type: 'T'
             });
           }
         })
@@ -325,10 +377,17 @@ const TemplateList = () => {
   const onSearch = value => {
 
     if (tab === 'private') {
-      fetch({
+      fetchPrivate({
         pagination: {current: 1, pageSize: pageSize},
         uid: _id,
         docTitle: value
+      });
+    } else if (tab === 'total') {
+      fetchTotal({
+        pagination: {current: 1, pageSize: pageSize},
+        uid: _id,
+        docTitle: value,
+        type: 'T'
       });
     } else {
       fetchPublic({
@@ -358,88 +417,100 @@ const TemplateList = () => {
     </div>
   )
 
-  const cardData = data.map((item) => ({
-    title: item.docTitle,
-    subTitle: <Tag color="#5BD8A6">private</Tag>,
-    actions: [<a key="run">서명 요청</a>, <a key="delete">삭제</a>],
-    // avatar: 'https://gw.alipayobjects.com/zos/antfincdn/UCSiy1j6jx/xingzhuang.svg',
-    content: (
-      <div
-        style={{
-          flex: 1,
-        }}
-      >
-        <div
-          style={{
-            width: 100
-          }}
-        >
-          <img src={item.thumbnail} />
-        </div>
-      </div>
-    ),
-  }));
+  // const cardData = data.map((item) => ({
+  //   title: item.docTitle,
+  //   subTitle: <Tag color="#5BD8A6">private</Tag>,
+  //   actions: [<a key="run">서명 요청</a>, <a key="delete">삭제</a>],
+  //   // avatar: 'https://gw.alipayobjects.com/zos/antfincdn/UCSiy1j6jx/xingzhuang.svg',
+  //   content: (
+  //     <div
+  //       style={{
+  //         flex: 1,
+  //       }}
+  //     >
+  //       <div
+  //         style={{
+  //           width: 100
+  //         }}
+  //       >
+  //         <img src={item.thumbnail} />
+  //       </div>
+  //     </div>
+  //   ),
+  // }));
 
 
+  // const tableMode = (
+  //   <Table
+  //     rowKey={ item => { return item._id } }
+  //     columns={columns}
+  //     dataSource={data}
+  //     pagination={pagination}
+  //     loading={loading}
+  //     expandedRowRender={row => <TemplateExpander item={row} />}
+  //     expandRowByClick
+  //     rowSelection={rowSelection}
+  //     onRow={record => ({
+  //       onClick: e => {
+  //         // console.log(`user clicked on row ${record.t1}!`);
+  //       }
+  //     })}
+  //     onChange={handleTableChange}
+  //   />
+  // )
 
-  const tableMode = (
-    <Table
-      rowKey={ item => { return item._id } }
-      columns={columns}
-      dataSource={data}
-      pagination={pagination}
-      loading={loading}
-      expandedRowRender={row => <TemplateExpander item={row} />}
-      expandRowByClick
-      rowSelection={rowSelection}
-      onRow={record => ({
-        onClick: e => {
-          // console.log(`user clicked on row ${record.t1}!`);
-        }
-      })}
-      onChange={handleTableChange}
-    />
-  )
+  const actionItems = (item) => {
+    if (item.type && item.type == 'C') { 
+      return (
+        [<Button type="text" icon={<FormOutlined />} onClick={e => { signTemplate(item) }}>서명요청</Button>,
+        <Button type="text" icon={<FilePdfOutlined />} onClick={e => { navigate('/previewPDF', {state: {docRef:item.docRef, docTitle:item.docTitle}}) }}>문서보기</Button>]
+      )
+    } else {
+      return (
+        [<Button type="text" icon={<FormOutlined />} onClick={e => { signTemplate(item) }}>서명요청</Button>,
+        <Button type="text" icon={<FilePdfOutlined />} onClick={e => { navigate('/previewPDF', {state: {docRef:item.docRef, docTitle:item.docTitle}}) }}>문서보기</Button>,
+        <Button type="text" danger icon={<DeleteOutlined />} onClick={e => { deleteTemplateSingle(item._id) }}>삭제</Button>]
+      ) 
+    }
+  }
 
-  const cardMode = (
+  const cardModePrivate = (
     <List
     rowKey="id"
     loading={loading}
     grid={{ gutter: 24, lg: 3, md: 2, sm: 1, xs: 1 }}
-    dataSource={data}
+    dataSource={dataPrivate}
     // onChange={handlePageChange}
     pagination={{
       onChange: page => {
         console.log('page:'+page);
-        fetch({
+        fetchPrivate({
           pagination: {current: page, pageSize: pageSize},
           uid: _id
         });
       },
       pageSize: pageSize,
-      total: total
+      total: totalPrivate
     }}
     // pagination={pagination}
     renderItem={item => (
       <List.Item key={item._id}>
+        <Badge.Ribbon color={(item.type && item.type == 'C') ? '#519BE3' : 'green'} text={(item.type && item.type == 'C') ? '회사' : '개인'}>
         <ProCard 
           hoverable
           bordered
-          title={<div style={{ wordWrap: 'break-word', wordBreak: 'break-word', maxWidth: "280px" }}>{item.docTitle} <Tag color="#5BD8A6">private</Tag></div>}
+          title={<Tooltip placement="topLeft" title={item.docTitle} arrowPointAtCenter><CardTitle>{item.docTitle}</CardTitle></Tooltip>}
           // tooltip={moment(item.requestedTime).fromNow() + ' ' + item.user.name + ' ' + item.user.JOB_TITLE + ' ' + '생성'}
           // extra={moment(item.requestedTime).fromNow()}
           // subTitle={<Tag color="#5BD8A6">private</Tag>}
           // colSpan="300px" 
           layout="center" 
-          style={{ minWidth: "300px", height: "100%" }}
+          style={{ minWidth: "320px", height: "100%" }}
           bodyStyle={{ padding: "5px"}}
-          actions={[
-            <Button type="text" icon={<FormOutlined />} onClick={e => { signTemplate(item) }}>서명요청</Button>,
-            <Button type="text" icon={<FilePdfOutlined />} onClick={e => { navigate('/previewPDF', {state: {docRef:item.docRef, docTitle:item.docTitle}}) }}>문서보기</Button>,
-            <Button type="text" danger icon={<DeleteOutlined />} onClick={e => { deleteTemplateSingle(item._id) }}>삭제</Button>,
-          ]}>
-            <div><img src={item.thumbnail} style={{width: '280px'}} /></div>
+          actions={actionItems(item)}>
+            <div><img src={item.thumbnail} style={{width: '280px', height: '395px'}} /></div>
         </ProCard>
+        </Badge.Ribbon>
       </List.Item>
     )}
     />
@@ -455,44 +526,97 @@ const TemplateList = () => {
     pagination={{
       onChange: page => {
         console.log('page:'+page);
-        fetch({
+        fetchPublic({
           pagination: {current: page, pageSize: pageSize},
           uid: _id,
           type: 'C'
         });
       },
       pageSize: pageSize,
-      total: total
+      total: totalPublic
     }}
     // pagination={pagination}
     renderItem={item => (
       <List.Item key={item._id}>
+        <Badge.Ribbon color={(item.type && item.type == 'C') ? '#519BE3' : 'green'} text={(item.type && item.type == 'C') ? '회사' : '개인'}>
         <ProCard 
           hoverable
           bordered
-          title={<div style={{ wordWrap: 'break-word', wordBreak: 'break-word', maxWidth: "280px" }}>{item.docTitle} <Tag color="#519BE3">public</Tag></div>}
+          title={<Tooltip placement="topLeft" title={item.docTitle} arrowPointAtCenter><CardTitle>{item.docTitle}</CardTitle></Tooltip>}
           // tooltip={moment(item.requestedTime).fromNow() + ' ' + item.user.name + ' ' + item.user.JOB_TITLE + ' ' + '생성'}
           // extra={moment(item.requestedTime).fromNow()}
           // subTitle={<Tag color="#5BD8A6">private</Tag>}
           // colSpan="300px" 
           layout="center" 
-          style={{ minWidth: "300px", height: "100%" }}
+          style={{ minWidth: "320px", height: "100%" }}
           bodyStyle={{ padding: "5px"}}
-          actions={[
-            <Button type="text" icon={<FormOutlined />} onClick={e => { signTemplate(item) }}>서명요청</Button>,
-            <Button type="text" icon={<FilePdfOutlined />} onClick={e => { navigate('/previewPDF', {state: {docRef:item.docRef, docTitle:item.docTitle}}) }}>문서보기</Button>,
-            // <Button type="text" danger icon={<DeleteOutlined />} onClick={e => { deleteTemplateSingle(item._id) }}>삭제</Button>,
-          ]}>
-            <div><img src={item.thumbnail} style={{width: '280px'}} /></div>
+          actions={actionItems(item)}>
+            <div><img src={item.thumbnail} style={{width: '280px', height: '395px'}} /></div>
         </ProCard>
+        </Badge.Ribbon>
       </List.Item>
     )}
     />
   )
 
+  const cardModeTotal = (
+    <List
+    rowKey="id"
+    loading={loading}
+    grid={{ gutter: 24, lg: 3, md: 2, sm: 1, xs: 1 }}
+    dataSource={data}
+    // onChange={handlePageChange}
+    pagination={{
+      onChange: page => {
+        console.log('page:'+page);
+        fetchPublic({
+          pagination: {current: page, pageSize: pageSize},
+          uid: _id,
+          type: 'T'
+        });
+      },
+      pageSize: pageSize,
+      total: totalPublic
+    }}
+    // pagination={pagination}
+    renderItem={item => (
+      <List.Item key={item._id}>
+        <Badge.Ribbon color={(item.type && item.type == 'C') ? '#519BE3' : 'green'} text={(item.type && item.type == 'C') ? '회사' : '개인'}>
+        <ProCard 
+          hoverable
+          bordered
+          title={<Tooltip placement="topLeft" title={item.docTitle} arrowPointAtCenter><CardTitle>{item.docTitle}</CardTitle></Tooltip>}
+          layout="center" 
+          style={{ minWidth: "320px", height: "100%" }}
+          bodyStyle={{ padding: "5px"}}
+          actions={actionItems(item)}>
+            <div><img src={item.thumbnail} style={{width: '280px', height: '395px'}} /></div>
+        </ProCard>
+        </Badge.Ribbon>
+      </List.Item>
+    )}
+    />
+  )
+
+  const viewCard = () => {
+    if (tab === 'private') {
+      return cardModePrivate;
+    } else if (tab === 'public') {
+      return cardModePublic;
+    } else {
+      return cardModeTotal;
+    }
+  }
+
   useEffect(() => {
 
-    fetch({
+    fetchTotal({
+      uid: _id,
+      pagination,
+      type: 'T'
+    });
+
+    fetchPrivate({
       uid: _id,
       pagination,
     });
@@ -542,7 +666,11 @@ const TemplateList = () => {
         }}
         tabList={[
           {
-            tab: '내 템플릿',
+            tab: '전체',
+            key: 'total',
+          },
+          {
+            tab: '개인 템플릿',
             key: 'private',
           },
           {
@@ -557,10 +685,7 @@ const TemplateList = () => {
     >
       <br></br>
 
-      {/* {tableMode} */}
-      {/* {cardMode} */}
-
-      {tab === 'private' ? cardMode : cardModePublic}
+      {viewCard()}
 
     </PageContainer>
     </div>

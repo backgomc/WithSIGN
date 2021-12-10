@@ -310,6 +310,40 @@ router.post('/orgInfo', (req, res) => {
   })
 });
 
+/*
+    ORG NAME: POST /orgInfos
+    INPUT: [DEPART_CODE]
+    OUTPUT: [Org]
+*/
+router.post('/orgInfos', (req, res) => {
+
+  if (!req.body.DEPART_CODES) {
+    return res.json({ success: false, message: "input value not enough!" })
+  } 
+
+  const DEPART_CODES = req.body.DEPART_CODES
+  
+  Org
+  .find({ 'DEPART_CODE': {$in: DEPART_CODES } })
+  // .sort({"name" : 0})    //0:오름차순 -1:내림차순 //{order : dir};
+  .exec(function(err, results) {
+
+      if (err) return next(err)
+
+      if (results.length > 0) {
+        res.send({
+          success: true,
+          results: results
+        })
+      } else {
+        res.send({
+          success: false,
+          msg: "해당 조직이 없습니다."
+        })
+      }
+
+  })
+});
 
 // 유저 업데이트 : updateUser
 router.post('/updateUser', (req, res) => {

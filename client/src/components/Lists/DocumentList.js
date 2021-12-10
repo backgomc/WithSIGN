@@ -22,7 +22,8 @@ import { setDocToSign } from '../SignDocument/SignDocumentSlice';
 import Moment from 'react-moment';
 import moment from "moment";
 import "moment/locale/ko";
-import { DocumentType, DocumentTypeText, DocumentTypeBadge, DocumentTypeIcon, DOCUMENT_SIGNED, DOCUMENT_TOSIGN, DOCUMENT_SIGNING, DOCUMENT_CANCELED, DOCUMENT_TOCONFIRM } from './DocumentType';
+import {DOCUMENT_SIGNED, DOCUMENT_TOSIGN, DOCUMENT_SIGNING, DOCUMENT_CANCELED, DOCUMENT_TOCONFIRM, DOCUMENT_TODO} from '../../common/Constants';
+import { DocumentType, DocumentTypeText, DocumentTypeBadge, DocumentTypeIcon } from './DocumentType';
 import DocumentExpander from "./DocumentExpander";
 import { PageContainer } from '@ant-design/pro-layout';
 import 'antd/dist/antd.css';
@@ -173,10 +174,10 @@ const DocumentList = ({location}) => {
       <table width='100%' style={{tableLayout:'fixed'}}>
         <tr>
           <td align='left' width='350px'>
-            <b><Badge status="processing" text="서명/수신 필요" /></b> : 본인의 서명 또는 수신이 필요한 문서<br></br>
-            <b><Badge status="default" text="서명 진행" /></b> : 다른 서명 참여자의 서명이 진행 중인 문서<br></br>
-            <b><Badge status="error" text="서명 취소" /></b> : 서명 참여자 중 서명을 취소한 문서 <br></br>
-            <b><Badge status="success" text="서명 완료" /></b> : 모든 서명 참여자의 서명이 완료된 문서 
+            <b><Badge status="processing" text={DOCUMENT_TODO} /></b> : 본인의 서명 또는 수신이 필요한 문서<br></br>
+            <b><Badge status="default" text={DOCUMENT_SIGNING} /></b> : 다른 서명 참여자의 서명이 진행 중인 문서<br></br>
+            <b><Badge status="error" text={DOCUMENT_CANCELED} /></b> : 서명 참여자 중 서명을 취소한 문서 <br></br>
+            <b><Badge status="success" text={DOCUMENT_SIGNED} /></b> : 모든 서명 참여자의 서명이 완료된 문서 
           </td>
           <td align='right'>
           < img src={banner} width="500px" />

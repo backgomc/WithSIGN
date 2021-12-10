@@ -14,11 +14,7 @@ import {
   ClockCircleTwoTone
 } from '@ant-design/icons';
 
-export const DOCUMENT_SIGNED = "서명 완료";
-export const DOCUMENT_TOSIGN = "서명 필요";
-export const DOCUMENT_SIGNING = "서명 진행";
-export const DOCUMENT_CANCELED = "서명 취소";
-export const DOCUMENT_TOCONFIRM = "수신 필요";
+import {DOCUMENT_SIGNED, DOCUMENT_TOSIGN, DOCUMENT_SIGNING, DOCUMENT_CANCELED, DOCUMENT_TOCONFIRM} from '../../common/Constants';
 
 export function DocumentType(props) {
 

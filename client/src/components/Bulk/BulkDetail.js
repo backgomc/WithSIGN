@@ -11,7 +11,9 @@ import Moment from 'react-moment';
 import moment from "moment";
 import 'moment/locale/ko';
 import BulkExpander from "./BulkExpander";
-import { DocumentType, DocumentTypeBadge, DocumentTypeIcon, DOCUMENT_SIGNED, DOCUMENT_TOSIGN, DOCUMENT_SIGNING, DOCUMENT_CANCELED } from '../Lists/DocumentType';
+import { DocumentType, DocumentTypeBadge, DocumentTypeIcon } from '../Lists/DocumentType';
+import {DOCUMENT_SIGNED, DOCUMENT_TOSIGN, DOCUMENT_SIGNING, DOCUMENT_CANCELED, DOCUMENT_TOCONFIRM} from '../../common/Constants';
+
 import {
   FileOutlined
 } from '@ant-design/icons';

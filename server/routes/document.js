@@ -5,6 +5,8 @@ const requestIp = require('request-ip');
 const fs = require('fs');
 const config = require("../config/key");
 const { generateRandomName, makeFolder, today } = require('../common/utils');
+const { DOCUMENT_SIGNED, DOCUMENT_TOSIGN, DOCUMENT_SIGNING, DOCUMENT_CANCELED, DOCUMENT_TOCONFIRM } = require('../common/constants');
+
 
 // 신규 문서 등록  
 router.post('/addDocumentToSign', (req, res) => {
@@ -349,13 +351,14 @@ router.post('/searchForDocumentToSign', (req, res) => {
     }
 
     if (status && status != "") {
-      if (status == '서명 진행') {
+      if (status == DOCUMENT_SIGNING) {
+        console.log("AA")
         andParam['signed'] = false
         orParam = [{$and:[{"users": {$in:[user]}}, {"signedBy.user": user}]},  {$and:[{"user": user}, {"users": {$ne:user}}]}]
         if(!includeBulk) {
           andParam['docType'] = "G"
         }
-      } else if (status == '서명 필요') {
+      } else if (status == DOCUMENT_TOSIGN) {
         andParam['users'] = {$in:[user]}
         andParam['signed'] = false
         andParam['canceled'] = false
@@ -365,14 +368,14 @@ router.post('/searchForDocumentToSign', (req, res) => {
         // if(!includeBulk) {
         //   andParam['docType'] = "G"
         // }
-      } else if (status == '서명 완료') {
+      } else if (status == DOCUMENT_SIGNED) {
         andParam['signed'] = true
         orParam = [{"users": {$in:[user]}}, {"user": user}];
         if(!includeBulk) {
           andParam['docType'] = "G"
         }
         console.log("서명완료 called")
-      } else if (status == '서명 취소') {
+      } else if (status == DOCUMENT_CANCELED) {
         andParam['canceled'] = true
         orParam = [{"users": {$in:[user]}}, {"user": user}];
         if(!includeBulk) {
@@ -403,12 +406,12 @@ router.post('/searchForDocumentToSign', (req, res) => {
       // .populate("user", {name: 1, email: 2})
       .populate({
         path: "user", 
-        select: {name: 1, JOB_TITLE: 2, image: 3},
+        select: {name: 1, JOB_TITLE: 2, DEPART_CODE: 3, thumbnail: 4},
         // match: { name : searchName? searchName : !'' }
       })
       .populate({
         path: "users", 
-        select: {name: 1, JOB_TITLE: 2}
+        select: {name: 1, JOB_TITLE: 2, DEPART_CODE: 3}
       })
       .exec((err, documents) => {
           // console.log(documents);
