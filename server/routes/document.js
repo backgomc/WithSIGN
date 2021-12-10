@@ -478,4 +478,28 @@ router.post('/statics', (req, res) => {
 
 })  
 
+// 문서 불러오기
+router.post('/document', (req, res) => {
+
+  console.log("docId:"+req.body.docId)
+
+  if (!req.body.docId) {
+      return res.json({ success: false, message: "input value not enough!" })
+  } 
+
+  const docId = req.body.docId
+
+  Document.findOne({ _id: docId }, (err, document) => {
+    if (document) {
+      if (err) {
+        console.log(err);
+        return res.json({ success: false, message: err })
+      } else {
+        return res.json({ success: true, document:document })
+      }      
+
+    }
+  });
+})
+
 module.exports = router;

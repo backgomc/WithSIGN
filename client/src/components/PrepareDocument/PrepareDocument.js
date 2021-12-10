@@ -647,6 +647,11 @@ const PrepareDocument = () => {
     const signedBy = [];
     const signedTime = '';
 
+    // 본인 사인이 필요한 경우 바로 사인 유도를 위해 다음페이지에 문서 아이디를 넘겨준다. (일반 요청인 경우에만)
+    var docId = '';
+    var status = 'success';
+    var resultMsg = '서명 요청되었습니다.';
+
     if (sendType === 'G') { // 일반
 
       //users 배열 위치 조정: observer 가 제일 아래로 가도록 한다.
@@ -678,8 +683,14 @@ const PrepareDocument = () => {
       console.log("일반 전송")
       const res2 = await axios.post('/api/document/addDocumentToSign', body)
       console.log(res2)
-      if (!res2.data.success) {
-        alert('문서 등록 실패 !')
+      if (res2.data.success) {
+        docId = res2.data.documentId;
+        status = 'success';
+        resultMsg = '서명 요청이 정상 처리되었습니다.';
+      } else {
+        docId = '';
+        status = 'error';
+        resultMsg = '서명 요청에 실패하였습니다.';
       }
 
     } else {  // 대량 전송
@@ -741,8 +752,8 @@ const PrepareDocument = () => {
     dispatch(resetAssignAll());
     setLoading(false);
 
-    // navigate('/prepareResult', { state: {status:'success', title:'서명 요청 처리되었습니다.'}}); 
-    navigate('/');
+    navigate('/prepareResult', { state: {status:status, title:resultMsg, docId:docId}}); 
+    // navigate('/');
   };
 
   const dragOver = e => {

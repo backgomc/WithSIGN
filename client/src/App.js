@@ -51,6 +51,7 @@ import LogoImage from './assets/images/logo_withsign1.png'
 import LogoText from './assets/images/logo_withsign2.png'
 import Manual from './components/Customer/Manual';
 import ManualModify from './components/Customer/ManualModify';
+import PrepareResult from './components/PrepareDocument/PrepareResult';
 
 const App = () => {
   const user = useSelector(selectUser);
@@ -184,6 +185,7 @@ const App = () => {
       <Customer path="/customer" />
       <Manual path="/manual" />
       <ManualModify path="/manualModify" />
+      <PrepareResult path="/prepareResult" />
     </Router>
   </ProLayout>
 
