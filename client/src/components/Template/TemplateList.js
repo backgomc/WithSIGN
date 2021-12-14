@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
-import { Tooltip, Badge, Modal, Table, Input, Space, Button, Popconfirm, Tag, Progress, List, Pagination, Card } from "antd";
+import { Popover, Tooltip, Badge, Modal, Table, Input, Space, Button, Popconfirm, Tag, Progress, List, Pagination, Card } from "antd";
 import Highlighter from 'react-highlight-words';
 import { SearchOutlined, DeleteOutlined, FileOutlined, DownloadOutlined, EditOutlined, FormOutlined, FilePdfOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 import { useSelector, useDispatch } from 'react-redux';
@@ -13,7 +13,7 @@ import moment from 'moment';
 import 'moment/locale/ko';
 // import { DocumentType, DocumentTypeText, DOCUMENT_SIGNED, DOCUMENT_TOSIGN, DOCUMENT_SIGNING, DOCUMENT_CANCELED } from './DocumentType';
 import TemplateExpander from "./TemplateExpander";
-import { setTemplate, setDocumentType, setTemplateTitle, setTemplateType } from '../Assign/AssignSlice';
+import { setTemplate, setDocumentType, setTemplateTitle, setTemplateType, setSendType, resetAssignAll } from '../Assign/AssignSlice';
 import { PageContainer } from '@ant-design/pro-layout';
 import 'antd/dist/antd.css';
 import { useIntl } from "react-intl";
@@ -220,14 +220,18 @@ const TemplateList = () => {
     });    
   }
 
-  const signTemplate = (item) => {
+  const signTemplate = (item, sendType) => {
     console.log(item._id);
+    dispatch(resetAssignAll())
     dispatch(setDocumentType('TEMPLATE'))
-    if (tab === 'private') {
-      dispatch(setTemplateType('M'))
-    } else {
+    dispatch(setSendType(sendType)); //G:일반 B:대량
+
+    if (item.type && item.type == 'C') {  //C:회사 M:멤버 
       dispatch(setTemplateType('C'))
+    } else {
+      dispatch(setTemplateType('M'))
     }
+
     dispatch(setTemplateTitle(item.docTitle))
     dispatch(setTemplate(item))
     navigate('/assign');
@@ -459,15 +463,37 @@ const TemplateList = () => {
   //   />
   // )
 
+  const btnReqeust = (item) => {
+    return (
+      <Popover
+          content={
+            <div>
+            <Tooltip placement="bottom" title={'하나의 문서에 여러 참여자의 서명을 받는 경우'}>
+              <Button onClick={e => { signTemplate(item, 'G') }}>일반 요청</Button>
+            </Tooltip>
+            &nbsp;&nbsp;
+            <Tooltip placement="bottom" title={'하나의 문서로 여러 참여자에게 대량의 서명요청을 보내는 경우'}>
+              <Button onClick={e => { signTemplate(item, 'B') }}>대량 요청</Button>
+            </Tooltip>
+            </div>
+          }
+          title="요청 유형 선택"
+          trigger="click"
+          placement="bottomLeft"
+        >
+          <Button type="text" icon={<FormOutlined />}>서명요청</Button>
+      </Popover>
+    )
+  }
   const actionItems = (item) => {
     if (item.type && item.type == 'C') { 
       return (
-        [<Button type="text" icon={<FormOutlined />} onClick={e => { signTemplate(item) }}>서명요청</Button>,
+        [btnReqeust(item),
         <Button type="text" icon={<FilePdfOutlined />} onClick={e => { navigate('/previewPDF', {state: {docRef:item.docRef, docTitle:item.docTitle}}) }}>문서보기</Button>]
       )
     } else {
       return (
-        [<Button type="text" icon={<FormOutlined />} onClick={e => { signTemplate(item) }}>서명요청</Button>,
+        [btnReqeust(item),
         <Button type="text" icon={<FilePdfOutlined />} onClick={e => { navigate('/previewPDF', {state: {docRef:item.docRef, docTitle:item.docTitle}}) }}>문서보기</Button>,
         <Button type="text" danger icon={<DeleteOutlined />} onClick={e => { deleteTemplateSingle(item._id) }}>삭제</Button>]
       ) 

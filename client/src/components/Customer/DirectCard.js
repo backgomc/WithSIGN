@@ -6,11 +6,14 @@ import ProCard from '@ant-design/pro-card';
 import 'antd/dist/antd.css';
 import '@ant-design/pro-card/dist/card.css';
 import "moment/locale/ko";
+import { useIntl } from "react-intl";
 
 import iconCheck from '../../assets/images/icon_check.png';
 import iconManual from '../../assets/images/icon_manual.png';
 
 const DirectCard = (props) => {
+
+    const { formatMessage } = useIntl();
 
     useEffect(() => {
     }, []);
@@ -29,7 +32,7 @@ const DirectCard = (props) => {
             <Link to='/auditCheck'>
             <IconLink
               src={iconCheck}
-              text="문서 진본 확인"
+              text={formatMessage({id: 'document.check'})}
             />
             </Link>
           </Col>

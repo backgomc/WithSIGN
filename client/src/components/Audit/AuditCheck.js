@@ -70,7 +70,7 @@ const AuditCheck = () => {
       loading={loading}
       ghost
       header={{
-        title: '문서 진본 확인',
+        title: formatMessage({id: 'document.check'}),
         ghost: false,
         breadcrumb: {
           routes: [

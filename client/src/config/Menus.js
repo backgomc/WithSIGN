@@ -1,7 +1,8 @@
 // import { useMemo } from "react"
 import React from 'react';
 import { useIntl } from "react-intl";
-import { CustomerServiceOutlined, TeamOutlined, CopyOutlined, FileAddOutlined, SettingOutlined, FileTextOutlined, HighlightOutlined, DashboardOutlined } from '@ant-design/icons';
+import { FileProtectOutlined, CustomerServiceOutlined, TeamOutlined, CopyOutlined, FileAddOutlined, SettingOutlined, FileTextOutlined, HighlightOutlined, DashboardOutlined } from '@ant-design/icons';
+
 
 export default function Menus() {
   const { formatMessage } = useIntl();
@@ -44,6 +45,11 @@ export default function Menus() {
         //   name: formatMessage({id: 'Setting'}),
         //   icon: <SettingOutlined />,
         // },
+        {
+          path: '/auditCheck',
+          name: formatMessage({id: 'document.check'}),
+          icon: <FileProtectOutlined />,
+        },
         {
           path: '/customer',
           name: formatMessage({id: 'Customer'}),

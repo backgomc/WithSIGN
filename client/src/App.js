@@ -45,13 +45,16 @@ import ProLayout, { DefaultFooter } from '@ant-design/pro-layout';
 import Menus from './config/Menus';
 import '@ant-design/pro-layout/dist/layout.css';
 import 'antd/dist/antd.css';
-import { setSendType } from './components/Assign/AssignSlice';
+import { setSendType, resetAssignAll } from './components/Assign/AssignSlice';
 import './App.css';
 import LogoImage from './assets/images/logo_withsign1.png'
 import LogoText from './assets/images/logo_withsign2.png'
 import Manual from './components/Customer/Manual';
 import ManualModify from './components/Customer/ManualModify';
 import PrepareResult from './components/PrepareDocument/PrepareResult';
+import {
+  FileAddOutlined
+} from '@ant-design/icons';
 
 const App = () => {
   const user = useSelector(selectUser);
@@ -112,7 +115,7 @@ const App = () => {
       menuExtraRender={({ collapsed }) =>
         !collapsed && (
           <div>
-            <Button type="primary" style={{ width: '100%', background: '#1A4D7D', border:'0' }} onClick={() => {dispatch(setSendType('G')); navigate('/uploadDocument');}}>서명 요청</Button>
+            <Button type="primary" style={{ width: '100%', background: '#1A4D7D', border:'0' }} onClick={() => {dispatch(resetAssignAll()); dispatch(setSendType('G')); navigate('/uploadDocument');}}>서명 요청</Button>
           </div>
         )
       }  
@@ -127,6 +130,7 @@ const App = () => {
         <a
           onClick={() => {
             if (item.path === '/uploadDocument') {
+              dispatch(resetAssignAll());
               dispatch(setSendType('G'));
             }
             setPathname(item.path)

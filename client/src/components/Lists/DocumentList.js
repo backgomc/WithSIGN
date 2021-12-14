@@ -6,6 +6,7 @@ import Highlighter from 'react-highlight-words';
 import {
   SearchOutlined,
   FileOutlined,
+  FileAddOutlined,
   CheckCircleOutlined,
   SyncOutlined,
   CloseCircleOutlined,
@@ -554,7 +555,7 @@ const DocumentList = ({location}) => {
             //   }}
             // />,    
             <Checkbox checked={includeBulk} onChange={(e) => {setIncludeBulk(e.target.checked)}}>대량 전송 포함</Checkbox>,
-            <Button type="primary" onClick={() => {
+            <Button icon={<FileAddOutlined />} type="primary" onClick={() => {
               dispatch(setSendType('G'));
               navigate('/uploadDocument');
               }}>
