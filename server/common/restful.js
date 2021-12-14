@@ -1,11 +1,15 @@
 const axios = require('axios');
 const iconv = require('iconv-lite');
+const bcrypt = require('bcryptjs');
 const config = require('../config/key');
 const { hexCrypto } = require('../common/utils');
-const { Emp } = require("../models/Emp");
-const { Org } = require("../models/Org");
-const { User } = require("../models/User");
+const { Emp } = require('../models/Emp');
+const { Org } = require('../models/Org');
+const { User } = require('../models/User');
 
+const saltRounds = 10;
+
+// ERP 부서 동기화
 let callOrgAPI = async () => {
     console.log('ERP ORG CALL');
     try {
@@ -28,9 +32,11 @@ let callOrgAPI = async () => {
         return response;
     } catch (err) {
         console.error(err);
+        return err;
     }
 }
 
+// ERP 직원 동기화
 let callUserAPI = async () => {
     console.log('ERP USER CALL');
     try {
@@ -57,10 +63,12 @@ let callUserAPI = async () => {
             result = await Emp.find({'NO_SAWON': {$nin: usrList} });
             let newList = [];
             let newUser = {};
+            let saltRnd = await bcrypt.genSalt(saltRounds);
             for (var data of result) {
                 newUser = new User();
                 newUser['name'] = data['NM_SAWON'];
                 newUser['uid'] = hexCrypto(data['NO_SAWON']);
+                newUser['password'] = await bcrypt.hash(data['NO_SAWON'], saltRnd);
                 newUser['SABUN'] = data['NO_SAWON'];
                 newUser['OFFICE_CODE'] = data['CODE_SAMUSO'];
                 newUser['DEPART_CODE'] = data['CODE_BUSEO'];
@@ -111,14 +119,16 @@ let callUserAPI = async () => {
             // 6. 인장 파일 저장(보류)
 
         } else {
-             // error
+            // error
         }
         return response;
     } catch (err) {
         console.error(err);
+        return err;
     }
 }
 
+// DRM 문서 암호화
 let callDRMPackaging = async (filePath, fileName, target) => {
     console.log('origin : ' + filePath + fileName);
     console.log('target : ' + target);
@@ -136,6 +146,7 @@ let callDRMPackaging = async (filePath, fileName, target) => {
     }
 }
 
+// DRM 문서 복호화
 let callDRMUnpackaging = async (filePath, fileName, target) => {
     console.log('origin : ' + filePath + fileName);
     console.log('target : ' + target);
@@ -153,8 +164,30 @@ let callDRMUnpackaging = async (filePath, fileName, target) => {
     }
 }
 
+// 통합 알림
+// sendInfo : String _id (Option)
+// recvInfo : Arrays _id;_id ... ;_id
+let callNotify = async (send, recv, title, message) => {
+    let sendData = await User.findOne({_id: send}, {'SABUN': 1, '_id': 0});
+    let recvData = await User.find({_id: recv}, {'SABUN': 1, '_id': 0});
+    let sendInfo;
+    if (sendData) {
+        sendInfo = sendData['SABUN'];
+    }
+    let recvInfo = [];
+    for (var data of recvData) {
+        recvInfo.push(data['SABUN']);
+    }
+    callIpronetMSG(sendInfo, recvInfo, title, message);
+    callNHWithPUSH(sendInfo, recvInfo, title, message);
+}
+
+// Ipronet 쪽지 발송
+// sendInfo : String SABUN (Option)
+// recvInfo : Arrays SABUN;SABUN ... ;SABUN
 let callIpronetMSG = async (sendInfo, recvInfo, title, message) => {
     console.log('IPRONET SEND MESSAGE');
+    if (!sendInfo) sendInfo = config.ipronetID;
     try {
         // 1. 로그인 세션
         let url = config.ipronetURI+'/index.jsp?loginid='+config.ipronetID+'&loginpw='+config.ipronetPW;
@@ -168,13 +201,13 @@ let callIpronetMSG = async (sendInfo, recvInfo, title, message) => {
         url = config.ipronetURI+'/jsl/EmployeeSelector.SelectUsersBySabuns.json';
         conf = {headers: {'Cookie': cookie, 'Content-Type': 'application/x-www-form-urlencoded', 'Accept': '*/*'}}
         let sendObj = await axios.post(url, 'sabuns='+sendInfo, conf);
-        console.log(sendObj);
+        // console.log(sendObj);
 
         // 3. 수신자 아이프로넷 계정정보 조회
         url = config.ipronetURI+'/jsl/EmployeeSelector.SelectUsersBySabuns.json';
         conf = {headers: {'Cookie': cookie, 'Content-Type': 'application/x-www-form-urlencoded', 'Accept': '*/*'}}
         let recvObj = await axios.post(url, 'sabuns='+recvInfo, conf);
-        console.log(recvObj);
+        // console.log(recvObj);
 
         // 4. 메시지 전송
         url = config.ipronetURI+'/jsl/NHITMessageAction.Send.jsl';
@@ -182,16 +215,40 @@ let callIpronetMSG = async (sendInfo, recvInfo, title, message) => {
         body = {
             sender: sendObj.data['array'][0],
             receivers: recvObj.data['array'],
-            title:'서명 연동 테스트',
-            content:'내용 작성 주저리'+'<br><br><br><a href="http://localhost:3002/" target=_blank>전자서명시스템 바로가기</a>',
+            title: title,
+            content: message + '<br/><br/><br/><a href="' + config.withsignURI + '/" target="_blank">WithSign 바로가기</a>',
             attachments:[],
-            push:true
+            push:false
         }
         resp = await axios.post(url, 'message='+JSON.stringify(body), conf);
+        // console.log(resp);
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+// With Push 발송
+// sendInfo : String SABUN (Option)
+// recvInfo : Arrays SABUN;SABUN ... ;SABUN
+let callNHWithPUSH = async (sendInfo, recvInfo, title, message) => {
+    console.log('NHWITH SEND PUSH');
+    if (!sendInfo) sendInfo = config.nhwithSNDR;
+    try {
+        url = config.nhwithURI+'/api/message';
+        conf = {headers: {'Content-Type': 'application/json'}}
+        body = {
+            sourceInfo: config.nhwithID,
+            sourcePassword: config.nhwithPW,
+            title: title,
+            content: message,
+            senderId: sendInfo,
+            receivers: recvInfo
+        }
+        resp = await axios.post(url, JSON.stringify(body), conf);
         console.log(resp);
     } catch (err) {
         console.error(err);
     }
 }
 
-module.exports = {callOrgAPI, callUserAPI, callDRMPackaging, callDRMUnpackaging, callIpronetMSG}
+module.exports = {callOrgAPI, callUserAPI, callDRMPackaging, callDRMUnpackaging, callNotify, callIpronetMSG, callNHWithPUSH}

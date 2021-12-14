@@ -23,11 +23,11 @@ function Login() {
 
         axios.post('/api/admin/login', body).then(response => {
           if (response.data.success) {
-              dispatch(setUser(response.data.user));
-              localStorage.setItem('__rToken__', response.data.user.__rToken__);
-              navigate('/');
+            dispatch(setUser(response.data.user));
+            localStorage.setItem('__rToken__', response.data.user.__rToken__);
+            navigate('/');
           } else {
-              alert('Login Failed');
+            alert(response.data.message ? response.data.message : 'Login Failed');
           }
         });
     }

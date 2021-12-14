@@ -26,6 +26,13 @@ const templateSchema = mongoose.Schema({
     },
 })
 
+// 경로 치환
+templateSchema.pre('save', function (next) {
+    var templates = this;
+    templates.docRef = templates.docRef.replace(/(\\)/g,'/');
+    next();
+});
+
 const Template = mongoose.model('Template', templateSchema)
 
 module.exports = { Template }

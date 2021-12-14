@@ -7,5 +7,10 @@ module.exports = {
     drmURI: "http://broker:4001",
     ipronetURI: "http://10.220.220.13",
     ipronetID: "nhsign",
-    ipronetPW: "nacf1234!"
+    ipronetPW: "nacf1234!",
+    nhwithURI: "http://10.220.141.73:8090",
+    nhwithID: "NHSIGN",
+    nhwithPW: "32833422e7335100e61a8ef710729a82d235ab1800471d63126497460f6d7b66",
+    nhwithSNDR: "fa81071cefc938ebc99e01dc7677cd24",
+    withsignURI: "http://10.220.141.91:3001"
 }

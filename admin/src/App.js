@@ -71,7 +71,7 @@ const App = () => {
             axios.post('/api/admin/sso', body).then(response => {
               console.log(response);
               if (response.data.success) {
-                dispatch(setUser(response.data));
+                dispatch(setUser(response.data.user));
                 localStorage.setItem('__rToken__', response.data.user.__rToken__);
                 navigate('/');
               } else {

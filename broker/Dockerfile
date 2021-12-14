@@ -10,6 +10,8 @@ WORKDIR /app
 COPY ./build/libs/${FILE} .
 RUN mkdir ./lib
 COPY ./lib/Fasoopackager*.gz ./lib
+RUN mkdir ./fsdinit
+COPY ./fsdinit ./fsdinit
 
 EXPOSE 4001
 

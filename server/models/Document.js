@@ -69,6 +69,13 @@ const documentSchema = mongoose.Schema({
     }
 })
 
+// 경로 치환
+documentSchema.pre('save', function (next) {
+    var document = this;
+    document.docRef = document.docRef.replace(/(\\)/g,'/');
+    next();
+});
+
 const Document = mongoose.model('Document', documentSchema)
 
 module.exports = { Document }

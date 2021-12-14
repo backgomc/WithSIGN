@@ -33,9 +33,9 @@ const UploadTemplate = () => {
     
     // 템플릿 업로드 
     // 1. FILE-SAVE
-    const referenceString = `template/${_id}${Date.now()}.pdf`;
+    const referenceString = `templates/${_id}${Date.now()}.pdf`;
     const formData = new FormData();
-    formData.append('path', 'templates');
+    formData.append('path', 'templates/');
     formData.append('file', file, referenceString);
     await axios.post('/api/storage/upload', formData);
 
