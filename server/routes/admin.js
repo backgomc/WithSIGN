@@ -16,9 +16,8 @@ const jarFilePath2 = __dirname+'/../lib/INISAFECore_v2.1.23.jar';
 const jarFilePath3 = __dirname+'/../lib/INISAFEPKI_v1.1.13jar';
 const jarFilePath4 = __dirname+'/../lib/INISAFEToolSet_v1.0.2.jar';
 const jarFilePath5 = __dirname+'/../lib/nls_v4.1.3.jar';
-const jarFilePath6 = __dirname+'/../lib/fasoo-jni-2.8.9u.jar';
-const jarFilePath7 = __dirname+'/../lib/log4j-1.2.16.jar';
-const jarFilePath8 = __dirname+'/../lib/NH_SIGN.jar';
+const jarFilePath6 = __dirname+'/../lib/log4j-1.2.16.jar';
+const jarFilePath7 = __dirname+'/../lib/NH_SSO.jar';
 java.classpath.push(jarFilePath1);
 java.classpath.push(jarFilePath2);
 java.classpath.push(jarFilePath3);
@@ -26,7 +25,6 @@ java.classpath.push(jarFilePath4);
 java.classpath.push(jarFilePath5);
 java.classpath.push(jarFilePath6);
 java.classpath.push(jarFilePath7);
-java.classpath.push(jarFilePath8);
 
 // -- 로그인/아웃 --
 // /api/admin/auth        (GET)
@@ -56,13 +54,14 @@ router.post('/ipronet', (req, res) => {
   // restful.callOrgAPI();
   // restful.callUserAPI();
   // restful.callIpronetMSG('P1650047', 'P1810080;P0610003;P1650047');
-  var DocuUtil = java.import('com.nonghyupit.drm.DocuUtil');
-  DocuUtil.unpackagingSync('C:/Users/NHIT_LSW/Desktop/', 'MiNe.xlsx', 'C:/Users/NHIT_LSW/Desktop/TEST.xlsx');
+  restful.callNotify('6179ff170293112fbceef449',['6179ff170293112fbceef449','6179feef0293112fbceef445'],'title','content');
+  // var DocuUtil = java.import('com.nonghyupit.drm.DocuUtil');
+  // DocuUtil.unpackagingSync('C:/Users/NHIT_LSW/Desktop/', 'MiNe.xlsx', 'C:/Users/NHIT_LSW/Desktop/TEST.xlsx');
 });
 
 // 인증 여부 확인
 router.get('/auth', ValidateToken, (req, res) => {
-  var uid = req.body._id;
+  var uid = req.body.systemId;
   User.findOne({ _id: uid }, (err, user) => {
     if (err) return res.json({ success: false, error: err });
     if (!user) {
@@ -128,11 +127,11 @@ router.post('/sso', (req, res) => {
 
 // 토큰 갱신
 router.post('/refresh', renewalToken, (req, res) => {
-  var _id = req.body._id;
-  var _tk = req.body._tk;
+  var _id = req.body.systemId;
+  var _tk = req.body.systemTk;
   console.log(_tk);
   User.findOne({ _id: _id, adminJWT: req.headers['refresh-token'] }, (err, user) => {
-    console.log(user);
+    // console.log(user);
     if (err) return res.json({ success: false, error: err });
     if (!user) return res.json({ success: false, message: 'No User!!' });
     res.cookie('__aToken__', _tk,  { httpOnly: true, maxAge: 60*60*1000 });
@@ -168,18 +167,18 @@ router.post('/login', (req, res) => {
   // 사용자 검색 (사번 또는 이메일)
   User.findOne({ uid: uid }, (err, user) => {
     if (err) return res.json({ success: false, error: err });
-    if (!user) {
+    if (!user || user.role !== 1) {
       return res.json({
         success: false,
-        message: '입력하신 ID에 해당하는 유저가 없습니다.'
+        message: '관리자 계정 정보를 찾을 수 업습니다.'
       });
     }
-
+    
     // 비밀번호 확인
     user.comparePassword(req.body.password, (err, isMatch) => {
       if (err) return res.json({ success: false, error: err });
-      if (!isMatch) return res.json({ success: false, message: '비밀번호가 일치하지 않습니다.' });
-      if (!user.terms || !user.privacy) return res.json({ success: false, user: user._id, message: '약관 동의가 필요합니다.' });
+      if (!isMatch) return res.json({ success: false, message: '비밀번호를 확인할 수 없습니다.' });
+      if (!user.terms || !user.privacy) return res.json({ success: false, user: user._id, message: '사용자 페이지에서 약관 동의가 필요합니다.' });
 
       // 토큰 생성
       var {accessToken, refreshToken} = generateToken(user);
@@ -278,6 +277,26 @@ router.post('/user/info', ValidateToken, (req, res) => {
 // 사용자 관리 > 변경(권한)
 router.post('/user/update', ValidateToken, (req, res) => {
   return res.json({ success: true, message: '/user/update' });
+});
+
+// 사용자 관리 > 연계 호출
+router.post('/user/sync', ValidateToken, async (req, res) => {
+  let result = await restful.callUserAPI();
+  if (result && result.status && result.status === 200) {
+    return res.json({ success: true });
+  } else {
+    return res.json({ success: false });
+  }
+});
+
+// 부서 관리 > 연계 호출
+router.post('/org/sync', ValidateToken, async (req, res) => {
+  let result = await restful.callOrgAPI();
+  if (result && result.status && result.status === 200) {
+    return res.json({ success: true });
+  } else {
+    return res.json({ success: false });
+  }
 });
 
 // 문서 관리 > 목록
@@ -431,9 +450,9 @@ router.post('/templates/insert', ValidateToken, (req, res) => {
   if (!req.body.user) {
     return res.json({ success: false, message: 'input value not enough!' });
   }
-
+console.log(req.body);
   const template = new Template(req.body);
-
+  // console.log(template);
   template.save((err, documentInfo) => {
     if (err) return res.json({ success: false, err });
     return res.status(200).json({
