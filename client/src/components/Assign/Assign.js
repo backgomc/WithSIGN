@@ -119,7 +119,9 @@ const Assign = () => {
   }
 
   useEffect(() => {
-
+    if (document.getElementsByClassName('ant-menu-item-selected') && document.getElementsByClassName('ant-menu-item-selected')[0] && document.getElementsByClassName('ant-menu-item-selected')[0].classList) {
+      document.getElementsByClassName('ant-menu-item-selected')[0].classList.remove('ant-menu-item-selected');
+    }
     console.log("useEffect called")
     fetch({
       OFFICE_CODE: "7831"
