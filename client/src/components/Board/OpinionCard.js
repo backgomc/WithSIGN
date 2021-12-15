@@ -17,7 +17,7 @@ const OpinionCard = (props) => {
     
     const [loading, setLoading] = useState(false);
     const [data, setData] = useState([]);
-    const [pagination, setPagination] = useState({current:1, pageSize:6});
+    const [pagination, setPagination] = useState({current:1, pageSize:5});
 
     const { boardType, boardName } = props
 

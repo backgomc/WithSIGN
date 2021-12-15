@@ -10,13 +10,13 @@ import moment from "moment";
 import 'moment/locale/ko';
 import BulkExpander from "./BulkExpander";
 import {
-  FileOutlined
+  FileOutlined,
+  FilePdfOutlined
 } from '@ant-design/icons';
 import { PageContainer } from '@ant-design/pro-layout';
 import 'antd/dist/antd.css';
 import { useIntl } from "react-intl";
-import { setSendType } from '../Assign/AssignSlice';
-
+import { resetAssignAll, setSendType } from '../Assign/AssignSlice';
 
 const BulkList = () => {
 
@@ -288,6 +288,7 @@ const BulkList = () => {
           },
           extra: [           
           <Button type="primary" onClick={() => {
+            dispatch(resetAssignAll());
             dispatch(setSendType('B'));
             navigate('/uploadDocument');
             }}>

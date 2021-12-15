@@ -110,7 +110,7 @@ export function DocumentTypeIcon(props) {
 
   if (document["signed"] == true) { 
       return (
-        <CheckCircleOutlined twoToneColor="#87d068"/>
+        <CheckCircleTwoTone twoToneColor="#87d068"/>
       )
   } else {
       if (document["canceled"] == true) {
@@ -125,7 +125,7 @@ export function DocumentTypeIcon(props) {
               )
           } else {
             return (
-              <ClockCircleTwoTone twoToneColor="#87d068" />
+              <ClockCircleTwoTone twoToneColor="#cbcbcb" />
             )
           }
       }

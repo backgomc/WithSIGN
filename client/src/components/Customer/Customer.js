@@ -50,7 +50,7 @@ const Customer = () => {
     <Link to='/auditCheck'>
     <IconLink
       src={iconCheck}
-      text="문서 진본 확인"
+      text={formatMessage({id: 'document.check'})}
     />
     </Link>
     </Space>

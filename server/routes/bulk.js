@@ -87,12 +87,12 @@ router.post('/bulks', (req, res) => {
     // .populate("user", {name: 1, email: 2})
     .populate({
       path: "user", 
-      select: {name: 1, JOB_TITLE: 2},
+      select: {name: 1, JOB_TITLE: 2, DEPART_CODE: 3}
       // match: { name : searchName? searchName : !'' }
     })
     .populate({
       path: "users", 
-      select: {name: 1, JOB_TITLE: 2}
+      select: {name: 1, JOB_TITLE: 2,  DEPART_CODE: 3}
     })
     .populate({
       path: "docs"

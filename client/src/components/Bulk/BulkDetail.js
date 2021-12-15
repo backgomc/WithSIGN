@@ -15,7 +15,9 @@ import { DocumentType, DocumentTypeBadge, DocumentTypeIcon } from '../Lists/Docu
 import {DOCUMENT_SIGNED, DOCUMENT_TOSIGN, DOCUMENT_SIGNING, DOCUMENT_CANCELED, DOCUMENT_TOCONFIRM} from '../../common/Constants';
 
 import {
-  FileOutlined
+  FileOutlined,
+  FilePdfOutlined,
+  DownloadOutlined
 } from '@ant-design/icons';
 import { PageContainer } from '@ant-design/pro-layout';
 import 'antd/dist/antd.css';
@@ -32,11 +34,13 @@ const BulkDetail = ({location}) => {
   const [searchText, setSearchText] = useState('');
   const [searchedColumn, setSearchedColumn] = useState('');
   const [data, setData] = useState([]);
+  const [orgInfos, setOrgInfos] = useState([]);
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [hasSelected, setHasSelected] = useState(selectedRowKeys.length > 0);
   
   const [pagination, setPagination] = useState({current:1, pageSize:10});
   const [loading, setLoading] = useState(false);
+  const [loadingOrgInfos, setLoadingOrgInfos] = useState(false);
   // const [expandable, setExpandable] = useState();
   const [visiblePopconfirm, setVisiblePopconfirm] = useState(false);
 
@@ -75,6 +79,25 @@ const BulkDetail = ({location}) => {
 
     });
   };
+
+  const fetchOrgInfos = async () => {
+    console.log('fetchOrgInfos called')
+    setLoadingOrgInfos(true);
+    var DEPART_CODES = [];
+
+    bulk.users.map((user, index) => (
+        DEPART_CODES.push(user.DEPART_CODE)
+    ))
+    DEPART_CODES.push(bulk.user.DEPART_CODE)
+
+    const res = await axios.post('/api/users/orgInfos', {DEPART_CODES: DEPART_CODES})
+    
+    if (res.data.success) {
+        setOrgInfos(res.data.results)
+    }
+    
+    setLoadingOrgInfos(false);
+}
 
   const getColumnSearchProps = dataIndex => ({
 
@@ -272,13 +295,16 @@ const BulkDetail = ({location}) => {
       ...getColumnSearchProps('user'),
       // sorter: true,
       key: 'user',
-      width: '120px',
+      width: '220px',
       expandable: true,
       onFilter: (value, row) =>
         filterUsers(row['users'][0])[0].name
           ? filterUsers(row['users'][0])[0].name.toString().toLowerCase().includes(value.toLowerCase())
           : '',
-      render: (text, row) => <div>{filterUsers(row['users'][0]).length > 0 ? filterUsers(row['users'][0])[0].name +' '+ (filterUsers(row['users'][0])[0].JOB_TITLE ? filterUsers(row['users'][0])[0].JOB_TITLE : '') : ''}</div>
+      render: (text, row) => <div>
+        {filterUsers(row['users'][0]).length > 0 ? filterUsers(row['users'][0])[0].name +' '+ (filterUsers(row['users'][0])[0].JOB_TITLE ? filterUsers(row['users'][0])[0].JOB_TITLE : '') : ''}
+        {orgInfos.filter(e => e.DEPART_CODE == filterUsers(row['users'][0])[0].DEPART_CODE).length > 0 ? <font color='grey'>{' ['+orgInfos.filter(e => e.DEPART_CODE == filterUsers(row['users'][0])[0].DEPART_CODE)[0].DEPART_NAME+']'}</font> : ''}
+        </div>
     },
     {
       title: '참여자',
@@ -286,12 +312,14 @@ const BulkDetail = ({location}) => {
       responsive: ["xs"],
       sorter: true,
       key: 'user',
+      width: '75px',
       expandable: true,
       render: (text,row) => <div>{filterUsers(row['users'][0]).length > 0 ? filterUsers(row['users'][0])[0].name : ''}</div>
     },
     {
       title: '요청 일시',
       dataIndex: 'requestedTime',
+      responsive: ["sm"],
       // sorter: true,
       key: 'requestedTime',
       width: '100px',
@@ -302,6 +330,7 @@ const BulkDetail = ({location}) => {
     {
       title: '서명 일시',
       dataIndex: 'signedTime',
+      responsive: ["sm"],
       // sorter: true,
       key: 'signedTime',
       width: '100px',
@@ -310,21 +339,40 @@ const BulkDetail = ({location}) => {
       }
     },
     {
+      title: '서명 일시',
+      dataIndex: 'signedTime',
+      responsive: ["xs"],
+      // sorter: true,
+      key: 'signedTime',
+      width: '60px',
+      render: (text, row) => {
+        return (row["signedTime"] ? <font color='#787878'>{moment(row["signedTime"]).fromNow()}</font> : <font color='#787878'>서명 전</font>)
+      }
+    },
+    {
       title: '',
       key: 'action',
       responsive: ["sm"],
-      width: '50px',
+      width: '110px',
       render: (_,row) => {
         return (
           row["signedTime"] ?
+          <div>
           <Button
+            icon={<FilePdfOutlined />}
             onClick={() => {        
             const docId = row["_id"]
             const docRef = row["docRef"]
             const docTitle = row["docTitle"]
             dispatch(setDocToView({ docRef, docId, docTitle }));
             navigate(`/viewDocument`);
-          }}>문서 확인</Button> : ''
+          }}></Button>&nbsp;&nbsp;
+          <a href={row["docRef"]} download={row["docTitle"]+'.pdf'}> 
+            <Button key="3" type="primary" icon={<DownloadOutlined />}>
+              {/* {formatMessage({id: 'document.download'})} */}
+            </Button>
+          </a>
+          </div>  : ''
         )
       }
     },
@@ -337,13 +385,14 @@ const BulkDetail = ({location}) => {
         return (
           row["signedTime"] ?
           <Button
+            icon={<FilePdfOutlined />}
             onClick={() => {        
             const docId = row["_id"]
             const docRef = row["docRef"]
             const docTitle = row["docTitle"]
             dispatch(setDocToView({ docRef, docId, docTitle }));
             navigate(`/viewDocument`);
-          }}>문서</Button> : ''
+          }}></Button> : ''
         )
       }
     }
@@ -384,6 +433,8 @@ const BulkDetail = ({location}) => {
 
     console.log("useEffect called")
     console.log("bulk:"+bulk)
+
+    fetchOrgInfos();
 
     //TODO 테이블 데이터 셋팅
     setData(bulk.docs) 

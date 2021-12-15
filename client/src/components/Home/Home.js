@@ -14,7 +14,7 @@ import PaperlessCard from '../Statics/PaperlessCard';
 import ProCard, { StatisticCard, StatisticProps } from '@ant-design/pro-card';
 import RcResizeObserver from 'rc-resize-observer';
 import { PageContainer } from '@ant-design/pro-layout';
-import { Badge, Button, Card, Empty, List, Space, Statistic, Avatar, Row, Col, Progress, Tag, Comment, Form, Input } from 'antd';
+import { Tooltip, Badge, Button, Card, Empty, List, Space, Statistic, Avatar, Row, Col, Progress, Tag, Comment, Form, Input } from 'antd';
 import 'antd/dist/antd.css';
 import '@ant-design/pro-card/dist/card.css';
 import {
@@ -39,6 +39,152 @@ import iconManual from '../../assets/images/icon_manual.png';
 import { DocumentType, DocumentTypeText, DocumentTypeBadge, DocumentTypeIcon } from '../Lists/DocumentType';
 import {DOCUMENT_TODO, DOCUMENT_SIGNED, DOCUMENT_TOSIGN, DOCUMENT_SIGNING, DOCUMENT_CANCELED, DOCUMENT_TOCONFIRM} from '../../common/Constants';
 
+import { CheckCard } from '@ant-design/pro-card';
+import BTN01 from '../../assets/images/btn_board01.png';
+import BTN02 from '../../assets/images/btn_board02.png';
+import BTN03 from '../../assets/images/btn_board03.png';
+import BTN04 from '../../assets/images/btn_board04.png';
+import BTN05 from '../../assets/images/btn_board05.png';
+
+import BTN01_ON from '../../assets/images/btn_board01_On.png';
+import BTN02_ON from '../../assets/images/btn_board02_On.png';
+import BTN03_ON from '../../assets/images/btn_board03_On.png';
+import BTN04_ON from '../../assets/images/btn_board04_On.png';
+import BTN05_ON from '../../assets/images/btn_board05_On.png';
+
+import styled from 'styled-components';
+const CardTitle = styled.div`
+  // 한줄 자르기
+  display: inline-block; 
+  width: 140px; 
+  // white-space: nowrap; 
+  overflow: hidden; 
+  text-overflow: ellipsis;
+
+  // 여러줄 자르기 추가 속성 
+  position:relative;
+  white-space: normal; 
+  line-height: 1.2; 
+  height: 2.2em; 
+  text-align: left; 
+  word-wrap: break-word; 
+  display: -webkit-box; 
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+
+  // 폰트 속성
+  color: #666666;
+  font-size: 0.9em;
+    `;
+
+const MyStyle = styled.div`
+  .ant-pro-checkcard-title {
+    text-align: right;
+    font-size: 14px;
+    color: #666666;
+    margin: 0px 0px 0px 0px;
+  } 
+  .ant-pro-checkcard-description {
+    font-weight: bold;
+    color: #111111;
+    font-size: 22px;
+    margin: -3px 0px 0px 0px;
+  }
+  .ant-pro-checkcard {
+    // minWidth: 207px;
+    width: 100%;
+    border: none;
+    margin-right: 0.8em;
+  }
+  .ant-pro-checkcard-content {
+    padding: 23px 20px 20px 20px;
+  }
+  .ant-avatar {
+    // max-height: 100%;
+    height: 60px;
+    width: 60px;
+    // vertical-align: middle;
+  }
+  .ant-pro-checkcard-detail {
+    padding-left: 0.5em;
+  }
+`;
+
+const MyStyle_Total = styled.div` 
+display: inline;
+.ant-pro-checkcard-checked {
+  background-color: #efb63b;
+  // border-color: #1890ff;
+  border: none;
+  .ant-pro-checkcard-title {
+    color: white;
+  }
+  .ant-pro-checkcard-description {
+    color: white;
+  }
+}
+`;
+
+const MyStyle_ToSign = styled.div` 
+display: inline;
+.ant-pro-checkcard-checked {
+  background-color: #54c6e8;
+  // border-color: #1890ff;
+  border: none;
+  .ant-pro-checkcard-title {
+    color: white;
+  }
+  .ant-pro-checkcard-description {
+    color: white;
+  }
+}
+`;
+
+const MyStyle_Signing = styled.div` 
+display: inline;
+.ant-pro-checkcard-checked {
+  background-color: #9694ff;
+  // border-color: #1890ff;
+  border: none;
+  .ant-pro-checkcard-title {
+    color: white;
+  }
+  .ant-pro-checkcard-description {
+    color: white;
+  }
+}
+`;
+
+const MyStyle_Canceled = styled.div` 
+display: inline;
+.ant-pro-checkcard-checked {
+background-color: #fe7975;
+// border-color: #1890ff;
+border: none;
+.ant-pro-checkcard-title {
+  color: white;
+}
+.ant-pro-checkcard-description {
+  color: white;
+}
+}
+`;
+
+const MyStyle_Signed = styled.div` 
+display: inline;
+.ant-pro-checkcard-checked {
+  background-color: #5ddab4;
+  // border-color: #1890ff;
+  border: none;
+  .ant-pro-checkcard-title {
+    color: white;
+  }
+  .ant-pro-checkcard-description {
+    color: white;
+  }
+}
+`;
+    
 const { Divider } = ProCard;
 const { TextArea } = Input;
 
@@ -59,7 +205,7 @@ const Home = () => {
   const [documentsCanceled, setDocumentsCanceled] = useState([]);
   const [documentsSigned, setDocumentsSigned] = useState([]);
   // const [notice, setNotice] = useState([]);
-  const [pagination, setPagination] = useState({current:1, pageSize:6});
+  const [pagination, setPagination] = useState({current:1, pageSize:5});
   const [responsive, setResponsive] = useState(false);
   const [totalNum, setTotalNum] = useState(0);
   const [toSignNum, setToSignNum] = useState(0);
@@ -68,6 +214,20 @@ const Home = () => {
   const [signedNum, setSignedNum] = useState(0);
   // const [paperlessNum, setPaperlessNum] = useState(0);
   // const [docNum, setDocNum] = useState(0);
+
+  const [imgTotal, setImgTotal] = useState(BTN01);
+  const [imgToSign, setImgToSign] = useState(BTN02_ON);
+  const [imgSigning, setImgSigning] = useState(BTN03);
+  const [imgCanceled, setImgCanceled] = useState(BTN04);
+  const [imgSigned, setImgSigned] = useState(BTN05);
+
+  const [checkTotal, setCheckTotal] = useState(false);
+  const [checkToSign, setCheckToSign] = useState(true);
+  const [checkSigning, setCheckSigning] = useState(false);
+  const [checkCanceled, setCheckCanceled] = useState(false);
+  const [checkSigned, setCheckSigned] = useState(false);
+
+  const [checked, setChecked] = useState('2');
 
   const dispatch = useDispatch();
   const user = useSelector(selectUser);
@@ -174,7 +334,6 @@ const Home = () => {
     }
     setLoadingStatics(false);
   }
-
 
   const headerTitle = (
     // <Space size={3}>    
@@ -373,15 +532,15 @@ const Home = () => {
     colorField: 'type',
     color: ({ type }) => {
       if(type === DOCUMENT_CANCELED){
-        return '#e36e4d';
+        return '#fe7975';
       } else if(type === DOCUMENT_TOSIGN){
-        return '#6ca8fc';
+        return '#54c6e8';
       } else if(type === DOCUMENT_SIGNING){
-        return '#cbcbcb';
+        return '#9694ff';
       } else if(type === DOCUMENT_SIGNED){
-        return '#9cd263';
+        return '#5ddab4';
       }
-      return 'grey';
+      return '#efb63b';
     },
     radius: 1,
     innerRadius: 0.64,
@@ -657,46 +816,10 @@ const Home = () => {
   >
     {documentsToSign.length == 0 ? <div style={{padding: 50}}><Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={'서명 할 문서가 없습니다.'} /></div> :
       
-
-      // <Row gutter={[16, 16]}>
-      //   {documentsToSign.map(item=>{
-      //     return  <Col style={{display: 'flex'}}>
-
-      //       <Link to="/signDocument" onClick={() => {
-      //         const docId = item._id;
-      //         const docRef = item.docRef;
-      //         const docType = item.docType;
-      //         dispatch(setDocToSign({ docRef, docId, docType }));
-      //       }}>
-      //         <ProCard 
-      //           hoverable
-      //           bordered
-      //           title={<div style={{ wordWrap: 'break-word', wordBreak: 'break-word', width: '200px' }}>{item.docTitle}</div>}
-      //           // tooltip={moment(item.requestedTime).fromNow() + ' ' + item.user.name + ' ' + item.user.JOB_TITLE + ' ' + '생성'}
-      //           // extra={moment(item.requestedTime).fromNow()}
-      //           // subTitle={<Tag color="#5BD8A6">private</Tag>}
-      //           // colSpan="200px" 
-      //           layout="center" 
-      //           style={{ minWidth: "200px", height: 'inherit' }}
-      //           actions={[
-      //             <div>{item.user.image ? <Avatar src={item.user.image} /> : <Avatar size={20} icon={<UserOutlined />} />} &nbsp; {item.user.name + ' ' + item.user.JOB_TITLE}</div>,
-      //             <div>{moment(item.requestedTime).fromNow()}</div>,
-      //             // <Button type="text" icon={<FormOutlined />} onClick={e => { signTemplate(item) }}>서명요청</Button>,
-      //             // <Button type="text" icon={<FilePdfOutlined />} onClick={e => { navigate('/previewPDF', {state: {docRef:item.docRef, docTitle:item.docTitle}}) }}>파일보기</Button>,
-      //             // <Button type="text" danger icon={<DeleteOutlined />} onClick={e => { deleteTemplateSingle(item._id) }}>삭제</Button>,
-      //           ]}>
-      //             <div><img src={item.thumbnail} style={{ maxWidth:'100%', height:'100%'}} /></div>
-      //         </ProCard>
-      //       </Link>
-
-      //     </Col>;
-      //   })}
-      // </Row>
-
       <List
       rowKey="id"
       loading={loadingToSign}
-      grid={{ gutter: 24, lg: 3, md: 2, sm: 1, xs: 1 }}
+      grid={{ gutter: 24, lg: 3, md: 3, sm: 2, xs: 2 }}
       dataSource={documentsToSign}
       loadMore={toSignNum > 6 ? loadmore(DOCUMENT_TOSIGN) : ''}
       renderItem={item => (
@@ -710,26 +833,28 @@ const Home = () => {
             const observers = item.observers;
            dispatch(setDocToSign({ docRef, docId, docType, docUser, observers }));
           }}>
-            <Badge.Ribbon text={(item.observers && item.observers.includes(_id)) ? '수신' : '서명'}>
+            <Badge.Ribbon color={'#54c6e8'} text={(item.observers && item.observers.includes(_id)) ? '수신' : '서명'}>
             <ProCard 
               hoverable
               bordered
-              title={<div style={{ wordWrap: 'break-word', wordBreak: 'break-word', maxWidth: '250px' }}>{item.docTitle}</div>}
+              title={<Tooltip placement="topLeft" title={item.docTitle} arrowPointAtCenter><CardTitle>{item.docTitle}</CardTitle></Tooltip>}
+              // title={<div style={{ wordWrap: 'break-word', wordBreak: 'break-word', maxWidth: '250px' }}>{item.docTitle}</div>}
               // tooltip={moment(item.requestedTime).fromNow() + ' ' + item.user.name + ' ' + item.user.JOB_TITLE + ' ' + '생성'}
               // extra={moment(item.requestedTime).fromNow()}
               // subTitle={<Tag color="#5BD8A6">private</Tag>}
               // colSpan="200px" 
               layout="center" 
-              style={{ minWidth: "300px", height: "100%" }} // 470px -> 100%
+              style={{ minWidth: "150px", height: "100%" }} // 470px -> 100%
               bodyStyle={{ padding: "5px"}}
               actions={[
-                <div>{item.user.image ? <Avatar src={item.user.image} /> : <Avatar size={20} icon={<UserOutlined />} />} &nbsp; {item.user.name + ' ' + item.user.JOB_TITLE}</div>,
+                // <div>{item.user.image ? <Avatar src={item.user.image} /> : <Avatar size={20} icon={<UserOutlined />} />} &nbsp; {item.user.name + ' ' + item.user.JOB_TITLE}</div>,
+                <div>{item.user.name + ' ' + item.user.JOB_TITLE}</div>,
                 <div>{moment(item.requestedTime).fromNow()}</div>,
                 // <Button type="text" icon={<FormOutlined />} onClick={e => { signTemplate(item) }}>서명요청</Button>,
                 // <Button type="text" icon={<FilePdfOutlined />} onClick={e => { navigate('/previewPDF', {state: {docRef:item.docRef, docTitle:item.docTitle}}) }}>파일보기</Button>,
                 // <Button type="text" danger icon={<DeleteOutlined />} onClick={e => { deleteTemplateSingle(item._id) }}>삭제</Button>,
               ]}>
-                <div><img src={item.thumbnail} style={{ width:'280px'}} /></div>
+                <div><img src={item.thumbnail} style={{ width:'180px', height: '228px'}} /></div>
             </ProCard>
             </ Badge.Ribbon>
           </Link>
@@ -877,7 +1002,7 @@ const Home = () => {
           tab={
             <StatisticCard
               statistic={{
-                title: item.title,
+                title: <div style={{fontSize:'12pt'}}>{item.title}</div>,
                 value: item.value,
                 // status: item.status,
                 icon: (
@@ -906,6 +1031,177 @@ const Home = () => {
     </ProCard>
   )
 
+  const cardDocument = (
+    <div>
+    <MyStyle>
+    <Row gutter={12}>
+
+     <Col xl={4} lg={4} md={0} sm={0} xs={0}>  
+     <MyStyle_Total>
+     <CheckCard
+        title="전체"
+        avatar={
+          <Avatar
+            src={imgTotal}
+            size="large"
+          />
+        }
+        description={totalNum}
+        value="total"
+        checked={checkTotal}
+        onChange={(checked)=> {
+          setCheckTotal(true)
+          setCheckToSign(false)
+          setCheckSigning(false)
+          setCheckCanceled(false)
+          setCheckSigned(false)
+
+          setImgTotal(BTN01_ON)
+          setImgToSign(BTN02);
+          setImgSigning(BTN03);
+          setImgCanceled(BTN04);
+          setImgSigned(BTN05);
+
+          setChecked('1');
+        }}
+      />
+      </MyStyle_Total>
+      </Col>  
+
+      <Col xl={5} lg={5} md={6} sm={6} xs={12}>
+      <MyStyle_ToSign>
+      <CheckCard
+        title={DOCUMENT_TODO}
+        avatar={
+          <Avatar
+            src={imgToSign}
+            size="large"
+          />
+        }
+        description={toSignNum}
+        value="tosign"
+        checked={checkToSign}
+        onChange={(checked)=> {
+          setCheckTotal(false)
+          setCheckToSign(true)
+          setCheckSigning(false)
+          setCheckCanceled(false)
+          setCheckSigned(false)
+
+          setImgTotal(BTN01)
+          setImgToSign(BTN02_ON);
+          setImgSigning(BTN03);
+          setImgCanceled(BTN04);
+          setImgSigned(BTN05);
+
+          setChecked('2');
+        }}
+      />
+      </MyStyle_ToSign>
+      </Col>
+
+      <Col xl={5} lg={5} md={6} sm={6} xs={12}>
+      <MyStyle_Signing>
+      <CheckCard
+        title={DOCUMENT_SIGNING}
+        avatar={
+          <Avatar
+            src={imgSigning}
+            size="large"
+          />
+        }
+        description={signingNum}
+        value="signing"
+        checked={checkSigning}
+        onChange={(checked)=> {
+          setCheckTotal(false)
+          setCheckToSign(false)
+          setCheckSigning(true)
+          setCheckCanceled(false)
+          setCheckSigned(false)
+
+          setImgTotal(BTN01)
+          setImgToSign(BTN02);
+          setImgSigning(BTN03_ON);
+          setImgCanceled(BTN04);
+          setImgSigned(BTN05);
+
+          setChecked('3');
+        }}
+      />
+      </MyStyle_Signing>
+      </Col>
+
+      <Col xl={5} lg={5} md={6} sm={6} xs={12}>
+      <MyStyle_Canceled>
+      <CheckCard
+        title={DOCUMENT_CANCELED}
+        avatar={
+          <Avatar
+            src={imgCanceled}
+            size="large"
+          />
+        }
+        description={canceledNum}
+        value="canceled"
+        checked={checkCanceled}
+        onChange={(checked)=> {
+          setCheckTotal(false)
+          setCheckToSign(false)
+          setCheckSigning(false)
+          setCheckCanceled(true)
+          setCheckSigned(false)
+
+          setImgTotal(BTN01)
+          setImgToSign(BTN02);
+          setImgSigning(BTN03);
+          setImgCanceled(BTN04_ON);
+          setImgSigned(BTN05);
+
+          setChecked('4');
+        }}
+      />
+      </MyStyle_Canceled>
+      </Col>
+
+      <Col xl={5} lg={5} md={6} sm={6} xs={12}>
+      <MyStyle_Signed>
+      <CheckCard
+        title={DOCUMENT_SIGNED}
+        avatar={
+          <Avatar
+            src={imgSigned}
+            size="large"
+          />
+        }
+        description={signedNum}
+        value="signed"
+        checked={checkSigned}
+        onChange={(checked)=> {
+          setCheckTotal(false)
+          setCheckToSign(false)
+          setCheckSigning(false)
+          setCheckCanceled(false)
+          setCheckSigned(true)
+
+          setImgTotal(BTN01)
+          setImgToSign(BTN02);
+          setImgSigning(BTN03);
+          setImgCanceled(BTN04);
+          setImgSigned(BTN05_ON);
+
+          setChecked('5');
+        }}
+      />
+      </MyStyle_Signed>
+      </Col>
+      </Row>
+      </MyStyle>
+
+      <Card style={{width:'100%'}}>{staticAllContent(checked)}</Card>
+      </div>
+  )
+
   return (
     <div>
       <div style={{background: 'white',padding:0, marginTop:'-24px', marginLeft:'-24px', marginRight:'-24px', marginBottom:'24px'}}>
@@ -913,8 +1209,9 @@ const Home = () => {
       </div>
 
       <Row gutter={24}>
-          <Col xl={16} lg={24} md={24} sm={24} xs={24}>
-            {staticsAll}<br></br>
+          <Col xl={17} lg={24} md={24} sm={24} xs={24}>
+            {/* {staticsAll}<br></br> */}
+            {cardDocument}<br></br>
             <Row gutter={24}>
               <Col xl={12} lg={24} md={24} sm={24} xs={24} style={{display: 'flex', paddingBottom: '20px'}}>
                 <BoardCard boardType={'notice'} boardName={'공지사항'}></BoardCard>
@@ -926,7 +1223,7 @@ const Home = () => {
               </Col>
             </Row>
           </Col>
-          <Col xl={8} lg={24} md={24} sm={24} xs={24}>
+          <Col xl={7} lg={24} md={24} sm={24} xs={24}>
             {pie}
             <br></br>
             <PaperlessCard />
