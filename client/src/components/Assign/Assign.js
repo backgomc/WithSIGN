@@ -12,6 +12,7 @@ import { PageContainer } from '@ant-design/pro-layout';
 import ProCard from '@ant-design/pro-card';
 import 'antd/dist/antd.css';
 import '@ant-design/pro-card/dist/card.css';
+import { selectPathname, setPathname } from '../../config/MenuSlice';
 
 import { ArrowLeftOutlined, ArrowRightOutlined } from '@ant-design/icons';
 
@@ -33,6 +34,7 @@ const Assign = () => {
   const [target, setTarget] = useState([]);
   const [source, setSource] = useState([]);
   const [users, setUsers] = useState([]);
+  const pathname = useSelector(selectPathname);
 
   const insertUser = (org, users, depart_code) => {
     const _users = users.filter(e => e.DEPART_CODE === depart_code)
@@ -122,9 +124,9 @@ const Assign = () => {
   }
 
   useEffect(() => {
-    if (document.getElementsByClassName('ant-menu-item-selected') && document.getElementsByClassName('ant-menu-item-selected')[0] && document.getElementsByClassName('ant-menu-item-selected')[0].classList) {
-      document.getElementsByClassName('ant-menu-item-selected')[0].classList.remove('ant-menu-item-selected');
-    }
+    window.scrollTo(0, 0);
+    dispatch(setPathname('/documentList'));
+    
     console.log("useEffect called")
     fetch({
       OFFICE_CODE: "7831"

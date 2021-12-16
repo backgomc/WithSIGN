@@ -4,6 +4,7 @@ import langReducer from './langSlice';
 import AssignReducer from '../components/Assign/AssignSlice';
 import SignDocumentReducer from '../components/SignDocument/SignDocumentSlice';
 import ViewDocumentReducer from '../components/ViewDocument/ViewDocumentSlice';
+import MenuSliceReducer from '../config/MenuSlice';
 
 export default configureStore({
   reducer: {
@@ -12,5 +13,6 @@ export default configureStore({
     viewDoc: ViewDocumentReducer,
     info: infoReducer,
     lang: langReducer,
+    menu: MenuSliceReducer
   },
 });

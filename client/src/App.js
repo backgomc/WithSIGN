@@ -45,6 +45,7 @@ import ProLayout, { DefaultFooter } from '@ant-design/pro-layout';
 import Menus from './config/Menus';
 import '@ant-design/pro-layout/dist/layout.css';
 import 'antd/dist/antd.css';
+import { selectPathname, setPathname } from './config/MenuSlice';
 import { setSendType, resetAssignAll } from './components/Assign/AssignSlice';
 import './App.css';
 import LogoImage from './assets/images/logo_withsign1.png'
@@ -60,8 +61,8 @@ const App = () => {
   const user = useSelector(selectUser);
   const dispatch = useDispatch();
 
-  const [pathname, setPathname] = useState('/');
-
+  // const [pathname, setPathname] = useState('/');
+  const pathname = useSelector(selectPathname);
 
   useEffect(() => {
 
@@ -96,7 +97,8 @@ const App = () => {
         <div
           id="customize_menu_header"
           onClick={() => {
-            navigate('/')
+            navigate('/');
+            dispatch(setPathname('/'));
           }}
         >
           {logo}
@@ -108,6 +110,7 @@ const App = () => {
       location={{
         pathname,
       }}
+      fixSiderbar={true}
       style={{
         // height: 500,
       }}
@@ -115,7 +118,7 @@ const App = () => {
       menuExtraRender={({ collapsed }) =>
         !collapsed && (
           <div>
-            <Button type="primary" style={{ width: '100%', background: '#1A4D7D', border:'0' }} onClick={() => {dispatch(resetAssignAll()); dispatch(setSendType('G')); navigate('/uploadDocument');}}>서명 요청</Button>
+            <Button type="primary" style={{ width: '100%', background: '#1A4D7D', border:'0' }} onClick={() => {dispatch(resetAssignAll()); dispatch(setSendType('G')); dispatch(setPathname('/documentList')); navigate('/uploadDocument');}}>서명 요청</Button>
           </div>
         )
       }  
@@ -133,8 +136,9 @@ const App = () => {
               dispatch(resetAssignAll());
               dispatch(setSendType('G'));
             }
-            setPathname(item.path)
-            navigate(item.path)
+            // setPathname(item.path);
+            dispatch(setPathname(item.path));
+            navigate(item.path);
           }}
         >
           {dom}
