@@ -9,7 +9,8 @@ import '@ant-design/pro-card/dist/card.css';
 import moment from "moment";
 import "moment/locale/ko";
 import {
-    NotificationOutlined
+    NotificationOutlined,
+    RightOutlined
 } from '@ant-design/icons';
 
 const BoardCard = (props) => {
@@ -48,7 +49,7 @@ const BoardCard = (props) => {
             title={boardName}
             bordered={false}
             headerBordered
-            extra={<Link to="/boardList">더보기</Link>}
+            extra={<Link to="/boardList"><RightOutlined style={{color:'#666666'}} /></Link>}
             loading={loading}
             bodyStyle={{ padding: 10 }}
         >

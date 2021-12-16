@@ -12,6 +12,7 @@ import {
     ClockCircleOutlined,
     MinusCircleOutlined,
     InfoCircleOutlined,
+    CloseOutlined
   } from '@ant-design/icons';
 import { DocumentTypeBadge, DocumentType, DocumentTypeText } from './DocumentType';
 import { DOCUMENT_SIGNED, DOCUMENT_TOSIGN, DOCUMENT_SIGNING, DOCUMENT_CANCELED, DOCUMENT_TOCONFIRM } from '../../common/Constants';
@@ -28,6 +29,8 @@ import { withSuccess } from 'antd/lib/modal/confirm';
 import ProDescriptions from '@ant-design/pro-descriptions';
 import '@ant-design/pro-descriptions/dist/descriptions.css';
 import styled from 'styled-components';
+
+import ico_bullet from '../../assets/images/table_bullet.png';
 
 const { confirm } = Modal;
 
@@ -250,7 +253,7 @@ const DocumentExpander = (props) => {
                 //     cancelText="아니오"
                 //     okButtonProps={{ loading: loadingCancel }}
                 // >
-                    <Button onClick={e => { cancelDocument(item._id) }}>요청 취소</Button>
+                    <Button icon={<CloseOutlined style={{color:'red'}} />} onClick={e => { cancelDocument(item._id) }}>요청 취소</Button>
                 // </Popconfirm>
                  : ''
             }
@@ -317,34 +320,34 @@ const DocumentExpander = (props) => {
 
   <Container>
   {/* style={{borderCollapse:'collapse'}} labelStyle={{border:'1px solid', borderColor:'grey', display:'table-cell'}} contentStyle={{background:'white', border:'1px solid', borderColor:'grey', display:'table-cell'}} */}
-    <ProDescriptions column={2} bordered title="상세 정보" tooltip="" contentStyle={{background:'white'}}>
+    <ProDescriptions column={2} bordered title={<div><img src={ico_bullet}></img>&nbsp;&nbsp;상세정보</div>} tooltip="" contentStyle={{background:'white'}}>
       <ProDescriptions.Item label="??" valueType="option">
         {/* <Button key="primary" type="primary">
           다운로드
         </Button> */}
         {buttonList}
       </ProDescriptions.Item>
-      <ProDescriptions.Item span={2} label="문서명">
+      <ProDescriptions.Item span={2} label={<b>문서명</b>}>
         {item.docTitle}
       </ProDescriptions.Item>
-      <ProDescriptions.Item label="요청자" tooltip="서명을 진행하기 위해 문서를 업로드하고 서명에 참여하는 서명 참여자들에게 문서를 전송한 사람">
+      <ProDescriptions.Item label={<b>요청자</b>} tooltip="서명을 진행하기 위해 문서를 업로드하고 서명에 참여하는 서명 참여자들에게 문서를 전송한 사람">
         {item.user.name} {item.user.JOB_TITLE} {orgInfos.filter(e => e.DEPART_CODE == item.user.DEPART_CODE).length > 0 ? '['+orgInfos.filter(e => e.DEPART_CODE == item.user.DEPART_CODE)[0].DEPART_NAME+']' : ''}
       </ProDescriptions.Item>
-      <ProDescriptions.Item label="참여자" tooltip="서명 요청자에 의해 문서에 서명해야 하는 사람">
+      <ProDescriptions.Item label={<b>참여자</b>} tooltip="서명 요청자에 의해 문서에 서명해야 하는 사람">
         {
             item.users.map((user, index) => (
                 getSignInfo(user)
             ))
         }
       </ProDescriptions.Item>
-      <ProDescriptions.Item label="진행 상태">
+      <ProDescriptions.Item label={<b>진행 상태</b>}>
         <DocumentTypeBadge uid={_id} document={item} />
       </ProDescriptions.Item>
 
-      <ProDescriptions.Item label="요청시간">
+      <ProDescriptions.Item label={<b>요청시간</b>}>
         <Moment format='YYYY/MM/DD HH:mm'>{item.requestedTime}</Moment>
       </ProDescriptions.Item>
-      <ProDescriptions.Item label="진행 현황">
+      <ProDescriptions.Item label={<b>진행 현황</b>}>
           <br></br>
         <Timeline>
                 {/* <Timeline.Item label={<Moment format='YYYY/MM/DD HH:mm'>{item.requestedTime}</Moment>}><b>{item.user.name}</b>님 서명 요청</Timeline.Item> */}

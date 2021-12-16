@@ -13,6 +13,9 @@ import ProCard from '@ant-design/pro-card';
 import 'antd/dist/antd.css';
 import '@ant-design/pro-card/dist/card.css';
 
+import { ArrowLeftOutlined, ArrowRightOutlined } from '@ant-design/icons';
+
+
 const { Search } = Input;
 
 const Assign = () => {
@@ -196,8 +199,8 @@ const Assign = () => {
             ],
           },
           extra: [
-            <Button key="3" onClick={() => {navigate(`/uploadDocument`);}}>이전</Button>,
-            <Button key="2" type="primary" onClick={() => handlePrepare()} disabled={disableNext}>
+            <Button key="3" icon={<ArrowLeftOutlined />} onClick={() => {navigate(`/uploadDocument`);}}></Button>,
+            <Button key="2" icon={<ArrowRightOutlined />} type="primary" onClick={() => handlePrepare()} disabled={disableNext}>
               {formatMessage({id: 'Next'})}
             </Button>,
           ],

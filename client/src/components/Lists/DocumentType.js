@@ -97,7 +97,7 @@ export function DocumentTypeBadge(props) {
               )
           } else {
             return (
-              <b><Badge status="default" text={DOCUMENT_SIGNING} /></b>
+              <b><Badge color="#9694ff" text={DOCUMENT_SIGNING} /></b>
             )
           }
       }

@@ -13,8 +13,7 @@ import { navigate } from '@reach/router';
 //   SelectList,
 // } from 'gestalt';
 import { Upload, message, Badge, Button, Row, Col, List, Card, Checkbox } from 'antd';
-import Icon from '@ant-design/icons';
-import { InboxOutlined, HighlightOutlined, PlusOutlined } from '@ant-design/icons';
+import { InboxOutlined, HighlightOutlined, PlusOutlined, ArrowLeftOutlined, SendOutlined } from '@ant-design/icons';
 import { selectDocumentTempPath, resetAssignAll, selectAssignees, resetSignee, selectDocumentFile, selectDocumentTitle, resetDocumentFile, resetDocumentTitle, selectTemplate, resetTemplate, selectDocumentType, resetDocumentType, selectTemplateTitle, selectSendType } from '../Assign/AssignSlice';
 import { selectUser } from '../../app/infoSlice';
 import WebViewer from '@pdftron/webviewer';
@@ -161,16 +160,48 @@ const PrepareDocument = () => {
         ],
       },
       viewer.current,
-    ).then(instance => {
+    ).then(async instance => {
       const { iframeWindow, docViewer, CoreControls } = instance;
       
       // select only the view group
-      instance.setToolbarGroup('toolbarGroup-View');
+      // toolbarGroup-View, toolbarGroup-Annotate, toolbarGroup-Shapes, toolbarGroup-Insert, toolbarGroup-Measure, toolbarGroup-Edit
+      instance.setToolbarGroup('toolbarGroup-Annotate');
+      // instance.setToolbarGroup('toolbarGroup-Insert');
+
+      // instance.setHeaderItems(function(header) {
+      //   // get the tools overlay
+      //   const toolsOverlay = header.getHeader('toolbarGroup-Annotate').get('toolsOverlay');
+      //   header.getHeader('toolbarGroup-Annotate').delete('toolsOverlay');
+      //   // add the line tool to the top header
+      //   header.getHeader('default').push({
+      //     type: 'toolGroupButton',
+      //     toolGroup: 'lineTools',
+      //     dataElement: 'lineToolGroupButton',
+      //     title: 'annotation.line',
+      //   });
+      //   // add the tools overlay to the top header
+      //   // header.push(toolsOverlay);
+      // });
+      // // hide the ribbons and second header
+      // instance.disableElements(['ribbons']);
+      // instance.disableElements(['toolsHeader']);
+
+      instance.enableElements(['ribbons']);
+      instance.disableElements(['toolbarGroup-View', 'toolbarGroup-Shapes', 'toolbarGroup-Measure', 'toolbarGroup-Edit']);
+      
+      // instance.enableFeatures([instance.Feature.Annotations]);
+      // instance.enableFeatures([instance.Feature.Ribbons]);
+      // instance.setToolbarGroup('toolbarGroup-View');
+
+      // set local font 
       CoreControls.setCustomFontURL("/webfonts/");
 
       // set language
       instance.setLanguage('ko');
 
+      // copy 방지 
+      instance.disableFeatures(instance.Feature.Copy);
+  
       setInstance(instance);
 
       const iframeDoc = iframeWindow.document.body;
@@ -326,6 +357,24 @@ const PrepareDocument = () => {
       //     instance.loadDocument(file);
       //   }
       // };
+
+      // 내 사인 이미지 가져와서 출력하기
+      const res = await axios.post('/api/sign/signs', {user: _id})
+      if (res.data.success) {
+        const signs = res.data.signs;
+
+        var signDatas = []
+        signs.forEach(element => {
+          signDatas.push(element.signData)
+        });
+
+        if (signDatas.length > 0) {
+          const signatureTool = docViewer.getTool('AnnotationCreateSignature');
+          docViewer.on('documentLoaded', () => {
+            signatureTool.importSignatures(signDatas);
+          });
+        }
+      }
     });
   }, []);
 
@@ -804,8 +853,8 @@ const PrepareDocument = () => {
           ],
         },
         extra: [
-          <Button key="3" onClick={() => {navigate(`/assign`);}}>이전</Button>,,
-          <Button key="2" type="primary" onClick={() => applyFields()} disabled={disableNext} loading={loading}>
+          <Button key="3" icon={<ArrowLeftOutlined />} onClick={() => {navigate(`/assign`);}}></Button>,,
+          <Button key="2" icon={<SendOutlined />} type="primary" onClick={() => applyFields()} disabled={disableNext} loading={loading}>
             {formatMessage({id: 'Send'})}
           </Button>,
         ],

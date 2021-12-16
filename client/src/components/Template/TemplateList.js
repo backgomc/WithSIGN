@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
 import { Popover, Tooltip, Badge, Modal, Table, Input, Space, Button, Popconfirm, Tag, Progress, List, Pagination, Card } from "antd";
 import Highlighter from 'react-highlight-words';
-import { SearchOutlined, DeleteOutlined, FileOutlined, DownloadOutlined, EditOutlined, FormOutlined, FilePdfOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
+import { SearchOutlined, DeleteOutlined, FileOutlined, DownloadOutlined, FileAddOutlined, FormOutlined, FilePdfOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 import { useSelector, useDispatch } from 'react-redux';
 import { selectUser } from '../../app/infoSlice';
 import { navigate } from '@reach/router';
@@ -489,12 +489,12 @@ const TemplateList = () => {
     if (item.type && item.type == 'C') { 
       return (
         [btnReqeust(item),
-        <Button type="text" icon={<FilePdfOutlined />} onClick={e => { navigate('/previewPDF', {state: {docRef:item.docRef, docTitle:item.docTitle}}) }}>문서보기</Button>]
+        <Button type="text" icon={<FileOutlined />} onClick={e => { navigate('/previewPDF', {state: {docRef:item.docRef, docTitle:item.docTitle}}) }}>문서보기</Button>]
       )
     } else {
       return (
         [btnReqeust(item),
-        <Button type="text" icon={<FilePdfOutlined />} onClick={e => { navigate('/previewPDF', {state: {docRef:item.docRef, docTitle:item.docTitle}}) }}>문서보기</Button>,
+        <Button type="text" icon={<FileOutlined />} onClick={e => { navigate('/previewPDF', {state: {docRef:item.docRef, docTitle:item.docTitle}}) }}>문서보기</Button>,
         <Button type="text" danger icon={<DeleteOutlined />} onClick={e => { deleteTemplateSingle(item._id) }}>삭제</Button>]
       ) 
     }
@@ -677,7 +677,7 @@ const TemplateList = () => {
           },
           extra: [  
           <Search style={{ width: 200 }} placeholder="문서명 검색" onSearch={onSearch} enterButton />,           
-          <Button type="primary" onClick={() => {navigate('/uploadTemplate');}}>
+          <Button type="primary" icon={<FileAddOutlined />} onClick={() => {navigate('/uploadTemplate');}}>
             템플릿 등록
           </Button>,
           // <Popconfirm title="삭제하시겠습니까？" okText="네" cancelText="아니오" visible={visiblePopconfirm} onConfirm={deleteTemplate} onCancel={() => {setVisiblePopconfirm(false);}}>

@@ -5,6 +5,7 @@ import { navigate } from '@reach/router';
 import { selectUser } from '../../app/infoSlice';
 import 'antd/dist/antd.css';
 import { Upload, message, Form, Button, Result, Alert } from 'antd';
+import { ArrowLeftOutlined, ReloadOutlined, FileProtectOutlined } from '@ant-design/icons';
 import { useIntl } from "react-intl";
 import { PageContainer } from '@ant-design/pro-layout';
 import ProCard from '@ant-design/pro-card';
@@ -85,11 +86,13 @@ const AuditCheck = () => {
           ],
         },
         extra: [
-          <Button onClick={() => window.history.back()}>
-            {formatMessage({id: 'Back'})}
+          <Button icon={<ArrowLeftOutlined />} onClick={() => window.history.back()}>
+            {/* {formatMessage({id: 'Back'})} */}
           </Button>,
-          <Button key="2" onClick={() => {form.resetFields();setResultDisplay('none');setDisableNext(true);}}>{formatMessage({id: 'Initialize'})}</Button>,
-          <Button key="3" type="primary" onClick={() => form.submit()} disabled={disableNext}>
+          <Button key="2" icon={<ReloadOutlined />} onClick={() => {form.resetFields();setResultDisplay('none');setDisableNext(true);}}>
+            {/* {formatMessage({id: 'Initialize'})} */}
+          </Button>,
+          <Button key="3" icon={<FileProtectOutlined />} type="primary" onClick={() => form.submit()} disabled={disableNext}>
             {formatMessage({id: 'document.check'})}
           </Button>,
         ],

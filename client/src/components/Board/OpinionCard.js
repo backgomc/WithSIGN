@@ -9,7 +9,8 @@ import '@ant-design/pro-card/dist/card.css';
 import moment from "moment";
 import "moment/locale/ko";
 import {
-    UserOutlined
+    UserOutlined,
+    RightOutlined
 } from '@ant-design/icons';
 
 const OpinionCard = (props) => {
@@ -63,7 +64,7 @@ const OpinionCard = (props) => {
             title={boardName}
             bordered={false}
             headerBordered
-            extra={<Link to="/boardList"  state={{ boardType: 'opinion', boardName: '문의하기', boardDetail: '개선 및 문의사항을 등록할 수 있습니다.' }}>더보기</Link>}
+            extra={<Link to="/boardList"  state={{ boardType: 'opinion', boardName: '문의하기', boardDetail: '개선 및 문의사항을 등록할 수 있습니다.' }}><RightOutlined style={{color:'#666666'}} /></Link>}
             loading={loading}
             bodyStyle={{ padding: 10 }}
         >

@@ -7,7 +7,8 @@ import { useIntl } from "react-intl";
 import { navigate } from '@reach/router';
 import {
   ExclamationCircleOutlined,
-  InfoCircleTwoTone
+  InfoCircleTwoTone,
+  ArrowLeftOutlined
 } from '@ant-design/icons';
 import { setDocToSign } from '../SignDocument/SignDocumentSlice';
 import { selectUser } from '../../app/infoSlice';
@@ -104,8 +105,8 @@ const PrepareResult = ({location}) => {
         header={{
           title: '처리 결과',
           extra: [           
-          <Button onClick={() => window.history.back()}>
-            {formatMessage({id: 'Back'})}
+          <Button icon={<ArrowLeftOutlined />} onClick={() => window.history.back()}>
+            {/* {formatMessage({id: 'Back'})} */}
           </Button>
           ],
         }}

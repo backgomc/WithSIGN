@@ -2,7 +2,6 @@ import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
 import { Table, Input, Space, Button, Popconfirm } from "antd";
 import Highlighter from 'react-highlight-words';
-import { SearchOutlined } from '@ant-design/icons';
 import { useSelector, useDispatch } from 'react-redux';
 import { selectUser } from '../../app/infoSlice';
 import { navigate } from '@reach/router';
@@ -11,7 +10,9 @@ import 'moment/locale/ko';
 import BulkExpander from "./BulkExpander";
 import {
   FileOutlined,
-  FilePdfOutlined
+  FileAddOutlined,
+  SearchOutlined,
+  ProfileOutlined
 } from '@ant-design/icons';
 import { PageContainer } from '@ant-design/pro-layout';
 import 'antd/dist/antd.css';
@@ -169,6 +170,17 @@ const BulkList = () => {
       dataIndex: 'total',
       sorter: true,
       key: 'total',
+      responsive: ["xs"],
+      width: '77px',
+      expandable: true,
+      render: (text,row) => <div>({filterSigned(row['docs']).length} / {row['docs'].length})</div>
+    },
+    {
+      title: '진행 건수',
+      dataIndex: 'total',
+      sorter: true,
+      key: 'total',
+      responsive: ["sm"],
       width: '135px',
       expandable: true,
       render: (text,row) => <div>({filterSigned(row['docs']).length} / {row['docs'].length})</div>
@@ -178,6 +190,27 @@ const BulkList = () => {
       dataIndex: ['user', 'name'],
       sorter: (a, b) => a.user.name.localeCompare(b.user.name),
       key: 'name',
+      responsive: ["xs"],
+      width: '50px',
+      ...getColumnSearchProps('name'),
+      onFilter: (value, record) =>
+      record['user']['name']
+        ? record['user']['name'].toString().toLowerCase().includes(value.toLowerCase())
+        : '',
+      render: (text, row) => {
+        return (
+          <React.Fragment>
+          {row['user']['name']} {row['user']['JOB_TITLE']}
+          </React.Fragment>
+        )
+      } 
+    },
+    {
+      title: '요청자',
+      dataIndex: ['user', 'name'],
+      sorter: (a, b) => a.user.name.localeCompare(b.user.name),
+      key: 'name',
+      responsive: ["sm"],
       width: '100px',
       ...getColumnSearchProps('name'),
       onFilter: (value, record) =>
@@ -197,6 +230,18 @@ const BulkList = () => {
       dataIndex: 'requestedTime',
       sorter: true,
       key: 'requestedTime',
+      responsive: ["xs"],
+      width: '77px',
+      render: (text, row) => {
+        return (<font color='#787878'>{moment(row["requestedTime"]).fromNow()}</font>)
+      } 
+    },
+    {
+      title: '요청 일시',
+      dataIndex: 'requestedTime',
+      sorter: true,
+      key: 'requestedTime',
+      responsive: ["sm"],
       width: '100px',
       render: (text, row) => {
         return (<font color='#787878'>{moment(row["requestedTime"]).fromNow()}</font>)
@@ -211,12 +256,13 @@ const BulkList = () => {
       render: (_,row) => {
         return (
           <Button
+            icon={<ProfileOutlined />}
             onClick={() => {        
             // const docId = row["_id"]
             // const docRef = row["docRef"]
             // dispatch(setDocToView({ docRef, docId }));
             navigate(`/bulkDetail`, { state: { bulk: row } } );
-          }}>상세 보기</Button>
+          }}>상세</Button>
         )
       }
     },
@@ -229,12 +275,13 @@ const BulkList = () => {
       render: (_,row) => {
         return (
           <Button
+            icon={<ProfileOutlined />}
             onClick={() => {        
             // const docId = row["_id"]
             // const docRef = row["docRef"]
             // dispatch(setDocToView({ docRef, docId }));
             navigate(`/bulkDetail`, { state: { bulk: row } } );
-          }}>상세</Button>
+          }}></Button>
         )
       }
     }
@@ -287,12 +334,12 @@ const BulkList = () => {
             ],
           },
           extra: [           
-          <Button type="primary" onClick={() => {
+          <Button type="primary" icon={<FileAddOutlined />} onClick={() => {
             dispatch(resetAssignAll());
             dispatch(setSendType('B'));
             navigate('/uploadDocument');
             }}>
-            대량전송 요청
+            대량 서명 요청
           </Button>
           ],
         }}

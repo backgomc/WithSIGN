@@ -3,7 +3,9 @@ import { Button, Result } from "antd";
 import { PageContainer } from '@ant-design/pro-layout';
 import { useIntl } from "react-intl";
 import { navigate } from '@reach/router';
-
+import {
+  ArrowLeftOutlined
+} from '@ant-design/icons';
 
 const ResultPage = ({location}) => {
 
@@ -25,8 +27,8 @@ const ResultPage = ({location}) => {
         header={{
           title: headerTitle,
           extra: [           
-          <Button onClick={() => window.history.back()}>
-            {formatMessage({id: 'Back'})}
+          <Button icon={<ArrowLeftOutlined />} onClick={() => window.history.back()}>
+            {/* {formatMessage({id: 'Back'})} */}
           </Button>
           ],
         }}

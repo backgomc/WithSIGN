@@ -19,6 +19,8 @@ import '@ant-design/pro-form/dist/form.css';
 import SelectTemplate from '../Template/SelectTemplate';
 import * as common from "../../util/common";
 
+import { ReloadOutlined, ArrowRightOutlined } from '@ant-design/icons';
+
 const UploadDocument = () => {
 
   const dispatch = useDispatch();
@@ -198,8 +200,8 @@ const UploadDocument = () => {
           ],
         },
         extra: [
-          <Button key="3" onClick={() => form.resetFields()}>초기화</Button>,
-          <Button key="2" type="primary" loading={loading} onClick={() => (tab === "tab1") ? form.submit() : templateNext()} disabled={disableNext}>
+          <Button key="3" icon={<ReloadOutlined />} onClick={() => form.resetFields()}></Button>,
+          <Button key="2" icon={<ArrowRightOutlined />} type="primary" loading={loading} onClick={() => (tab === "tab1") ? form.submit() : templateNext()} disabled={disableNext}>
             {formatMessage({id: 'Next'})}
           </Button>,
         ],

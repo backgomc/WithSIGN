@@ -41,6 +41,8 @@ const SignDocument = () => {
   const user = useSelector(selectUser);
   const { docRef, docId, docType, docUser, observers } = doc;
   const { _id } = user;
+
+  const [annotsToDelete, setAnnotsToDelete] = useState([]);
   
   const viewer = useRef(null);
   const cancelMessage = useRef({});
@@ -136,6 +138,16 @@ const SignDocument = () => {
                 }
               }
 
+            } else {
+              console.log('일반 편집한 텍스트 컴포넌트')
+              // annot.Listable = false;
+
+              // const annotsToDeleteNew = annotsToDelete.slice()
+              // annotsToDeleteNew.push(annot) 
+              // setAnnotsToDelete(annotsToDeleteNew)
+              // annotsToDelete.push(annot);
+
+              setAnnotsToDelete(annotsToDelete => [...annotsToDelete, annot])
             }
           });
         }
@@ -274,7 +286,27 @@ const SignDocument = () => {
     setLoading(true);
 
     console.log('pageCount:'+pageCount)
+
+    //TODO: 서명요청자가 요청 시 작성한 freetext는 xfdf 추출 시 제외하여야 함 
+    // TYPE: Widget, 자유 텍스트, 서명 
+    // TYPE 이 아니라 다른 키값을 부여해서 제외시켜야 될듯
+    // const annotationsList = annotManager.getAnnotationsList();
+    // const annotsToDelete = [];
+    // await Promise.all(
+    //   annotationsList.map(async (annot, index) => {
+    //     console.log('annot.Subject:'+annot.Subject)
+    //     if (annot.Subject == '자유 텍스트') {
+    //       console.log('여기 제발 통과하자')
+    //       // annotsToDelete.push(annot);
+    //       annotManager.deleteAnnotation(annot, false, true);
+    //     }
+    //   })
+    // )
+    console.log('annotsToDelete:'+annotsToDelete)
+    annotManager.deleteAnnotations(annotsToDelete, null, true); //다건 처리가 오류나서 일단 단건 처리함
+
     // field: true 를 해줘야 텍스트 값도 저장됨
+    // console.log('annotManager.getAnnotationsList():'+annotManager.getAnnotationsList());
     const xfdf = await annotManager.exportAnnotations({ widgets: false, links: false, fields: true,	annotList: annotManager.getAnnotationsList() });
     // await updateDocumentToSign(docId, email, xfdf);
 

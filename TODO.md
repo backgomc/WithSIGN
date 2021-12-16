@@ -194,6 +194,7 @@ http://localhost:5000/api/bulk/addBulk
 
 192.168.161.25
 
+
 # docker 
 * 수동파일 배포
  > docker save -o nhsign_server.tar nhsign_server (배포)

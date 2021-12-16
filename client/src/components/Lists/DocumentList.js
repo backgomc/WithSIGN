@@ -7,13 +7,9 @@ import {
   SearchOutlined,
   FileOutlined,
   FileAddOutlined,
-  CheckCircleOutlined,
-  SyncOutlined,
-  CloseCircleOutlined,
-  ExclamationCircleOutlined,
-  ClockCircleOutlined,
-  MinusCircleOutlined,
-  InfoCircleOutlined,
+  FilePdfOutlined,
+  DownloadOutlined,
+  FormOutlined
 } from '@ant-design/icons';
 import { useSelector, useDispatch } from 'react-redux';
 import { selectUser } from '../../app/infoSlice';
@@ -31,7 +27,8 @@ import 'antd/dist/antd.css';
 import RcResizeObserver from 'rc-resize-observer';
 import { useIntl } from "react-intl";
 import { setSendType } from '../Assign/AssignSlice';
-import banner from '../../assets/images/sub_top2.png'
+import banner from '../../assets/images/sub_top2.png';
+import ico_sign from '../../assets/images/ico_sign.png';
 
 moment.locale("ko");
 
@@ -176,7 +173,7 @@ const DocumentList = ({location}) => {
         <tr>
           <td align='left' width='350px'>
             <b><Badge status="processing" text={DOCUMENT_TODO} /></b> : 본인의 서명 또는 수신이 필요한 문서<br></br>
-            <b><Badge status="default" text={DOCUMENT_SIGNING} /></b> : 다른 서명 참여자의 서명이 진행 중인 문서<br></br>
+            <b><Badge color="#9694ff" text={DOCUMENT_SIGNING} /></b> : 다른 서명 참여자의 서명이 진행 중인 문서<br></br>
             <b><Badge status="error" text={DOCUMENT_CANCELED} /></b> : 서명 참여자 중 서명을 취소한 문서 <br></br>
             <b><Badge status="success" text={DOCUMENT_SIGNED} /></b> : 모든 서명 참여자의 서명이 완료된 문서 
           </td>
@@ -368,6 +365,7 @@ const DocumentList = ({location}) => {
             return (
               <Button
                 // danger
+                icon={<FileOutlined />}
                 onClick={() => {        
                 const docId = row["_id"]
                 const docRef = row["docRef"]
@@ -375,12 +373,15 @@ const DocumentList = ({location}) => {
                 const docTitle = row["docTitle"]
                 dispatch(setDocToView({ docRef, docId, docType, docTitle }));
                 navigate(`/viewDocument`);
-              }}>문서</Button>
+              }}></Button>
             )
           case DOCUMENT_SIGNED:
             return (
+              <div>
               <Button
                 // loading={isUploading(row)}
+                key="1"
+                icon={<FileOutlined />}
                 onClick={() => {        
                 const docId = row["_id"]
                 const docRef = row["docRef"]
@@ -388,11 +389,17 @@ const DocumentList = ({location}) => {
                 const docTitle = row["docTitle"]
                 dispatch(setDocToView({ docRef, docId, docType, docTitle }));
                 navigate(`/viewDocument`);
-              }}>문서</Button>
+              }}></Button>
+              {/* <a href={row["docRef"]} download={row["docTitle"]+'.pdf'}> 
+                <Button key="2" icon={<DownloadOutlined />}>
+                </Button>
+             </a> */}
+              </div>
             )
           case DOCUMENT_TOSIGN:
             return (
-              <Button type="primary" onClick={() => {
+              // <Button type="primary" icon={<img src={ico_sign} style={{marginLeft:'-7px', marginRight:'7px'}}></img>} onClick={() => {
+              <Button type="primary" icon={<FormOutlined />} onClick={() => {
                 const docId = row["_id"]
                 const docRef = row["docRef"]
                 const docType = row["docType"]
@@ -400,18 +407,22 @@ const DocumentList = ({location}) => {
                 const observers = row["observers"]
                 dispatch(setDocToSign({ docRef, docId, docType, docUser, observers }));
                 navigate(`/signDocument`);
-              }}>{(row["observers"] && row["observers"].includes(_id) ? '수신' : '서명')}</Button>
+              }}>
+                {/* {(row["observers"] && row["observers"].includes(_id) ? '수신' : '서명')} */}
+              </Button>
             );
           case DOCUMENT_SIGNING:
             return (
-              <Button onClick={() => {        
+              <Button 
+              icon={<FileOutlined />}  
+              onClick={() => {        
                 const docId = row["_id"]
                 const docRef = row["docRef"]
                 const docType = row["docType"]
                 const docTitle = row["docTitle"]
                 dispatch(setDocToView({ docRef, docId, docType, docTitle }));
                 navigate(`/viewDocument`);
-              }}>문서</Button>
+              }}></Button>
             );
           default:
             return (
@@ -424,7 +435,7 @@ const DocumentList = ({location}) => {
       title: '',
       // dataIndex: 'docRef',
       key: 'action',
-      width: '100px',
+      width: '110px',
       responsive: ["sm"],
       render: (_,row) => {
         switch (DocumentType({uid: _id, document: row})) {
@@ -432,6 +443,7 @@ const DocumentList = ({location}) => {
             return (
               <Button
                 // danger
+                icon={<FileOutlined />}
                 onClick={() => {        
                 const docId = row["_id"]
                 const docRef = row["docRef"]
@@ -439,12 +451,15 @@ const DocumentList = ({location}) => {
                 const docTitle = row["docTitle"]
                 dispatch(setDocToView({ docRef, docId, docType, docTitle }));
                 navigate(`/viewDocument`);
-              }}>문서조회</Button>
+              }}></Button>
             )
           case DOCUMENT_SIGNED:
             return (
+              <div>
               <Button
                 // loading={isUploading(row)}
+                key="1"
+                icon={<FileOutlined />}
                 onClick={() => {        
                 const docId = row["_id"]
                 const docRef = row["docRef"]
@@ -452,11 +467,17 @@ const DocumentList = ({location}) => {
                 const docTitle = row["docTitle"]
                 dispatch(setDocToView({ docRef, docId, docType, docTitle }));
                 navigate(`/viewDocument`);
-              }}>문서조회</Button>
+              }}></Button>&nbsp;&nbsp;
+              <a href={row["docRef"]} download={row["docTitle"]+'.pdf'}> 
+                <Button key="2" icon={<DownloadOutlined />}>
+                </Button>
+             </a>
+              </div>
             )
           case DOCUMENT_TOSIGN:
             return (
-              <Button type="primary" onClick={() => {
+              // <Button type="primary" icon={<img src={ico_sign} style={{marginLeft:'-7px', marginRight:'7px'}}></img>} onClick={() => {
+              <Button type="primary" style={{paddingLeft:'9px', paddingRight:'10px'}} icon={<FormOutlined />} onClick={() => {
                 const docId = row["_id"]
                 const docRef = row["docRef"]
                 const docType = row["docType"]
@@ -464,18 +485,22 @@ const DocumentList = ({location}) => {
                 const observers = row["observers"]
                 dispatch(setDocToSign({ docRef, docId, docType, docUser, observers }));
                 navigate(`/signDocument`);
-              }}>{(row["observers"] && row["observers"].includes(_id) ? '문서수신' : '서명하기')}</Button>
+              }}>
+                {(row["observers"] && row["observers"].includes(_id) ? '수신' : '서명')}
+              </Button>
             );
           case DOCUMENT_SIGNING:
             return (
-              <Button onClick={() => {        
+              <Button 
+              icon={<FileOutlined />}  
+              onClick={() => {        
                 const docId = row["_id"]
                 const docRef = row["docRef"]
                 const docType = row["docType"]
                 const docTitle = row["docTitle"]
                 dispatch(setDocToView({ docRef, docId, docType, docTitle }));
                 navigate(`/viewDocument`);
-              }}>문서조회</Button>
+              }}></Button>
             );
           default:
             return (

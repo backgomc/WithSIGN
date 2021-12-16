@@ -14,7 +14,7 @@ import { PageContainer } from '@ant-design/pro-layout';
 import ProCard from '@ant-design/pro-card';
 import 'antd/dist/antd.css';
 import '@ant-design/pro-card/dist/card.css';
-import { DownloadOutlined } from '@ant-design/icons';
+import { DownloadOutlined, ArrowLeftOutlined } from '@ant-design/icons';
 import { LICENSE_KEY } from '../../config/Config';
 
 const ViewDocument = () => {
@@ -121,8 +121,8 @@ const ViewDocument = () => {
           ],
         },
         extra: [
-          <Button key="2" onClick={() => window.history.back()}>
-            {formatMessage({id: 'Back'})}
+          <Button key="2" icon={<ArrowLeftOutlined />} onClick={() => window.history.back()}>
+            {/* {formatMessage({id: 'Back'})} */}
           </Button>,
           // <Button key="3" type="primary" onClick={() => download()} icon={<DownloadOutlined />}>
           //   {formatMessage({id: 'document.download'})}

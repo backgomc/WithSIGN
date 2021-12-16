@@ -24,7 +24,6 @@ export const mergeAnnotations = async (docId, docRef, xfdf, isLast) => {
         console.log("A merge xfdf:" + xfdf[i]);
         let fdfDoc = await PDFNet.FDFDoc.createFromXFDF(xfdf[i]);
         await doc.fdfMerge(fdfDoc);
-        // await doc.flattenAnnotations();  //TODO: 이거는 문서 최종 반영시 실행
     }
 
     if (isLast) {

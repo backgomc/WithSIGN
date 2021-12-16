@@ -12,6 +12,9 @@ import font from '../../assets/font/NanumGothic.ttf';
 import font_Bold from '../../assets/font/NanumGothic-ExtraBold.ttf';
 import { navigate } from '@reach/router';
 
+import { ArrowLeftOutlined } from '@ant-design/icons';
+
+
 Font.register({ family: "Nanum Gothic", src: font });
 Font.register({ family: "Nanum Gothic Bold", src: font_Bold });
 // Font.register({ family: "Nanum Gothic", src: "https://fonts.gstatic.com/ea/nanumgothic/v5/NanumGothic-ExtraBold.ttf", });
@@ -292,8 +295,8 @@ const Audit = ({location}) => {
           title: '진본 확인 증명서',
           // ghost: false,
           extra: [           
-          <Button onClick={() => window.history.back()}>
-            {formatMessage({id: 'Back'})}
+          <Button icon={<ArrowLeftOutlined />} onClick={() => window.history.back()}>
+            {/* {formatMessage({id: 'Back'})} */}
           </Button>
           ],
         }}

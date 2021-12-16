@@ -11,6 +11,7 @@ import 'moment/locale/ko';
 import {
   UserOutlined,
   ExclamationCircleOutlined,
+  ArrowLeftOutlined,
   DeleteOutlined
 } from '@ant-design/icons';
 import { PageContainer } from '@ant-design/pro-layout';
@@ -250,8 +251,8 @@ const BoardDetail = ({location}) => {
           title: board.title,
           // ghost: false,
           extra: [           
-          <Button onClick={() => window.history.back()}>
-            {formatMessage({id: 'Back'})}
+          <Button icon={<ArrowLeftOutlined />} onClick={() => window.history.back()}>
+            {/* {formatMessage({id: 'Back'})} */}
           </Button>,
           (_id === board.user._id) ? <Button onClick={e => { {navigate('/boardModify', { state: {boardType:boardType, boardName:'게시글 수정', boardId:boardId}});} }}>수정</Button> : '',
           (_id === board.user._id) ? <Button danger onClick={e => { deleteBoard() }}>삭제</Button> : ''

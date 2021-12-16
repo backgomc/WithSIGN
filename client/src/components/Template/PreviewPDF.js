@@ -10,6 +10,9 @@ import WebViewer from '@pdftron/webviewer';
 import 'antd/dist/antd.css';
 import '@ant-design/pro-card/dist/card.css';
 import { LICENSE_KEY } from '../../config/Config';
+import {
+  ArrowLeftOutlined
+} from '@ant-design/icons';
 
 const PreviewPDF = ({location}) => {
 
@@ -75,8 +78,8 @@ const PreviewPDF = ({location}) => {
           ],
         },
         extra: [
-          <Button key="1" onClick={() => window.history.back()}>
-            {formatMessage({id: 'Back'})}
+          <Button key="1" icon={<ArrowLeftOutlined />} onClick={() => window.history.back()}>
+            {/* {formatMessage({id: 'Back'})} */}
           </Button>,
         ],
       }}

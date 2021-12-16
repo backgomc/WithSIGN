@@ -10,7 +10,10 @@ import Moment from 'react-moment';
 import moment from 'moment';
 import 'moment/locale/ko';
 import {
-  FileOutlined
+  FileOutlined,
+  ArrowLeftOutlined,
+  EditOutlined,
+  FormOutlined
 } from '@ant-design/icons';
 import { PageContainer } from '@ant-design/pro-layout';
 import 'antd/dist/antd.css';
@@ -279,12 +282,12 @@ const BoardList = ({location}) => {
             ],
           },
           extra: [     
-          <Button onClick={() => window.history.back()}>
-            {formatMessage({id: 'Back'})}
+          <Button icon={<ArrowLeftOutlined />} onClick={() => window.history.back()}>
+            {/* {formatMessage({id: 'Back'})} */}
           </Button>, 
           boardType == 'notice' ? '' :     
-          <Button type="primary" onClick={() => {navigate('/boardWrite', { state: {boardType:boardType, boardName:boardName}});}}>
-            등록
+          <Button icon={<FormOutlined />} type="primary" onClick={() => {navigate('/boardWrite', { state: {boardType:boardType, boardName:boardName}});}}>
+            {/* 등록 */}
           </Button>,
           // <Popconfirm title="삭제하시겠습니까？" okText="네" cancelText="아니오" visible={visiblePopconfirm} onConfirm={deleteBoard} onCancel={() => {setVisiblePopconfirm(false);}}>
           //   <Button type="primary" danger disabled={!hasSelected} onClick={()=>{setVisiblePopconfirm(true);}}>

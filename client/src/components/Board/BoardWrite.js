@@ -10,7 +10,9 @@ import Moment from 'react-moment';
 import moment from 'moment';
 import 'moment/locale/ko';
 import {
-  FileOutlined
+  FileOutlined,
+  ArrowLeftOutlined,
+  ReloadOutlined
 } from '@ant-design/icons';
 import { PageContainer } from '@ant-design/pro-layout';
 import { useIntl } from "react-intl";
@@ -187,10 +189,12 @@ const BoardWrite = ({location}) => {
           title: formatMessage({id: boardName}),
           ghost: false,
           extra: [   
-          <Button key="1" onClick={() => window.history.back()}>
-            {formatMessage({id: 'Back'})}
+          <Button key="1" icon={<ArrowLeftOutlined />} onClick={() => window.history.back()}>
+            {/* {formatMessage({id: 'Back'})} */}
           </Button>,
-          <Button key="2" onClick={() => form.resetFields()}>{formatMessage({id: 'Initialize'})}</Button>,        
+          <Button key="2" icon={<ReloadOutlined />} onClick={() => form.resetFields()}>
+            {/* {formatMessage({id: 'Initialize'})} */}
+          </Button>,        
           <Button key="3" type="primary" disabled={disableNext} onClick={() => form.submit()}>
             {formatMessage({id: 'Save'})}
           </Button>

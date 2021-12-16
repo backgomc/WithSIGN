@@ -17,7 +17,8 @@ import {DOCUMENT_SIGNED, DOCUMENT_TOSIGN, DOCUMENT_SIGNING, DOCUMENT_CANCELED, D
 import {
   FileOutlined,
   FilePdfOutlined,
-  DownloadOutlined
+  DownloadOutlined,
+  ArrowLeftOutlined
 } from '@ant-design/icons';
 import { PageContainer } from '@ant-design/pro-layout';
 import 'antd/dist/antd.css';
@@ -223,42 +224,42 @@ const BulkDetail = ({location}) => {
     //     return (row["signed"] ? "서명 완료" : "서명 대기")
     //   } 
     // },
+    // {
+    //   title: '상태',
+    //   dataIndex: 'status',
+    //   responsive: ["xs"],
+    //   sorter: false,
+    //   key: 'status',
+    //   defaultFilteredValue: location.state.status? [location.state.status]: [],
+    //   filters: [
+    //     {
+    //       text: DOCUMENT_SIGNED,
+    //       value: DOCUMENT_SIGNED,
+    //     },
+    //     {
+    //       text: DOCUMENT_TOSIGN,
+    //       value: DOCUMENT_TOSIGN,
+    //     },
+    //     {
+    //       text: DOCUMENT_SIGNING,
+    //       value: DOCUMENT_SIGNING,
+    //     },
+    //     {
+    //       text: DOCUMENT_CANCELED,
+    //       value: DOCUMENT_CANCELED,
+    //     },
+    //   ],
+    //   onFilter: (value, record) => DocumentType({uid: _id, document: record}).indexOf(value) === 0,
+    //   render: (_,row) => {
+    //     return (
+    //         <DocumentTypeIcon uid={_id} document={row} />
+    //       )
+    //   }, 
+    // },
     {
       title: '상태',
       dataIndex: 'status',
-      responsive: ["xs"],
-      sorter: false,
-      key: 'status',
-      defaultFilteredValue: location.state.status? [location.state.status]: [],
-      filters: [
-        {
-          text: DOCUMENT_SIGNED,
-          value: DOCUMENT_SIGNED,
-        },
-        {
-          text: DOCUMENT_TOSIGN,
-          value: DOCUMENT_TOSIGN,
-        },
-        {
-          text: DOCUMENT_SIGNING,
-          value: DOCUMENT_SIGNING,
-        },
-        {
-          text: DOCUMENT_CANCELED,
-          value: DOCUMENT_CANCELED,
-        },
-      ],
-      onFilter: (value, record) => DocumentType({uid: _id, document: record}).indexOf(value) === 0,
-      render: (_,row) => {
-        return (
-            <DocumentTypeIcon uid={_id} document={row} />
-          )
-      }, 
-    },
-    {
-      title: '상태',
-      dataIndex: 'status',
-      responsive: ["sm"],
+      // responsive: ["sm"],
       sorter: false,
       key: 'status',
       width: '105px',
@@ -368,7 +369,7 @@ const BulkDetail = ({location}) => {
             navigate(`/viewDocument`);
           }}></Button>&nbsp;&nbsp;
           <a href={row["docRef"]} download={row["docTitle"]+'.pdf'}> 
-            <Button key="3" type="primary" icon={<DownloadOutlined />}>
+            <Button key="3" icon={<DownloadOutlined />}>
               {/* {formatMessage({id: 'document.download'})} */}
             </Button>
           </a>
@@ -461,8 +462,8 @@ const BulkDetail = ({location}) => {
           //   ],
           // },
           extra: [           
-          <Button onClick={() => {navigate('/bulkList');}}>
-            {formatMessage({id: 'Back'})}
+          <Button icon={<ArrowLeftOutlined />} onClick={() => {navigate('/bulkList');}}>
+            {/* {formatMessage({id: 'Back'})} */}
           </Button>
           ],
         }}
