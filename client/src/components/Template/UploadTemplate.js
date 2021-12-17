@@ -76,7 +76,8 @@ const UploadTemplate = () => {
     .then(instance => {
       setInstance(instance)
 
-      const { docViewer } = instance;
+      const { docViewer, CoreControls } = instance;
+      CoreControls.setCustomFontURL("/webfonts/");
       
       docViewer.on('documentLoaded', () => {
         console.log('documentLoaded called');
