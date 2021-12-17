@@ -155,12 +155,13 @@ router.post('/sso', (req, res) => {
 
   User.findOne({ uid: uid }, (err, user) => {
     if (user) {
+      if (!user.terms || !user.privacy) return res.json({ success: false, user: user._id, message: "약관 동의가 필요합니다." });
       user.generateToken((err, user) => {
         if (err) return res.status(400).send(err);
         user.password = ""
         res.cookie("x_auth", user.token)
           .status(200)
-          .json({ isAuth: true, user: user })
+          .json({ success: true, isAuth: true, user: user })
       })
     } else {
       return res.json({

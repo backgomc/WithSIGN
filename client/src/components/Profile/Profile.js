@@ -49,7 +49,7 @@ const ProfilePage = () => {
                     if (response.status === 200) {
                       dispatch(setUser(null));
                       dispatch(resetSignee())
-                      navigate('/');
+                      navigate('/login');
                     } else {
                       alert('Log Out Failed')
                     }
