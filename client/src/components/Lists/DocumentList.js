@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import useDidMountEffect from '../Common/useDidMountEffect';
 import axios from 'axios';
-import { Table, Input, Space, Button, Checkbox, Badge } from "antd";
+import { Table, Input, Space, Button, Checkbox, Badge, Tooltip } from "antd";
 import Highlighter from 'react-highlight-words';
 import {
   SearchOutlined,
@@ -363,6 +363,7 @@ const DocumentList = ({location}) => {
         switch (DocumentType({uid: _id, document: row})) {
           case DOCUMENT_CANCELED:
             return (
+              <Tooltip placement="top" title={'문서 보기'}>
               <Button
                 // danger
                 icon={<FileOutlined />}
@@ -373,11 +374,12 @@ const DocumentList = ({location}) => {
                 const docTitle = row["docTitle"]
                 dispatch(setDocToView({ docRef, docId, docType, docTitle }));
                 navigate(`/viewDocument`);
-              }}></Button>
+              }}></Button></Tooltip>
             )
           case DOCUMENT_SIGNED:
             return (
               <div>
+              <Tooltip placement="top" title={'문서 보기'}>
               <Button
                 // loading={isUploading(row)}
                 key="1"
@@ -389,7 +391,7 @@ const DocumentList = ({location}) => {
                 const docTitle = row["docTitle"]
                 dispatch(setDocToView({ docRef, docId, docType, docTitle }));
                 navigate(`/viewDocument`);
-              }}></Button>
+              }}></Button></Tooltip>
               {/* <a href={row["docRef"]} download={row["docTitle"]+'.pdf'}> 
                 <Button key="2" icon={<DownloadOutlined />}>
                 </Button>
@@ -399,6 +401,7 @@ const DocumentList = ({location}) => {
           case DOCUMENT_TOSIGN:
             return (
               // <Button type="primary" icon={<img src={ico_sign} style={{marginLeft:'-7px', marginRight:'7px'}}></img>} onClick={() => {
+              <Tooltip placement="top" title={(row["observers"] && row["observers"].includes(_id) ? '수신' : '서명')}>
               <Button type="primary" icon={<FormOutlined />} onClick={() => {
                 const docId = row["_id"]
                 const docRef = row["docRef"]
@@ -409,10 +412,11 @@ const DocumentList = ({location}) => {
                 navigate(`/signDocument`);
               }}>
                 {/* {(row["observers"] && row["observers"].includes(_id) ? '수신' : '서명')} */}
-              </Button>
+              </Button></Tooltip>
             );
           case DOCUMENT_SIGNING:
             return (
+              <Tooltip placement="top" title={'문서 보기'}>
               <Button 
               icon={<FileOutlined />}  
               onClick={() => {        
@@ -422,7 +426,7 @@ const DocumentList = ({location}) => {
                 const docTitle = row["docTitle"]
                 dispatch(setDocToView({ docRef, docId, docType, docTitle }));
                 navigate(`/viewDocument`);
-              }}></Button>
+              }}></Button></Tooltip>
             );
           default:
             return (
@@ -441,6 +445,7 @@ const DocumentList = ({location}) => {
         switch (DocumentType({uid: _id, document: row})) {
           case DOCUMENT_CANCELED:
             return (
+              <Tooltip placement="top" title={'문서 보기'}>
               <Button
                 // danger
                 icon={<FileOutlined />}
@@ -452,10 +457,12 @@ const DocumentList = ({location}) => {
                 dispatch(setDocToView({ docRef, docId, docType, docTitle }));
                 navigate(`/viewDocument`);
               }}></Button>
+              </Tooltip>
             )
           case DOCUMENT_SIGNED:
             return (
               <div>
+              <Tooltip placement="top" title={'문서 보기'}>
               <Button
                 // loading={isUploading(row)}
                 key="1"
@@ -467,10 +474,12 @@ const DocumentList = ({location}) => {
                 const docTitle = row["docTitle"]
                 dispatch(setDocToView({ docRef, docId, docType, docTitle }));
                 navigate(`/viewDocument`);
-              }}></Button>&nbsp;&nbsp;
-              <a href={row["docRef"]} download={row["docTitle"]+'.pdf'}> 
+              }}></Button></Tooltip>&nbsp;&nbsp;
+              <a href={row["docRef"]} download={row["docTitle"]+'.pdf'}>
+                <Tooltip placement="top" title={'다운로드'}>
                 <Button key="2" icon={<DownloadOutlined />}>
                 </Button>
+                </Tooltip>
              </a>
               </div>
             )
@@ -491,6 +500,7 @@ const DocumentList = ({location}) => {
             );
           case DOCUMENT_SIGNING:
             return (
+              <Tooltip placement="top" title={'문서 보기'}>
               <Button 
               icon={<FileOutlined />}  
               onClick={() => {        
@@ -500,7 +510,7 @@ const DocumentList = ({location}) => {
                 const docTitle = row["docTitle"]
                 dispatch(setDocToView({ docRef, docId, docType, docTitle }));
                 navigate(`/viewDocument`);
-              }}></Button>
+              }}></Button></Tooltip>
             );
           default:
             return (

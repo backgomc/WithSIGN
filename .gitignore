@@ -7,5 +7,9 @@ admin/node_modules
 client/node_modules
 server/node_modules
 server/sessions/*
+<<<<<<< Updated upstream
 server/storage/*
 .vscode/
+=======
+server/storage/*
+>>>>>>> Stashed changes
