@@ -58,6 +58,11 @@ import {
 } from '@ant-design/icons';
 
 const App = () => {
+
+  const rqUrl = window.location.href.split('?')[1];
+  const param = new URLSearchParams(rqUrl);
+  const token = param.get('t');
+
   const user = useSelector(selectUser);
   const dispatch = useDispatch();
 
@@ -69,10 +74,34 @@ const App = () => {
     console.log('App called')
 
     axios.get('/api/users/auth').then(response => {
-      if (!response.data.isAuth) {
-          dispatch(setUser(null));
+      console.log(response);
+      if (response.data.isAuth) {
+        dispatch(setUser(response.data));
+        navigate('/');
       } else {
-          dispatch(setUser(response.data));
+        // 통합 로그인
+        if (token) {
+          let body = {
+            token: token
+          }
+          axios.post('/api/users/sso', body).then(response => {
+            if (response.data.success) {
+              dispatch(setUser(response.data.user));
+              navigate('/');
+            } else {
+              if (response.data.user) { // 약관 동의 절차 필요
+                navigate('/agreement', { state: {user: response.data.user}});
+              } else {
+                alert(response.data.message ? response.data.message : 'login failed !');
+                dispatch(setUser(null));
+                navigate('/login');
+              }
+            }
+          });
+        } else {
+          dispatch(setUser(null));
+          navigate('/login');
+        }
       }
     });
 
@@ -203,10 +232,11 @@ const App = () => {
     <div>
       {/* <Header /> */}
       <Router>
-        <Login path="/" />
-        <Register path="register" />
+        <Login path="/login" />
+        {/* <Register path="register" /> */}
         <ResetPassword path="resetPassword" />
         <Agreement path="/agreement" />
+        <defaultPage path="/"/>
       </Router>
     </div>
   );
