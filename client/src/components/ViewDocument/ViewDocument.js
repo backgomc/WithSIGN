@@ -22,6 +22,7 @@ const ViewDocument = () => {
   const [instance, setInstance] = useState(null);
   const [responsive, setResponsive] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [loadingDownload, setLoadingDownload] = useState([]);
 
   const doc = useSelector(selectDocToView);
   const user = useSelector(selectUser);
@@ -129,14 +130,14 @@ const ViewDocument = () => {
           // </Button>
           // AS-IS > TO-BE : 해시값 유지를 위해 서버에 파일을 다운로드 하도록 변경
           // <a href={process.env.REACT_APP_STORAGE_DIR+docRef} download={docTitle+'.pdf'}> 
-
-          // DISTO
-          // <a href={STORAGE_DIR+docRef} download={docTitle+'.pdf'}> 
-          <a href={docRef} download={docTitle+'.pdf'}> 
-            <Button key="3" type="primary" icon={<DownloadOutlined />}>
+            <Button key="3" loading={loadingDownload['1']} href={docRef} download={docTitle+'.pdf'} type="primary" icon={<DownloadOutlined />} onClick={()=> {
+              setLoadingDownload( { "1" : true } )
+              setTimeout(() => {
+                setLoadingDownload( { "1" : false})
+              }, 3000);
+            }}>
               {formatMessage({id: 'document.download'})}
             </Button>
-          </a>
         ],
       }}
       // content= {}
