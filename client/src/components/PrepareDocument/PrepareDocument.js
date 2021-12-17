@@ -608,7 +608,7 @@ const PrepareDocument = () => {
     // textAnnot.setContents(assignee.label+"_"+type);
     // textAnnot.setContents(member.name+"_"+type);
     textAnnot.setContents((sendType === 'B') ? type : member.name+"_"+type);
-    textAnnot.FontSize = '' + 20.0 / zoom + 'px';
+    textAnnot.FontSize = '' + 18.0 / zoom + 'px';
     textAnnot.FillColor = new Annotations.Color(211, 211, 211, 0.5);
     textAnnot.TextColor = new Annotations.Color(0, 165, 228);
     textAnnot.StrokeThickness = 1;

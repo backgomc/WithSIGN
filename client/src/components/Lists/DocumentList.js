@@ -45,6 +45,7 @@ const DocumentList = ({location}) => {
   const [data, setData] = useState([]);
   const [pagination, setPagination] = useState({current:1, pageSize:10});
   const [loading, setLoading] = useState(false);
+  const [loadingDownload, setLoadingDownload] = useState([]);
   const [includeBulk, setIncludeBulk] = useState(false);
   const [responsive, setResponsive] = useState(false);
 
@@ -475,12 +476,17 @@ const DocumentList = ({location}) => {
                 dispatch(setDocToView({ docRef, docId, docType, docTitle }));
                 navigate(`/viewDocument`);
               }}></Button></Tooltip>&nbsp;&nbsp;
-              <a href={row["docRef"]} download={row["docTitle"]+'.pdf'}>
+              {/* <a href={row["docRef"]} download={row["docTitle"]+'.pdf'}> */}
                 <Tooltip placement="top" title={'다운로드'}>
-                <Button key="2" icon={<DownloadOutlined />}>
+                <Button key="2" href={row["docRef"]} download={row["docTitle"]+'.pdf'} icon={<DownloadOutlined />} loading={loadingDownload[row["_id"]]}  onClick={(e) => {
+                  setLoadingDownload( { [row["_id"]] : true } )
+                  setTimeout(() => {
+                    setLoadingDownload( { [row["_id"]] : false})
+                  }, 3000);
+                }}>
                 </Button>
                 </Tooltip>
-             </a>
+             {/* </a> */}
               </div>
             )
           case DOCUMENT_TOSIGN:

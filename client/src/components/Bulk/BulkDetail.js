@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
-import { Table, Input, Space, Button, Descriptions } from "antd";
+import { Table, Input, Space, Button, Descriptions, Tooltip } from "antd";
 import Highlighter from 'react-highlight-words';
 import { SearchOutlined } from '@ant-design/icons';
 import { useSelector, useDispatch } from 'react-redux';
@@ -41,6 +41,7 @@ const BulkDetail = ({location}) => {
   
   const [pagination, setPagination] = useState({current:1, pageSize:10});
   const [loading, setLoading] = useState(false);
+  const [loadingDownload, setLoadingDownload] = useState([]);
   const [loadingOrgInfos, setLoadingOrgInfos] = useState(false);
   // const [expandable, setExpandable] = useState();
   const [visiblePopconfirm, setVisiblePopconfirm] = useState(false);
@@ -359,20 +360,25 @@ const BulkDetail = ({location}) => {
         return (
           row["signedTime"] ?
           <div>
+          <Tooltip placement="top" title={'문서 보기'}>
           <Button
-            icon={<FilePdfOutlined />}
+            icon={<FileOutlined />}
             onClick={() => {        
             const docId = row["_id"]
             const docRef = row["docRef"]
             const docTitle = row["docTitle"]
             dispatch(setDocToView({ docRef, docId, docTitle }));
             navigate(`/viewDocument`);
-          }}></Button>&nbsp;&nbsp;
-          <a href={row["docRef"]} download={row["docTitle"]+'.pdf'}> 
-            <Button key="3" icon={<DownloadOutlined />}>
-              {/* {formatMessage({id: 'document.download'})} */}
-            </Button>
-          </a>
+          }}></Button></Tooltip>&nbsp;&nbsp;
+              <Tooltip placement="top" title={'다운로드'}>
+                <Button key="3" href={row["docRef"]} download={row["docTitle"]+'_'+filterUsers(row['users'][0])[0].name+'.pdf'} icon={<DownloadOutlined />} loading={loadingDownload[row["_id"]]}  onClick={(e) => {
+                  setLoadingDownload( { [row["_id"]] : true } )
+                  setTimeout(() => {
+                    setLoadingDownload( { [row["_id"]] : false})
+                  }, 3000);
+                }}>
+                </Button>
+              </Tooltip>
           </div>  : ''
         )
       }
@@ -385,15 +391,16 @@ const BulkDetail = ({location}) => {
       render: (_,row) => {
         return (
           row["signedTime"] ?
+          <Tooltip placement="top" title={'문서 보기'}>
           <Button
-            icon={<FilePdfOutlined />}
+            icon={<FileOutlined />}
             onClick={() => {        
             const docId = row["_id"]
             const docRef = row["docRef"]
             const docTitle = row["docTitle"]
             dispatch(setDocToView({ docRef, docId, docTitle }));
             navigate(`/viewDocument`);
-          }}></Button> : ''
+          }}></Button></Tooltip> : ''
         )
       }
     }

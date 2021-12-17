@@ -6,7 +6,7 @@ const fs = require('fs');
 const config = require("../config/key");
 const { generateRandomName, makeFolder, today } = require('../common/utils');
 const { DOCUMENT_SIGNED, DOCUMENT_TOSIGN, DOCUMENT_SIGNING, DOCUMENT_CANCELED, DOCUMENT_TOCONFIRM } = require('../common/constants');
-
+const restful = require('../common/restful');
 
 // 신규 문서 등록  
 router.post('/addDocumentToSign', (req, res) => {
@@ -19,6 +19,10 @@ router.post('/addDocumentToSign', (req, res) => {
 
   document.save((err, document) => {
     if (err) return res.json({ success: false, err })
+
+    // 쪽지 보내기 
+    restful.callNotify(document.user, document.users,'[WithSign] 서명 요청 알림','WithSign 서명 요청 건이 있습니다.');
+
     return res.status(200).json({
       success: true,
       documentId: document._id
@@ -137,6 +141,10 @@ router.post('/updateDocumentToSign', (req, res) => {
                   return res.json({ success: false, message: err })
                 }
             });
+            
+            // 문서 완료 시 요청자에게 쪽지 보내기
+            restful.callNotify(null, document.user,'[WithSign] 서명 요청 완료 알림','서명 요청 건의 서명이 완료되었습니다. ');
+
           }
 
           return res.json({ success: true, docRef: docRef, xfdfArray: xfdfArray, isLast: isLast })
