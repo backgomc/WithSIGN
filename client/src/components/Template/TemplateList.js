@@ -677,9 +677,9 @@ const TemplateList = () => {
           },
           extra: [  
           <Search style={{ width: 200 }} placeholder="문서명 검색" onSearch={onSearch} enterButton />,           
-          <Button type="primary" icon={<FileAddOutlined />} onClick={() => {navigate('/uploadTemplate');}}>
+          (tab != 'public') ? <Button type="primary" icon={<FileAddOutlined />} onClick={() => {navigate('/uploadTemplate');}}>
             템플릿 등록
-          </Button>,
+          </Button> : '',
           // <Popconfirm title="삭제하시겠습니까？" okText="네" cancelText="아니오" visible={visiblePopconfirm} onConfirm={deleteTemplate} onCancel={() => {setVisiblePopconfirm(false);}}>
           //   <Button type="primary" danger disabled={!hasSelected} onClick={()=>{setVisiblePopconfirm(true);}}>
           //     삭제
