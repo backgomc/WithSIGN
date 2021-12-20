@@ -174,7 +174,11 @@
 # 대량 전송 목록 페이징 잘 안됨 - pagination 삭제
 * 입력 컴포넌트 텍스트 입력 시 내부망에서 오류 발생 Failed to execute 'send' on 'XMLHttpRequest': Failed to load 'https://www.pdftron.com/webfonts/v2/fonts.json'
 * 대량발송 목록 호출시 docs 를 다 가져오는데 ... 건수가 많으면 부하 발생할듯 ... 부하테스트 후 수정 필요
-* 전체 템플릿 추가
+# 전체 템플릿 추가
+
+* Assign 레벨 늘리기 
+* 쪽지, 푸시 일단 빼고 배포 
+* 월요일 오전에 메시지 보내기
 
 
 192.168.161.25

@@ -1,4 +1,4 @@
-FROM nginx
+FROM nginx:stable-alpine
 
 WORKDIR /app 
 RUN mkdir ./build
