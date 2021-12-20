@@ -264,7 +264,7 @@ router.post('/orgList', (req, res) => {
 
   Org
   .find({"OFFICE_CODE" : req.body.OFFICE_CODE})
-  // .sort({"name" : 0})    //0:오름차순 -1:내림차순 //{order : dir};
+  .sort({"DISPLAY_ORDER" : 0})    //0:오름차순 -1:내림차순 //{order : dir};
   .exec(function(err, results) {
 
       if (err) return next(err)

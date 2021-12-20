@@ -84,6 +84,47 @@ const Assign = () => {
               level5.forEach(function(org){
                 const org5 = {key: org.DEPART_CODE, title:org.DEPART_NAME, children:[], disableCheckbox: false, selectable: true}
                 insertUser(org5, users, org.DEPART_CODE)
+
+                const level6 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE)
+                level6.forEach(function(org){
+                  const org6 = {key: org.DEPART_CODE, title:org.DEPART_NAME, children:[], disableCheckbox: false, selectable: true}
+                  insertUser(org6, users, org.DEPART_CODE)
+                 
+                  const level7 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE)
+                  level7.forEach(function(org){
+                    const org7 = {key: org.DEPART_CODE, title:org.DEPART_NAME, children:[], disableCheckbox: false, selectable: true}
+                    insertUser(org7, users, org.DEPART_CODE)
+
+                    const level8 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE)
+                    level8.forEach(function(org){
+                      const org8 = {key: org.DEPART_CODE, title:org.DEPART_NAME, children:[], disableCheckbox: false, selectable: true}
+                      insertUser(org8, users, org.DEPART_CODE)
+
+                      const level9 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE)
+                      level9.forEach(function(org){
+                        const org9 = {key: org.DEPART_CODE, title:org.DEPART_NAME, children:[], disableCheckbox: false, selectable: true}
+                        insertUser(org9, users, org.DEPART_CODE)
+
+                        const level10 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE)
+                        level10.forEach(function(org){
+                          const org10 = {key: org.DEPART_CODE, title:org.DEPART_NAME, children:[], disableCheckbox: false, selectable: true}
+                          insertUser(org10, users, org.DEPART_CODE)
+                          org9.children.push(org10)
+                        })
+
+                        org8.children.push(org9)
+                      })
+
+                      org7.children.push(org8)
+                    })
+
+                    org6.children.push(org7)
+                  })
+
+
+                  org5.children.push(org6)
+                })
+
                 org4.children.push(org5)
               })
 
