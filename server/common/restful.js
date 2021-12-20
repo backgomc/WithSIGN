@@ -105,14 +105,16 @@ let callUserAPI = async () => {
                 }
             ]);
             result.forEach(data => {
-                if (data['DEPART_CODE'] !== data['empInfo'][0]['CODE_BUSEO'] || data['JOB_CODE'] !== data['empInfo'][0]['CODE_JIKMYUNG']) {
-                    User.findOneAndUpdate(
-                        {'_id': data['_id']},
-                        {'DEPART_CODE': data['empInfo'][0]['CODE_BUSEO'], 'JOB_CODE': data['empInfo'][0]['CODE_JIKMYUNG'], 'JOB_TITLE': data['empInfo'][0]['NM_JIKMYUNG']}
-                    ).exec((err) => {
-                        if (err) console.log(err);
-                        console.log('승진/이동 : ' + data['SABUN']);
-                    });
+                if (data['use'] && data['empInfo'].length > 0) {
+                    if (data['DEPART_CODE'] !== data['empInfo'][0]['CODE_BUSEO'] || data['JOB_CODE'] !== data['empInfo'][0]['CODE_JIKMYUNG']) {
+                        User.findOneAndUpdate(
+                            {'_id': data['_id']},
+                            {'DEPART_CODE': data['empInfo'][0]['CODE_BUSEO'], 'JOB_CODE': data['empInfo'][0]['CODE_JIKMYUNG'], 'JOB_TITLE': data['empInfo'][0]['NM_JIKMYUNG']}
+                        ).exec((err) => {
+                            if (err) console.log(err);
+                            console.log('승진/이동 : ' + data['SABUN']);
+                        });
+                    }
                 }
             });
             
@@ -206,7 +208,7 @@ let callIpronetMSG = async (sendInfo, recvInfo, title, message) => {
         // 3. 수신자 아이프로넷 계정정보 조회
         url = config.ipronetURI+'/jsl/EmployeeSelector.SelectUsersBySabuns.json';
         conf = {headers: {'Cookie': cookie, 'Content-Type': 'application/x-www-form-urlencoded', 'Accept': '*/*'}}
-        let recvObj = await axios.post(url, 'sabuns='+recvInfo, conf);
+        let recvObj = await axios.post(url, ('sabuns='+recvInfo).replace(/,/g,';'), conf);
         // console.log(recvObj);
 
         // 4. 메시지 전송
@@ -245,7 +247,7 @@ let callNHWithPUSH = async (sendInfo, recvInfo, title, message) => {
             receivers: recvInfo
         }
         resp = await axios.post(url, JSON.stringify(body), conf);
-        console.log(resp);
+        // console.log(resp);
     } catch (err) {
         console.error(err);
     }

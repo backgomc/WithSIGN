@@ -59,6 +59,12 @@ router.post('/ipronet', (req, res) => {
   // DocuUtil.unpackagingSync('C:/Users/NHIT_LSW/Desktop/', 'MiNe.xlsx', 'C:/Users/NHIT_LSW/Desktop/TEST.xlsx');
 });
 
+router.post('/sendPush', (req, res) => {
+  console.log(req);
+  restful.callNotify(req.body.sendInfo, req.body.recvInfo, req.body.title, req.body.content);
+  return res.json({success: true,  message: '호출 성공'});
+});
+
 // 인증 여부 확인
 router.get('/auth', ValidateToken, (req, res) => {
   var uid = req.body.systemId;
