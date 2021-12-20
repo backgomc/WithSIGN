@@ -347,7 +347,7 @@ const UploadDocument = () => {
               <SelectTemplate type='C' ref={templateRef_C} templateChanged={templateChanged} templateTitleChanged={templateTitleChanged} />
           </ProCard.TabPane>
 
-          <ProCard.TabPane key="tab3" tab="내 템플릿">
+          <ProCard.TabPane key="tab3" tab="개인 템플릿">
               <SelectTemplate type='M' ref={templateRef_M} templateChanged={templateChanged} templateTitleChanged={templateTitleChanged} />
           </ProCard.TabPane>
 

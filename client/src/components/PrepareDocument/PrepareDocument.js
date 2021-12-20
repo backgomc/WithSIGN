@@ -12,7 +12,7 @@ import { navigate } from '@reach/router';
 //   Button,
 //   SelectList,
 // } from 'gestalt';
-import { Upload, message, Badge, Button, Row, Col, List, Card, Checkbox } from 'antd';
+import { Upload, message, Badge, Button, Row, Col, List, Card, Checkbox, Tooltip } from 'antd';
 import { InboxOutlined, HighlightOutlined, PlusOutlined, ArrowLeftOutlined, SendOutlined } from '@ant-design/icons';
 import { selectDocumentTempPath, resetAssignAll, selectAssignees, resetSignee, selectDocumentFile, selectDocumentTitle, resetDocumentFile, resetDocumentTitle, selectTemplate, resetTemplate, selectDocumentType, resetDocumentType, selectTemplateTitle, selectSendType } from '../Assign/AssignSlice';
 import { selectUser } from '../../app/infoSlice';
@@ -884,7 +884,53 @@ const PrepareDocument = () => {
               dataSource={assignees}
               renderItem={item =>
                 <List.Item key={item.key}>
-                  <Card size="small" type="inner" title={item.JOB_TITLE ? item.name+' '+item.JOB_TITLE : item.name} style={{ minWidth: 148 }}>
+                  <Card size="small" type="inner" title={item.JOB_TITLE ? item.name+' '+item.JOB_TITLE : item.name} style={{ minWidth: 148 }} extra={
+                    <Tooltip placement="top" title={'문서에 서명 없이 문서 수신만 하는 경우'}>
+                    <Checkbox onChange={e => {
+
+                      console.log('called observer:'+item.key)
+                      console.log('checked = ', e.target.checked);
+
+                      if (e.target.checked) {
+                        // observer 추가 
+                        setObservers([...observers, item.key])
+                        
+                        // boxData 갱신
+                        const member = boxData.filter(e => e.key === item.key)[0]
+                        member.observer = member.observer + 1
+                        const newBoxData = boxData.slice()
+                        newBoxData[boxData.filter(e => e.key === item.key).index] = member 
+                        setBoxData(newBoxData)
+
+                        // annotation 삭제
+                        const { Annotations, docViewer } = instance;
+                        const annotManager = docViewer.getAnnotationManager();
+                        const annotationsList = annotManager.getAnnotationsList();
+                        const annotsToDelete = [];
+
+                        annotationsList.map(async (annot, index) => {
+                          console.log("annot.custom.name:"+annot.custom.name)
+                          if (annot.custom.name.includes(item.key)) {
+                            annotsToDelete.push(annot)
+                          }
+                        })
+
+                        annotManager.deleteAnnotations(annotsToDelete, null, true);
+
+                      } else {
+                        // observer 삭제
+                        setObservers(observers.filter(v => v != item.key))
+                        
+                        // boxData 갱신
+                        const member = boxData.filter(e => e.key === item.key)[0]
+                        member.observer = member.observer - 1
+                        const newBoxData = boxData.slice()
+                        newBoxData[boxData.filter(e => e.key === item.key).index] = member 
+                        setBoxData(newBoxData)
+
+                      }
+                    }}>수신자로 지정</Checkbox></Tooltip>
+                  }>
                     <p>
                       <Badge count={boxData.filter(e => e.key === item.key)[0].sign}>
                         <Button block disabled={observers.filter(v => v === item.key).length > 0} icon={<PlusOutlined />} onClick={e => { addField('SIGN', {}, item); }}>{formatMessage({id: 'input.sign'})}</Button>
@@ -898,7 +944,7 @@ const PrepareDocument = () => {
                       {/* {boxData.filter(e => e.key === item.key)[0].text} */}
                     </p>
                     {/* 옵저버 기능 추가 */}
-                    <p>
+                    {/* <p>
                       <Checkbox onChange={e => {
 
                         console.log('called observer:'+item.key)
@@ -942,9 +988,8 @@ const PrepareDocument = () => {
                           setBoxData(newBoxData)
 
                         }
-
-                      }}>서명 없이 문서 수신</Checkbox>
-                    </p>
+                      }}>수신자로 지정</Checkbox>
+                    </p> */}
                   </Card>
                 </List.Item>
               }

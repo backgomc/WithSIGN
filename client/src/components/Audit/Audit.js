@@ -1,5 +1,5 @@
 import React, {useEffect} from 'react';
-import { Page, Text, View, Document, StyleSheet, PDFViewer, Font } from '@react-pdf/renderer';
+import { Page, Text, View, Document, StyleSheet, PDFViewer, Font, PDFDownloadLink } from '@react-pdf/renderer';
 import { Button } from "antd";
 import { PageContainer } from '@ant-design/pro-layout';
 import { useIntl } from "react-intl";
@@ -12,7 +12,7 @@ import font from '../../assets/font/NanumGothic.ttf';
 import font_Bold from '../../assets/font/NanumGothic-ExtraBold.ttf';
 import { navigate } from '@reach/router';
 
-import { ArrowLeftOutlined } from '@ant-design/icons';
+import { ArrowLeftOutlined, DownloadOutlined } from '@ant-design/icons';
 
 
 Font.register({ family: "Nanum Gothic", src: font });
@@ -297,7 +297,14 @@ const Audit = ({location}) => {
           extra: [           
           <Button icon={<ArrowLeftOutlined />} onClick={() => window.history.back()}>
             {/* {formatMessage({id: 'Back'})} */}
-          </Button>
+          </Button>,
+          <PDFDownloadLink document={<MyDocument />} fileName={docTitle+'_진본확인.pdf'}>
+          {({ blob, url, loading, error }) =>
+            <Button key="1" loading={loading} type="primary" icon={<DownloadOutlined />}>
+                {formatMessage({id: 'document.download'})}
+            </Button>
+          }
+        </PDFDownloadLink>
           ],
         }}
         // content={
@@ -316,7 +323,8 @@ const Audit = ({location}) => {
             display: 'flex'
           }}
         >
-          <PDFViewer style={{width: '100%', height: '100%', display: 'flex'}}>
+
+          <PDFViewer style={{width: '100%', height: '100%', display: 'flex'}} showToolbar={true}>
             <MyDocument />
 
             {/* <Document>
