@@ -7,6 +7,7 @@ import { useDispatch } from 'react-redux';
 // import { selectUser } from '../../app/infoSlice';
 import { navigate } from '@reach/router';
 import { setDocToView } from '../ViewDocument/ViewDocumentSlice';
+import { selectPathname, setPathname } from '../../config/MenuSlice';
 import moment from 'moment';
 import 'moment/locale/ko';
 import { DocumentType, DocumentTypeBadge, DOCUMENT_SIGNED, DOCUMENT_SIGNING, DOCUMENT_CANCELED } from '../Document/DocumentType';
@@ -289,6 +290,8 @@ const DocumentList = () => {
   useEffect(() => {
 
     console.log('useEffect called');
+
+    dispatch(setPathname('/documentList'));
 
     // if (location.state.status) {
     //   setStatus(location.state.status)

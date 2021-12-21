@@ -171,7 +171,7 @@ const TemplateList = () => {
       sorter: true,
       key: 'docTitle',
       ...getColumnSearchProps('docTitle'),
-      expandable: true,
+      // expandable: true,
       render: (text,row) => <div style={{ wordWrap: 'break-word', wordBreak: 'break-word' }}><FileOutlined /> {text}</div>, // 여러 필드 동시 표시에 사용
     },
     {
@@ -206,12 +206,7 @@ const TemplateList = () => {
       console.log('selectedRowKeys changed: ', selectedRowKeys);
       setSelectedRowKeys(selectedRowKeys);
       setHasSelected(selectedRowKeys.length > 0);
-    },
-    // selections: [
-    //   Table.SELECTION_ALL,
-    //   Table.SELECTION_INVERT,
-    //   Table.SELECTION_NONE,
-    // ],
+    }
   };
 
   useEffect(() => {

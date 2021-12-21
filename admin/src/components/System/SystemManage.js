@@ -3,9 +3,9 @@ import axios from 'axios';
 
 const SystemManage = () => {
   useEffect(() => {
-    axios.post('/api/admin/ipronet').then(response => {
-      console.log(response);
-    });
+    // axios.post('/api/admin/ipronet').then(response => {
+    //   console.log(response);
+    // });
   }, []);
 
   return (

@@ -5,7 +5,7 @@ const Footer = () => {
 
   return (
     <footer class="ant-layout-footer">
-      <div class="ant-pro-global-footer-copyright" style={{"text-align": "center"}}>With SIGN © NH INFORMATION SYSTEM 2021</div>
+      <div class="ant-pro-global-footer-copyright" style={{"text-align": "center"}}>WITH SIGN © NH INFORMATION SYSTEM 2021</div>
     </footer>
   );
 

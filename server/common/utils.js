@@ -65,6 +65,17 @@ const generateRandomName = () => {
     return str
 }
 
+const generateRandomPass = () => {
+    let chr = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+    let len = 8;  //8자리
+    var rnd = '';
+    for (let i = 0; i < len; i++) {
+        let num = Math.floor(Math.random() * chr.length);
+        rnd += chr.substring(num, num + 1);
+    }
+    return rnd;
+}
+
 const makeFolder = (dir) => {
     if(!fs.existsSync(dir)) {
         fs.mkdirSync(dir, { recursive: true });
@@ -84,4 +95,4 @@ const today = () => {
 
 
 
-module.exports = { hexCrypto, encrypt, decrypt, generateRandomName, makeFolder, today };
+module.exports = { hexCrypto, encrypt, decrypt, generateRandomName, generateRandomPass, makeFolder, today };

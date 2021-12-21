@@ -38,7 +38,7 @@ function Login() {
           <div className={styles['header-wrapper']}>
             <header>
               <a href="/">
-                <img src={LogoImage} alt="With Sign" />
+                <img src={LogoImage} alt="WithSIGN" />
                 <h2>{formatMessage({id: 'AppName'})}</h2>
                 <h5 style={{'color':'cyan'}}>{formatMessage({id: 'AppSubName'})}</h5>
               </a>

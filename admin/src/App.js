@@ -3,6 +3,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { Router, navigate } from '@reach/router';
 import axios from 'axios';
 import { setUser, selectUser } from './app/infoSlice';
+import { selectPathname, setPathname } from './config/MenuSlice';
 import ProLayout from '@ant-design/pro-layout';
 import { useIntl } from "react-intl";
 import Menus from './config/Menus';
@@ -32,7 +33,8 @@ const App = () => {
   const dispatch = useDispatch();
   const { formatMessage } = useIntl();
 
-  const [pathname, setPathname] = useState('/');  // 시작 path
+  // const [pathname, setPathname] = useState('/');  // 시작 path
+  const pathname = useSelector(selectPathname);
   
   const defaultPage = () => (
     <div></div>
@@ -43,7 +45,7 @@ const App = () => {
     axios.get('/api/admin/auth').then(response => {
       if (response.data.success) {
         dispatch(setUser(response.data.user));
-        navigate('/');
+        // navigate('/');
       } else {
         if (localStorage.getItem('__rToken__') || token) {
           // 2. 토큰 만료 갱신
@@ -56,7 +58,7 @@ const App = () => {
             axios.post('/api/admin/refresh', null, config).then(response => {
               if (response.data.success) {
                 dispatch(setUser(response.data.user));
-                navigate('/');
+                // navigate('/');
               } else {
                 dispatch(setUser(null));
                 navigate('/login');
@@ -73,7 +75,7 @@ const App = () => {
               if (response.data.success) {
                 dispatch(setUser(response.data.user));
                 localStorage.setItem('__rToken__', response.data.user.__rToken__);
-                navigate('/');
+                // navigate('/');
               } else {
                 dispatch(setUser(null));
                 navigate('/login');
@@ -97,14 +99,15 @@ const App = () => {
     }}
     >
       <ProLayout
-        title="With Sign"
+        title="WithSIGN"
         // logo="https://gw.alipayobjects.com/mdn/rms_b5fcc5/afts/img/A*1NHAQYduQiQAAAAAAAAAAABkARQnAQ" 로고 이미지
         logo={LogoImage}
         menuHeaderRender={(logo, title) => (
           <div
             id="customize_menu_header"
             onClick={() => {
-              navigate('/')
+              dispatch(setPathname('/'));
+              navigate('/');
             }}
           >
             {logo}
@@ -121,8 +124,8 @@ const App = () => {
           // eslint-disable-next-line jsx-a11y/anchor-is-valid
           <a
             onClick={() => {
-              setPathname(item.path)
-              navigate(item.path)
+              dispatch(setPathname(item.path));
+              navigate(item.path);
             }}
           >
             {dom}
