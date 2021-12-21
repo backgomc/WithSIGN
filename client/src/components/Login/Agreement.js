@@ -246,7 +246,7 @@ function Agreement({location}) {
             </Button>
             ],
           }}
-          content={<Checkbox checked={totalChecked} onChange={onChangeTotal} style={{marginTop:15}}><b>WithSign 이용약관, 개인정보 수집 및 이용에 모두 동의합니다.</b></Checkbox>}
+          content={<Checkbox checked={totalChecked} onChange={onChangeTotal} style={{marginTop:15}}><b>WithSIGN 이용약관, 개인정보 수집 및 이용에 모두 동의합니다.</b></Checkbox>}
           footer={[
           ]}
         >

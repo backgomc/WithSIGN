@@ -218,7 +218,7 @@ let callIpronetMSG = async (sendInfo, recvInfo, title, message) => {
             sender: sendObj.data['array'][0],
             receivers: recvObj.data['array'],
             title: title,
-            content: message + '<br/><br/><br/><a href="' + config.withsignURI + '/" target="_blank">WithSign 바로가기</a>',
+            content: message + '<br/><br/><br/><a href="' + config.withsignURI + '/" target="_blank">WithSIGN 바로가기</a>',
             attachments:[],
             push:false
         }

@@ -500,7 +500,10 @@ router.post('/document', (req, res) => {
 
   const docId = req.body.docId
 
-  Document.findOne({ _id: docId }, (err, document) => {
+  Document
+    .findOne({ _id: docId })
+    .populate("user", {name: 1, JOB_TITLE: 2})
+    .exec((err, document) => {
     if (document) {
       if (err) {
         console.log(err);

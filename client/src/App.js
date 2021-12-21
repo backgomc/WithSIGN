@@ -77,7 +77,7 @@ const App = () => {
       console.log(response);
       if (response.data.isAuth) {
         dispatch(setUser(response.data));
-        navigate('/');
+        // navigate('/');
       } else {
         // 통합 로그인
         if (token) {
@@ -87,7 +87,7 @@ const App = () => {
           axios.post('/api/users/sso', body).then(response => {
             if (response.data.success) {
               dispatch(setUser(response.data.user));
-              navigate('/');
+              // navigate('/');
             } else {
               if (response.data.user) { // 약관 동의 절차 필요
                 navigate('/agreement', { state: {user: response.data.user}});
@@ -187,7 +187,7 @@ const App = () => {
             { key: '이용약관', title: '이용약관', href: 'terms' },
             { key: '개인정보처리방침', title: '개인정보처리방침', href: 'policy' },
           ]}
-          copyright="WITH SIGN © NH INFORMATION SYSTEM 2021"
+          copyright="2021 NH INFORMATION SYSTEM CO.,LTD. ALL RIGHT RESERVED"
         />
       )}     
   >
