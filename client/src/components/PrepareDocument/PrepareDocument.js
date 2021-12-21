@@ -164,9 +164,9 @@ const PrepareDocument = () => {
       const { iframeWindow, docViewer, CoreControls } = instance;
       
       // select only the view group
-      // toolbarGroup-View, toolbarGroup-Annotate, toolbarGroup-Shapes, toolbarGroup-Insert, toolbarGroup-Measure, toolbarGroup-Edit
+      // toolbarGroup-View, toolbarGroup-Annotate, toolbarGroup-Shapes, toolbarGroup-Insert, toolbarGroup-Measure, toolbarGroup-Edit, toolbarGroup-FillAndSign
+      // instance.setToolbarGroup('toolbarGroup-FillAndSign');
       instance.setToolbarGroup('toolbarGroup-Annotate');
-      // instance.setToolbarGroup('toolbarGroup-Insert');
 
       // instance.setHeaderItems(function(header) {
       //   // get the tools overlay
@@ -865,26 +865,27 @@ const PrepareDocument = () => {
       loading={loading}
     >
 
-      <RcResizeObserver
+      {/* <RcResizeObserver
       key="resize-observer"
       onResize={(offset) => {
         setResponsive(offset.width < 596);
       }}
-      >
+      > */}
         <Row gutter={[24, 24]}>
-          <Col span={responsive ? 24 : 5}>
+          {/* <Col span={responsive ? 24 : 5}> */}
+          <Col xl={4} lg={4} md={4} sm={24} xs={24}>
 
             {/* 일반 발송 */}
             {(sendType === 'G') ? (<div>  
               <List
               rowKey="id"
               loading={loading}
-              // grid={{ gutter: 24, lg: 3, md: 2, sm: 1, xs: 1 }}
-              grid={{ gutter: 24, column: responsive ? 2 : 1}}
+              grid={{ gutter: 24, lg: 1, md: 1, sm: 2, xs: 2 }}
+              // grid={{ gutter: 24, column: responsive ? 2 : 1}}
               dataSource={assignees}
               renderItem={item =>
                 <List.Item key={item.key}>
-                  <Card size="small" type="inner" title={item.JOB_TITLE ? item.name+' '+item.JOB_TITLE : item.name} style={{ minWidth: 148 }} extra={
+                  <Card size="small" type="inner" title={item.JOB_TITLE ? item.name+' '+item.JOB_TITLE : item.name} style={{ width: '220px' }} extra={
                     <Tooltip placement="top" title={'문서에 서명 없이 문서 수신만 하는 경우'}>
                     <Checkbox onChange={e => {
 
@@ -932,15 +933,19 @@ const PrepareDocument = () => {
                     }}>수신자로 지정</Checkbox></Tooltip>
                   }>
                     <p>
+                    <Tooltip placement="right" title={'참여자가 사인을 입력할 위치에 넣어주세요.'}>
                       <Badge count={boxData.filter(e => e.key === item.key)[0].sign}>
-                        <Button block disabled={observers.filter(v => v === item.key).length > 0} icon={<PlusOutlined />} onClick={e => { addField('SIGN', {}, item); }}>{formatMessage({id: 'input.sign'})}</Button>
+                        <Button style={{width:'190px', textAlign:'left'}} disabled={observers.filter(v => v === item.key).length > 0} icon={<PlusOutlined />} onClick={e => { addField('SIGN', {}, item); }}>{formatMessage({id: 'input.sign'})}</Button>
                       </Badge>
+                    </Tooltip>
                       {/* {boxData.filter(e => e.key === item.key)[0].sign} */}
                     </p>
                     <p>
+                    <Tooltip placement="right" title={'참여자가 텍스트를 입력할 위치에 넣어주세요.'}>
                       <Badge count={boxData.filter(e => e.key === item.key)[0].text}>
-                        <Button block disabled={observers.filter(v => v === item.key).length > 0} icon={<PlusOutlined />} onClick={e => { addField('TEXT', {}, item); }}>{formatMessage({id: 'input.text'})}</Button>
+                        <Button style={{width:'190px', textAlign:'left'}} disabled={observers.filter(v => v === item.key).length > 0} icon={<PlusOutlined />} onClick={e => { addField('TEXT', {}, item); }}>{formatMessage({id: 'input.text'})}</Button>
                       </Badge>
+                    </Tooltip>
                       {/* {boxData.filter(e => e.key === item.key)[0].text} */}
                     </p>
                     {/* 옵저버 기능 추가 */}
@@ -998,16 +1003,20 @@ const PrepareDocument = () => {
             {/* 대량 발송 */}
             </div>) : (<div>
 
-              <Card size="small" type="inner" title="서명 참여자" style={{ minWidth: 148 }}>
+              <Card size="small" type="inner" title="서명 참여자" style={{ width: '220px' }}>
                     <p>
+                    <Tooltip block placement="right" title={'참여자가 사인을 입력할 위치에 넣어주세요.'}>
                       <Badge count={boxData.filter(e => e.key === 'bulk')[0] ? boxData.filter(e => e.key === 'bulk')[0].sign : 0}>
-                        <Button icon={<PlusOutlined />} onClick={e => { addField('SIGN', {}); }}>{formatMessage({id: 'input.sign'})}</Button>
+                        <Button style={{width:'190px', textAlign:'left'}} icon={<PlusOutlined />} onClick={e => { addField('SIGN', {}); }}>{formatMessage({id: 'input.sign'})}</Button>
                       </Badge>
+                    </Tooltip>
                     </p>
                     <p>
+                    <Tooltip placement="right" title={'참여자가 텍스트를 입력할 위치에 넣어주세요.'}>
                       <Badge count={boxData.filter(e => e.key === 'bulk')[0] ? boxData.filter(e => e.key === 'bulk')[0].text : 0}>
-                        <Button icon={<PlusOutlined />} onClick={e => { addField('TEXT', {}); }}>{formatMessage({id: 'input.text'})}</Button>
+                        <Button style={{width:'190px', textAlign:'left'}} icon={<PlusOutlined />} onClick={e => { addField('TEXT', {}); }}>{formatMessage({id: 'input.text'})}</Button>
                       </Badge>
+                    </Tooltip>
                     </p>
               </Card>
 
@@ -1030,10 +1039,13 @@ const PrepareDocument = () => {
             /> */}
 
           </Col>
-          <Col span={responsive ? 24 : 19}><div className="webviewer" ref={viewer}></div></Col>
+          {/* <Col span={responsive ? 24 : 19}> */}
+          <Col xl={20} lg={20} md={20} sm={24} xs={24}>
+            <div className="webviewer" ref={viewer}></div>
+          </Col>
         </Row>
 
-      </RcResizeObserver>
+      {/* </RcResizeObserver> */}
 
 
     </PageContainer>

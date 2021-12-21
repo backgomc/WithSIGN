@@ -192,7 +192,7 @@ const App = () => {
       )}     
   >
     <Router>
-      <Home path="/" />
+      <Home path="/" default />
       <Assign path="/assign" />
       <UploadDocument path="/uploadDocument" />
       <Preparation path="/prepareDocument" />

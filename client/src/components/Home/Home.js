@@ -250,7 +250,8 @@ const Home = () => {
     let param = {
       user: _id,
       pagination,
-      status: DOCUMENT_TOSIGN
+      status: DOCUMENT_TOSIGN,
+      includeBulk: true
     }
     const res = await axios.post('/api/document/documents', param)
     if (res.data.success) {
@@ -265,7 +266,8 @@ const Home = () => {
     let param = {
       user: _id,
       pagination,
-      status: DOCUMENT_SIGNING
+      status: DOCUMENT_SIGNING,
+      includeBulk: true
     }
     const res = await axios.post('/api/document/documents', param)
     if (res.data.success) {
@@ -279,7 +281,8 @@ const Home = () => {
     setLoadingTotal(true);
     let param = {
       user: _id,
-      pagination
+      pagination,
+      includeBulk: true
     }
     const res = await axios.post('/api/document/documents', param)
     if (res.data.success) {
@@ -294,7 +297,8 @@ const Home = () => {
     let param = {
       user: _id,
       pagination,
-      status: DOCUMENT_CANCELED
+      status: DOCUMENT_CANCELED,
+      includeBulk: true
     }
     const res = await axios.post('/api/document/documents', param)
     if (res.data.success) {
@@ -309,7 +313,8 @@ const Home = () => {
     let param = {
       user: _id,
       pagination,
-      status: DOCUMENT_SIGNED
+      status: DOCUMENT_SIGNED,
+      includeBulk: true
     }
     const res = await axios.post('/api/document/documents', param)
     if (res.data.success) {
@@ -689,7 +694,7 @@ const Home = () => {
         lineHeight: '32px',
       }}
       >
-        <Button onClick={() => { navigate('/documentList', { state: {status: target}})}}>더보기</Button>
+        <Button onClick={() => { navigate('/documentList', { state: {status: target, includeBulk: true}})}}>더보기</Button>
     </div>
     ) 
   }
@@ -713,9 +718,9 @@ const Home = () => {
         renderItem={item => (
           <List.Item>
           <List.Item.Meta
-            avatar={<DocumentTypeText uid={_id} document={item} />}
+            avatar={<DocumentTypeBadge uid={_id} document={item} />}
             title={
-              <Link to="/documentList" state={{ status: '', docId: item._id }}>
+              <Link to="/documentList" state={{ status: '', docId: item._id, includeBulk: true }}>
                 {item.docTitle}
               </Link>
             }
@@ -747,9 +752,9 @@ const Home = () => {
         renderItem={item => (
           <List.Item>
           <List.Item.Meta
-            avatar={<FileOutlined />}
+            avatar={<DocumentTypeBadge uid={_id} document={item} />}
             title={
-              <Link to="/documentList" state={{ status: DOCUMENT_SIGNING, docId: item._id }}>
+              <Link to="/documentList" state={{ status: DOCUMENT_SIGNING, docId: item._id, includeBulk: true }}>
                 {item.docTitle}
               </Link>
             }
@@ -912,9 +917,9 @@ const Home = () => {
         renderItem={item => (
           <List.Item>
           <List.Item.Meta
-            avatar={<DocumentTypeText uid={_id} document={item} />}
+            avatar={<DocumentTypeBadge uid={_id} document={item} />}
             title={
-              <Link to="/documentList" state={{ status: DOCUMENT_CANCELED, docId: item._id }}>
+              <Link to="/documentList" state={{ status: DOCUMENT_CANCELED, docId: item._id, includeBulk: true }}>
                 {item.docTitle}
               </Link>
             }
@@ -945,9 +950,9 @@ const Home = () => {
         renderItem={item => (
           <List.Item>
           <List.Item.Meta
-            avatar={<DocumentTypeText uid={_id} document={item} />}
+            avatar={<DocumentTypeBadge uid={_id} document={item} />}
             title={
-              <Link to="/documentList" state={{ status: DOCUMENT_SIGNED, docId: item._id }}>
+              <Link to="/documentList" state={{ status: DOCUMENT_SIGNED, docId: item._id, includeBulk: true }}>
                 {item.docTitle}
               </Link>
             }
