@@ -1,14 +1,15 @@
 const express = require('express');
 const router = express.Router();
+const config = require('../config/key');
+const restful = require('../common/restful');
+const { hexCrypto, generateRandomPass } = require('../common/utils');
 const { Document } = require('../models/Document');
 const { Template } = require('../models/Template');
 const { User } = require('../models/User');
-const fs = require('fs');
-const { hexCrypto } = require('../common/utils');
-const config = require('../config/key');
 const { generateToken, ValidateToken, renewalToken } = require('../middleware/adminAuth');
+const fs = require('fs');
 
-const restful = require('../common/restful');
+const saltRounds = 10;
 
 const java = require('java');
 const jarFilePath1 = __dirname+'/../lib/INICrypto_v4.0.12.jar';
@@ -35,7 +36,8 @@ java.classpath.push(jarFilePath7);
 // -- 사용자 관리 --
 // /api/admin/user/list
 // /api/admin/user/info
-// /api/admin/user/update (권한 변경)
+// /api/admin/user/update (정보 변경)
+// /api/admin/user/push   (알림 점검)
 // /api/admin/user/sync   (연계 수동)
 // -- 부서 관리 --
 // /api/admin/org/list
@@ -57,12 +59,6 @@ router.post('/ipronet', (req, res) => {
   restful.callNotify('6179ff170293112fbceef449',['6179ff170293112fbceef449','6179feef0293112fbceef445'],'title','content');
   // var DocuUtil = java.import('com.nonghyupit.drm.DocuUtil');
   // DocuUtil.unpackagingSync('C:/Users/NHIT_LSW/Desktop/', 'MiNe.xlsx', 'C:/Users/NHIT_LSW/Desktop/TEST.xlsx');
-});
-
-router.post('/sendPush', (req, res) => {
-  console.log(req);
-  restful.callNotify(req.body.sendInfo, req.body.recvInfo, req.body.title, req.body.content);
-  return res.json({success: true,  message: '호출 성공'});
 });
 
 // 인증 여부 확인
@@ -134,7 +130,7 @@ router.post('/sso', (req, res) => {
 // 토큰 갱신
 router.post('/refresh', renewalToken, (req, res) => {
   var _id = req.body.systemId;
-  var _tk = req.body.systemTk;
+  var _tk = req.body.accessTk;
   console.log(_tk);
   User.findOne({ _id: _id, adminJWT: req.headers['refresh-token'] }, (err, user) => {
     // console.log(user);
@@ -245,12 +241,36 @@ console.log(req.cookies);
 
   // 단어검색 
   var searchStr = {};
+  var condition = [];
 
+  // 사용자
+  if (req.body.name) {
+    condition.push({'name': new RegExp(req.body.name[0], 'i')});
+  }
+
+  // 부서명
+  if (req.body.org) {
+    condition.push({'orgInfo.DEPART_NAME': new RegExp(req.body.org[0], 'i')});
+  }
+
+  if (condition.length > 0) searchStr = {$and: condition}
   console.log(searchStr);
 
   // 전체 건수
-  var totalCount = await User.countDocuments(searchStr).exec();
-
+  var totalCount = await User.aggregate([
+    {
+      $lookup: {
+        from: 'orgs',
+        localField: 'DEPART_CODE',
+        foreignField: 'DEPART_CODE',
+        as: 'orgInfo'
+      }
+    },
+    {
+      $match: searchStr
+    }
+  ]);
+  
   User
     .aggregate([
       {
@@ -268,10 +288,10 @@ console.log(req.cookies);
     .sort({ [order]: dir })   //asc:오름차순 desc:내림차순
     .skip(Number(start))
     .limit(Number(pageSize))
-    .exec((err, documents) => {
-      // console.log(documents);
+    .exec((err, users) => {
+      // console.log(users);
       if (err) return res.json({ success: false, error: err });
-      return res.json({ success: true, documents: documents, total: totalCount });
+      return res.json({ success: true, users: users, total: totalCount.length });
     });
 });
 
@@ -280,9 +300,25 @@ router.post('/user/info', ValidateToken, (req, res) => {
   return res.json({ success: true, message: 'user/info' });
 });
 
-// 사용자 관리 > 변경(권한)
-router.post('/user/update', ValidateToken, (req, res) => {
-  return res.json({ success: true, message: '/user/update' });
+// 사용자 관리 > 변경(정보)
+router.post('/user/update', ValidateToken, async (req, res) => {
+  User.findOne({ _id: req.body.i }).then((user, err) => {
+    if (err) return res.json({ success: false, err });
+    if (req.body.k == 'init') {var pwd = generateRandomPass(); user.password = pwd;}
+    if (req.body.k == 'flag') user.use = !user.use;
+    if (req.body.k == 'auth') user.role = 1 - user.role;
+    user.save((err) => {
+      if (err) return res.json({ success: false, err });
+      if (req.body.k == 'init') restful.callNotify(null, user,'[WithSIGN] 임시 비밀번호 발급', 'WithSIGN 임시 비밀번호는 ' + pwd + ' 입니다.');
+      return res.status(200).send({success: true});
+    });
+  });
+});
+
+// 사용자 관리 > 알림(점검)
+router.post('/user/sendPush', (req, res) => {
+  restful.callNotify(req.body.sendInfo, req.body.recvInfo, req.body.title, req.body.content);
+  return res.json({success: true,  message: '호출 성공'});
 });
 
 // 사용자 관리 > 연계 호출
@@ -307,7 +343,6 @@ router.post('/org/sync', ValidateToken, async (req, res) => {
 
 // 문서 관리 > 목록
 router.post('/document/list', ValidateToken, async (req, res) => {
-
   // 페이징 처리
   const current = req.body.pagination.current;
   const pageSize = req.body.pagination.pageSize;
