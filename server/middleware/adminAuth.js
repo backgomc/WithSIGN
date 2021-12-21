@@ -3,8 +3,8 @@ const jwt = require('jsonwebtoken');
 // 토큰 생성
 function generateToken (user) {
     console.log('generateToken');
-    var accessToken  = jwt.sign({_id: user._id.toHexString()}, 'WITHSIGN', {expiresIn: '1m'});
-    var refreshToken = jwt.sign({}, 'WITHSIGN', {expiresIn: '10m'});
+    var accessToken  = jwt.sign({_id: user._id.toHexString()}, 'WITHSIGN', {expiresIn: '60m'});
+    var refreshToken = jwt.sign({}, 'WITHSIGN', {expiresIn: '720m'});
     return {accessToken, refreshToken}
 }
 
@@ -18,7 +18,7 @@ function renewalToken (req, res, next) {
         jwt.verify(accessToken, 'WITHSIGN', {ignoreExpiration: true}, function (err, payload) {
             if (err) return res.json({ success: false, message: err.message, isAuth: false });
             req.body.systemId = payload._id;
-            req.body.accessTk = jwt.sign({_id: payload._id}, 'WITHSIGN', {expiresIn: '1m'});
+            req.body.accessTk = jwt.sign({_id: payload._id}, 'WITHSIGN', {expiresIn: '60m'});
             console.log('OK');
             next();
         });
