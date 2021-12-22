@@ -12,6 +12,15 @@ import {
     NotificationOutlined,
     RightOutlined
 } from '@ant-design/icons';
+import styled from 'styled-components';
+const Container = styled.div`
+    .ant-pro-card-title {
+        display: inline;
+        color: blue;
+        font-size: 18px;
+        width: 100%;
+    }
+`;
 
 const BoardCard = (props) => {
 
@@ -43,7 +52,9 @@ const BoardCard = (props) => {
     }, []);
 
     return (
+        // <Container>
         <ProCard
+            type='inner'	
             colSpan={{ xs: 24, sm: 12, md: 12, lg: 12, xl: 12 }}
             style={{ marginBottom: 0, marginRight: 0, padding: 0 }}
             title={boardName}
@@ -77,6 +88,7 @@ const BoardCard = (props) => {
                 )}
             />
         </ProCard>
+        // </Container>
     );
 
 };

@@ -530,16 +530,22 @@ const DocumentList = ({location}) => {
   useEffect(() => {
 
     console.log("useEffect called")
+    console.log("includeBulk:"+location.state.includeBulk)
 
     if (location.state.status) {
       setStatus(location.state.status)
     }
 
+    // HOME 에서 대량 발송 건 포함 이동해온 경우 대량 발송 건 포함 useDidMountEffect 서비스로 목록 호출
+    if (location.state.includeBulk) {
+      setIncludeBulk(location.state.includeBulk)
+      return;
+    }
+
     fetch({
       user: _id,
       pagination,
-      status:location.state.status,
-      includeBulk: includeBulk
+      status:location.state.status
     });
 
     console.log("location.state.docId:"+ location.state.docId)
