@@ -7,7 +7,7 @@ const { Bulk } = require("../models/Bulk");
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
-const { makeFolder } = require('../common/utils');
+const { makeFolder, generateRandomName } = require('../common/utils');
 
 const restful = require('../common/restful');
 
@@ -69,7 +69,6 @@ const storageTemp = multer.diskStorage({
 })
 
 const upload = multer({storage});
-// const uploadTemp = multer({storageTemp});
 const uploadTemp = multer({ dest: config.storageDIR + 'temp/' })
 
 // 신규 문서 등록
@@ -373,5 +372,41 @@ router.post('/moveFile', (req, res) => {
     });
     
 })
+
+
+
+// 게사판 첨부 
+const storageBoard = multer.diskStorage({
+    destination: function (req, file, cb) {
+        console.log("req.body.path:"+req.body.path)
+        if(req.body.path) {
+            var newDir = config.storageDIR + req.body.path;
+            console.log('newDir:'+newDir)
+            
+            // 폴더가 없으면 폴더생성 
+            makeFolder(newDir);
+
+            cb(null, newDir);
+        } else {
+            cb(null, config.storageDIR + 'board/');
+        }
+    },
+    filename: function (req, file, cb) {
+            cb(null, file.originalname);
+            // cb(null, file.fieldname + '-' + Date.now() + file.originalname.match(/\..*$/)[0])
+    }
+});
+
+
+// 게시판 파일 업로드 (다건 지원)
+router.post('/uploadFiles', upload.array('files'), async (req, res) => {
+
+    if (req.files) {
+        return res.json({ success: true, files: req.files })
+    } else {
+        return res.json({ success: false, message: "file upload failed"})
+    }    
+})
+
 
 module.exports = router;

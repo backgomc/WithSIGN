@@ -26,7 +26,9 @@ const boardSchema = mongoose.Schema({
         registeredTime: {  type: Date, default: Date.now },
         content: { type: String }
     }],
-
+    files: {
+        type: Array
+    }
 })
 
 const Board = mongoose.model('Board', boardSchema)

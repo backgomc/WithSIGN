@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
-import { Table, Input, Space, Button, Form } from "antd";
+import { Table, Input, Space, Button, Form, message, Upload } from "antd";
 import Highlighter from 'react-highlight-words';
 import { SearchOutlined } from '@ant-design/icons';
 import { useSelector, useDispatch } from 'react-redux';
@@ -16,6 +16,7 @@ import {
 } from '@ant-design/icons';
 import { PageContainer } from '@ant-design/pro-layout';
 import { useIntl } from "react-intl";
+import * as common from "../../util/common";
 
 import ProCard from '@ant-design/pro-card';
 import ProForm, { ProFormUploadDragger, ProFormText, ProFormTextArea } from '@ant-design/pro-form';
@@ -48,9 +49,6 @@ import colorSyntax from '@toast-ui/editor-plugin-color-syntax';
 import '@toast-ui/editor-plugin-code-syntax-highlight/dist/toastui-editor-plugin-code-syntax-highlight.css';
 // import codeSyntaxHighlight from '@toast-ui/editor-plugin-code-syntax-highlight';
 import codeSyntaxHighlight from '@toast-ui/editor-plugin-code-syntax-highlight/dist/toastui-editor-plugin-code-syntax-highlight-all.js';
-
-
-
 
 
 const { TextArea } = Input;
@@ -87,6 +85,8 @@ const BoardWrite = ({location}) => {
   const [data, setData] = useState([]);
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [hasSelected, setHasSelected] = useState(selectedRowKeys.length > 0);
+  const [fileList, setFileList] = useState([]);
+
   
   const [pagination, setPagination] = useState({current:1, pageSize:10});
   const [loading, setLoading] = useState(false);
@@ -116,6 +116,30 @@ const BoardWrite = ({location}) => {
   const onFinish = async (values) => {
     console.log(values)
 
+    // FILE UPLOAD
+    const filePaths = []
+    var files = []
+    console.log('fileList:'+fileList)
+    if (fileList.length > 0) {
+
+      const formData = new FormData()
+
+      formData.append('path', 'articles/'+Date.now()+'/');
+      fileList.forEach(file => formData.append('files', file));
+
+      const resFile = await axios.post(`/api/storage/uploadFiles`, formData)
+      if (resFile.data.success) {
+        resFile.data.files.map(file => {
+          filePaths.push(file.path)
+        })
+
+        files = resFile.data.files
+      }
+    }
+
+    console.log('filePaths:'+filePaths)
+    
+    
     // console.log(editorState.getCurrentContent());
     // console.log(draftToHtml(convertToRaw(editorState.getCurrentContent())));
 
@@ -131,6 +155,7 @@ const BoardWrite = ({location}) => {
       boardType: boardType,
       title: form.getFieldValue("title"),
       content: contentHtml,
+      files: files
       // content: draftToHtml(convertToRaw(editorState.getCurrentContent()))
     }
     console.log(body)
@@ -293,21 +318,58 @@ const BoardWrite = ({location}) => {
           initialValue=""
           usageStatistics={false}
           ref={editorRef}
-          height="58vh"
+          height="46vh"
           initialEditType="wysiwyg" // wysiwyg | markdown
           onChange={onChangeTextHandler}
           // plugins={[colorSyntax]}
           // plugins={[chart, codeSyntaxHighlight, colorSyntax, tableMergedCell, uml]}
       />
 
-      </ProForm>
+      <br></br>
+      <ProFormUploadDragger 
+        max={3} 
+        label="" 
+        name="dragger" 
+        // title={formatMessage({id: 'input.fileupload.file'})}
+        title={""}
+        description={formatMessage({id: 'input.fileupload.file.volume'}) +', '+ formatMessage({id: 'input.fileupload.file.max'})}
+        // description={""}
+        fieldProps={{
+          height: '120px',
+          onChange: (info) => {
+            if (info.fileList.length != fileList.length) { // 파일 삭제 된 것으로 판단
+              setFileList(fileList.filter(e => e.uid != info.file.uid)) // fileList(State Object)에 파일 삭제
+            }
+          },
+          beforeUpload: file => {
+            // if (file.type !== 'application/pdf') {
+            //   console.log(file.type)
+            //   message.error(`${file.name} is not a pdf file`);
+            //   return Upload.LIST_IGNORE;
+            // }
 
-    </ProCard>  
+            if (file.size > 1048576 * 10) {  //5MB
+              console.log(file.size)
+              message.error(`filesize(${common.formatBytes(file.size)}) is bigger than 10MB`);
+              return Upload.LIST_IGNORE;
+            }
+
+            // fileList(State Object)에 파일 추가
+            setFileList(fileList.concat(file));
+                          
+            return false;
+          }
+        }}
+      >
+    </ProFormUploadDragger>
+
+    </ProForm>
+  </ProCard>  
       
       
 
-    </PageContainer>
-    </div>
+  </PageContainer>
+  </div>
     
   );
 };

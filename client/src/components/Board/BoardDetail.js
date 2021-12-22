@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
-import { Table, Input, Space, Button, Descriptions, Form, Comment, Avatar, List, Divider, Modal } from "antd";
+import { Table, Input, Space, Button, Descriptions, Form, Comment, Avatar, List, Divider, Modal, Tooltip } from "antd";
 import Highlighter from 'react-highlight-words';
 import { useSelector, useDispatch } from 'react-redux';
 import { selectUser } from '../../app/infoSlice';
@@ -12,7 +12,11 @@ import {
   UserOutlined,
   ExclamationCircleOutlined,
   ArrowLeftOutlined,
-  DeleteOutlined
+  DeleteOutlined,
+  EditOutlined,
+  ReloadOutlined,
+  PaperClipOutlined,
+  FormOutlined
 } from '@ant-design/icons';
 import { PageContainer } from '@ant-design/pro-layout';
 import { useIntl } from "react-intl";
@@ -35,6 +39,12 @@ const Container = styled.div`
     }
     `;
 
+const ListStyle = styled.div`
+  .ant-list-header {
+    border-bottom:1px solid rgb(235, 235, 235);
+  }
+`; 
+
 const BoardDetail = ({location}) => {
 
   const dispatch = useDispatch();
@@ -47,6 +57,7 @@ const BoardDetail = ({location}) => {
   const [searchText, setSearchText] = useState('');
   const [searchedColumn, setSearchedColumn] = useState('');
   const [comments, setComments] = useState([]);
+  const [files, setFiles] = useState([]);
   const [board, setBoard] = useState({title: '', requestedTime: '', user: {name: '', JOB_TITLE:''}});
   const [loading, setLoading] = useState(false);
 
@@ -77,6 +88,9 @@ const BoardDetail = ({location}) => {
           })
         })
         setComments(tempData);
+
+        // 파일 셋팅
+        setFiles(board.files)
 
         setLoading(false);
       } else {
@@ -162,6 +176,30 @@ const BoardDetail = ({location}) => {
     />
   );
 
+  const FileList = () => (
+    <ListStyle>
+    <List
+      size='small'
+      split={false}
+      dataSource={files}
+      header={`첨부파일 ${files.length}`}
+      itemLayout="horizontal"
+      renderItem={item => 
+
+        <List.Item>
+        <List.Item.Meta
+            avatar={<PaperClipOutlined />}
+            description={
+            <a href={item.path} download={item.originalname} style={{color:'grey'}}>{item.originalname}</a>
+            }
+            // description={item.user.JOB_TITLE ? item.user.name + ' '+ item.user.JOB_TITLE : item.user.name}
+        />
+        </List.Item>
+        }     
+    />
+    </ListStyle>
+  );
+
   const onFinish = async (values) => {
     console.log(values)
 
@@ -191,16 +229,19 @@ const BoardDetail = ({location}) => {
         onFinish={onFinish}
         submitter={{
           searchConfig: {
-            submitText: '등록',
+            submitText: '',
+            resetText: ''
           },      
           // Configure the properties of the button
           resetButtonProps: {
+            icon: <ReloadOutlined />
             // style: {
             //   // Hide the reset button
             //   display: 'none',
             // },
           },
           submitButtonProps: {
+            icon: <FormOutlined />,
             style: {
               // Hide the reset button
               // display: 'none',
@@ -254,8 +295,8 @@ const BoardDetail = ({location}) => {
           <Button icon={<ArrowLeftOutlined />} onClick={() => window.history.back()}>
             {/* {formatMessage({id: 'Back'})} */}
           </Button>,
-          (_id === board.user._id) ? <Button onClick={e => { {navigate('/boardModify', { state: {boardType:boardType, boardName:'게시글 수정', boardId:boardId}});} }}>수정</Button> : '',
-          (_id === board.user._id) ? <Button danger onClick={e => { deleteBoard() }}>삭제</Button> : ''
+          (_id === board.user._id) ? <Tooltip placement="bottom" title={'게시글 수정'}><Button icon={<EditOutlined />} onClick={e => { {navigate('/boardModify', { state: {boardType:boardType, boardName:'게시글 수정', boardId:boardId}});} }}></Button></Tooltip> : '',
+          (_id === board.user._id) ? <Tooltip placement="bottom" title={'게시글 삭제'}><Button icon={<DeleteOutlined />} danger onClick={e => { deleteBoard() }}></Button></Tooltip> : ''
           ],
         }}
         content={
@@ -298,6 +339,9 @@ const BoardDetail = ({location}) => {
         </Container>
       )}/> */}
 
+
+      {files.length > 0 ? <div style={{background: 'white', width: 'auto', marginTop: '0px', marginLeft: '-24px', marginRight: '-24px', padding: '20px'}}>
+        <FileList /></div> : ''}
 
       
       <div style={{background: 'white', width: 'auto', marginTop: '0px', marginLeft: '-24px', marginRight: '-24px', padding: '20px'}}>
