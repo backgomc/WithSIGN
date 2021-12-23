@@ -118,7 +118,7 @@ const App = () => {
 
     <ProLayout
       // navTheme="light"
-      title="WithSIGN"
+      title={<img src={LogoText} />}
       // logo="https://gw.alipayobjects.com/mdn/rms_b5fcc5/afts/img/A*1NHAQYduQiQAAAAAAAAAAABkARQnAQ" 로고 이미지 
       // title={LogoText}
       logo={LogoImage}

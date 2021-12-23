@@ -201,6 +201,11 @@ const PrepareDocument = () => {
 
       // copy 방지 
       instance.disableFeatures(instance.Feature.Copy);
+
+      // 포커스 
+      CoreControls.documentViewer.getTool(CoreControls.Tools.ToolNames.FREETEXT).enableAutoFocusOnCreate();
+
+      // docViewer.FreeTextAnnotation.TextAlign = 'right'
   
       setInstance(instance);
 

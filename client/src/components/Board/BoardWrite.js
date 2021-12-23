@@ -116,6 +116,8 @@ const BoardWrite = ({location}) => {
   const onFinish = async (values) => {
     console.log(values)
 
+    setLoading(true);
+    
     // FILE UPLOAD
     const filePaths = []
     var files = []
@@ -146,8 +148,6 @@ const BoardWrite = ({location}) => {
     const editorInstance = editorRef.current.getInstance();
     const contentHtml = editorInstance.getHtml();
     console.log('contentHtml:'+contentHtml)
-
-    setLoading(true);
 
     // DB-SAVE
     let body = {
@@ -361,7 +361,7 @@ const BoardWrite = ({location}) => {
           }
         }}
       >
-    </ProFormUploadDragger>
+      </ProFormUploadDragger>
 
     </ProForm>
   </ProCard>  

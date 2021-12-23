@@ -117,12 +117,47 @@ router.post('/delete', (req, res) => {
   } 
 
   const _ids = req.body._ids
-  
-  // DB 삭제
-  Board.deleteMany({_id: { $in: _ids}}, function(err) {
-    if (err) { return res.json({ success: false, err }) }
-    return res.status(200).json({ success: true})     
-  })
+
+  try {
+
+    // 첨부 파일 삭제 
+    Board.find({ _id: { $in: _ids}})
+    .then((boards, err) => {
+      boards.map(board => {
+
+        var fileDir       
+        board.files.map(file => {
+          // 첨부파일 삭제 
+          fileDir = file.destination
+          fs.access(file.path, fs.constants.F_OK, (err) => { // 파일 삭제
+            if (err) return console.log('삭제할 수 없는 파일입니다');
+          
+            fs.unlink(file.path, (err) => err ?  
+              console.log(err) : console.log(`${file.originalname} 를 정상적으로 삭제했습니다`));
+          });
+        })
+      
+        if (fileDir) {
+          fs.access(fileDir, fs.constants.F_OK, (err) => { // 폴더 삭제
+            if (err) return console.log('삭제할 수 없는 폴더입니다');
+          
+            fs.rmdir(fileDir, (err) => err ?  
+              console.log(err) : console.log(`${fileDir} 를 정상적으로 삭제했습니다`));
+          });
+        } 
+      })
+    })
+
+    // 게시글 삭제
+    Board.deleteMany({_id: { $in: _ids}}, function(err) {
+      if (err) { return res.json({ success: false, err }) }
+      return res.status(200).json({ success: true})     
+    })
+
+  } catch (error) {
+    console.log(error)
+    return res.json({ success: false, error })
+  }
   
 })
 
@@ -136,15 +171,38 @@ router.post('/modify', (req, res) => {
   const boardId =req.body.boardId
   const title = req.body.title
   const content = req.body.content
+  const files = req.body.files
+  const filesDeleted = req.body.filesDeleted
 
-  Board.updateOne({ _id: boardId }, {title: title, content: content}, (err, result) => {
-    if (err) {
-      console.log(err);
-      return res.json({ success: false, message: err })
-    } else {
-      return res.json({ success: true})
+  try {
+
+    // 첨부파일 삭제
+    if (filesDeleted) {
+      filesDeleted.map(file => {
+        // 첨부파일 삭제 
+        fs.access(file.url, fs.constants.F_OK, (err) => { // 파일 삭제
+          if (err) return console.log('삭제할 수 없는 파일입니다');
+        
+          fs.unlink(file.url, (err) => err ?  
+            console.log(err) : console.log(`${file.name} 을 정상적으로 삭제했습니다`));
+        });
+      })
     }
-  })
+  
+    // 게시글 수정
+    Board.updateOne({ _id: boardId }, {title: title, content: content, files: files}, (err, result) => {
+      if (err) {
+        console.log(err);
+        return res.json({ success: false, message: err })
+      } else {
+        return res.json({ success: true})
+      }
+    })
+
+  } catch (error) {
+    console.log(error)
+    return res.json({ success: false, error })
+  }
   
 })
 

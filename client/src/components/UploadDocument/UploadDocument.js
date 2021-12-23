@@ -94,9 +94,9 @@ const UploadDocument = () => {
       }
     } else if (documentType === 'TEMPLATE') {
       if (templateType === 'C') { // 회사 템플릿인 경우
-        setTab("tab2")
-      } else {
         setTab("tab3")
+      } else {
+        setTab("tab2")
       }
       
       if (templateTitle && template) {
@@ -110,9 +110,9 @@ const UploadDocument = () => {
 
   useEffect(() => {
     console.log(tab)
-    if (tab === 'tab2') {
+    if (tab === 'tab3') {
       templateRef_C.current.initTemplateUI();
-    } else if (tab === 'tab3') {
+    } else if (tab === 'tab2') {
       templateRef_M.current.initTemplateUI();
     }
   }, [tab])
@@ -230,16 +230,6 @@ const UploadDocument = () => {
                 dispatch(setDocumentType('PC'))
               } else if (activeKey === "tab2") {
                 dispatch(setDocumentType('TEMPLATE'))
-                dispatch(setTemplateType('C'))
-
-                dispatch(resetTemplate());
-                dispatch(resetTemplateTitle());
-
-                // UI 변경은 렌더링이 완료된 후에 해야 하므로 useEffect (tab) 에서 처리함
-                // templateRef_C.current.resetSelect();
-                
-              } else {
-                dispatch(setDocumentType('TEMPLATE'))
                 dispatch(setTemplateType('M'))
 
                 dispatch(resetTemplate());
@@ -247,7 +237,16 @@ const UploadDocument = () => {
 
                 // UI 변경은 렌더링이 완료된 후에 해야 하므로 useEffect (tab) 에서 처리함
                 // templateRef_M.current.resetSelect();
+                
+              } else {
+                dispatch(setDocumentType('TEMPLATE'))
+                dispatch(setTemplateType('C'))
 
+                dispatch(resetTemplate());
+                dispatch(resetTemplateTitle());
+
+                // UI 변경은 렌더링이 완료된 후에 해야 하므로 useEffect (tab) 에서 처리함
+                // templateRef_C.current.resetSelect();
               }
             }
           }}
@@ -343,13 +342,16 @@ const UploadDocument = () => {
             </ProForm>
 
           </ProCard.TabPane>
-          <ProCard.TabPane key="tab2" tab="회사 템플릿">
+
+
+          <ProCard.TabPane key="tab2" tab="개인 템플릿">
+              <SelectTemplate type='M' ref={templateRef_M} templateChanged={templateChanged} templateTitleChanged={templateTitleChanged} />
+          </ProCard.TabPane>
+
+          <ProCard.TabPane key="tab3" tab="회사 템플릿">
               <SelectTemplate type='C' ref={templateRef_C} templateChanged={templateChanged} templateTitleChanged={templateTitleChanged} />
           </ProCard.TabPane>
 
-          <ProCard.TabPane key="tab3" tab="개인 템플릿">
-              <SelectTemplate type='M' ref={templateRef_M} templateChanged={templateChanged} templateTitleChanged={templateTitleChanged} />
-          </ProCard.TabPane>
 
         </ProCard>
       </ProCard>

@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
-import { Table, Input, Space, Button, Form } from "antd";
+import { Table, Input, Space, Button, Form, message, Upload } from "antd";
 import Highlighter from 'react-highlight-words';
 import { SearchOutlined } from '@ant-design/icons';
 import { useSelector, useDispatch } from 'react-redux';
@@ -16,6 +16,7 @@ import {
 } from '@ant-design/icons';
 import { PageContainer } from '@ant-design/pro-layout';
 import { useIntl } from "react-intl";
+import * as common from "../../util/common";
 
 import ProCard from '@ant-design/pro-card';
 import ProForm, { ProFormUploadDragger, ProFormText, ProFormTextArea } from '@ant-design/pro-form';
@@ -28,7 +29,6 @@ import '@ant-design/pro-form/dist/form.css';
 import 'codemirror/lib/codemirror.css';
 import '@toast-ui/editor/dist/toastui-editor.css';
 import { Editor } from '@toast-ui/react-editor';
-
 
 const { TextArea } = Input;
 
@@ -46,6 +46,13 @@ const BoardModify = ({location}) => {
   const [form] = Form.useForm();
 
   const [disableNext, setDisableNext] = useState(true);
+  // const [fileList, setFileList] = useState([]);
+  // var fileList = [];
+  const fileList = useRef([]);
+  const fileListDeleted = useRef([]);
+
+  // const [fileListDelete, setFileListDelete] = useState([]);
+
 
   const [board, setBoard] = useState({title: '', content: '', requestedTime: '', user: {name: '', JOB_TITLE:''}});  
   const [loading, setLoading] = useState(false);
@@ -64,8 +71,22 @@ const BoardModify = ({location}) => {
         const board = response.data.board;
         setBoard(board);
 
+        var asisFileList = []
+
+        board.files.map((file, index) => {
+          const fileInfo = {
+            uid: index,
+            name: file.originalname,
+            status: 'done',
+            url: file.path,
+            asis: true
+          }
+          asisFileList.push(fileInfo)
+        })
+
         form.setFieldsValue({
           title: board.title,
+          dragger: asisFileList
         });
 
         editorRef.current.getInstance().setHtml(board.content);
@@ -92,11 +113,46 @@ const BoardModify = ({location}) => {
 
   const onFinish = async (values) => {
     console.log(values)
+    console.log(fileListDeleted)
+
+    setLoading(true);
+
+    // FILE UPLOAD
+    const filePaths = []
+    var files = []
+    console.log('fileList:'+fileList)
+    if (fileList.current.length > 0) {
+
+      const formData = new FormData()
+
+      formData.append('path', 'articles/'+Date.now()+'/');
+      fileList.current.forEach(file => formData.append('files', file));
+
+      const resFile = await axios.post(`/api/storage/uploadFiles`, formData)
+      if (resFile.data.success) {
+        resFile.data.files.map(file => {
+          filePaths.push(file.path)
+        })
+
+        // 신규 등록 파일 추가
+        files = resFile.data.files
+      }
+    }
+
+    console.log('filePaths:'+filePaths)
+
+    // 기존 파일 추가 (삭제 항목 제외 후)
+    board.files.map (file => {
+      if (fileListDeleted.current.filter(deleteFile => deleteFile.url == file.path).length == 0) {
+        files.push(file)
+      }
+    })
+
+    console.log('최종 파일목록', files)
+
 
     const editorInstance = editorRef.current.getInstance();
     const contentHtml = editorInstance.getHtml();
-
-    setLoading(true);
 
     // DB-SAVE
     let body = {
@@ -105,7 +161,9 @@ const BoardModify = ({location}) => {
       // boardType: boardType,
       title: form.getFieldValue("title"),
       // content: form.getFieldValue("content"),
-      content: contentHtml
+      content: contentHtml,
+      files: files,
+      filesDeleted: fileListDeleted.current
     }
     console.log(body)
     const res = await axios.post('/api/board/modify', body)
@@ -124,6 +182,7 @@ const BoardModify = ({location}) => {
     });
 
   }, []);
+
 
   return (
     <div>
@@ -202,12 +261,75 @@ const BoardModify = ({location}) => {
           initialValue=""
           usageStatistics={false}
           ref={editorRef}
-          height="58vh"
+          height="46vh"
           initialEditType="wysiwyg" // wysiwyg | markdown
           onChange={onChangeTextHandler}
           // plugins={[colorSyntax]}
           // plugins={[chart, codeSyntaxHighlight, colorSyntax, tableMergedCell, uml]}
         />
+
+        <br></br>
+        <ProFormUploadDragger 
+          max={3} 
+          label="" 
+          name="dragger" 
+          // title={formatMessage({id: 'input.fileupload.file'})}
+          title={""}
+          description={formatMessage({id: 'input.fileupload.file.volume'}) +', '+ formatMessage({id: 'input.fileupload.file.max'})}
+          // description={""}
+          fieldProps={{
+            height: '120px',
+            onChange: (info) => {
+              
+              console.log('dragger onchanged')
+              console.log(info.file)
+              console.log(info.fileList)
+
+              if (info.file.asis && info.file.status == 'removed') {  // 기존 파일인경우 status 로 구분 가능
+                console.log('removed !!!')
+                // setFileListDelete(fileListDelete.concat(info.file))
+                fileListDeleted.current.push(info.file)
+              } else { // 신규 파일인 경우 status 가 없어서 파일 수로 판단
+                
+                // 신규 파일 첨부건 중에 삭제건 처리
+                if (info.fileList.filter(e => !e.asis).length != fileList.current.length) {
+                  fileList.current = fileList.current.filter(e => e.uid != info.file.uid)
+                }
+                // console.log(info.fileList.filter(e => e.uid.length != 1))
+                // if (info.fileList.filter(e => e.uid.length != 1) != fileList.current.length) { // 파일 삭제 된 것으로 판단
+                //   // setFileList(fileList.filter(e => e.uid != info.file.uid)) // fileList(State Object)에 파일 삭제
+                //   fileList.current = fileList.current.filter(e => e.uid != info.file.uid)
+                // }
+              }
+
+              console.log('FILE LAST')
+              console.log('fileList:', fileList)
+              console.log('fileListDeleted:', fileListDeleted)
+              
+            },
+            beforeUpload: file => {
+              // if (file.type !== 'application/pdf') {
+              //   console.log(file.type)
+              //   message.error(`${file.name} is not a pdf file`);
+              //   return Upload.LIST_IGNORE;
+              // }
+
+              if (file.size > 1048576 * 10) {  //5MB
+                console.log(file.size)
+                message.error(`filesize(${common.formatBytes(file.size)}) is bigger than 10MB`);
+                return Upload.LIST_IGNORE;
+              }
+
+              // fileList(State Object)에 파일 추가
+              // setFileList(fileList.concat(file));
+              // fileList.push(file)
+              fileList.current.push(file)
+                            
+              return false;
+            }
+          }}
+        >
+        </ProFormUploadDragger>
 
       </ProForm>
     </ProCard>  

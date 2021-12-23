@@ -22,7 +22,8 @@ import styled from 'styled-components';
 const MyStyle = styled.div`
   .ant-pro-checkcard-title {
     text-align: right;
-    font-size: 14px;
+    font-size: 16px;
+    font-weight: bold;
     color: #666666;
     margin: 0px 0px 0px 0px;
   } 

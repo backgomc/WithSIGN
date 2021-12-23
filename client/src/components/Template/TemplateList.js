@@ -41,7 +41,7 @@ const CardTitle = styled.div`
   position:relative;
   white-space: normal; 
   line-height: 1.2; 
-  height: 2.2em; 
+  height: 2.3em; 
   text-align: left; 
   word-wrap: break-word; 
   display: -webkit-box; 

@@ -14,7 +14,7 @@ import PaperlessCard from '../Statics/PaperlessCard';
 import ProCard, { StatisticCard, StatisticProps } from '@ant-design/pro-card';
 import RcResizeObserver from 'rc-resize-observer';
 import { PageContainer } from '@ant-design/pro-layout';
-import { Tooltip, Badge, Button, Card, Empty, List, Space, Statistic, Avatar, Row, Col, Progress, Tag, Comment, Form, Input } from 'antd';
+import { Tooltip, Badge, Button, Card, Empty, List, Space, Statistic, Avatar, Row, Col, Progress, Tag, Comment, Form, Input, Alert } from 'antd';
 import 'antd/dist/antd.css';
 import '@ant-design/pro-card/dist/card.css';
 import {
@@ -80,7 +80,8 @@ const CardTitle = styled.div`
 const MyStyle = styled.div`
   .ant-pro-checkcard-title {
     text-align: right;
-    font-size: 14px;
+    font-size: 16px;
+    font-weight: bold;
     color: #666666;
     margin: 0px 0px 0px 0px;
   } 
@@ -923,8 +924,8 @@ const Home = () => {
                 {item.docTitle}
               </Link>
             }
-            description={ '서명 취소자: ' + item.users.filter(e => e._id === item.canceledBy[0].user)[0].name + ' ' + item.users.filter(e => e._id === item.canceledBy[0].user)[0].JOB_TITLE + '(' + item.canceledBy[0].message + ')' }
-            // description={item.user.JOB_TITLE ? item.user.name + ' '+ item.user.JOB_TITLE : item.user.name}
+            // description={ '서명 취소자: ' + item.users.filter(e => e._id === item.canceledBy[0].user)[0].name + ' ' + item.users.filter(e => e._id === item.canceledBy[0].user)[0].JOB_TITLE + '(' + item.canceledBy[0].message + ')' }
+            description={<Alert style={{width:'90%'}} message={item.users.filter(e => e._id === item.canceledBy[0].user)[0].name + ' ' + item.users.filter(e => e._id === item.canceledBy[0].user)[0].JOB_TITLE + ' (' + item.canceledBy[0].message +')'} type="error" showIcon />}
           />
             <div><font color='grey'>{moment(item.requestedTime).fromNow()}</font></div> 
           </List.Item>

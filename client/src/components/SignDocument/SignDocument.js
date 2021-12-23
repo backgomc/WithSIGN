@@ -31,6 +31,7 @@ const SignDocument = () => {
   const [loading, setLoading] = useState(false);
   const [responsive, setResponsive] = useState(false);
   const [disableNext, setDisableNext] = useState(true);
+  const [disableCancel, setDisableCancel] = useState(true);
   const [visiblModal, setVisiblModal] = useState(false);
   const [pageCount, setPageCount] = useState(0);
   const [textSign, setTextSign] = useState(formatMessage({id: 'sign.complete'}))
@@ -398,13 +399,13 @@ const SignDocument = () => {
             <Button key="back" onClick={modalCancel}>
               닫기
             </Button>,
-            <Button key="submit" type="primary" loading={loading} onClick={fetchCancelSigning} danger>
+            <Button key="submit" type="primary" disabled={disableCancel} loading={loading} onClick={fetchCancelSigning} danger>
               서명 취소하기
             </Button>
           ]}
           >
             취소사유 :
-            <TextArea rows={4} ref={cancelMessage} />
+            <TextArea rows={4} ref={cancelMessage} onChange={(t)=> { setDisableCancel(!(t.currentTarget.value.length > 0)) }} />
         </Modal>
 
       </RcResizeObserver>

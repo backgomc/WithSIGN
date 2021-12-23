@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Tooltip, Tag, Timeline, Button, Popconfirm, Modal, Badge, Descriptions } from 'antd';
+import { Tooltip, Tag, Timeline, Button, Alert, Modal, Badge, Descriptions } from 'antd';
 import Moment from 'react-moment';
 import { useSelector, useDispatch } from 'react-redux';
 import { selectUser } from '../../app/infoSlice';
@@ -218,7 +218,7 @@ const DocumentExpander = (props) => {
                             <Moment format='YYYY/MM/DD HH:mm'>{item.canceledBy.filter(e => e.user === user._id)[0].canceledTime}</Moment>
                         </Tag>
                     </Tooltip>
-                    <br></br>{item.canceledBy.filter(e => e.user === user._id)[0].message}
+                    <div style={{marginTop:'10px'}}><Alert message={item.canceledBy.filter(e => e.user === user._id)[0].message} type="error" /></div>
                 </Timeline.Item>
             )
         } else {
