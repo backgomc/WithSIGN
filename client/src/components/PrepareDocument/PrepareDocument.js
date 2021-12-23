@@ -203,8 +203,7 @@ const PrepareDocument = () => {
       instance.disableFeatures(instance.Feature.Copy);
 
       // 포커스 
-      CoreControls.documentViewer.getTool(CoreControls.Tools.ToolNames.FREETEXT).enableAutoFocusOnCreate();
-
+      // CoreControls.DocumentViewer.getTool(CoreControls.Tools.ToolNames.FREETEXT).enableAutoFocusOnCreate();
       // docViewer.FreeTextAnnotation.TextAlign = 'right'
   
       setInstance(instance);
@@ -260,6 +259,12 @@ const PrepareDocument = () => {
       annotManager.on('annotationChanged', (annotations, action, info) => {
 
         console.log('called annotationChanged:'+ action)
+
+
+        // TODO : 자유 텍스트 상단 짤리는 문제 ...
+        console.log(annotations[0].Subject, annotations[0].ToolName, annotations[0].TextAlign) 
+        annotations[0].TextAlign = 'center'
+
 
         // applyFields 에서 호출 시는 아래가 호출되지 않도록 처리 
         if (!annotations[0].custom) {
