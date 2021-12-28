@@ -7,6 +7,13 @@ import { Provider } from 'react-redux';
 import Intl from './components/Intl';
 // import reportWebVitals from './reportWebVitals';
 
+// findDOMNode 로그 제외 (antd는 React StrictMode 모드에서 작동안함)
+const consoleError = console.error.bind(console);
+console.error = (errObj, ...args) => {
+  if (args.includes('findDOMNode')) return;
+  consoleError(errObj, ...args);
+};
+
 ReactDOM.render(
   <React.StrictMode>
     <Provider store={store}>

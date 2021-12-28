@@ -104,19 +104,25 @@ let callUserAPI = async () => {
                     }
                 }
             ]);
-            result.forEach(data => {
+            for (var data of result) {
                 if (data['use'] && data['empInfo'].length > 0) {
-                    if (data['DEPART_CODE'] !== data['empInfo'][0]['CODE_BUSEO'] || data['JOB_CODE'] !== data['empInfo'][0]['CODE_JIKMYUNG']) {
+                    if (data['DEPART_CODE'] !== data['empInfo'][0]['CODE_BUSEO'] || data['JOB_CODE'] !== data['empInfo'][0]['CODE_JIKMYUNG'] || !data['thumbnail'] || data['thumbnail'] == '') {
+                        let thumbnail = '';
+                        if (data['empInfo'][0]['IMG_PROFILE'] !== '') {
+                            await axios.get(data['empInfo'][0]['IMG_PROFILE'], {responseType: 'arraybuffer'}).then(resp => {
+                                thumbnail = 'data:image/jpeg;base64,' + Buffer.from(resp.data).toString('base64');
+                            });
+                        }
                         User.findOneAndUpdate(
                             {'_id': data['_id']},
-                            {'DEPART_CODE': data['empInfo'][0]['CODE_BUSEO'], 'JOB_CODE': data['empInfo'][0]['CODE_JIKMYUNG'], 'JOB_TITLE': data['empInfo'][0]['NM_JIKMYUNG']}
+                            {'DEPART_CODE': data['empInfo'][0]['CODE_BUSEO'], 'JOB_CODE': data['empInfo'][0]['CODE_JIKMYUNG'], 'JOB_TITLE': data['empInfo'][0]['NM_JIKMYUNG'], 'thumbnail': thumbnail}
                         ).exec((err) => {
                             if (err) console.log(err);
                             console.log('승진/이동 : ' + data['SABUN']);
                         });
                     }
                 }
-            });
+            }
             
             // 6. 인장 파일 저장(보류)
 
