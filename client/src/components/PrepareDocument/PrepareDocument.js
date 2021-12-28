@@ -262,9 +262,15 @@ const PrepareDocument = () => {
 
 
         // TODO : 자유 텍스트 상단 짤리는 문제 ...
+        const { Annotations, docViewer, Font } = instance;
         console.log(annotations[0].Subject, annotations[0].ToolName, annotations[0].TextAlign) 
-        annotations[0].TextAlign = 'center'
-
+       
+        if (annotations[0].ToolName == 'AnnotationCreateFreeText2' && action == 'add') {
+          annotations[0].TextAlign = 'center'
+          annotations[0].setPadding(new Annotations.Rect(0, 0, 0, 2)); // left bottom right top 
+          annotations[0].Font = 'NanumGothic';
+        }
+        
 
         // applyFields 에서 호출 시는 아래가 호출되지 않도록 처리 
         if (!annotations[0].custom) {

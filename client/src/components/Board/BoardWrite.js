@@ -162,8 +162,13 @@ const BoardWrite = ({location}) => {
     const res = await axios.post('/api/board/add', body)
 
     setLoading(false);
-    navigate('/boardList', { state: {boardType:boardType, boardName:boardName}}); 
-
+    
+    if (boardType == 'faq') {
+      navigate('/faqList', { state: {boardType:boardType, boardName:boardName}}); 
+    } else {
+      navigate('/boardList', { state: {boardType:boardType, boardName:boardName}}); 
+    }
+    
   }
 
   const [uploadedImages, setUploadedImages] = useState([]);

@@ -72,6 +72,9 @@ const CardTitle = styled.div`
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
 
+  // 문서 제목 좌측으로 조금 이동
+  margin: 0px 0px 0px -10px;
+
   // 폰트 속성
   color: #666666;
   font-size: 0.9em;

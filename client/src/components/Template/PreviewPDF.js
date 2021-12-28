@@ -46,11 +46,18 @@ const PreviewPDF = ({location}) => {
       viewer.current,
     )
     .then(instance => {
+
+      const { docViewer, CoreControls } = instance;
+
+      // set local font 
+      CoreControls.setCustomFontURL("/webfonts/");
+
+      // set language
+      instance.setLanguage('ko');
+
       setInstance(instance)
 
-      const { docViewer } = instance;
-
-      // DISTO
+      // set file url
       const URL = '/' + docRef;      
       instance.docViewer.loadDocument(URL);
       

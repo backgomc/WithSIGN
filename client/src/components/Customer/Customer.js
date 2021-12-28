@@ -44,7 +44,7 @@ const Customer = () => {
     <Link to='/manual'>
     <IconLink
       src={iconManual}
-      text="사용자 매뉴얼"
+      text="서비스 소개"
     />
     </Link>
     <Link to='/auditCheck'>

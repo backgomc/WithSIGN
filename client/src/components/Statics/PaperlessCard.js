@@ -8,6 +8,18 @@ import '@ant-design/pro-card/dist/card.css';
 import "moment/locale/ko";
 import iconPaperless from '../../assets/images/icon_save1.png';
 import iconDocument from '../../assets/images/icon_save2.png';
+import styled from 'styled-components';
+const MyStyle = styled.div`
+ .ant-statistic-content {
+    //  위 | 오른쪽 | 아래 | 왼쪽
+    margin: -10px 0px 0px 0px; 
+ }
+  .ant-statistic-content-value {
+    font-size: 18px;
+    font-weight: bold;
+
+    // padding: -10px 0px 0px 0px; 
+`;
 
 const PaperlessCard = (props) => {
 
@@ -37,11 +49,12 @@ const PaperlessCard = (props) => {
 
 
   return (
-    <StatisticCard.Group loading={loadingPaperless} title='절약 건수' tooltip='본인이 요청자인 문서를 기준으로 산정'>
+    <MyStyle>
+    <StatisticCard.Group loading={loadingPaperless} title='페이퍼리스' tooltip='본인이 요청자인 문서를 기준으로 산정'>
       <StatisticCard
         statistic={{
-          title: '페이퍼리스',
-          value: paperlessNum + '장',
+          title: '본인',
+          value: paperlessNum + ' 장',
           icon: (
             <img
               style={{display: 'block', width: 42, height: 42}}
@@ -53,9 +66,9 @@ const PaperlessCard = (props) => {
       />
       <StatisticCard
         statistic={{
-          title: '문서',
+          title: '회사',
           // tip: '본인이 서명 요청하여 완료된 건수를 기준으로 산정',
-          value: docNum + '건',
+          value: docNum + ' 장',
           icon: (
             <img
               style={{display: 'block', width: 42, height: 42}}
@@ -66,6 +79,7 @@ const PaperlessCard = (props) => {
         }}
       />
     </StatisticCard.Group>
+    </MyStyle>
   );
 
 };

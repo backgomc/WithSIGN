@@ -24,7 +24,7 @@ const BoardList = ({location}) => {
 
   const dispatch = useDispatch();
   const user = useSelector(selectUser);
-  const { _id } = user;
+  const { _id, role } = user;
 
   const boardType = location.state?.boardType ? location.state.boardType : "notice";
   const boardName = location.state?.boardName ? location.state.boardName : "Notice";
@@ -285,10 +285,12 @@ const BoardList = ({location}) => {
           <Button icon={<ArrowLeftOutlined />} onClick={() => window.history.back()}>
             {/* {formatMessage({id: 'Back'})} */}
           </Button>, 
-          boardType == 'notice' ? '' :     
-          <Button icon={<FormOutlined />} type="primary" onClick={() => {navigate('/boardWrite', { state: {boardType:boardType, boardName:boardName}});}}>
-            {/* 등록 */}
-          </Button>,
+          boardType == 'notice' ? (role == '1' ? 
+            <Button icon={<FormOutlined />} type="primary" onClick={() => {navigate('/boardWrite', { state: {boardType:boardType, boardName:boardName}});}}></Button> : '') 
+            :     
+            <Button icon={<FormOutlined />} type="primary" onClick={() => {navigate('/boardWrite', { state: {boardType:boardType, boardName:boardName}});}}>
+              {/* 등록 */}
+            </Button>,
           // <Popconfirm title="삭제하시겠습니까？" okText="네" cancelText="아니오" visible={visiblePopconfirm} onConfirm={deleteBoard} onCancel={() => {setVisiblePopconfirm(false);}}>
           //   <Button type="primary" danger disabled={!hasSelected} onClick={()=>{setVisiblePopconfirm(true);}}>
           //     삭제

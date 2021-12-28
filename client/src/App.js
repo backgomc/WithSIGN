@@ -22,6 +22,7 @@ import BoardWrite from './components/Board/BoardWrite';
 import BoardModify from './components/Board/BoardModify';
 import OpinionList from './components/Board/OpinionList';
 import Customer from './components/Customer/Customer';
+import FAQList from './components/Board/FAQList';
 import Sign from './components/Sign';
 import View from './components/View';
 import Welcome from './components/Welcome';
@@ -219,6 +220,7 @@ const App = () => {
       <BoardWrite path="/boardWrite" />
       <BoardModify path="/boardModify" />
       <OpinionList path="/opinionList" />
+      <FAQList path="/faqList" />
       <Customer path="/customer" />
       <Manual path="/manual" />
       <ManualModify path="/manualModify" />

@@ -37,10 +37,12 @@ const DirectCard = (props) => {
             </Link>
           </Col>
           <Col span={11}>
-            <IconLink
-              src={iconManual}
-              text="사용자 매뉴얼"
-            />
+            <Link to='/manual'>
+              <IconLink
+                src={iconManual}
+                text="서비스 소개"
+              />
+            </Link>
           </Col>
         </Row>
       </ProCard>

@@ -9,7 +9,7 @@ import '@ant-design/pro-card/dist/card.css';
 import moment from "moment";
 import "moment/locale/ko";
 import {
-    NotificationOutlined
+    RightOutlined
 } from '@ant-design/icons';
 
 const { Panel } = Collapse;
@@ -53,6 +53,7 @@ const FAQCard = (props) => {
             // extra={<Link to="/customer">더보기</Link>}
             loading={loading}
             bodyStyle={{ padding: 10 }}
+            extra={<Link to="/faqList"><RightOutlined style={{color:'#666666'}} /></Link>}
         >
             {/* <List
                 // bordered
@@ -78,7 +79,12 @@ const FAQCard = (props) => {
                 {data.length > 0 ? data.map((item, index) => (
                     <Collapse collapsible="header">
                         <Panel header={item.title} key={index}>
-                            <p style={{whiteSpace:'pre-wrap', wordWrap:'break-word'}}>{item.content}</p>
+                            {/* <p style={{whiteSpace:'pre-wrap', wordWrap:'break-word'}}>{item.content}</p> */}
+                            <div
+                                dangerouslySetInnerHTML={{
+                                __html: item.content
+                                }} 
+                            />
                         </Panel>
                     </Collapse>
                 )): <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
