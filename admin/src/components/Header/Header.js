@@ -1,5 +1,6 @@
 import React from 'react';
 import axios from 'axios';
+import { v4 as uuidv4 } from 'uuid';
 import { Dropdown, Menu } from 'antd';
 import { SettingOutlined, PoweroffOutlined, UserOutlined, CaretDownOutlined, GlobalOutlined } from '@ant-design/icons';
 import { navigate, Link } from '@reach/router';
@@ -7,11 +8,12 @@ import styles from './header.module.css';
 import { useDispatch, useSelector } from 'react-redux';
 import { selectUser, setUser } from '../../app/infoSlice';
 import { selectLang, setLang } from '../../app/langSlice';
+import { setPathname } from '../../config/MenuSlice';
 
 const languageList = [
   {
-      key: 'kr',
-      label: '한글'
+    key: 'kr',
+    label: '한글'
   },
   {
     key: 'en',
@@ -21,27 +23,26 @@ const languageList = [
 
 const HeaderComponent = () => {
   const dispatch = useDispatch();
-
   const user = useSelector(selectUser);
   const { name } = user;
-
   const localLang = useSelector(selectLang);
-
   const switchLang = ({ key }) => {
     dispatch(setLang(key));
   };
 
   const menu = (
     <Menu>
-      <Menu.Item key="11">
-        <Link to="/systemManage">
+      <Menu.Item key={uuidv4()}>
+        <Link to="/systemManage" onClick={() => {
+          dispatch(setPathname('/systemManage'));
+        }}>
           <SettingOutlined />&nbsp;설정
         </Link>
       </Menu.Item>
       <Menu.Divider />
-      <Menu.Item key="12">
+      <Menu.Item key={uuidv4()}>
         <Link to="" onClick={() => {
-          axios.post('/api/admin/logout').then(response => {
+          axios.post('/admin/logout').then(response => {
             if (response.status === 200) {
               localStorage.removeItem('__rToken__');
               dispatch(setUser(null));

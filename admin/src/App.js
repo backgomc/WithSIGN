@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Router, navigate } from '@reach/router';
 import axios from 'axios';
@@ -10,6 +10,9 @@ import Menus from './config/Menus';
 import Home from './components/Home/Home';
 import UserList from './components/User/UserList';
 import BoardList from './components/Board/BoardList';
+import BoardDetail from './components/Board/BoardDetail';
+import BoardWrite from './components/Board/BoardWrite';
+import BoardModify from './components/Board/BoardModify';
 import SystemManage from './components/System/SystemManage';
 import DocumentList from './components/Document/DocumentList';
 import ViewDocument from './components/Document/ViewDocument';
@@ -18,6 +21,7 @@ import UploadTemplate from './components/Template/UploadTemplate';
 import Footer from './components/Footer/Footer';
 import Header from './components/Header/Header';
 import Login from './components/Login/Login';
+import Blank from './components/Blank/Blank';
 import '@ant-design/pro-layout/dist/layout.css';
 import 'antd/dist/antd.css';
 import './App.css';
@@ -33,16 +37,11 @@ const App = () => {
   const dispatch = useDispatch();
   const { formatMessage } = useIntl();
 
-  // const [pathname, setPathname] = useState('/');  // 시작 path
-  const pathname = useSelector(selectPathname);
+    const pathname = useSelector(selectPathname);
   
-  const defaultPage = () => (
-    <div></div>
-  )
-
   useEffect(() => {
     // 1.인증 정보 조회
-    axios.get('/api/admin/auth').then(response => {
+    axios.get('/admin/auth').then(response => {
       if (response.data.success) {
         dispatch(setUser(response.data.user));
         // navigate('/');
@@ -55,10 +54,10 @@ const App = () => {
                 'refresh-Token': localStorage.getItem('__rToken__')
               }
             }
-            axios.post('/api/admin/refresh', null, config).then(response => {
+            axios.post('/admin/refresh', null, config).then(response => {
               if (response.data.success) {
                 dispatch(setUser(response.data.user));
-                // navigate('/');
+                navigate('/');
               } else {
                 dispatch(setUser(null));
                 navigate('/login');
@@ -70,12 +69,12 @@ const App = () => {
             let body = {
               token: token
             }
-            axios.post('/api/admin/sso', body).then(response => {
+            axios.post('/admin/sso', body).then(response => {
               console.log(response);
               if (response.data.success) {
                 dispatch(setUser(response.data.user));
                 localStorage.setItem('__rToken__', response.data.user.__rToken__);
-                // navigate('/');
+                navigate('/');
               } else {
                 dispatch(setUser(null));
                 navigate('/login');
@@ -112,7 +111,7 @@ const App = () => {
           >
             {logo}
             {title}
-            <h5 style={{'color':'cyan', 'display':'inline-block'}}>&nbsp;{formatMessage({id: 'AppSubName'})}</h5>
+            <h5 style={{'color':'cyan', 'display':'inline-block', 'whiteSpace':'nowrap'}}>&nbsp;{formatMessage({id: 'AppSubName'})}</h5>
           </div>
         )}
         {...Menus()}
@@ -142,6 +141,9 @@ const App = () => {
           <Home path="/" default />
           <UserList path="/userList" />
           <BoardList path="/boardList" />
+          <BoardDetail path="/boardDetail" />
+          <BoardWrite path="/boardWrite" />
+          <BoardModify path="/boardModify" />
           <SystemManage path="/systemManage" />
           <DocumentList path="/documentList" />
           <ViewDocument path="/viewDocument" />
@@ -154,7 +156,7 @@ const App = () => {
     <div>
       <Router>
         <Login path="/login" />
-        <defaultPage path="/" default />
+        <Blank path="/" default />
       </Router>
     </div>
   );

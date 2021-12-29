@@ -1,11 +1,9 @@
 import React, { useEffect } from 'react';
-import axios from 'axios';
+// import axios from 'axios';
 
 const SystemManage = () => {
   useEffect(() => {
-    // axios.post('/api/admin/ipronet').then(response => {
-    //   console.log(response);
-    // });
+    
   }, []);
 
   return (

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { v4 as uuidv4 } from "uuid";
 import { useIntl } from 'react-intl';
 import Highlighter from 'react-highlight-words';
 import { Table, Input, Space, Button, Modal, Popconfirm } from 'antd';
@@ -23,8 +24,8 @@ const UserList = () => {
   const [searchText, setSearchText] = useState('');
   const [searchName, setSearchName] = useState('');
   const [searchOrg, setSearchOrg] = useState('');
-  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
-  const [hasSelected, setHasSelected] = useState(selectedRowKeys.length > 0);
+  // const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+  // const [hasSelected, setHasSelected] = useState(selectedRowKeys.length > 0);
   
   const handleTableChange = (pagination, filters, sorter) => {
     console.log('handleTableChange called');
@@ -49,6 +50,7 @@ const UserList = () => {
         />
         <Space>
           <Button
+            key={uuidv4()}
             type="primary"
             onClick={() => handleSearch(selectedKeys, confirm, dataIndex)}
             icon={<SearchOutlined />}
@@ -57,7 +59,7 @@ const UserList = () => {
           >
             검색
           </Button>
-          <Button onClick={() => handleReset(clearFilters, dataIndex)} size="small" style={{ width: 90 }}>
+          <Button key={uuidv4()} onClick={() => handleReset(clearFilters, dataIndex)} size="small" style={{ width: 90 }}>
             초기화
           </Button>
         </Space>
@@ -94,15 +96,15 @@ const UserList = () => {
 
   const fetch = async (params = {}) => {
     setLoading(true);
-    axiosInterceptor.post('/api/admin/user/list', params).then(response => {
+    axiosInterceptor.post('/admin/user/list', params).then(response => {
       if (response.data.success) {
         const users = response.data.users;
         setPagination({...params.pagination, total:response.data.total});
         setData(users);
         setLoading(false);
       } else {
-          setLoading(false);
-          console.log(response.data.error);
+        setLoading(false);
+        console.log(response.data.error);
       }
     });
   };
@@ -113,7 +115,7 @@ const UserList = () => {
       k: key,
       i: record._id
     }
-    axiosInterceptor.post('/api/admin/user/update', param).then(response => {
+    axiosInterceptor.post('/admin/user/update', param).then(response => {
       // alert(' 결과 : ' + response.data.success);
       fetch({
         name: [searchName],
@@ -131,7 +133,7 @@ const UserList = () => {
       title: '테스트 알림 전송',
       content: '전자서명시스템에서 보낸 테스트 알림입니다.'
     }
-    axiosInterceptor.post('/api/admin/user/sendPush', param).then(response => {
+    axiosInterceptor.post('/admin/user/sendPush', param).then(response => {
       alert('테스트 알림(아이프로넷 쪽지/With 메시지) 전송 결과 : ' + response.data.success);
       setLoading(false);
     });
@@ -140,7 +142,7 @@ const UserList = () => {
   const syncOrg = async () => {
     setSyncOrgPopup(false);
     setLoading(true);
-    const res = await axiosInterceptor.post('/api/admin/org/sync');
+    const res = await axiosInterceptor.post('/admin/org/sync');
     console.log(res);
     if (res && res.data && res.data.success && res.data.success === true) {
       // 성공
@@ -153,7 +155,7 @@ const UserList = () => {
   const syncUsr = async () => {
     setSyncUsrPopup(false);
     setLoading(true);
-    const res = await axiosInterceptor.post('/api/admin/user/sync');
+    const res = await axiosInterceptor.post('/admin/user/sync');
     console.log(res);
     if (res && res.data && res.data.success && res.data.success === true) {
       // 성공
@@ -232,16 +234,16 @@ const UserList = () => {
   }
 
   const selectAction = async (key, record) => {
-    if (key == 'init') {
+    if (key === 'init') {
       initPasswd(key, record);
     }
-    if (key == 'flag') {
+    if (key === 'flag') {
       setStatus(key, record);
     }
-    if (key == 'auth') {
+    if (key === 'auth') {
       authority(key, record);
     }
-    if (key == 'push') {
+    if (key === 'push') {
       sendPush(record);
     }
   }
@@ -307,14 +309,14 @@ const UserList = () => {
     }
   ];
 
-  const rowSelection = {
-    selectedRowKeys,
-    onChange : selectedRowKeys => {
-      // console.log('selectedRowKeys changed: ', selectedRowKeys);
-      setSelectedRowKeys(selectedRowKeys);
-      setHasSelected(selectedRowKeys.length > 0);
-    }
-  };
+  // const rowSelection = {
+  //   selectedRowKeys,
+  //   onChange : selectedRowKeys => {
+  //     // console.log('selectedRowKeys changed: ', selectedRowKeys);
+  //     setSelectedRowKeys(selectedRowKeys);
+  //     setHasSelected(selectedRowKeys.length > 0);
+  //   }
+  // };
 
   useEffect(() => {
     console.log('useEffect called');
@@ -322,7 +324,7 @@ const UserList = () => {
       pagination
     });
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    return () => setLoading(false);
   }, []);
 
   return (
@@ -339,12 +341,12 @@ const UserList = () => {
           },
           extra: [           
             <Popconfirm title="수동으로 ERP 부서 정보로 갱신하시겠습니까？" okText="네" cancelText="아니오" visible={syncOrgPopup} onConfirm={syncOrg} onCancel={() => {setSyncOrgPopup(false);}}>
-              <Button type="primary" danger onClick={()=>{setSyncOrgPopup(true);}}>
+              <Button key={uuidv4()} type="primary" danger onClick={()=>{setSyncOrgPopup(true);}}>
                 부서 동기화
               </Button>
             </Popconfirm>,
             <Popconfirm title="수동으로 ERP 직원 정보로 갱신하시겠습니까？" okText="네" cancelText="아니오" visible={syncUsrPopup} onConfirm={syncUsr} onCancel={() => {setSyncUsrPopup(false);}}>
-              <Button type="primary" danger onClick={()=>{setSyncUsrPopup(true);}}>
+              <Button key={uuidv4()} type="primary" danger onClick={()=>{setSyncUsrPopup(true);}}>
                 직원 동기화
               </Button>
             </Popconfirm>
