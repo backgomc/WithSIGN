@@ -183,7 +183,7 @@ router.post('/checkHashByDocRef', (req, res) => {
  * @PARAM: file
  * @RETURN: isReal(true/false)
  */
-router.post('/checkHashByFile', uploadTemp.single('file'), (req, res) => {
+router.post('/checkHashByFile', uploadTemp.single('file'), async (req, res) => {
 
     if (!req.file) {
         return res.json({ success: false, message: "input value not enough!" })
@@ -191,8 +191,13 @@ router.post('/checkHashByFile', uploadTemp.single('file'), (req, res) => {
     const file = req.file
     const tmp_path = file.path;
 
-    console.log('file:'+file)
-    console.log('tmp_path:'+tmp_path)
+    console.log('file', file)
+    console.log('tmp_path', tmp_path)
+    console.log('destination', file.destination)
+    console.log('originalname', file.originalname)
+
+    // 업로드 파일 암호화 해제 후 hash 값 추출
+    console.log(await restful.callDRMUnpackaging(req.file.destination, req.file.originalname));
 
     const file_buffer = fs.readFileSync(tmp_path);
     const hash = crypto.createHash('md5');

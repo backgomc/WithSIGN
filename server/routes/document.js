@@ -21,7 +21,7 @@ router.post('/addDocumentToSign', (req, res) => {
     if (err) return res.json({ success: false, err })
 
     // 쪽지 보내기 
-    // restful.callNotify(document.user, document.users,'[WithSIGN] 서명 요청 알림', '['+document.docTitle+']' + ' 서명 요청 건이 있습니다.');
+    restful.callNotify(document.user, document.users,'[WithSIGN] 서명 요청 알림', '['+document.docTitle+']' + ' 서명 요청 건이 있습니다.');
 
     return res.status(200).json({
       success: true,
@@ -143,7 +143,7 @@ router.post('/updateDocumentToSign', (req, res) => {
             });
             
             // 문서 완료 시 요청자에게 쪽지 보내기
-            // restful.callNotify(null, document.user,'[WithSIGN] 서명 완료 알림', '['+document.docTitle+']' + ' 의 서명이 완료되었습니다.');
+            restful.callNotify(null, document.user,'[WithSIGN] 서명 완료 알림', '['+document.docTitle+']' + ' 의 서명이 완료되었습니다.');
 
           }
 

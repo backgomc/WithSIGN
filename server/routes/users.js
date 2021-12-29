@@ -4,7 +4,7 @@ const { User } = require("../models/User");
 const { Org } = require("../models/Org");
 var fs = require('fs');
 var url = require('url');
-const { hexCrypto } = require('../common/utils');
+const { hexCrypto, isEmpty } = require('../common/utils');
 
 const { auth } = require("../middleware/auth");
 
@@ -522,13 +522,21 @@ router.post('/updatePaperless', (req, res) => {
 })
 
 // paperless : paperless 정보를 리턴한다.
-router.post('/paperless', (req, res) => {
+router.post('/paperless', async (req, res) => {
 
   if (!req.body.user) {
       return res.json({ success: false, message: "input value not enough!" })
   } 
 
   const user = req.body.user
+
+
+  // 전체 건수
+  const totalPaperless = await User.aggregate([
+    {$group:{_id:null, total:{$sum:'$paperless'}}}
+  ]);
+
+  console.log("totalPaperless", totalPaperless)
 
   User
   .findOne({ _id: user })
@@ -538,11 +546,14 @@ router.post('/paperless', (req, res) => {
       console.log(err);
       return res.json({ success: false, message: err })
     } else {
-      return res.json({ success: true, paperless: result.paperless, docCount: result.docCount })
+      
+      return res.json({ success: true, 
+                        totalPaperless: totalPaperless[0].total,
+                        paperless: isEmpty(result?.paperless) ? 0 : result?.paperless,
+                        docCount: isEmpty(result?.docCount) ? 0 : result?.docCount })
     }
   })
 
 })
-
 
 module.exports = router;

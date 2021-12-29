@@ -11,7 +11,8 @@ import 'antd/dist/antd.css';
 import '@ant-design/pro-card/dist/card.css';
 import { LICENSE_KEY } from '../../config/Config';
 import {
-  ArrowLeftOutlined
+  ArrowLeftOutlined,
+  DownloadOutlined
 } from '@ant-design/icons';
 
 const PreviewPDF = ({location}) => {
@@ -23,6 +24,7 @@ const PreviewPDF = ({location}) => {
 
   const [instance, setInstance] = useState(null)
   const [loading, setLoading] = useState(false);
+  const [loadingDownload, setLoadingDownload] = useState([]);
 
   const user = useSelector(selectUser);
   const { _id } = user;
@@ -88,6 +90,14 @@ const PreviewPDF = ({location}) => {
           <Button key="1" icon={<ArrowLeftOutlined />} onClick={() => window.history.back()}>
             {/* {formatMessage({id: 'Back'})} */}
           </Button>,
+          <Button key="3" loading={loadingDownload['1']} href={docRef} download={docTitle+'.pdf'} type="primary" icon={<DownloadOutlined />} onClick={()=> {
+            setLoadingDownload( { "1" : true } )
+            setTimeout(() => {
+              setLoadingDownload( { "1" : false})
+            }, 3000);
+          }}>
+            {formatMessage({id: 'document.download'})}
+          </Button>
         ],
       }}
       footer={[

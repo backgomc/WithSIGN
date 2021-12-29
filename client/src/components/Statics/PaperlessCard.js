@@ -6,8 +6,8 @@ import { StatisticCard } from '@ant-design/pro-card';
 import 'antd/dist/antd.css';
 import '@ant-design/pro-card/dist/card.css';
 import "moment/locale/ko";
-import iconPaperless from '../../assets/images/icon_save1.png';
-import iconDocument from '../../assets/images/icon_save2.png';
+import iconPaperless from '../../assets/images/icon_save3.png';
+import iconDocument from '../../assets/images/icon_save4.png';
 import styled from 'styled-components';
 const MyStyle = styled.div`
  .ant-statistic-content {
@@ -28,6 +28,7 @@ const PaperlessCard = (props) => {
 
   const [loadingPaperless, setLoadingPaperless] = useState(false);
   const [paperlessNum, setPaperlessNum] = useState(0);
+  const [totalPaperlessNum, setTotalPaperlessNum] = useState(0);
   const [docNum, setDocNum] = useState(0);
 
   const fetchPaperless = async () => {
@@ -39,6 +40,7 @@ const PaperlessCard = (props) => {
     if (res.data.success) {
       setPaperlessNum(res.data.paperless)
       setDocNum(res.data.docCount)
+      setTotalPaperlessNum(res.data.totalPaperless)
     }
     setLoadingPaperless(false);
   }
@@ -50,7 +52,7 @@ const PaperlessCard = (props) => {
 
   return (
     <MyStyle>
-    <StatisticCard.Group loading={loadingPaperless} title='페이퍼리스' tooltip='본인이 요청자인 문서를 기준으로 산정'>
+    <StatisticCard.Group loading={loadingPaperless} title='페이퍼리스' tooltip='본인이 요청한 문서를 기준으로 산정'>
       <StatisticCard
         statistic={{
           title: '본인',
@@ -68,7 +70,7 @@ const PaperlessCard = (props) => {
         statistic={{
           title: '회사',
           // tip: '본인이 서명 요청하여 완료된 건수를 기준으로 산정',
-          value: docNum + ' 장',
+          value: totalPaperlessNum + ' 장',
           icon: (
             <img
               style={{display: 'block', width: 42, height: 42}}

@@ -93,6 +93,9 @@ const today = () => {
     return dateString;
 }
 
+var isEmpty = function(value){ if( value == "" || value == null || value == undefined || ( value != null && typeof value == "object" && !Object.keys(value).length ) ){ return true }else{ return false } };
 
 
-module.exports = { hexCrypto, encrypt, decrypt, generateRandomName, generateRandomPass, makeFolder, today };
+
+
+module.exports = { hexCrypto, encrypt, decrypt, generateRandomName, generateRandomPass, makeFolder, today, isEmpty };

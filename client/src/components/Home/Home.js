@@ -1227,7 +1227,7 @@ const Home = () => {
               </Col>
               <Col xl={12} lg={24} md={24} sm={24} xs={24} style={{display: 'flex', paddingBottom: '20px'}}>
               {/* <FAQCard boardType={'faq'} boardName={'FAQ'}></FAQCard> */}
-              <OpinionCard boardType={'opinion'} boardName={'문의하기'}></OpinionCard>
+              <OpinionCard boardType={'opinion'} boardName={'문의/개선'}></OpinionCard>
               
               </Col>
             </Row>

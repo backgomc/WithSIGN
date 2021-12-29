@@ -88,7 +88,7 @@ const App = () => {
           axios.post('/api/users/sso', body).then(response => {
             if (response.data.success) {
               dispatch(setUser(response.data.user));
-              // navigate('/');
+              navigate('/');
             } else {
               if (response.data.user) { // 약관 동의 절차 필요
                 navigate('/agreement', { state: {user: response.data.user}});

@@ -53,7 +53,7 @@ const BoardDetail = ({location}) => {
   const boardId = location.state.boardId;
   const boardType = location.state?.boardType ? location.state.boardType : "opinion";
 
-  const { _id, thumbnail } = user;
+  const { _id, thumbnail, role } = user;
   const [searchText, setSearchText] = useState('');
   const [searchedColumn, setSearchedColumn] = useState('');
   const [comments, setComments] = useState([]);
@@ -295,8 +295,8 @@ const BoardDetail = ({location}) => {
           <Button icon={<ArrowLeftOutlined />} onClick={() => window.history.back()}>
             {/* {formatMessage({id: 'Back'})} */}
           </Button>,
-          (_id === board.user._id) ? <Tooltip placement="bottom" title={'게시글 수정'}><Button icon={<EditOutlined />} onClick={e => { {navigate('/boardModify', { state: {boardType:boardType, boardName:'게시글 수정', boardId:boardId}});} }}></Button></Tooltip> : '',
-          (_id === board.user._id) ? <Tooltip placement="bottom" title={'게시글 삭제'}><Button icon={<DeleteOutlined />} danger onClick={e => { deleteBoard() }}></Button></Tooltip> : ''
+          (_id === board.user._id || role == '1') ? <Tooltip placement="bottom" title={'게시글 수정'}><Button icon={<EditOutlined />} onClick={e => { {navigate('/boardModify', { state: {boardType:boardType, boardName:'게시글 수정', boardId:boardId}});} }}></Button></Tooltip> : '',
+          (_id === board.user._id || role == '1') ? <Tooltip placement="bottom" title={'게시글 삭제'}><Button icon={<DeleteOutlined />} danger onClick={e => { deleteBoard() }}></Button></Tooltip> : ''
           ],
         }}
         content={

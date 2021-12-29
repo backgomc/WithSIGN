@@ -65,7 +65,7 @@ const OpinionCard = (props) => {
             title={boardName}
             bordered={false}
             headerBordered
-            extra={<Link to="/boardList"  state={{ boardType: 'opinion', boardName: '문의하기', boardDetail: '개선 및 문의사항을 등록할 수 있습니다.' }}><RightOutlined style={{color:'#666666'}} /></Link>}
+            extra={<Link to="/boardList"  state={{ boardType: 'opinion', boardName: '문의/개선', boardDetail: '개선 및 문의사항을 등록할 수 있습니다.' }}><RightOutlined style={{color:'#666666'}} /></Link>}
             loading={loading}
             bodyStyle={{ padding: 10 }}
         >

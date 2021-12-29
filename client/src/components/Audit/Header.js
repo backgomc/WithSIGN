@@ -1,6 +1,7 @@
 import React from 'react';
 
-import { Link, Text, View, StyleSheet } from '@react-pdf/renderer';
+import { Link, Text, View, StyleSheet, Image } from '@react-pdf/renderer';
+import logo_withsign from '../../assets/images/logo_withsign.png';
 
 const styles = StyleSheet.create({
   container: {
@@ -22,7 +23,7 @@ const styles = StyleSheet.create({
     justifySelf: 'flex-end',
   },
   title: {
-    fontSize: 20,
+    fontSize: 18,
     fontFamily: 'Nanum Gothic Bold',
   },
   subtitle: {
@@ -38,6 +39,11 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-end',
     justifySelf: 'flex-end',
   },
+  image_logo: {
+    width: '72px',
+    height: '15px',
+    marginVertical: 5
+  }
 });
 
 export default () => (
@@ -48,7 +54,15 @@ export default () => (
     </View>
     <View style={styles.linkColumn}>
       <Link href="/" style={styles.link}>
-        WithSign
+        {/* WithSign */}
+        {/* <Image
+          style={styles.image_logo1}
+          src={logo_withsign1}
+        /> */}
+        <Image
+          style={styles.image_logo}
+          src={logo_withsign}
+        />
       </Link>
     </View>
   </View>
