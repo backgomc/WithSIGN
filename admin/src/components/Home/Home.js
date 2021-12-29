@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import axiosInterceptor from '../../config/AxiosConfig';
 import { Table, Input, Space, Button } from 'antd';
 import Highlighter from 'react-highlight-words';
 import { SearchOutlined,FileOutlined } from '@ant-design/icons';
@@ -7,7 +7,7 @@ import { useDispatch } from 'react-redux';
 // import { selectUser } from '../../app/infoSlice';
 import { navigate } from '@reach/router';
 import { setDocToView } from '../ViewDocument/ViewDocumentSlice';
-import { selectPathname, setPathname } from '../../config/MenuSlice';
+import { setPathname } from '../../config/MenuSlice';
 import moment from 'moment';
 import 'moment/locale/ko';
 import { DocumentType, DocumentTypeBadge, DOCUMENT_SIGNED, DOCUMENT_SIGNING, DOCUMENT_CANCELED } from '../Document/DocumentType';
@@ -18,7 +18,7 @@ import { useIntl } from 'react-intl';
 
 moment.locale('ko');
 
-const DocumentList = () => {
+const Home = () => {
 
   const dispatch = useDispatch();
   // const user = useSelector(selectUser);
@@ -49,7 +49,7 @@ const DocumentList = () => {
   const fetch = (params = {}) => {
     setLoading(true);
 
-    axios.post('/api/admin/document/list', params).then(response => {
+    axiosInterceptor.post('/admin/document/list', params).then(response => {
 
       console.log(response);
       if (response.data.success) {
@@ -301,7 +301,7 @@ const DocumentList = () => {
       pagination
     });
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    return () => setLoading(false);
   }, []);
 
   return (
@@ -345,4 +345,4 @@ const DocumentList = () => {
   );
 };
 
-export default DocumentList;
+export default Home;

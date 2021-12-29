@@ -38,6 +38,8 @@
 	"input.SABUN": "Please input your sabun!",
 	"input.password": "Please input your Password!",
 	"input.documentTitle": "Please input document title!",
+	"input.boardTitle": "Please input board title!",
+	"input.boardContent": "Please input board content!",
 	"input.name": "Please input your Name!",
 	"confirm.password": "Please confirm your password!",
 	"nomatch.password": "The two passwords that you entered do not match!",
@@ -57,6 +59,8 @@
 	"input.fileupload.support": "Support File: pdf",
 	"input.fileupload.support.image": "",
 	"input.fileupload.volume": "Maximum volume: 5Mb",
+	"input.fileupload.file.volume": "Maximum volume: 10Mb",
+	"input.fileupload.file.max": "Maximum file number: 3",
 	"input.sign": "add sign",
 	"input.text": "add text",
 	"Send": "Send",
@@ -76,5 +80,7 @@
 	"document.manage": "Document",
 	"template.manage": "Template",
 	"board.manage": "Board",
+	"board.insert": "Board",
+	"board.update": "Board",
 	"system.manage": "System"
 }

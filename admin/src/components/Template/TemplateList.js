@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import axiosInterceptor from '../../config/AxiosConfig';
+import { v4 as uuidv4 } from 'uuid';
 import { Table, Input, Space, Button, Popconfirm } from 'antd';
 import Highlighter from 'react-highlight-words';
 import { SearchOutlined } from '@ant-design/icons';
-import { useSelector } from 'react-redux';
-import { selectUser } from '../../app/infoSlice';
+// import { useSelector } from 'react-redux';
+// import { selectUser } from '../../app/infoSlice';
 import { navigate } from '@reach/router';
 import Moment from 'react-moment';
 import 'moment/locale/ko';
@@ -15,7 +16,7 @@ import { useIntl } from 'react-intl';
 
 const TemplateList = () => {
 
-  const user = useSelector(selectUser);
+  // const user = useSelector(selectUser);
   const { formatMessage } = useIntl();
 
   const [searchText, setSearchText] = useState('');
@@ -44,7 +45,7 @@ const TemplateList = () => {
   const fetch = (params = {}) => {
     setLoading(true);
 
-    axiosInterceptor.post('/api/admin/templates/list', params).then(response => {
+    axiosInterceptor.post('/admin/templates/list', params).then(response => {
 
       console.log(response);
       if (response.data.success) {
@@ -71,7 +72,7 @@ const TemplateList = () => {
     }
 
     console.log('param:' + param);
-    const res = await axiosInterceptor.post('/api/admin/templates/delete', param);
+    const res = await axiosInterceptor.post('/admin/templates/delete', param);
     if (res.data.success) {
       // alert('삭제 되었습니다.');
     } else {
@@ -101,6 +102,7 @@ const TemplateList = () => {
         />
         <Space>
           <Button
+            key={uuidv4()}
             type="primary"
             onClick={() => handleSearch(selectedKeys, confirm, dataIndex)}
             icon={<SearchOutlined />}
@@ -109,7 +111,7 @@ const TemplateList = () => {
           >
             검색
           </Button>
-          <Button onClick={() => handleReset(clearFilters)} size="small" style={{ width: 90 }}>
+          <Button key={uuidv4()} onClick={() => handleReset(clearFilters)} size="small" style={{ width: 90 }}>
             초기화
           </Button>
           {/* <Button
@@ -191,12 +193,8 @@ const TemplateList = () => {
       sorter: true,
       key: 'requestedTime',
       render: (text, row) => {
-        // if (text){
-        //   return <Moment format="YYYY/MM/DD HH:mm">{text}</Moment>
-        // } else {
-          return <Moment format="YYYY/MM/DD HH:mm">{row['registeredTime']}</Moment>
-        // }
-      } 
+        return <Moment format="YYYY/MM/DD HH:mm">{row['registeredTime']}</Moment>
+      }
     },
   ];
 
@@ -226,7 +224,7 @@ const TemplateList = () => {
     // }
     // setData(data);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    return () => setLoading(false);
   }, []);
 
   return (
@@ -249,11 +247,11 @@ const TemplateList = () => {
             ],
           },
           extra: [           
-          <Button type="primary" onClick={() => {navigate('/uploadTemplate');}}>
+          <Button key={uuidv4()} type="primary" onClick={() => {navigate('/uploadTemplate');}}>
             템플릿 등록
           </Button>,
           <Popconfirm title="삭제하시겠습니까？" okText="네" cancelText="아니오" visible={visiblePopconfirm} onConfirm={deleteTemplate} onCancel={() => {setVisiblePopconfirm(false);}}>
-            <Button type="primary" danger disabled={!hasSelected} onClick={()=>{setVisiblePopconfirm(true);}}>
+            <Button key={uuidv4()} type="primary" danger disabled={!hasSelected} onClick={()=>{setVisiblePopconfirm(true);}}>
               삭제
             </Button>
           </Popconfirm>,

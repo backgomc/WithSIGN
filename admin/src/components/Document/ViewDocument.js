@@ -9,8 +9,8 @@ import './ViewDocument.css';
  *  */ 
 const ViewDocument = () => {
 
-  const [annotManager, setAnnotatManager] = useState(null);
-  const [instance, setInstance] = useState(null);
+  // const [annotManager, setAnnotatManager] = useState(null);
+  const [setInstance] = useState(null);
 
   const user = useSelector(selectUser);
   const viewer = useRef(null);

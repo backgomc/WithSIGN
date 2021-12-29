@@ -32,7 +32,6 @@ java.classpath.push(jarFilePath7);
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     console.log('req.body.path : ' + req.body.path);
-    console.log('req.body.isLast : ' + req.body.isLast);
       
     if (req.body.path) {
       var newDir = config.storageDIR + req.body.path;
@@ -80,7 +79,8 @@ const upload = multer({storage});
 // /api/admin/board/update
 // /api/admin/board/delete
 // /api/admin/board/attach
-
+// /api/admin/board/addComment
+// /api/admin/board/delComment;
 // 시스템 연계 확인용
 router.post('/ipronet', (req, res) => {
   // restful.callOrgAPI();
@@ -430,8 +430,7 @@ router.post('/document/list', ValidateToken, async (req, res) => {
   // 전체 건수
   var totalCount = await Document.countDocuments(searchStr).exec();
 
-  Document
-    .find(searchStr)
+  Document.find(searchStr)
     .sort({ [order]: dir })   //asc:오름차순 desc:내림차순
     .skip(Number(start))
     .limit(Number(pageSize))
@@ -511,8 +510,7 @@ router.post('/templates/list', ValidateToken, async (req, res) => {
   // 전체 건수
   var totalCount = await Template.countDocuments(searchStr).exec();
 
-  Template
-    .find(searchStr)
+  Template.find(searchStr)
     .sort({ [order]: dir })   //asc:오름차순 desc:내림차순
     .skip(Number(start))
     .limit(Number(pageSize))
@@ -569,22 +567,20 @@ router.post('/templates/delete', ValidateToken, (req, res) => {
   var _ids = req.body._ids;
 
   // 스토리지 파일 삭제
-  Template
-    .find({ '_id': { $in: _ids } })
-    .exec((err, rows) => {
-      rows.forEach(template => {
-        console.log(template.docRef);
-        fs.unlink(template.docRef, function (err) {
-          if (err) console.error(err);
-        });
-      });
-
-      // DB 삭제
-      Template.deleteMany({ '_id': { $in: _ids } }, function (err) {
-        if (err) { return res.json({ success: false, err }); }
-        return res.status(200).json({ success: true });
+  Template.find({ '_id': { $in: _ids } }).exec((err, templates) => {
+    if (err) return res.json({ success: false, err });
+    templates.forEach(template => {
+      console.log(template.docRef);
+      fs.unlink(template.docRef, function (err) {
+        if (err) console.error(err);
       });
     });
+    // DB 삭제
+    Template.deleteMany({ '_id': { $in: _ids } }, function (err) {
+      if (err) return res.json({ success: false, err });
+      return res.status(200).json({ success: true });
+    });
+  });
 });
 
 // 템플릿 관리 > 업로드(임시파일)
@@ -654,8 +650,7 @@ router.post('/board/list', ValidateToken, async (req, res) => {
   // 전체 건수
   var totalCount = await Board.countDocuments(searchStr).exec();
 
-  Board
-    .find(searchStr)
+  Board.find(searchStr)
     .sort({ [order]: dir })   //asc:오름차순 desc:내림차순
     .skip(Number(start))
     .limit(Number(pageSize))
@@ -714,7 +709,17 @@ router.post('/board/update', ValidateToken, (req, res) => {
     return res.json({ success: false, message: 'input value not enough!' });
   }
 
-  Board.updateOne({ '_id': req.body.boardId }, {'title': req.body.title, 'content': req.body.content}, (err, result) => {
+  // 첨부파일 삭제
+  if (req.body.filesDeleted) {
+    req.body.filesDeleted.forEach(file => {
+      fs.access(file.url, fs.constants.F_OK, (err) => { // 파일 삭제
+        if (err) return console.log('삭제할 수 없는 파일입니다');
+        fs.unlink(file.url, (err) => err ? console.log(err) : console.log(`${file.name} 을 정상적으로 삭제했습니다`));
+      });
+    });
+  }
+
+  Board.updateOne({ '_id': req.body.boardId }, {'title': req.body.title, 'content': req.body.content, 'files': req.body.files}, (err) => {
     if (err) return res.json({ success: false, message: err });
     return res.json({ success: true});
   });
@@ -727,24 +732,23 @@ router.post('/board/delete', ValidateToken, (req, res) => {
   }
 
   // 스토리지 파일 삭제
-  Board
-    .find({ '_id': req.body.boardId })
-    .exec((err, board) => {
-      if (board.files.length > 0) {
-        board.files.forEach(file => {
-          console.log(file.path);
-          fs.unlink(file.path, function (err) {
-            if (err) console.error(err);
-          });
+  Board.findOne({ '_id': req.body.boardId }).exec((err, board) => {
+    if (err) return res.json({ success: false, message: err });
+    if (board.files.length > 0) {
+      board.files.forEach(file => {
+        var fileDir = file.destination;
+        fs.access(fileDir, fs.constants.F_OK, (err) => {
+          if (err) return console.log(err);
+          fs.rmdirSync(fileDir, { recursive: true });
         });
-      }
-
-      // DB 삭제
-      Board.deleteOne({ '_id': req.body.boardId }, function (err) {
-        if (err) return res.json({ success: false, err });
-        return res.status(200).json({ success: true });
       });
+    }
+    // DB 삭제
+    Board.deleteOne({ '_id': req.body.boardId }, function (err) {
+      if (err) return res.json({ success: false, err });
+      return res.json({ success: true });
     });
+  });
 });
 
 // 게시판 관리 > 첨부
@@ -754,6 +758,28 @@ router.post('/board/attach', ValidateToken, upload.array('files'), (req, res) =>
   } else {
       return res.json({ success: false, message: 'file upload failed'});
   }
+});
+
+// 게시판 관리 > 댓글 등록
+router.post('/board/addComment', ValidateToken, (req, res) => {
+  if (!req.body.user || !req.body.boardId || !req.body.content) {
+    return res.json({ success: false, message: 'input value not enough!' });
+  }
+  Board.updateOne({ '_id': req.body.boardId }, { $addToSet: { 'comments': {'user': req.body.user, 'content': req.body.content} } }, (err) => {
+    if (err) return res.json({ success: false, message: err });
+    return res.json({ success: true});
+  });
+});
+
+// 게시판 관리 > 댓글 삭제
+router.post('/board/delComment', ValidateToken, (req, res) => {
+  if (!req.body.boardId || !req.body.commentId) {
+    return res.json({ success: false, message: "input value not enough!" });
+  }
+  Board.updateOne({ '_id': req.body.boardId }, { $pull: { 'comments': {'_id': req.body.commentId} } }, (err) => {
+    if (err) return res.json({ success: false, message: err });
+    return res.json({ success: true});
+  });
 });
 ///////////////////////////////////////////////////////////////////////// 게시판 정보 관리 종료 /////////////////////////////////////////////////////////////////////////
 

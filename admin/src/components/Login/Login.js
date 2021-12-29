@@ -21,7 +21,7 @@ function Login() {
           password: values.password
         }
 
-        axios.post('/api/admin/login', body).then(response => {
+        axios.post('/admin/login', body).then(response => {
           if (response.data.success) {
             dispatch(setUser(response.data.user));
             localStorage.setItem('__rToken__', response.data.user.__rToken__);

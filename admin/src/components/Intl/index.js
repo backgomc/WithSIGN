@@ -18,7 +18,7 @@ export default function Intl(props) {
   };
 
   return (
-    <IntlProvider key={localLang} locale={localLang} messages={i18nData[localLang]}>
+    <IntlProvider key={localLang} locale={localLang} messages={i18nData[localLang]} onError={() => null}>
       <ConfigProvider locale={languageMap[localLang]}>
         {props.children}
       </ConfigProvider>

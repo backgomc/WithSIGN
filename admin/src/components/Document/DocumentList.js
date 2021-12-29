@@ -48,7 +48,7 @@ const DocumentList = () => {
   const fetch = (params = {}) => {
     setLoading(true);
 
-    axiosInterceptor.post('/api/admin/document/list', params).then(response => {
+    axiosInterceptor.post('/admin/document/list', params).then(response => {
 
       console.log(response);
       if (response.data.success) {
@@ -297,7 +297,7 @@ const DocumentList = () => {
       pagination
     });
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    return () => setLoading(false);
   }, []);
 
   return (

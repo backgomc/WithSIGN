@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import axios from 'axios';
+import axiosInterceptor from '../../config/AxiosConfig';
 import { navigate } from '@reach/router';
 import { selectUser } from '../../app/infoSlice';
 import 'antd/dist/antd.css';
@@ -38,7 +38,7 @@ const UploadTemplate = () => {
     formData.append('path', 'temp/');
     formData.append('file', file, filename);
 
-    const res = await axios.post('/api/storage/upload', formData);
+    const res = await axiosInterceptor.post('/admin/templates/upload', formData);
     setLoading(false);
 
     // GET TEMP FILE PATH
@@ -70,7 +70,6 @@ const UploadTemplate = () => {
 
       docViewer.on('documentLoaded', () => {
         const doc = docViewer.getDocument();
-        const pageIdx = 1;
 
         doc.loadCanvasAsync(({
           pageNumber: 1,
@@ -99,33 +98,14 @@ const UploadTemplate = () => {
 
     setLoading(true);
     
-    // 1. FILE-SAVE
-    // const docRef = `templates/${_id}${Date.now()}.pdf`;
-    // const formData = new FormData();
-    // formData.append('path', 'templates/');
-    // formData.append('file', file, docRef);
-    // await axios.post('/api/storage/upload', formData);
-
-    // 1-1. FILE-MOVE
-    let param = {
-      origin: tempFilePath,
-      target: tempFilePath.replace('temp', 'templates')
-    }
-    const res = await axios.post('/api/storage/moveFile', param);
-    let docRef = '';
-    if (res.data.success) {
-      docRef = res.data.filePath;
-    }
-    
-    // 2. DB-SAVE
     let body = {
       user: _id,
       docTitle: form.getFieldValue('documentTitle'),
       type: 'C',
-      docRef: docRef,
+      docRef: tempFilePath,
       thumbnail: thumbnail
     }
-    await axios.post('/api/admin/templates/insert', body);
+    await axiosInterceptor.post('/admin/templates/insert', body);
     setLoading(false);
     navigate('/templateList');
   }
@@ -246,7 +226,7 @@ const UploadTemplate = () => {
 
             </ProForm>
 
-            <div><img src={thumbnail}></img></div>
+            <div><img src={thumbnail} alt="미리보기"></img></div>
 
           </ProCard.TabPane>
         </ProCard>

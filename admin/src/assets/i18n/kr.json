@@ -38,6 +38,8 @@
 	"input.SABUN": "사번을 입력하세요!",
 	"input.password": "비밀번호를 입력하세요!",
 	"input.documentTitle": "문서 제목을 입력하세요!",
+	"input.boardTitle": "게시글 제목을 입력하세요!",
+	"input.boardContent": "게시글 내용을 입력하세요!",
 	"input.name": "이름을 입력하세요!",
 	"confirm.password": "비밀번호를 확인하세요!",
 	"nomatch.password": "비밀번호가 일치하지 않습니다!",
@@ -57,6 +59,8 @@
 	"input.fileupload.support": "지원 파일: pdf",
 	"input.fileupload.support.image": "지원 파일: jpg, png",
 	"input.fileupload.volume": "업로드 가능 용량: 최대 5Mb",
+	"input.fileupload.file.volume": "업로드 가능 용량: 최대 10Mb",
+	"input.fileupload.file.max": "최대 파일 등록 갯수: 3개",
 	"input.sign": "서명 추가",
 	"input.text": "텍스트 추가",
 	"Send": "보내기",
@@ -76,5 +80,7 @@
 	"document.manage": "문서 관리",
 	"template.manage": "템플릿 관리",
 	"board.manage": "게시판 관리",
+	"board.insert": "게시글 등록",
+	"board.update": "게시글 수정",
 	"system.manage": "시스템 관리"
 }

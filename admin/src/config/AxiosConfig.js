@@ -24,7 +24,7 @@ axiosInterceptor.interceptors.response.use(
             let config = {
                 headers: {'refresh-Token': localStorage.getItem('__rToken__')}
             }
-            let resp = await axios.post('/api/admin/refresh', null, config);
+            let resp = await axios.post('/admin/refresh', null, config);
             if (resp.data.success) {
                 resp = await axios(originalRequest);
                 response = resp;
