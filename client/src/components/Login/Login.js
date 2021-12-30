@@ -133,9 +133,9 @@ function Login(props) {
                 <Checkbox>{formatMessage({id: 'RememberMe'})}</Checkbox>
                 </Form.Item>
         
-                <a className="login-form-forgot" href="">
+                {/* <a className="login-form-forgot" href="">
                   {formatMessage({id: 'ForgotPassword'})}
-                </a>
+                </a> */}
             </Form.Item>
         
             <Form.Item>
@@ -147,7 +147,7 @@ function Login(props) {
             </Form>
         </div>
         <div className={styles['footer']}>
-          WITH SIGN © NH INFORMATION SYSTEM 2021
+          © 2021 NH INFORMATION SYSTEM CO.,LTD. ALL RIGHT RESERVED
         </div>
       </>
     )
