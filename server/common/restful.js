@@ -164,7 +164,7 @@ let callDRMUnpackaging = async (filePath, fileName, target) => {
         let body = {
             filePath: './' + filePath,
             fileName: fileName,
-            target: './' + target
+            target: target
         }
         return await axios.post(url, body);
     } catch (err) {

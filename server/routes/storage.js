@@ -198,7 +198,7 @@ router.post('/checkHashByFile', uploadTemp.single('file'), async (req, res) => {
     console.log('originalname', file.originalname)
 
     // 업로드 파일 암호화 해제 후 hash 값 추출
-    console.log(await restful.callDRMUnpackaging(req.file.destination, req.file.originalname));
+    console.log(await restful.callDRMUnpackaging(req.file.destination, req.file.filename));
 
     const file_buffer = fs.readFileSync(tmp_path);
     const hash = crypto.createHash('md5');
@@ -208,7 +208,7 @@ router.post('/checkHashByFile', uploadTemp.single('file'), async (req, res) => {
     console.log('md5:'+hex);
 
     // temp 파일 삭제
-    fs.unlinkSync(tmp_path);
+    // fs.unlinkSync(tmp_path);
 
     // DB에 HASH값 체크
     Document.findOne({ docHash: hex }, (err, document) => {
