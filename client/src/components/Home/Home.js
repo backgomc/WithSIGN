@@ -83,7 +83,8 @@ const CardTitle = styled.div`
 const MyStyle = styled.div`
   .ant-pro-checkcard-title {
     text-align: right;
-    font-size: 16px;
+    // font-size: 16px;
+    font-size: calc(13px + .2vw);
     font-weight: bold;
     color: #666666;
     margin: 0px 0px 0px 0px;
@@ -1218,7 +1219,7 @@ const Home = () => {
       </div>
 
       <Row gutter={24}>
-          <Col xl={17} lg={24} md={24} sm={24} xs={24}>
+          <Col xl={18} lg={24} md={24} sm={24} xs={24}>
             {/* {staticsAll}<br></br> */}
             {cardDocument}<br></br>
             <Row gutter={24}>
@@ -1232,7 +1233,7 @@ const Home = () => {
               </Col>
             </Row>
           </Col>
-          <Col xl={7} lg={24} md={24} sm={24} xs={24}>
+          <Col xl={6} lg={24} md={24} sm={24} xs={24}>
             {pie}
             <br></br>
             <PaperlessCard />

@@ -478,6 +478,7 @@ const DocumentList = ({location}) => {
               }}></Button></Tooltip>&nbsp;&nbsp;
               {/* <a href={row["docRef"]} download={row["docTitle"]+'.pdf'}> */}
                 <Tooltip placement="top" title={'다운로드'}>
+                {/* <Button key="2" href={'/api/storage/documents/'+row["_id"]} download={row["docTitle"]+'.pdf'} icon={<DownloadOutlined />} loading={loadingDownload[row["_id"]]}  onClick={(e) => { */}
                 <Button key="2" href={row["docRef"]} download={row["docTitle"]+'.pdf'} icon={<DownloadOutlined />} loading={loadingDownload[row["_id"]]}  onClick={(e) => {
                   setLoadingDownload( { [row["_id"]] : true } )
                   setTimeout(() => {

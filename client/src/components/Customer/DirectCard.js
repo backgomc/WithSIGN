@@ -24,6 +24,12 @@ const DirectCard = (props) => {
           <font color='#373737'>{text}</font>
         </a>
       );
+    const IconLink2 = ({ src, text }) => (
+      <a style={{marginLeft:'7px', marginRight:'16px', lineHeight:'24px'}}>
+        <img style={{marginRight:'8px', width:'42px', height:'42px'}} src={src} alt={text} />
+        <font color='#373737'>{text}</font>
+      </a>
+    );
 
     return (
     <ProCard title="바로 가기">
@@ -38,7 +44,7 @@ const DirectCard = (props) => {
           </Col>
           <Col span={11}>
             <Link to='/manual'>
-              <IconLink
+              <IconLink2
                 src={iconManual}
                 text="서비스 소개"
               />

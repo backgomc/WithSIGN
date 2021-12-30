@@ -32,6 +32,7 @@
 .header-wrapper header img {
     height: 100%;
     margin-right: 10px;
+    align-items: center;
 }
 
 .header-wrapper header h2 {

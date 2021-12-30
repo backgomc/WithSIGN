@@ -46,13 +46,9 @@ const BoardModify = ({location}) => {
   const [form] = Form.useForm();
 
   const [disableNext, setDisableNext] = useState(true);
-  // const [fileList, setFileList] = useState([]);
-  // var fileList = [];
+
   const fileList = useRef([]);
   const fileListDeleted = useRef([]);
-
-  // const [fileListDelete, setFileListDelete] = useState([]);
-
 
   const [board, setBoard] = useState({title: '', content: '', requestedTime: '', user: {name: '', JOB_TITLE:''}});  
   const [loading, setLoading] = useState(false);
@@ -286,20 +282,14 @@ const BoardModify = ({location}) => {
               console.log(info.fileList)
 
               if (info.file.asis && info.file.status == 'removed') {  // 기존 파일인경우 status 로 구분 가능
-                console.log('removed !!!')
-                // setFileListDelete(fileListDelete.concat(info.file))
                 fileListDeleted.current.push(info.file)
-              } else { // 신규 파일인 경우 status 가 없어서 파일 수로 판단
-                
+
+              } else { 
                 // 신규 파일 첨부건 중에 삭제건 처리
                 if (info.fileList.filter(e => !e.asis).length != fileList.current.length) {
                   fileList.current = fileList.current.filter(e => e.uid != info.file.uid)
                 }
-                // console.log(info.fileList.filter(e => e.uid.length != 1))
-                // if (info.fileList.filter(e => e.uid.length != 1) != fileList.current.length) { // 파일 삭제 된 것으로 판단
-                //   // setFileList(fileList.filter(e => e.uid != info.file.uid)) // fileList(State Object)에 파일 삭제
-                //   fileList.current = fileList.current.filter(e => e.uid != info.file.uid)
-                // }
+
               }
 
               console.log('FILE LAST')
@@ -320,9 +310,6 @@ const BoardModify = ({location}) => {
                 return Upload.LIST_IGNORE;
               }
 
-              // fileList(State Object)에 파일 추가
-              // setFileList(fileList.concat(file));
-              // fileList.push(file)
               fileList.current.push(file)
                             
               return false;
