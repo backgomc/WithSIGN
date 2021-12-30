@@ -3,6 +3,7 @@ const router = express.Router();
 const multer = require('multer'); // file upload module
 const config = require("../config/key");
 const { Document } = require("../models/Document");
+const { Template } = require('../models/Template');
 const { Bulk } = require("../models/Bulk");
 const fs = require('fs');
 const path = require('path');
@@ -413,5 +414,36 @@ router.post('/uploadFiles', upload.array('files'), async (req, res) => {
     }    
 })
 
+router.get('/:class/:docId', async (req, res) => {
+    // console.log(req.params.class);
+    // console.log(req.params.docId);
+    if (!req.params.class || !req.params.docId) return res.json({ success: false, message: 'input value not enough!' });
+    try {
+        var dataInfo;
+        if (req.params.class === 'documents') dataInfo = await Document.findOne({ '_id': req.params.docId });
+        if (req.params.class === 'templates') dataInfo = await Template.findOne({ '_id': req.params.docId });
+        if (dataInfo && dataInfo.docRef) {
+            var fileInfo = dataInfo.docRef;
+            var filePath = fileInfo.substring(0, fileInfo.lastIndexOf('/'));
+            var fileName = fileInfo.substring(fileInfo.lastIndexOf('/')+1, fileInfo.length);
+            var copyPath = filePath.replace(req.params.class, 'temp') + fileName;
+            // console.log(fileName);
+            // console.log(filePath);
+            // console.log(copyPath);
+            if (fs.existsSync(fileInfo)) { // 파일 존재 체크
+                await restful.callDRMPackaging(filePath, fileName, copyPath);
+                var filestream = fs.createReadStream(copyPath);
+                filestream.pipe(res);
+          } else {
+            return res.json({ success: false, message: 'file download failed!' });
+          }
+        } else {
+            return res.json({ success: false, message: 'file download failed!' });
+        }
+    } catch (e) {
+      console.log(e);
+      return res.json({ success: false, message: 'file download failed!' });
+    }
+  });
 
 module.exports = router;

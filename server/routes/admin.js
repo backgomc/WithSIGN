@@ -49,38 +49,41 @@ const storage = multer.diskStorage({
 const upload = multer({storage});
 
 // -- 로그인/아웃 --
-// /api/admin/auth        (GET)
-// /api/admin/sso
-// /api/admin/refresh
-// /api/admin/login
-// /api/admin/logout
+// /admin/auth        (GET)
+// /admin/sso
+// /admin/refresh
+// /admin/login
+// /admin/logout
 // -- 사용자/부서 관리 --
-// /api/admin/user/list
-// /api/admin/user/info
-// /api/admin/user/update (정보 변경)
-// /api/admin/user/push   (알림 점검)
-// /api/admin/user/sync   (연계 수동)
-// /api/admin/org/list    (미사용)
-// /api/admin/org/info    (미사용)
-// /api/admin/org/sync    (연계 수동)
+// /admin/user/list
+// /admin/user/info
+// /admin/user/update (정보 변경)
+// /admin/user/push   (알림 점검)
+// /admin/user/sync   (연계 수동)
+// /admin/org/list    (미사용)
+// /admin/org/info    (미사용)
+// /admin/org/sync    (연계 수동)
 // -- 문서 관리 --
-// /api/admin/document/list
-// /api/admin/document/info
+// /admin/document/list
+// /admin/document/info
+// /admin/document/down
+// /
 // -- 템플릿 관리 --
-// /api/admin/templates/list
-// /api/admin/templates/info
-// /api/admin/templates/insert
-// /api/admin/templates/delete
-// /api/admin/templates/upload
+// /admin/templates/list
+// /admin/templates/info
+// /admin/templates/insert
+// /admin/templates/delete
+// /admin/templates/upload
 // -- 게시판 관리 --
-// /api/admin/board/list
-// /api/admin/board/detail
-// /api/admin/board/insert
-// /api/admin/board/update
-// /api/admin/board/delete
-// /api/admin/board/attach
-// /api/admin/board/addComment
-// /api/admin/board/delComment;
+// /admin/board/list
+// /admin/board/detail
+// /admin/board/insert
+// /admin/board/update
+// /admin/board/delete
+// /admin/board/attach
+// /admin/board/addComment
+// /admin/board/delComment;
+
 // 시스템 연계 확인용
 router.post('/ipronet', (req, res) => {
   // restful.callOrgAPI();
@@ -452,6 +455,39 @@ router.post('/document/list', ValidateToken, async (req, res) => {
 // 문서 관리 > 상세
 router.post('/document/info', ValidateToken, (req, res) => {
   return res.json({ success: true, message: '/document/info' });
+});
+
+// 문서 관리 > 다운(DRM)
+router.get('/document/down/:class/:docId', ValidateToken, async (req, res) => {
+  // console.log(req.params.class);
+  // console.log(req.params.docId);
+  if (!req.params.class || !req.params.docId) return res.json({ success: false, message: 'input value not enough!' });
+  try {
+      var dataInfo;
+      if (req.params.class === 'documents') dataInfo = await Document.findOne({ '_id': req.params.docId });
+      if (req.params.class === 'templates') dataInfo = await Template.findOne({ '_id': req.params.docId });
+      if (dataInfo && dataInfo.docRef) {
+          var fileInfo = dataInfo.docRef;
+          var filePath = fileInfo.substring(0, fileInfo.lastIndexOf('/'));
+          var fileName = fileInfo.substring(fileInfo.lastIndexOf('/')+1, fileInfo.length);
+          var copyPath = filePath.replace(req.params.class, 'temp') + fileName;
+          // console.log(fileName);
+          // console.log(filePath);
+          // console.log(copyPath);
+          if (fs.existsSync(fileInfo)) { // 파일 존재 체크
+              await restful.callDRMPackaging(filePath, fileName, copyPath);
+              var filestream = fs.createReadStream(copyPath);
+              filestream.pipe(res);
+        } else {
+          return res.json({ success: false, message: 'file download failed!' });
+        }
+      } else {
+          return res.json({ success: false, message: 'file download failed!' });
+      }
+  } catch (e) {
+    console.log(e);
+    return res.json({ success: false, message: 'file download failed!' });
+  }
 });
 ///////////////////////////////////////////////////////////////////////// 문서 관리 서비스 종료 /////////////////////////////////////////////////////////////////////////
 
