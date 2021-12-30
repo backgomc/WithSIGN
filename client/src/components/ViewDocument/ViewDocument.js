@@ -28,7 +28,7 @@ const ViewDocument = () => {
   const user = useSelector(selectUser);
   const history = useSelector(selectHistory);
 
-  const { docRef, docTitle } = doc;
+  const { docRef, docTitle, docId } = doc;
   const { _id } = user;
   const { formatMessage } = useIntl();
 
@@ -130,7 +130,8 @@ const ViewDocument = () => {
           // </Button>
           // AS-IS > TO-BE : 해시값 유지를 위해 서버에 파일을 다운로드 하도록 변경
           // <a href={process.env.REACT_APP_STORAGE_DIR+docRef} download={docTitle+'.pdf'}> 
-            <Button key="3" loading={loadingDownload['1']} href={docRef} download={docTitle+'.pdf'} type="primary" icon={<DownloadOutlined />} onClick={()=> {
+            // <Button key="3" loading={loadingDownload['1']} href={docRef} download={docTitle+'.pdf'} type="primary" icon={<DownloadOutlined />} onClick={()=> {
+            <Button key="3" loading={loadingDownload['1']} href={'/api/storage/documents/'+docId} download={docTitle+'.pdf'} type="primary" icon={<DownloadOutlined />} onClick={()=> {
               setLoadingDownload( { "1" : true } )
               setTimeout(() => {
                 setLoadingDownload( { "1" : false})
