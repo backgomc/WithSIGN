@@ -72,11 +72,11 @@ router.post('/list', (req, res) => {
     .limit(Number(pageSize))
     .populate({
       path: "user", 
-      select: {name: 1, JOB_TITLE: 2}
+      select: {name: 1, JOB_TITLE: 2, thumbnail: 3}
     })
     .populate({
       path: "comments.user", 
-      select: {name: 1, JOB_TITLE: 2}
+      select: {name: 1, JOB_TITLE: 2, thumbnail: 3}
     })
     .exec((err, data) => {
         console.log(data);

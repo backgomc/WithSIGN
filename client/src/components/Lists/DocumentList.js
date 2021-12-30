@@ -331,6 +331,26 @@ const DocumentList = ({location}) => {
           )
       } 
     },
+    {
+      title: '참여자',
+      responsive: ["sm"],
+      dataIndex: ['users'],
+      key: 'users',
+      width: '110px',
+      render: (users, row) => {
+        return (
+          <React.Fragment>
+            {users.length > 1 ? <Tooltip placement="top" title={row.users.map((user, index) => ( user.name+' '+user.JOB_TITLE+ (index==users.length-1 ? '' : ', ')  ))}>{users[0].name +' '+ users[0].JOB_TITLE + '외 '+ users.length + '명'}</Tooltip> : users[0].name +' '+ users[0].JOB_TITLE}
+          {/* {
+              row.users.map((user, index) => (
+                user.name
+            ))
+          }             */}
+          {/* {row['user']['name']} {row['user']['JOB_TITLE']} */}
+          </React.Fragment>
+        )
+      } 
+    },
     // {
     //   title: 'adasd',
     //   dataIndex: '_id',

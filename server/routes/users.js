@@ -131,7 +131,8 @@ router.get('/auth', auth, (req, res) => {
     uid: req.user.uid,
     JOB_TITLE: req.user.JOB_TITLE,
     DEPART_CODE: req.user.DEPART_CODE,
-    OFFICE_CODE: req.user.OFFICE_CODE
+    OFFICE_CODE: req.user.OFFICE_CODE,
+    thumbnail: req.user.thumbnail
   })
 })
 

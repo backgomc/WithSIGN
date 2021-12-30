@@ -21,7 +21,7 @@ const Setting = () => {
 
   const [formPassword] = Form.useForm();
 
-  const { _id, name, JOB_TITLE, email, DEPART_CODE, OFFICE_CODE } = user;
+  const { _id, name, JOB_TITLE, email, DEPART_CODE, OFFICE_CODE, thumbnail } = user;
 
   const [tab, setTab] = useState('tab1');
 
@@ -121,7 +121,7 @@ const Setting = () => {
           <div>
 
             <div style={{marginLeft:'150px', marginTop:'15px', marginBottom:'15px'}}>
-              <Avatar size={84} icon={<UserOutlined />} />
+            {thumbnail ? <Avatar size={84} src={thumbnail} /> : <Avatar size={84} icon={<UserOutlined />} />}
             </div>
             
             <div style={{marginLeft:'30px'}}>
@@ -356,7 +356,6 @@ const Setting = () => {
 
           <Row gutter={24}>
               <Col xl={24} lg={24} md={24} sm={24} xs={24}>
-
                 <ProCard
                   title='사용자 정보 및 변경'
                   tabs={{

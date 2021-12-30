@@ -164,6 +164,7 @@ xfdf: ["<?xml version="1.0" encoding="UTF-8" ?><xfdf xmlns="http://ns.adobe.com/
  > mkdir /저장폴더/Data/storage/docToSign <= STORAGE 저장소
 - docker-compose 작성 및 서비스 기동 
  > docker-compose up -d
+ 
 
 ## 운영 배포
 - 분할 압축
