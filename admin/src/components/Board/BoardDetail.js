@@ -57,7 +57,7 @@ const BoardDetail = ({location}) => {
             _id: comment._id,
             userId: comment.user._id,
             author: comment.user.name + ' ' + comment.user.JOB_TITLE,
-            avatar: thumbnail ? <Avatar src={comment.user.thumbnail} /> : <Avatar size={35} icon={<UserOutlined />} />,
+            avatar: comment.user.thumbnail ? <Avatar src={comment.user.thumbnail} /> : <Avatar size={35} icon={<UserOutlined />} />,
             content: <pre>{comment.content}</pre>,
             datetime: moment(comment.registeredTime).fromNow()
           });
