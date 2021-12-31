@@ -65,3 +65,6 @@ app.listen(port, () => {
 const batch = require('./common/batch');
 batch.orgSyncJob.start();
 batch.userSyncJob.start();
+
+const setup = require('./common/setup');
+setup.createAdmin();

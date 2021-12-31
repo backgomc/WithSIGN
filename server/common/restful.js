@@ -1,8 +1,9 @@
+const fs = require('fs');
 const axios = require('axios');
 const iconv = require('iconv-lite');
 const bcrypt = require('bcryptjs');
 const config = require('../config/key');
-const { hexCrypto } = require('../common/utils');
+const { hexCrypto, makeFolder, generateRandomName } = require('../common/utils');
 const { Emp } = require('../models/Emp');
 const { Org } = require('../models/Org');
 const { User } = require('../models/User');
@@ -76,7 +77,14 @@ let callUserAPI = async () => {
                 newUser['JOB_TITLE'] = data['NM_JIKMYUNG'];
                 if (data['IMG_PROFILE'] !== '') {
                     await axios.get(data['IMG_PROFILE'], {responseType: 'arraybuffer'}).then(resp => {
-                        newUser['image'] = 'data:image/jpeg;base64,' + Buffer.from(resp.data).toString('base64');
+                        // newUser['thumbnail'] = 'data:image/jpeg;base64,' + Buffer.from(resp.data).toString('base64');
+                        let filePath = config.storageDIR + config.profileDIR;
+                        let fileName = generateRandomName() + '.png';
+                        newUser['thumbnail'] = filePath + fileName;
+                        makeFolder(filePath);
+                        fs.writeFile(filePath + fileName, resp.data, function(err) {
+                            if (err) console.log(err);
+                        });
                     });
                 }
                 newList.push(newUser);
@@ -110,7 +118,14 @@ let callUserAPI = async () => {
                         let thumbnail = '';
                         if (data['empInfo'][0]['IMG_PROFILE'] !== '') {
                             await axios.get(data['empInfo'][0]['IMG_PROFILE'], {responseType: 'arraybuffer'}).then(resp => {
-                                thumbnail = 'data:image/jpeg;base64,' + Buffer.from(resp.data).toString('base64');
+                                // thumbnail = 'data:image/jpeg;base64,' + Buffer.from(resp.data).toString('base64');
+                                let filePath = config.storageDIR + config.profileDIR;
+                                let fileName = generateRandomName() + '.png';
+                                thumbnail = filePath + fileName;
+                                makeFolder(filePath);
+                                fs.writeFile(filePath + fileName, resp.data, function(err) {
+                                    if (err) console.log(err);
+                                });
                             });
                         }
                         User.findOneAndUpdate(
