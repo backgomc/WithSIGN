@@ -278,11 +278,11 @@ const Audit = ({location}) => {
     </Document>
   );
 
-  useEffect(() => {
+  // useEffect(() => {
 
-    console.log("useEffect called: Audit")
+  //   console.log("useEffect called: Audit")
 
-  }, []);
+  // }, []);
 
   return (
 
@@ -295,16 +295,16 @@ const Audit = ({location}) => {
           title: '진본 확인 증명서',
           // ghost: false,
           extra: [           
-          <Button icon={<ArrowLeftOutlined />} onClick={() => window.history.back()}>
+          <Button icon={<ArrowLeftOutlined />} onClick={() => navigate('/documentList')}>
             {/* {formatMessage({id: 'Back'})} */}
           </Button>,
-          <PDFDownloadLink document={<MyDocument />} fileName={docTitle+'_진본확인.pdf'}>
-          {({ blob, url, loading, error }) =>
-            <Button key="1" loading={loading} type="primary" icon={<DownloadOutlined />}>
-                {formatMessage({id: 'document.download'})}
-            </Button>
-          }
-        </PDFDownloadLink>
+        //   <PDFDownloadLink document={<MyDocument />} fileName={docTitle+'_진본확인.pdf'}>
+        //   {({ blob, url, loading, error }) =>
+        //     <Button key="1" loading={loading} type="primary" icon={<DownloadOutlined />}>
+        //         {formatMessage({id: 'document.download'})}
+        //     </Button>
+        //   }
+        // </PDFDownloadLink>
           ],
         }}
         // content={
