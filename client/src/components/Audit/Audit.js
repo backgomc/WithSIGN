@@ -1,5 +1,5 @@
 import React, {useEffect} from 'react';
-import { Page, Text, View, Document, StyleSheet, PDFViewer, Font, PDFDownloadLink } from '@react-pdf/renderer';
+import ReactPDF, { Page, Text, View, Document, StyleSheet, PDFViewer, Font, PDFDownloadLink } from '@react-pdf/renderer';
 import { Button } from "antd";
 import { PageContainer } from '@ant-design/pro-layout';
 import { useIntl } from "react-intl";
@@ -296,23 +296,16 @@ const Audit = ({location}) => {
           // ghost: false,
           extra: [           
           <Button icon={<ArrowLeftOutlined />} onClick={() => navigate('/documentList')}>
-            {/* {formatMessage({id: 'Back'})} */}
           </Button>,
-        //   <PDFDownloadLink document={<MyDocument />} fileName={docTitle+'_진본확인.pdf'}>
-        //   {({ blob, url, loading, error }) =>
-        //     <Button key="1" loading={loading} type="primary" icon={<DownloadOutlined />}>
-        //         {formatMessage({id: 'document.download'})}
-        //     </Button>
-        //   }
-        // </PDFDownloadLink>
+          <PDFDownloadLink document={<MyDocument />} fileName={docTitle+'_진본확인.pdf'}>
+          {({ blob, url, loading, error }) =>
+            <Button key="1" loading={loading} type="primary" icon={<DownloadOutlined />}>
+                {formatMessage({id: 'document.download'})}
+            </Button>
+          }
+        </PDFDownloadLink>
           ],
         }}
-        // content={
-        //   <Descriptions column={2} style={{ marginBottom: -16 }}>
-        //     <Descriptions.Item label="작성자">{board.user.name} {board.user.JOB_TITLE}</Descriptions.Item>
-        //     <Descriptions.Item label="작성 일시"><Moment format='YYYY/MM/DD HH:mm'>{board.requestedTime}</Moment></Descriptions.Item>
-        //   </Descriptions>
-        // }
         footer={[
         ]}
     >
@@ -326,15 +319,6 @@ const Audit = ({location}) => {
 
           <PDFViewer style={{width: '100%', height: '100%', display: 'flex'}} showToolbar={true}>
             <MyDocument />
-
-            {/* <Document>
-              <Page size="A4" style={styles.page}>
-              <View style={styles.leftColumn}>
-                <Text style={styles.title}>문서 정보</Text>
-              </View>
-              </Page>
-            </Document> */}
-
           </PDFViewer>
         </div>
     </PageContainer>
