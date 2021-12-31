@@ -7,7 +7,8 @@ import { Button, Form, Input } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
 import styles from './login.module.css';
 import { useIntl } from "react-intl";
-import LogoImage from '../../assets/images/logo_withsign.png'
+import LogoImage from '../../assets/images/logo_withsign1.png'
+import LogoText from '../../assets/images/logo_withsign2.png'
 
 function Login() {
     const dispatch = useDispatch();
@@ -39,7 +40,8 @@ function Login() {
             <header>
               <a href="/">
                 <img src={LogoImage} alt="WithSIGN" />
-                <h2>{formatMessage({id: 'AppName'})}</h2>
+                <img src={LogoText} alt="WithSIGN" />
+                {/* <h2>{formatMessage({id: 'AppName'})}</h2> */}
                 <h5 style={{'color':'cyan'}}>{formatMessage({id: 'AppSubName'})}</h5>
               </a>
               {/* <div className={styles['nav-wrapper']}>

@@ -25,7 +25,8 @@ import Blank from './components/Blank/Blank';
 import '@ant-design/pro-layout/dist/layout.css';
 import 'antd/dist/antd.css';
 import './App.css';
-import LogoImage from './assets/images/logo_withsign.png'
+import LogoImage from './assets/images/logo_withsign1.png'
+import LogoText from './assets/images/logo_withsign2.png'
 
 const App = () => {
   
@@ -98,7 +99,7 @@ const App = () => {
     }}
     >
       <ProLayout
-        title="WithSIGN"
+        title={<img src={LogoText} />}
         // logo="https://gw.alipayobjects.com/mdn/rms_b5fcc5/afts/img/A*1NHAQYduQiQAAAAAAAAAAABkARQnAQ" 로고 이미지
         logo={LogoImage}
         menuHeaderRender={(logo, title) => (
@@ -111,7 +112,7 @@ const App = () => {
           >
             {logo}
             {title}
-            <h5 style={{'color':'cyan', 'display':'inline-block', 'whiteSpace':'nowrap'}}>&nbsp;{formatMessage({id: 'AppSubName'})}</h5>
+            <h5 style={{'color':'cyan', 'whiteSpace':'nowrap', 'textAlign':'end'}}>&nbsp;{formatMessage({id: 'AppSubName'})}</h5>
           </div>
         )}
         {...Menus()}
