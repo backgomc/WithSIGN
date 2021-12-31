@@ -142,8 +142,11 @@ router.post('/updateDocumentToSign', (req, res) => {
                 }
             });
             
-            // 문서 완료 시 요청자에게 쪽지 보내기
-            restful.callNotify(null, document.user,'[WithSIGN] 서명 완료 알림', '['+document.docTitle+']' + ' 의 서명이 완료되었습니다.');
+            // 문서 완료 시 요청자에게 쪽지 보내기 : 일반 전송만
+            if (document.docType == 'G') {
+              console.log('쪽지 전송 OK: 일반전송')
+              restful.callNotify(null, document.user,'[WithSIGN] 서명 완료 알림', '['+document.docTitle+']' + ' 의 서명이 완료되었습니다.');
+            } 
 
           }
 
