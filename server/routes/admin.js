@@ -115,7 +115,8 @@ router.get('/auth', ValidateToken, (req, res) => {
         name: user.name,
         JOB_TITLE: user.JOB_TITLE,
         DEPART_CODE: user.DEPART_CODE,
-        OFFICE_CODE: user.OFFICE_CODE
+        OFFICE_CODE: user.OFFICE_CODE,
+        thumbnail: user.thumbnail
       }
     });
   });
@@ -153,6 +154,7 @@ router.post('/sso', (req, res) => {
             JOB_TITLE: user.JOB_TITLE,
             DEPART_CODE: user.DEPART_CODE,
             OFFICE_CODE: user.OFFICE_CODE,
+            thumbnail: user.thumbnail,
             __rToken__: refreshToken
           }
         });
@@ -180,7 +182,8 @@ router.post('/refresh', renewalToken, (req, res) => {
         name: user.name,
         JOB_TITLE: user.JOB_TITLE,
         DEPART_CODE: user.DEPART_CODE,
-        OFFICE_CODE: user.OFFICE_CODE
+        OFFICE_CODE: user.OFFICE_CODE,
+        thumbnail: user.thumbnail
       }
     });
   });
@@ -234,6 +237,7 @@ router.post('/login', (req, res) => {
             JOB_TITLE: user.JOB_TITLE,
             DEPART_CODE: user.DEPART_CODE,
             OFFICE_CODE: user.OFFICE_CODE,
+            thumbnail: user.thumbnail,
             __rToken__: refreshToken
           }
         });
