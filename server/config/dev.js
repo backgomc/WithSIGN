@@ -5,6 +5,7 @@ module.exports = {
     storageDIR: "storage/",
     documentDIR: "documents/",
     thumbnailDIR: "thumbnails/",
+    profileDIR: "profiles/",
     erpURI: "http://10.220.210.165",
     drmURI: "http://localhost:4001",
     ipronetURI: "http://10.220.210.44",
