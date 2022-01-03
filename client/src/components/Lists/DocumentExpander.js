@@ -4,6 +4,9 @@ import { Tooltip, Tag, Timeline, Button, Alert, Modal, Badge, Descriptions } fro
 import Moment from 'react-moment';
 import { useSelector, useDispatch } from 'react-redux';
 import { selectUser } from '../../app/infoSlice';
+import ReactPDF, { pdf, Page, Text, View, Document, StyleSheet, PDFViewer, PDFDownloadLink } from '@react-pdf/renderer';
+import { saveAs } from 'file-saver';
+import AuditDocument from '../Audit/AuditDocument';
 import {
     CheckCircleOutlined,
     SyncOutlined,
@@ -12,7 +15,8 @@ import {
     ClockCircleOutlined,
     MinusCircleOutlined,
     InfoCircleOutlined,
-    CloseOutlined
+    CloseOutlined,
+    DownloadOutlined
   } from '@ant-design/icons';
 import { DocumentTypeBadge, DocumentType, DocumentTypeText } from './DocumentType';
 import { DOCUMENT_SIGNED, DOCUMENT_TOSIGN, DOCUMENT_SIGNING, DOCUMENT_CANCELED, DOCUMENT_TOCONFIRM } from '../../common/Constants';
@@ -233,12 +237,32 @@ const DocumentExpander = (props) => {
     const buttonList = (
         <div>
             {DocumentType({uid: _id, document: item}) == DOCUMENT_SIGNED ?
+                // <Button
+                // onClick={() => {         
+                //     navigate(`/audit`, { state: { item: item } } );
+                // }}>
+                //     진본 확인 증명서
+                // </Button> : '' 
+
                 <Button
-                onClick={() => {         
-                    navigate(`/audit`, { state: { item: item } } );
+                icon={<DownloadOutlined />}
+                onClick={async () => {         
+                    const doc = <AuditDocument item={item} />;
+                    const asPdf = pdf([]);
+                    asPdf.updateContainer(doc);
+                    const blob = await asPdf.toBlob();
+                    saveAs(blob, item.docTitle+'_진본확인.pdf');
                 }}>
                     진본 확인 증명서
                 </Button> : '' 
+
+                // <PDFDownloadLink document={<AuditDocument item={item} />} fileName={item.docTitle+'_진본확인.pdf'}>
+                // {({ blob, url, loading, error }) =>
+                //   <Button key="1" loading={loading} icon={<DownloadOutlined />}>
+                //       진본 확인 증명서
+                //   </Button>
+                // }
+                // </PDFDownloadLink> : ''
             }
             {((DocumentType({uid: _id, document: item}) == DOCUMENT_SIGNING || DocumentType({uid: _id, document: item}) == DOCUMENT_TOSIGN)  
                 && item.user._id === _id 

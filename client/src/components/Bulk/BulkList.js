@@ -154,6 +154,12 @@ const BulkList = () => {
       el.signed == true
     );
   }
+
+  const filterCompleted = (docs) => {
+    return docs.filter((el) =>
+    el.signed == true || el.canceled == true
+  );
+  }
   
   const columns = [
     {
@@ -173,7 +179,7 @@ const BulkList = () => {
       responsive: ["xs"],
       width: '77px',
       expandable: true,
-      render: (text,row) => <div>({filterSigned(row['docs']).length} / {row['docs'].length})</div>
+      render: (text,row) => <div>({filterCompleted(row['docs']).length} / {row['docs'].length})</div>
     },
     {
       title: '진행 건수',
@@ -183,7 +189,7 @@ const BulkList = () => {
       responsive: ["sm"],
       width: '135px',
       expandable: true,
-      render: (text,row) => <div>({filterSigned(row['docs']).length} / {row['docs'].length})</div>
+      render: (text,row) => <div>({filterCompleted(row['docs']).length} / {row['docs'].length})</div>
     },
     {
       title: '요청자',
