@@ -472,7 +472,7 @@ const TemplateList = () => {
               <Button onClick={e => { signTemplate(item, 'G') }}>일반 요청</Button>
             </Tooltip>
             &nbsp;&nbsp;
-            <Tooltip placement="bottom" title={'하나의 문서로 여러 참여자에게 대량의 서명요청을 보내는 경우'}>
+            <Tooltip placement="bottom" title={'한 문서를 여러 명에게 보내 개별 문서에 각각 서명 받을 필요가 있을 경우 (개별 동의서, 보안서약서 등)'}>
               <Button onClick={e => { signTemplate(item, 'B') }}>대량 요청</Button>
             </Tooltip>
             </div>

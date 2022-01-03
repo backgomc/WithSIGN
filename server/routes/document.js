@@ -365,6 +365,7 @@ router.post('/searchForDocumentToSign', (req, res) => {
       if (status == DOCUMENT_SIGNING) {
         console.log("AA")
         andParam['signed'] = false
+        andParam['canceled'] = false
         orParam = [{$and:[{"users": {$in:[user]}}, {"signedBy.user": user}]},  {$and:[{"user": user}, {"users": {$ne:user}}]}]
         if(!includeBulk) {
           andParam['docType'] = "G"
