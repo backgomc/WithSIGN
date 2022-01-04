@@ -46,9 +46,10 @@ const DocumentExpander = (props) => {
         if ((item.signedBy.some(e => e.user === user._id))) {
             return  (
                 <Timeline.Item dot={<CheckCircleOutlined className="timeline-clock-icon" />} color="gray">
-                    <font color='#A7A7A9'><b>{user.name} {user.JOB_TITLE}</b> {(item.observers && item.observers.includes(user._id)) ? '문서 수신' : '서명 완료'}</font> &nbsp; 
+                    <font color='#A7A7A9'><b>{user.name} {user.JOB_TITLE}</b> {(item.observers && item.observers.includes(user._id)) ? '문서 수신' : '서명 완료'}</font>
+                    &nbsp;&nbsp;&nbsp;
                     <Tag color="#BABABC">
-                    <Moment format='YYYY/MM/DD HH:mm'>{item.signedBy.filter(e => e.user === user._id)[0].signedTime}</Moment>
+                        <Moment format='YYYY/MM/DD HH:mm'>{item.signedBy.filter(e => e.user === user._id)[0].signedTime}</Moment>
                     </Tag>
                 </Timeline.Item>
             )
@@ -56,6 +57,7 @@ const DocumentExpander = (props) => {
             return (
                 <Timeline.Item dot={<CloseCircleOutlined className="timeline-clock-icon"/>} color="red">
                     <font color="#A7A7A9"><b>{user.name} {user.JOB_TITLE}</b> {(item.observers && item.observers.includes(user._id)) ? '수신 취소' : '서명 취소'}</font>
+                    &nbsp;&nbsp;&nbsp;
                     <Tooltip placement="right" title={item.canceledBy.filter(e => e.user === user._id)[0].message}>
                         <Tag color="#BABABC">
                             <Moment format="YYYY/MM/DD HH:mm">{item.canceledBy.filter(e => e.user === user._id)[0].canceledTime}</Moment>
@@ -113,8 +115,11 @@ const DocumentExpander = (props) => {
                         <br></br>
                         <Timeline>
                             <Timeline.Item color="gray">
-                                <font color='#A7A7A9'><b>{item.user.name} {item.user.JOB_TITLE}</b> 서명 요청 </font>&nbsp;&nbsp;&nbsp;
-                                <Tag color="#BABABC"><Moment format='YYYY/MM/DD HH:mm'>{item.requestedTime}</Moment></Tag>
+                                <font color='#A7A7A9'><b>{item.user.name} {item.user.JOB_TITLE}</b> 서명 요청</font>
+                                &nbsp;&nbsp;&nbsp;
+                                <Tag color="#BABABC">
+                                    <Moment format='YYYY/MM/DD HH:mm'>{item.requestedTime}</Moment>
+                                </Tag>
                             </Timeline.Item>
                                 {item.users.map((user) => (activeHistory(user)))}
                         </Timeline>
