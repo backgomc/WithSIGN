@@ -3,6 +3,7 @@ import axios from 'axios';
 import { useDispatch } from 'react-redux';
 import { navigate } from '@reach/router';
 import { setUser } from '../../app/infoSlice';
+import { setPathname } from '../../config/MenuSlice';
 import { Button, Form, Input } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
 import styles from './login.module.css';
@@ -24,8 +25,9 @@ function Login() {
 
         axios.post('/admin/login', body).then(response => {
           if (response.data.success) {
-            dispatch(setUser(response.data.user));
             localStorage.setItem('__rToken__', response.data.user.__rToken__);
+            dispatch(setUser(response.data.user));
+            dispatch(setPathname('/documentList'));
             navigate('/');
           } else {
             alert(response.data.message ? response.data.message : 'Login Failed');

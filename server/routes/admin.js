@@ -7,6 +7,7 @@ const { hexCrypto, generateRandomPass } = require('../common/utils');
 const { Board } = require('../models/Board');
 const { Document } = require('../models/Document');
 const { Template } = require('../models/Template');
+const { Org } = require('../models/Org');
 const { User } = require('../models/User');
 const { generateToken, ValidateToken, renewalToken } = require('../middleware/adminAuth');
 const { makeFolder } = require('../common/utils');
@@ -60,8 +61,8 @@ const upload = multer({storage});
 // /admin/user/update (정보 변경)
 // /admin/user/push   (알림 점검)
 // /admin/user/sync   (연계 수동)
-// /admin/org/list    (미사용)
-// /admin/org/info    (미사용)
+// /admin/org/list
+// /admin/org/info
 // /admin/org/sync    (연계 수동)
 // -- 문서 관리 --
 // /admin/document/list
@@ -376,6 +377,26 @@ router.post('/user/sync', ValidateToken, async (req, res) => {
 });
 
 // 부서 관리 > 연계 호출
+router.post('/org/lis', ValidateToken, (req, res) => {
+});
+
+// 부서 관리 > 연계 호출
+router.post('/org/info', ValidateToken, (req, res) => {
+  if (!req.body.DEPART_CODE) {
+    return res.json({ success: false, message: 'input value not enough!' });
+  }
+
+  Org.find({ 'DEPART_CODE': {$in: req.body.DEPART_CODE } }).exec(function(err, results) {
+    if (err) return res.json({ success: false, message: err });
+    if (results.length > 0) {
+      return res.send({ success: true, results: results });
+    } else {
+      return res.send({ success: false,  message: '해당 조직이 없습니다.' });
+    }
+  });
+});
+
+// 부서 관리 > 연계 호출
 router.post('/org/sync', ValidateToken, async (req, res) => {
   var result = await restful.callOrgAPI();
   if (result && result.status && result.status == 200) {
@@ -443,11 +464,11 @@ router.post('/document/list', ValidateToken, async (req, res) => {
     .limit(Number(pageSize))
     .populate({
       path: 'user',
-      select: { name: 1, JOB_TITLE: 2, image: 3 },
+      select: { name: 1, JOB_TITLE: 2, DEPART_CODE: 3 },
     })
     .populate({
       path: 'users',
-      select: { name: 1, JOB_TITLE: 2 }
+      select: { name: 1, JOB_TITLE: 2, DEPART_CODE: 3 }
     })
     .exec((err, documents) => {
       // console.log(documents);
@@ -463,8 +484,8 @@ router.post('/document/info', ValidateToken, (req, res) => {
 
 // 문서 관리 > 다운(DRM)
 router.get('/document/down/:class/:docId', ValidateToken, async (req, res) => {
-  // console.log(req.params.class);
-  // console.log(req.params.docId);
+  console.log(req.params.class);
+  console.log(req.params.docId);
   if (!req.params.class || !req.params.docId) return res.json({ success: false, message: 'input value not enough!' });
   try {
       var dataInfo;

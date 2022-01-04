@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "@ant-design/pro-card": "^1.14.5",
+    "@ant-design/pro-descriptions": "^1.10.9",
     "@ant-design/pro-layout": "^6.21.1",
     "@ant-design/pro-table": "^2.41.0",
     "@pdftron/webviewer": "^7.2.0",

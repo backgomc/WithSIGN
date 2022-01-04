@@ -1,213 +1,128 @@
-import React, {useState} from 'react';
-import { Tooltip, Tag, Timeline, Button } from 'antd';
+import React, { useEffect, useState } from 'react';
 import Moment from 'react-moment';
-// import { useSelector } from 'react-redux';
-// import { selectUser } from '../../app/infoSlice';
-import { CheckCircleOutlined, CloseCircleOutlined, ClockCircleOutlined } from '@ant-design/icons';
-import { DocumentType, DOCUMENT_SIGNED } from './DocumentType';
+import axios from 'axios';
+import { Tooltip, Tag, Timeline, Button, Alert } from 'antd';
+import ProDescriptions from '@ant-design/pro-descriptions';
 import ProCard from '@ant-design/pro-card';
-import RcResizeObserver from 'rc-resize-observer';
+import { CheckCircleOutlined, CloseCircleOutlined, ClockCircleOutlined } from '@ant-design/icons';
 import '@ant-design/pro-card/dist/card.css';
+import '@ant-design/pro-descriptions/dist/descriptions.css';
 import 'antd/dist/antd.css';
-// import { setDocToView } from '../ViewDocument/ViewDocumentSlice';
-import { navigate } from '@reach/router';
+import { DocumentTypeBadge, DocumentType, DOCUMENT_SIGNED } from './DocumentType';
+// import AuditDocument from '../Audit/AuditDocument';
+
+import ico_bullet from '../../assets/images/table_bullet.png';
 
 const DocumentExpander = (props) => {
 
-    // const dispatch = useDispatch();
-    const [responsive, setResponsive] = useState(false);
-    const { item } = props;
-    // const user = useSelector(selectUser);
-    // const { _id } = user;
+    const [orgInfos, setOrgInfos] = useState([]);
+    const { item } = props
+    
+    const fetchOrgInfos = async () => {
+        console.log('fetchOrgInfos called');
+        var DEPART_CODE = [];
+
+        item.users.map((user) => (
+            DEPART_CODE.push(user.DEPART_CODE)
+        ));
+        DEPART_CODE.push(item.user.DEPART_CODE);
+
+        const res = await axios.post('/admin/org/info', {'DEPART_CODE': DEPART_CODE});
+        
+        if (res.data.success) {
+            setOrgInfos(res.data.results);
+        }
+    }
 
     const getSignInfo = (user) => {
         return (
             <div>
-                {user.name} {user.JOB_TITLE}
+                {user.name} {user.JOB_TITLE} {orgInfos.filter(e => e.DEPART_CODE === user.DEPART_CODE).length > 0 ? '['+orgInfos.filter(e => e.DEPART_CODE === user.DEPART_CODE)[0].DEPART_NAME+']' : ''}
             </div>
-        );
+        )
     }
 
-    // const actionDocument = () => {
-    //     switch (DocumentType({uid: _id, document: item})) {
-    //         case DOCUMENT_CANCELED:
-    //             return (
-    //                 <Button
-    //                     // loading={isUploading(row)}
-    //                     onClick={() => {        
-    //                     const docId = item["_id"]
-    //                     const docRef = item["docRef"]
-    //                     const docTitle = item["docTitle"]
-    //                     dispatch(setDocToView({ docRef, docId, docTitle }));
-    //                     navigate('/viewDocument');
-    //                 }}>문서조회</Button>
-    //                 );
-    //         case DOCUMENT_SIGNED:
-    //             return (
-    //             <Button
-    //                 // loading={isUploading(row)}
-    //                 onClick={() => {        
-    //                 const docId = item["_id"]
-    //                 const docRef = item["docRef"]
-    //                 const docTitle = item["docTitle"]
-    //                 dispatch(setDocToView({ docRef, docId, docTitle }));
-    //                 navigate('/viewDocument');
-    //             }}>문서조회</Button>
-    //             );
-    //         case DOCUMENT_SIGNING:
-    //             return (
-    //             <Button onClick={() => {        
-    //                 const docId = item["_id"]
-    //                 const docRef = item["docRef"]
-    //                 const docTitle = item["docTitle"]
-    //                 dispatch(setDocToView({ docRef, docId, docTitle }));
-    //                 navigate('/viewDocument');
-    //             }}>문서조회</Button>
-    //             );
-    //         default:
-    //             return (
-    //             <div></div>
-    //             );
-    //         }
-    // }
-
     const activeHistory = (user) => {
-        
         if ((item.signedBy.some(e => e.user === user._id))) {
-            return (
+            return  (
                 <Timeline.Item dot={<CheckCircleOutlined className="timeline-clock-icon" />} color="gray">
-                    <b>{user.name} {user.JOB_TITLE}</b> 서명 완료 &nbsp;
-                    <Tag color="#918F8F">
-                        <Moment format='YYYY/MM/DD HH:mm'>{item.signedBy.filter(e => e.user === user._id)[0].signedTime}</Moment>
+                    <font color='#A7A7A9'><b>{user.name} {user.JOB_TITLE}</b> {(item.observers && item.observers.includes(user._id)) ? '문서 수신' : '서명 완료'}</font> &nbsp; 
+                    <Tag color="#BABABC">
+                    <Moment format='YYYY/MM/DD HH:mm'>{item.signedBy.filter(e => e.user === user._id)[0].signedTime}</Moment>
                     </Tag>
                 </Timeline.Item>
-            );
+            )
         } else if ((item.canceledBy.some(e => e.user === user._id))) {
             return (
-                <Timeline.Item dot={<CloseCircleOutlined className="timeline-clock-icon" />} color="red">
-                    <b>{user.name} {user.JOB_TITLE}</b> 서명 취소 &nbsp;
+                <Timeline.Item dot={<CloseCircleOutlined className="timeline-clock-icon"/>} color="red">
+                    <font color="#A7A7A9"><b>{user.name} {user.JOB_TITLE}</b> {(item.observers && item.observers.includes(user._id)) ? '수신 취소' : '서명 취소'}</font>
                     <Tooltip placement="right" title={item.canceledBy.filter(e => e.user === user._id)[0].message}>
-                        <Tag color="#918F8F" >
-                            <Moment format='YYYY/MM/DD HH:mm'>{item.canceledBy.filter(e => e.user === user._id)[0].canceledTime}</Moment>
+                        <Tag color="#BABABC">
+                            <Moment format="YYYY/MM/DD HH:mm">{item.canceledBy.filter(e => e.user === user._id)[0].canceledTime}</Moment>
                         </Tag>
                     </Tooltip>
-                    <br></br>{item.canceledBy.filter(e => e.user === user._id)[0].message}
+                    <div style={{marginTop:'10px'}}><Alert message={item.canceledBy.filter(e => e.user === user._id)[0].message} type="error" /></div>
                 </Timeline.Item>
-            );
+            )
         } else {
             return (
                 <Timeline.Item dot={<ClockCircleOutlined className="timeline-clock-icon" />}>
-                    <b>{user.name} {user.JOB_TITLE}</b> 서명 필요
+                    <font color="#1890FF"><b>{user.name} {user.JOB_TITLE}</b> {(item.observers && item.observers.includes(user._id)) ? '수신 필요' : '서명 필요'}</font>
                 </Timeline.Item>
-            );
+            )
         }
     }
 
-    return (
-    <div>
-      <RcResizeObserver
-        key="resize-observer"
-        onResize={(offset) => {
-            setResponsive(offset.width < 596);
-      }}>
-        <ProCard
-            title={item.docTitle}
-            extra=""
-            bordered
-            headerBordered
-            split={responsive ? 'horizontal' : 'vertical'}
-        >
-            <ProCard split="horizontal">
-                <ProCard split="horizontal">
-                    <ProCard split={responsive ? 'horizontal' : 'vertical'}>
-                    <ProCard title="서명 요청자">{item.user.name} {item.user.JOB_TITLE}</ProCard>
-                    <ProCard title="서명 참여자">
-                        {
-                            item.users.map((user, index) => (
-                                getSignInfo(user)
-                            ))
-                        }
-                    </ProCard>
-                    </ProCard>
-                    <ProCard split="vertical">
-                    <ProCard title="서명 요청시간"><Moment format='YYYY/MM/DD HH:mm'>{item.requestedTime}</Moment></ProCard>
-                    <ProCard title="서명 상태"><DocumentType document={item} /></ProCard>
-                    </ProCard>
-                </ProCard>
-            </ProCard>
-            <ProCard title="서명 현황">
-                <Timeline>
-                    {/* <Timeline.Item label={<Moment format='YYYY/MM/DD HH:mm'>{item.requestedTime}</Moment>}><b>{item.user.name}</b>님 서명 요청</Timeline.Item> */}
-                    <Timeline.Item color="gray">
-                        <b>{item.user.name} {item.user.JOB_TITLE}</b> 서명 요청 &nbsp;  
-                        <Tag color="#918F8F"><Moment format='YYYY/MM/DD HH:mm'>{item.requestedTime}</Moment></Tag>
-                    </Timeline.Item>
-                    {
-                        item.users.map((user) => (
-                            activeHistory(user)
-                        ))
-                    }
-                </Timeline>
-            </ProCard>
-            
-
+    const buttonList = (
+        <div>
             {DocumentType({document: item}) === DOCUMENT_SIGNED ?
                 <ProCard title="">
-                    <div style={{height:"40px"}}>                 
-                        <Button
-                            onClick={() => {         
-                                navigate('/audit', { state: { item: item } } );
-                        }}>
-                            진본 확인 증명서
-                        </Button> 
-
+                    <div style={{height:'40px'}}>
+                        <Button onClick={() => {}}>진본 확인 증명서</Button>
                     </div>
-                    {/* <div style={{height:"40px"}}>
-                        {actionDocument()}
-                    </div> */}
-                </ProCard>
-            : ''}
+                </ProCard>:''
+            }
+        </div>
+    )
 
-        </ProCard>
-      </RcResizeObserver>
-        
-        {/* <Descriptions
-        title="상세 정보"
-        bordered
-        column={{ xxl: 2, xl: 2, lg: 2, md: 2, sm: 2, xs: 1 }}
-      >
-        <Descriptions.Item label="서명 요청자">{item.user.name}</Descriptions.Item>
-        <Descriptions.Item label="서명 참여자">
-            {
-                item.users.map((user, index) => (
-                    getSignInfo(user)
-                ))
-             }
-        </Descriptions.Item>
-        <Descriptions.Item label="활동 이력" span={4}>
-            <br></br>
-            <Timeline>
-                <Timeline.Item label={<Moment format='YYYY/MM/DD HH:mm'>{item.requestedTime}</Moment>}><b>{item.user.name}</b>님 서명 요청</Timeline.Item>
-                <Timeline.Item>
-                    <b>{item.user.name}</b>님 서명 요청 &nbsp;  
-                    <Tag color="default"><Moment format='YYYY/MM/DD HH:mm'>{item.requestedTime}</Moment></Tag>
-                </Timeline.Item>
-                {
-                    item.users.map((user) => (
-                        activeHistory(user)
-                    ))
-                }
-            </Timeline>
+    useEffect(() => {
+        console.log('DocumentExpander useEffect called');
+        fetchOrgInfos();
+    }, []);
 
-        </Descriptions.Item>
-        <Descriptions.Item label="문서명">{item.docTitle}</Descriptions.Item>
-        <Descriptions.Item label="문서 ID">{item._id}</Descriptions.Item>
-        <Descriptions.Item label="요청시간"><Moment format='YYYY/MM/DD HH:mm'>{item.requestedTime}</Moment></Descriptions.Item>
-        <Descriptions.Item label="진행이력"><DocumentType uid={_id} document={item} /></Descriptions.Item>
-      </Descriptions> */}
-      </div>
+      
+    return (
+        <div>
+            {/* <Container> */}
+                <ProDescriptions column={2} bordered title={<div><img src={ico_bullet} alt="icon bullet"></img>&nbsp;&nbsp;&nbsp;상세정보</div>} contentStyle={{background:'white'}}>
+                    <ProDescriptions.Item valueType="option">{buttonList}</ProDescriptions.Item>
+                    <ProDescriptions.Item span={2} label={<b>문서명</b>}>{item.docTitle}</ProDescriptions.Item>
+                    <ProDescriptions.Item label={<b>요청자</b>}>
+                        {item.user.name} {item.user.JOB_TITLE} {orgInfos.filter(e => e.DEPART_CODE === item.user.DEPART_CODE).length > 0 ? '['+orgInfos.filter(e => e.DEPART_CODE === item.user.DEPART_CODE)[0].DEPART_NAME+']' : ''}
+                    </ProDescriptions.Item>
+                    <ProDescriptions.Item label={<b>참여자</b>}>
+                        {item.users.map((user, index) => (getSignInfo(user)))}
+                    </ProDescriptions.Item>
+                    <ProDescriptions.Item label={<b>진행 상태</b>}>
+                        <DocumentTypeBadge document={item}/>
+                    </ProDescriptions.Item>
+                    <ProDescriptions.Item label={<b>요청시간</b>}>
+                        <Moment format='YYYY/MM/DD HH:mm'>{item.requestedTime}</Moment>
+                    </ProDescriptions.Item>
+                    <ProDescriptions.Item label={<b>진행 현황</b>}>
+                        <br></br>
+                        <Timeline>
+                            <Timeline.Item color="gray">
+                                <font color='#A7A7A9'><b>{item.user.name} {item.user.JOB_TITLE}</b> 서명 요청 </font>&nbsp;&nbsp;&nbsp;
+                                <Tag color="#BABABC"><Moment format='YYYY/MM/DD HH:mm'>{item.requestedTime}</Moment></Tag>
+                            </Timeline.Item>
+                                {item.users.map((user) => (activeHistory(user)))}
+                        </Timeline>
+                    </ProDescriptions.Item>
+                </ProDescriptions>
+            {/* </Container> */}
+        </div>
     );
-
 };
 
 export default DocumentExpander;
