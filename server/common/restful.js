@@ -1,5 +1,6 @@
 const fs = require('fs');
 const axios = require('axios');
+const FormData = require('form-data');
 const iconv = require('iconv-lite');
 const bcrypt = require('bcryptjs');
 const config = require('../config/key');
@@ -190,7 +191,7 @@ let callDRMUnpackaging = async (filePath, fileName, target) => {
 // 통합 알림
 // sendInfo : String _id (Option)
 // recvInfo : Arrays _id;_id ... ;_id
-let callNotify = async (send, recv, title, message) => {
+let callNotify = async (send, recv, title, message, filePath) => {
     let sendData = await User.findOne({_id: send}, {'SABUN': 1, '_id': 0});
     let recvData = await User.find({_id: recv}, {'SABUN': 1, '_id': 0});
     let sendInfo;
@@ -201,14 +202,14 @@ let callNotify = async (send, recv, title, message) => {
     for (var data of recvData) {
         recvInfo.push(data['SABUN']);
     }
-    callIpronetMSG(sendInfo, recvInfo, title, message);
+    callIpronetMSG(sendInfo, recvInfo, title, message, filePath);
     callNHWithPUSH(sendInfo, recvInfo, title, message);
 }
 
 // Ipronet 쪽지 발송
 // sendInfo : String SABUN (Option)
 // recvInfo : Arrays SABUN;SABUN ... ;SABUN
-let callIpronetMSG = async (sendInfo, recvInfo, title, message) => {
+let callIpronetMSG = async (sendInfo, recvInfo, title, message, filePath) => {
     console.log('IPRONET SEND MESSAGE');
     if (!sendInfo) sendInfo = config.ipronetID;
     try {
@@ -234,17 +235,38 @@ let callIpronetMSG = async (sendInfo, recvInfo, title, message) => {
 
         // 4. 메시지 전송
         url = config.ipronetURI+'/jsl/NHITMessageAction.Send.jsl';
-        conf = {headers: {'Cookie': cookie, 'Content-Type': 'application/x-www-form-urlencoded', 'Accept': '*/*'}}
+        let fileData;
+        let fileName;
+        let fileInfo = []
+        if (filePath) {
+            if (fs.existsSync('./'+filePath)) {
+                fileName = filePath.substring(filePath.lastIndexOf('/')+1, filePath.length);
+                console.log(fileName);
+                fileData = fs.readFileSync('./'+filePath, {filename: fileName});
+                console.log(fileData);
+                fileInfo = [{
+                    method: 'copy',
+                    type: 1,
+                    path: 'com.kcube.jsv.file.1',
+                    size: fileData.length,
+                    filename: fileName
+                }]
+            }
+        }
         body = {
             sender: sendObj.data['array'][0],
             receivers: recvObj.data['array'],
             title: title,
             content: message + '<br/><br/><br/><a href="' + config.withsignURI + '/" target="_blank">WithSIGN 바로가기</a>',
-            attachments:[],
+            attachments:fileInfo,
             push:false
         }
-        resp = await axios.post(url, 'message='+JSON.stringify(body), conf);
-        // console.log(resp);
+        let form = new FormData();
+        form.append('message', JSON.stringify(body));
+        if (fileData) form.append('com.kcube.jsv.file.1', fileData, {filename: fileName});
+        conf = {headers: {'Cookie': cookie, ...form.getHeaders()}}
+        resp = await axios.post(url, form, conf);
+        console.log(resp);
     } catch (err) {
         console.error(err);
     }

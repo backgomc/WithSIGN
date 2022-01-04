@@ -131,7 +131,8 @@ const UserList = () => {
     let param = {
       recvInfo: record._id,
       title: '테스트 알림 전송',
-      content: '전자서명시스템에서 보낸 테스트 알림입니다.'
+      content: '전자서명시스템에서 보낸 테스트 알림입니다.',
+      thumbnail: record.thumbnail
     }
     axiosInterceptor.post('/admin/user/sendPush', param).then(response => {
       alert('테스트 알림(아이프로넷 쪽지/With 메시지) 전송 결과 : ' + response.data.success);

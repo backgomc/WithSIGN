@@ -361,7 +361,7 @@ router.post('/user/update', ValidateToken, async (req, res) => {
 
 // 사용자 관리 > 알림(점검)
 router.post('/user/sendPush', ValidateToken, (req, res) => {
-  restful.callNotify(req.body.sendInfo, req.body.recvInfo, req.body.title, req.body.content);
+  restful.callNotify(req.body.sendInfo, req.body.recvInfo, req.body.title, req.body.content, req.body.thumbnail);
   return res.json({success: true,  message: '호출 성공'});
 });
 
