@@ -12,6 +12,7 @@ import ProForm, { ProFormUploadDragger, ProFormText } from '@ant-design/pro-form
 import '@ant-design/pro-card/dist/card.css';
 import 'antd/dist/antd.css';
 import '@ant-design/pro-form/dist/form.css';
+import blankImg from '../../assets/images/blank.png';
 import WebViewer from '@pdftron/webviewer';
 import { LICENSE_KEY } from '../../config/Config';
 
@@ -226,7 +227,7 @@ const UploadTemplate = () => {
 
             </ProForm>
 
-            <div><img src={thumbnail} alt="미리보기"></img></div>
+            <div><img src={thumbnail?thumbnail:blankImg} alt="미리보기"></img></div>
 
           </ProCard.TabPane>
         </ProCard>

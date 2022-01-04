@@ -8,7 +8,7 @@ export const DOCUMENT_CANCELED = '서명 취소';
 
 export function DocumentType(props) {
 
-  let document = props;
+  let { document } = props;
   
   if (document['signed']) { 
     return DOCUMENT_SIGNED;
@@ -23,7 +23,7 @@ export function DocumentType(props) {
 
 export function DocumentTypeText(props) {
 
-  let document = props;
+  let { document } = props;
 
   if (document['signed']) { 
     return (
@@ -50,7 +50,7 @@ export function DocumentTypeText(props) {
 
 export function DocumentTypeBadge(props) {
 
-  let document = props;
+  let { document } = props;
 
   if (document['signed']) { 
     return (

@@ -4,8 +4,6 @@ import { v4 as uuidv4 } from 'uuid';
 import { Table, Input, Space, Button, Popconfirm } from 'antd';
 import Highlighter from 'react-highlight-words';
 import { SearchOutlined } from '@ant-design/icons';
-// import { useSelector } from 'react-redux';
-// import { selectUser } from '../../app/infoSlice';
 import { navigate } from '@reach/router';
 import Moment from 'react-moment';
 import 'moment/locale/ko';
@@ -16,9 +14,7 @@ import { useIntl } from 'react-intl';
 
 const TemplateList = () => {
 
-  // const user = useSelector(selectUser);
   const { formatMessage } = useIntl();
-
   const [searchText, setSearchText] = useState('');
   const [searchedColumn, setSearchedColumn] = useState('');
   const [data, setData] = useState([]);
@@ -27,7 +23,6 @@ const TemplateList = () => {
   
   const [pagination, setPagination] = useState({current:1, pageSize:10});
   const [loading, setLoading] = useState(false);
-  // const [expandable, setExpandable] = useState();
   const [visiblePopconfirm, setVisiblePopconfirm] = useState(false);
 
   // const searchInput = useRef<Input>(null);
@@ -114,17 +109,6 @@ const TemplateList = () => {
           <Button key={uuidv4()} onClick={() => handleReset(clearFilters)} size="small" style={{ width: 90 }}>
             초기화
           </Button>
-          {/* <Button
-            type="link"
-            size="small"
-            onClick={() => {
-              confirm({ closeDropdown: false });
-              setSearchText(selectedKeys[0])
-              setSearchedColumn(dataIndex)
-            }}
-          >
-            필터
-          </Button> */}
         </Space>
       </div>
     ),
@@ -173,7 +157,6 @@ const TemplateList = () => {
       sorter: true,
       key: 'docTitle',
       ...getColumnSearchProps('docTitle'),
-      // expandable: true,
       render: (text,row) => <div style={{ wordWrap: 'break-word', wordBreak: 'break-word' }}><FileOutlined /> {text}</div>, // 여러 필드 동시 표시에 사용
     },
     {
@@ -213,17 +196,6 @@ const TemplateList = () => {
       pagination
     });
 
-    // const data = [];
-    // for (let i = 0; i < 46; i++) {
-    //   data.push({
-    //     key: i,
-    //     templateTitle: `template title ${i}`,
-    //     name: `Edward King ${i}`,
-    //     requestedTime: `2021-07-02T05:46:40.769+00:00`,
-    //   });
-    // }
-    // setData(data);
-
     return () => setLoading(false);
   }, []);
 
@@ -236,14 +208,7 @@ const TemplateList = () => {
           ghost: false,
           breadcrumb: {
             routes: [
-              // {
-              //   path: '/',
-              //   breadcrumbName: 'Home',
-              // },
-              // {
-              //   path: '../',
-              //   breadcrumbName: '내 문서',
-              // },
+
             ],
           },
           extra: [           
@@ -271,8 +236,6 @@ const TemplateList = () => {
         dataSource={data}
         pagination={pagination}
         loading={loading}
-        // expandedRowRender={row => <TemplateExpander item={row} />}
-        // expandRowByClick
         rowSelection={rowSelection}
         onRow={record => ({
           onClick: e => {

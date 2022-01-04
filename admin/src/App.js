@@ -7,7 +7,7 @@ import { selectPathname, setPathname } from './config/MenuSlice';
 import ProLayout from '@ant-design/pro-layout';
 import { useIntl } from "react-intl";
 import Menus from './config/Menus';
-import Home from './components/Home/Home';
+// import Home from './components/Home/Home';
 import UserList from './components/User/UserList';
 import BoardList from './components/Board/BoardList';
 import BoardDetail from './components/Board/BoardDetail';
@@ -38,13 +38,14 @@ const App = () => {
   const dispatch = useDispatch();
   const { formatMessage } = useIntl();
 
-    const pathname = useSelector(selectPathname);
+  const pathname = useSelector(selectPathname);
   
   useEffect(() => {
     // 1.인증 정보 조회
     axios.get('/admin/auth').then(response => {
       if (response.data.success) {
         dispatch(setUser(response.data.user));
+        dispatch(setPathname('/documentList'));
         // navigate('/');
       } else {
         if (localStorage.getItem('__rToken__') || token) {
@@ -99,14 +100,14 @@ const App = () => {
     }}
     >
       <ProLayout
-        title={<img src={LogoText} />}
+        tie={<img src={LogoText} alt="WithSIGN"/>}
         // logo="https://gw.alipayobjects.com/mdn/rms_b5fcc5/afts/img/A*1NHAQYduQiQAAAAAAAAAAABkARQnAQ" 로고 이미지
         logo={LogoImage}
         menuHeaderRender={(logo, title) => (
           <div
             id="customize_menu_header"
             onClick={() => {
-              dispatch(setPathname('/'));
+              dispatch(setPathname('/documentList'));
               navigate('/');
             }}
           >
@@ -139,7 +140,7 @@ const App = () => {
         )}
       >
         <Router>
-          <Home path="/" default />
+          <DocumentList path="/" default />
           <UserList path="/userList" />
           <BoardList path="/boardList" />
           <BoardDetail path="/boardDetail" />

@@ -144,8 +144,10 @@ const BoardDetail = ({location}) => {
       header={`댓글 ${comments.length}`}
       itemLayout="horizontal"
       renderItem={props =>
-        <Comment {...props} actions={[(_id === props.userId) ? <span key="comment-nested-reply-to" onClick={() => { deleteComment(props._id); }}>삭제</span> : '']}
-      />}
+        <Comment {...props} actions={
+            [<span key="comment-nested-reply-to" onClick={() => { deleteComment(props._id); }}>삭제</span>]
+          }
+        />}
     />
   );
 
@@ -233,18 +235,18 @@ const BoardDetail = ({location}) => {
         header={{
           title: '['+getBoardType(boardType)+'] '+board.title,
           extra: [
-            <Button icon={<ArrowLeftOutlined />} onClick={() => window.history.back()}>
+            <Button icon={<ArrowLeftOutlined />} onClick={() => { navigate('/boardList'); }}>
               {/* {formatMessage({id: 'Back'})} */}
             </Button>,
-            (_id === board.user._id) ? <Tooltip placement="bottom" title="게시글 수정"><Button icon={<EditOutlined />} onClick={e => { navigate('/boardModify', { state: {boardId: boardId, boardType: boardType} }); } }></Button></Tooltip> : '',
-            (_id === board.user._id) ? <Tooltip placement="bottom" title="게시글 삭제"><Button icon={<DeleteOutlined />} onClick={e => { deleteBoard(); } } danger ></Button></Tooltip> : ''
+            <Tooltip placement="bottom" title="게시글 수정"><Button icon={<EditOutlined />} onClick={e => { navigate('/boardModify', { state: {boardId: boardId, boardType: boardType} }); } }></Button></Tooltip>,
+            <Tooltip placement="bottom" title="게시글 삭제"><Button icon={<DeleteOutlined />} onClick={e => { deleteBoard(); } } danger ></Button></Tooltip>
           ],
         }}
         content={
           <>
             <Divider style={{margin: '0px', height: '10px'}}/>
             <Descriptions column={2}>
-              <Descriptions.Item label="작성자" style={{paddingBottom: '0px'}}>{board.user.name} {board.user.JOB_TITLE}</Descriptions.Item>
+              <Descriptions.Item label="작성자" style={{paddingBottom: '0px'}}>{board.user?board.user.name:''} {board.user?board.user.JOB_TITLE:''}</Descriptions.Item>
               <Descriptions.Item label="작성일시" style={{paddingBottom: '0px'}}><Moment format="YYYY/MM/DD HH:mm">{board.registeredTime}</Moment></Descriptions.Item>
             </Descriptions>
           </>
