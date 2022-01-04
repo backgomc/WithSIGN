@@ -1,78 +1,16 @@
 import React, {useEffect} from 'react';
-import ReactPDF, { Page, Text, View, Document, StyleSheet, PDFViewer, Font, PDFDownloadLink, usePDF } from '@react-pdf/renderer';
-import { Button } from "antd";
-import { PageContainer } from '@ant-design/pro-layout';
-import { useIntl } from "react-intl";
+import ReactPDF, { Page, Text, View, Document, StyleSheet, PDFViewer, Font } from '@react-pdf/renderer';
 import Header from './Header';
-import List, { Item } from './List';
 import Moment from 'react-moment';
-
-// import font from '../../assets/font/NanumGothic-ExtraBold.ttf';
 import font from '../../assets/font/NanumGothic.ttf';
 import font_Bold from '../../assets/font/NanumGothic-ExtraBold.ttf';
 import { navigate } from '@reach/router';
 
 import { ArrowLeftOutlined, DownloadOutlined } from '@ant-design/icons';
 
-
 Font.register({ family: "Nanum Gothic", src: font });
 Font.register({ family: "Nanum Gothic Bold", src: font_Bold });
-// Font.register({ family: "Nanum Gothic", src: "https://fonts.gstatic.com/ea/nanumgothic/v5/NanumGothic-ExtraBold.ttf", });
 
-// Create styles
-// const styles = StyleSheet.create({
-//   container: {
-//     flexDirection: 'row',
-//     borderBottomWidth: 2,
-//     borderBottomColor: '#112131',
-//     borderBottomStyle: 'solid',
-//     alignItems: 'stretch',
-//   },
-//   title: {
-//     fontSize: 22,
-//     fontFamily: 'Nanum Gothic Bold',
-//   },
-//   // page: {
-//   //   flexDirection: 'row',
-//   //   backgroundColor: '#FFFFFF',
-//   // },
-//   page: {
-//     padding: 30,
-//   },
-//   container: {
-//     flex: 1,
-//     flexDirection: 'row',
-//     '@media max-width: 400': {
-//       flexDirection: 'column',
-//     },
-//   },
-//   section: {
-//     margin: 10,
-//     padding: 10,
-//     flexGrow: 1
-//   },
-//   pageNumber: {
-//     position: 'absolute',
-//     fontSize: 12,
-//     bottom: 30,
-//     left: 0,
-//     right: 0,
-//     textAlign: 'center',
-//     color: 'grey',
-//   },
-//   text: {
-//     margin: 12,
-//     fontSize: 14,
-//     textAlign: 'justify',
-//     fontFamily: 'Nanum Gothic'
-//   },
-//   textBold: {
-//     margin: 12,
-//     fontSize: 14,
-//     textAlign: 'justify',
-//     fontFamily: 'Nanum Gothic Bold'
-//   },
-// });
 
 const tableStyle = {
   display: "table",
@@ -175,11 +113,9 @@ const styles = StyleSheet.create({
   },
 });
 
-const Audit = ({location}) => {
+const AuditDocument = (props) => {
 
-  const { formatMessage } = useIntl();
-  const item = location.state.item
-  
+  const { item } = props
   const docTitle = item.docTitle.normalize('NFC') // 한글 자소 분리 문제 해결 (참조: https://egg-programmer.tistory.com/293) 
 
   // const [instance, updateInstance] = usePDF({ document: MyDocument });
@@ -280,55 +216,10 @@ const Audit = ({location}) => {
     </Document>
   );
 
-  // useEffect(() => {
-
-  //   console.log("useEffect called: Audit")
-
-  // }, []);
-
-
   return (
-    
-    <div>
-    <PageContainer
-        // ghost
-        // loading={loading}
-        header={{
-          // title: board ? board.title : '',
-          title: '진본 확인 증명서',
-          // ghost: false,
-          extra: [           
-          <Button icon={<ArrowLeftOutlined />} onClick={() => navigate('/documentList')}>
-          </Button>,
-          <PDFDownloadLink document={<MyDocument />} fileName={docTitle+'_진본확인.pdf'}>
-          {({ blob, url, loading, error }) =>
-            <Button key="1" loading={loading} type="primary" icon={<DownloadOutlined />}>
-                {formatMessage({id: 'document.download'})}
-            </Button>
-          }
-        </PDFDownloadLink>
-          ],
-        }}
-        footer={[
-        ]}
-    >
-        <div
-          style={{
-            width: '100%',
-            height: 'calc(100vh - 240px)',
-            display: 'flex'
-          }}
-        >
-
-          <PDFViewer style={{width: '100%', height: '100%', display: 'flex'}} showToolbar={true}>
-            <MyDocument />
-          </PDFViewer>
-        </div>
-    </PageContainer>
-    </div>
-
+    <MyDocument />
   );
 
 };
 
-export default React.memo(Audit);
+export default React.memo(AuditDocument);

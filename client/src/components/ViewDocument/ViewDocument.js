@@ -81,18 +81,22 @@ const ViewDocument = () => {
       };
 
       // TODO annotation 수정 안되게 하기
-
       annotManager.on('annotationChanged', (annotations, action, { imported }) => {
+
+        console.log('annotationChanged called')
         if (imported && action === 'add') {
           annotations.forEach(function(annot) {
+            console.log('annot', annot)
             if (annot instanceof Annotations.WidgetAnnotation) {
               Annotations.WidgetAnnotation.getCustomStyles = normalStyles;
 
               console.log("annot.fieldName:"+annot.fieldName)
-              if (!annot.fieldName.startsWith(_id)) { 
-                annot.Hidden = true;
-                annot.Listable = false;
-              }
+              // if (!annot.fieldName.startsWith(_id)) { 
+              //   annot.Hidden = true;
+              //   annot.Listable = false;
+              // }
+              // 모든 입력 필드 숨기기
+              annot.Hidden = true;
             }
           });
         }

@@ -154,6 +154,12 @@ const BulkList = () => {
       el.signed == true
     );
   }
+
+  const filterCompleted = (docs) => {
+    return docs.filter((el) =>
+    el.signed == true || el.canceled == true
+  );
+  }
   
   const columns = [
     {
@@ -173,7 +179,7 @@ const BulkList = () => {
       responsive: ["xs"],
       width: '77px',
       expandable: true,
-      render: (text,row) => <div>({filterSigned(row['docs']).length} / {row['docs'].length})</div>
+      render: (text,row) => <div>({filterCompleted(row['docs']).length} / {row['docs'].length})</div>
     },
     {
       title: '진행 건수',
@@ -183,7 +189,7 @@ const BulkList = () => {
       responsive: ["sm"],
       width: '135px',
       expandable: true,
-      render: (text,row) => <div>({filterSigned(row['docs']).length} / {row['docs'].length})</div>
+      render: (text,row) => <div>({filterCompleted(row['docs']).length} / {row['docs'].length})</div>
     },
     {
       title: '요청자',
@@ -343,7 +349,7 @@ const BulkList = () => {
           </Button>
           ],
         }}
-        content={'하나의 문서로 여러 참여자에게 대량의 서명요청을 보낼 수 있습니다.'}
+        content={'한 문서를 여러 명에게 보내 개별 문서에 각각 서명 받을 필요가 있을 경우 (예: 보안서약서, 개별 동의서 등)'}
         footer={[
         ]}
     >
