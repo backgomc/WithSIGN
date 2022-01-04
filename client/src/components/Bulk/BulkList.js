@@ -349,11 +349,17 @@ const BulkList = () => {
           </Button>
           ],
         }}
-        content={'한 문서를 여러 명에게 보내 개별 문서에 각각 서명 받을 필요가 있을 경우 (예: 보안서약서, 개별 동의서 등)'}
+        content={<div
+          // style={{height:'100%', padding:'10px', fontSize:'calc(13px + .2vw)'}}
+          dangerouslySetInnerHTML={{
+            __html: '<b><font color="blue">한 문서를 여러 명에게 보내 개별 문서에 각각 서명</font></b> 받을 필요가 있을 경우 (예: 보안서약서, 개별 동의서 등)'
+          }} 
+        />}
         footer={[
         ]}
     >
       <br></br>
+      
       <Table
         rowKey={ item => { return item._id } }
         columns={columns}

@@ -166,7 +166,7 @@ const PrepareDocument = () => {
       // select only the view group
       // toolbarGroup-View, toolbarGroup-Annotate, toolbarGroup-Shapes, toolbarGroup-Insert, toolbarGroup-Measure, toolbarGroup-Edit, toolbarGroup-FillAndSign
       // instance.setToolbarGroup('toolbarGroup-FillAndSign');
-      instance.setToolbarGroup('toolbarGroup-Annotate');
+      // instance.setToolbarGroup('toolbarGroup-Annotate');
 
       // instance.setHeaderItems(function(header) {
       //   // get the tools overlay
@@ -182,16 +182,16 @@ const PrepareDocument = () => {
       //   // add the tools overlay to the top header
       //   // header.push(toolsOverlay);
       // });
-      // // hide the ribbons and second header
-      // instance.disableElements(['ribbons']);
-      // instance.disableElements(['toolsHeader']);
 
+      // set the ribbons(상단 그룹) and second header
       instance.enableElements(['ribbons']);
       instance.disableElements(['toolbarGroup-View', 'toolbarGroup-Shapes', 'toolbarGroup-Measure', 'toolbarGroup-Edit']);
       
+      // instance.disableTools([ 'AnnotationCreateSticky', 'AnnotationCreateFreeText' ]); // hides DOM element + disables shortcut
       // instance.enableFeatures([instance.Feature.Annotations]);
       // instance.enableFeatures([instance.Feature.Ribbons]);
-      // instance.setToolbarGroup('toolbarGroup-View');
+      
+      instance.setToolbarGroup('toolbarGroup-View');
 
       // set local font 
       CoreControls.setCustomFontURL("/webfonts/");
@@ -203,8 +203,8 @@ const PrepareDocument = () => {
       instance.disableFeatures(instance.Feature.Copy);
 
       // 포커스 
-      // CoreControls.DocumentViewer.getTool(CoreControls.Tools.ToolNames.FREETEXT).enableAutoFocusOnCreate();
-      // docViewer.FreeTextAnnotation.TextAlign = 'right'
+      docViewer.setToolMode(docViewer.getTool('Pan'));
+
   
       setInstance(instance);
 
@@ -225,6 +225,11 @@ const PrepareDocument = () => {
 
       docViewer.on('documentLoaded', () => {
         console.log('documentLoaded called');
+
+        // 디폴트 설정
+        // docViewer.setToolMode(docViewer.getTool('AnnotationCreateFreeText'));
+
+        // 페이지 저장
         setPageCount(docViewer.getPageCount());
 
         const doc = docViewer.getDocument();

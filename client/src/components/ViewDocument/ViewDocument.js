@@ -55,6 +55,8 @@ const ViewDocument = () => {
       CoreControls.setCustomFontURL("/webfonts/");
       // instance.setToolbarGroup('toolbarGroup-Insert');
 
+      annotManager.setReadOnly(true);
+
       setInstance(instance);
 
       // load document
