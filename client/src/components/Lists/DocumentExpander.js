@@ -237,14 +237,14 @@ const DocumentExpander = (props) => {
     const buttonList = (
         <div>
 
-            {DocumentType({uid: _id, document: item}) == DOCUMENT_CANCELED ?
+            {/* {DocumentType({uid: _id, document: item}) == DOCUMENT_CANCELED ?
                 <Button
                 onClick={() => {         
                     navigate(`/audit`, { state: { item: item } } );
                 }}>
                     재요청
                 </Button> : '' 
-            }
+            } */}
 
             {DocumentType({uid: _id, document: item}) == DOCUMENT_SIGNED ?
                 // <Button

@@ -931,8 +931,8 @@ const PrepareDocument = () => {
                         const annotsToDelete = [];
 
                         annotationsList.map(async (annot, index) => {
-                          console.log("annot.custom.name:"+annot.custom.name)
-                          if (annot.custom.name.includes(item.key)) {
+                          console.log("annot.custom.name:"+annot?.custom?.name)
+                          if (annot?.custom?.name.includes(item.key)) {
                             annotsToDelete.push(annot)
                           }
                         })

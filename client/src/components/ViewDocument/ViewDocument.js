@@ -16,6 +16,7 @@ import 'antd/dist/antd.css';
 import '@ant-design/pro-card/dist/card.css';
 import { DownloadOutlined, ArrowLeftOutlined } from '@ant-design/icons';
 import { LICENSE_KEY } from '../../config/Config';
+import {DOCUMENT_SIGNED, DOCUMENT_TOSIGN, DOCUMENT_SIGNING, DOCUMENT_CANCELED, DOCUMENT_TOCONFIRM, DOCUMENT_TODO} from '../../common/Constants';
 
 const ViewDocument = () => {
   const [annotManager, setAnnotatManager] = useState(null);
@@ -28,7 +29,7 @@ const ViewDocument = () => {
   const user = useSelector(selectUser);
   const history = useSelector(selectHistory);
 
-  const { docRef, docTitle, docId } = doc;
+  const { docRef, docTitle, docId, status } = doc;
   const { _id } = user;
   const { formatMessage } = useIntl();
 
@@ -137,14 +138,16 @@ const ViewDocument = () => {
           // AS-IS > TO-BE : 해시값 유지를 위해 서버에 파일을 다운로드 하도록 변경
           // <a href={process.env.REACT_APP_STORAGE_DIR+docRef} download={docTitle+'.pdf'}> 
             // <Button key="3" loading={loadingDownload['1']} href={docRef} download={docTitle+'.pdf'} type="primary" icon={<DownloadOutlined />} onClick={()=> {
-            <Button key="3" loading={loadingDownload['1']} href={'/api/storage/documents/'+docId} download={docTitle+'.pdf'} type="primary" icon={<DownloadOutlined />} onClick={()=> {
+          
+          // 서명 완료된 문서만 다운로드 되도록 수정 
+          (status == DOCUMENT_SIGNED) ? <Button key="3" loading={loadingDownload['1']} href={'/api/storage/documents/'+docId} download={docTitle+'.pdf'} type="primary" icon={<DownloadOutlined />} onClick={()=> {
               setLoadingDownload( { "1" : true } )
               setTimeout(() => {
                 setLoadingDownload( { "1" : false})
               }, 3000);
             }}>
               {formatMessage({id: 'document.download'})}
-            </Button>
+            </Button> : ''
         ],
       }}
       // content= {}

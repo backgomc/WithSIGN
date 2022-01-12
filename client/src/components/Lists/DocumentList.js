@@ -410,7 +410,8 @@ const DocumentList = ({location}) => {
                 const docRef = row["docRef"]
                 const docType = row["docType"]
                 const docTitle = row["docTitle"]
-                dispatch(setDocToView({ docRef, docId, docType, docTitle }));
+                const status = DOCUMENT_SIGNED
+                dispatch(setDocToView({ docRef, docId, docType, docTitle, status }));
                 navigate(`/viewDocument`);
               }}></Button></Tooltip>
               {/* <a href={row["docRef"]} download={row["docTitle"]+'.pdf'}> 
@@ -493,7 +494,8 @@ const DocumentList = ({location}) => {
                 const docRef = row["docRef"]
                 const docType = row["docType"]
                 const docTitle = row["docTitle"]
-                dispatch(setDocToView({ docRef, docId, docType, docTitle }));
+                const status = DOCUMENT_SIGNED
+                dispatch(setDocToView({ docRef, docId, docType, docTitle, status }));
                 navigate(`/viewDocument`);
               }}></Button></Tooltip>&nbsp;&nbsp;
               {/* <a href={row["docRef"]} download={row["docTitle"]+'.pdf'}> */}
