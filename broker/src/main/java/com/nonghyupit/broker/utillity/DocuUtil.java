@@ -74,6 +74,7 @@ public class DocuUtil {
 
         try {
             oWorkPackager = new WorkPackager();
+            oWorkPackager.setOverWriteFlag(true); // 덮어 쓰기
             type = oWorkPackager.GetFileType(filePath + fileName);
             logger.info("[" + type + "] " + fileTypeStr(type));
 
@@ -137,6 +138,7 @@ public class DocuUtil {
 
         try {
             oWorkPackager = new WorkPackager();
+            oWorkPackager.setOverWriteFlag(true); // 덮어 쓰기
             type = oWorkPackager.GetFileType(filePath + fileName);
             logger.info("[" + type + "] " + fileTypeStr(type));
 
