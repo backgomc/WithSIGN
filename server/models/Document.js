@@ -20,6 +20,10 @@ const documentSchema = mongoose.Schema({
         type: String,
         default: "G"
     },
+    sendType: {  // A:동차발송 S:순차발송
+        type: String,
+        default: "A"
+    },
     docHash: {
         type: String
     },
@@ -28,6 +32,13 @@ const documentSchema = mongoose.Schema({
         type: Schema.Types.ObjectId,
         ref: 'User'
     }],
+    usersOrder: [{  // 순차 발송 순서
+        user: { type: String },
+        order: { type: Number }
+    }],
+    usersTodo: { // 순차 발송 : 현재 단계에 서명할 사람 목록 
+        type: Array
+    },
     // emails: { type: Array },
     xfdf: {
         type: Array

@@ -92,7 +92,11 @@ export function DocumentTypeBadge(props) {
           // if (document["users"].some(e => e._id === uid) && !document["signedBy"].includes(uid)) {
             if (document["users"].some(e => e._id === uid) && !document["signedBy"].some(e => e.user === uid)) {
               return (
-                <b><Badge status="processing" text={(document["observers"] && document["observers"].includes(uid)) ? DOCUMENT_TOCONFIRM : DOCUMENT_TOSIGN} /></b>
+                // <b><Badge status="processing" text={(document["observers"] && document["observers"].includes(uid)) ? DOCUMENT_TOCONFIRM : DOCUMENT_TOSIGN} /></b>
+
+                <b><Badge status="processing" text={document["sendType"] == 'S' && !document["usersTodo"].includes(uid) ? '대기' : (document["observers"] && document["observers"].includes(uid) ? DOCUMENT_TOCONFIRM : DOCUMENT_TOSIGN)} /></b>
+
+
                 // {(row["observers"] && row["observers"].includes(_id) ? '확인' : '서명')}
               )
           } else {

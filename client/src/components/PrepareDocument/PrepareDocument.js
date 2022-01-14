@@ -735,6 +735,18 @@ const PrepareDocument = () => {
         }
       })
 
+      // 순차 전송을 위해 필드 추가
+      var usersOrder = [];
+      var usersTodo = [];
+      users.map(user => {
+        if (observers.includes(user)) {
+          usersOrder.push({'user': user, 'order': 1})
+        } else {
+          usersOrder.push({'user': user, 'order': 0})
+          usersTodo.push(user)
+        }
+      })
+
       let body = {
         user: _id,
         docTitle: (documentType === "PC") ? documentTitle : templateTitle,
@@ -748,7 +760,10 @@ const PrepareDocument = () => {
         signedTime: signedTime,
         thumbnail: thumbnailUrl,
         pageCount: pageCount,
-        observers: observers
+        observers: observers,
+        sendType: observers.length > 0 ? 'S':'A',
+        usersOrder: usersOrder,
+        usersTodo: usersTodo
       }
       console.log("일반 전송")
       const res2 = await axios.post('/api/document/addDocumentToSign', body)

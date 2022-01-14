@@ -424,13 +424,16 @@ const DocumentList = ({location}) => {
             return (
               // <Button type="primary" icon={<img src={ico_sign} style={{marginLeft:'-7px', marginRight:'7px'}}></img>} onClick={() => {
               <Tooltip placement="top" title={(row["observers"] && row["observers"].includes(_id) ? '수신' : '서명')}>
-              <Button type="primary" icon={<FormOutlined />} onClick={() => {
+              <Button type="primary" disabled={(row["sendType"] == 'S' && !row["usersTodo"].includes(_id))} icon={<FormOutlined />} onClick={() => {
                 const docId = row["_id"]
                 const docRef = row["docRef"]
                 const docType = row["docType"]
                 const docUser = row["user"]
                 const observers = row["observers"]
-                dispatch(setDocToSign({ docRef, docId, docType, docUser, observers }));
+                const sendType = row["sendType"];
+                const usersTodo = row["usersTodo"];
+                const usersOrder = row["usersOrder"];
+                dispatch(setDocToSign({ docRef, docId, docType, docUser, observers, sendType, usersTodo, usersOrder }));
                 navigate(`/signDocument`);
               }}>
                 {/* {(row["observers"] && row["observers"].includes(_id) ? '수신' : '서명')} */}
@@ -515,16 +518,22 @@ const DocumentList = ({location}) => {
           case DOCUMENT_TOSIGN:
             return (
               // <Button type="primary" icon={<img src={ico_sign} style={{marginLeft:'-7px', marginRight:'7px'}}></img>} onClick={() => {
-              <Button type="primary" style={{paddingLeft:'9px', paddingRight:'10px'}} icon={<FormOutlined />} onClick={() => {
+              <Button type="primary" disabled={(row["sendType"] == 'S' && !row["usersTodo"].includes(_id))} style={{paddingLeft:'9px', paddingRight:'10px'}} icon={<FormOutlined />} onClick={() => {
                 const docId = row["_id"]
                 const docRef = row["docRef"]
                 const docType = row["docType"]
                 const docUser = row["user"]
                 const observers = row["observers"]
-                dispatch(setDocToSign({ docRef, docId, docType, docUser, observers }));
+                const sendType = row["sendType"];
+                const usersTodo = row["usersTodo"];
+                const usersOrder = row["usersOrder"];
+                dispatch(setDocToSign({ docRef, docId, docType, docUser, observers, sendType, usersTodo, usersOrder }));
                 navigate(`/signDocument`);
               }}>
-                {(row["observers"] && row["observers"].includes(_id) ? '수신' : '서명')}
+
+                {row["sendType"] == 'S' && !row["usersTodo"].includes(_id) ? '대기' : (row["observers"] && row["observers"].includes(_id) ? '수신' : '서명')}
+                {/* {(row["observers"] && row["observers"].includes(_id) ? '수신' : '서명')} */}
+
               </Button>
             );
           case DOCUMENT_SIGNING:

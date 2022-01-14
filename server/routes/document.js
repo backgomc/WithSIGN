@@ -17,12 +17,18 @@ router.post('/addDocumentToSign', (req, res) => {
 
   const document = new Document(req.body)
 
+  console.log('document:', document)
+
   document.save((err, document) => {
     if (err) return res.json({ success: false, err })
 
     // 쪽지 보내기 
-    restful.callNotify(document.user, document.users,'[WithSIGN] 서명(수신) 요청 알림', '['+document.docTitle+']' + ' 서명(수신) 요청 건이 있습니다.');
-
+    if (document.sendType == 'S') { //순차 발송: 대상자에게만 메시지 발송
+      restful.callNotify(document.user, document.usersTodo,'[WithSIGN] 서명(수신) 요청 알림', '['+document.docTitle+']' + ' 서명(수신) 요청 건이 있습니다.');
+    } else { //동차 발송: 전체에게 메시지 발송
+      restful.callNotify(document.user, document.users,'[WithSIGN] 서명(수신) 요청 알림', '['+document.docTitle+']' + ' 서명(수신) 요청 건이 있습니다.');
+    }
+    
     return res.status(200).json({
       success: true,
       documentId: document._id
@@ -110,6 +116,8 @@ router.post('/updateDocumentToSign', (req, res) => {
   const docId = req.body.docId
   const user = req.body.user
   const xfdfSigned = req.body.xfdf
+  const usersTodo = req.body.usersTodo
+
   const time = new Date()
   const ip = requestIp.getClientIp(req)
   var isLast = false;
@@ -124,33 +132,40 @@ router.post('/updateDocumentToSign', (req, res) => {
         const signedByArray = [...signedBy, {user:user, signedTime:time, ip:ip}];
         const xfdfArray = [...xfdf, xfdfSigned];
 
-        Document.updateOne({ _id: docId }, {xfdf: xfdfArray, signedBy:signedByArray}, (err, result) => {
+        Document.updateOne({ _id: docId }, {xfdf: xfdfArray, signedBy:signedByArray, usersTodo:usersTodo}, (err, result) => {
           if (err) {
             console.log(err);
             return res.json({ success: false, message: err })
-        } else {
+          } else {
             
-          if (signedByArray.length === users.length) {
-            // const time = new Date();
-            isLast = true
-            
-            Document.updateOne({ _id: docId }, 
-              {signed: true, signedTime:time}, (err, result) => {
-                if (err) {
-                  console.log(err);
-                  return res.json({ success: false, message: err })
+            if (signedByArray.length === users.length) {
+              // const time = new Date();
+              isLast = true
+              
+              Document.updateOne({ _id: docId }, 
+                {signed: true, signedTime:time}, (err, result) => {
+                  if (err) {
+                    console.log(err);
+                    return res.json({ success: false, message: err })
+                  }
+              });
+              
+              // 문서 완료 시 요청자에게 쪽지 보내기 : 일반 전송만
+              if (document.docType == 'G') {
+                console.log('쪽지 전송 OK: 일반전송')
+                restful.callNotify(null, document.user,'[WithSIGN] 서명 완료 알림', '['+document.docTitle+']' + ' 의 서명이 완료되었습니다.');
+              } 
+
+            } else {
+              if (document.sendType == 'S') {
+                if (usersTodo?.length > 0) {
+                  // 쪽지 보내기 (순차 발송 - 서명 대상자에게)
+                  restful.callNotify(document.user, usersTodo,'[WithSIGN] 서명(수신) 요청 알림', '['+document.docTitle+']' + ' 서명(수신) 요청 건이 있습니다.');
                 }
-            });
-            
-            // 문서 완료 시 요청자에게 쪽지 보내기 : 일반 전송만
-            if (document.docType == 'G') {
-              console.log('쪽지 전송 OK: 일반전송')
-              restful.callNotify(null, document.user,'[WithSIGN] 서명 완료 알림', '['+document.docTitle+']' + ' 의 서명이 완료되었습니다.');
-            } 
+              }
+            }
 
-          }
-
-          return res.json({ success: true, docRef: docRef, xfdfArray: xfdfArray, isLast: isLast })
+            return res.json({ success: true, docRef: docRef, xfdfArray: xfdfArray, isLast: isLast })
         }
         })
       }
@@ -348,6 +363,7 @@ router.post('/searchForDocumentToSign', (req, res) => {
     
     var andParam = {};
     var orParam = {};
+    var orParam2 = {};
 
     // 문서제목 검색
     if (req.body.docTitle) {
@@ -380,6 +396,12 @@ router.post('/searchForDocumentToSign', (req, res) => {
         // if(!includeBulk) {
         //   andParam['docType'] = "G"
         // }
+
+        // 순차 서명인 경우: 자기 차례인 경우에만 보여준다.
+        // 동차 서명인 경우: 전부 보여준다. 
+        orParam = [{$and:[{"sendType": 'S'}, {"usersTodo": {$in:[user]}}]}, {"sendType": {$ne:'S'}}]
+
+
       } else if (status == DOCUMENT_SIGNED) {
         andParam['signed'] = true
         orParam = [{"users": {$in:[user]}}, {"user": user}];
@@ -397,11 +419,23 @@ router.post('/searchForDocumentToSign', (req, res) => {
       }
     } else {  // 전체 목록 (status 배열에 복수개가 들어오면 전체 목록 호출)
 
+      // 순차 발송인 경우
+      // 본인이 서명할 차례의 문서, 서명한 문서 (= 진행중 또는 완료단계) 표시  
+      // 본인이 요청자인 경우는 무조건 표시, 화면단에서 본인의 서명 차례가 아닌 경우 서명 대기 상태로 표시 필요 
+      var condition = {$or:[ {"sendType": {$ne:'S'}}, {$and:[{"sendType": 'S'},  {$or:[ {"usersTodo": {$in:[user]}}, {"signedBy.user": user} ]} ]}]}
+
       if(includeBulk) {
-        orParam = [{"users": {$in:[user]}}, {"user": user}];
+        orParam = [ {$and:[ {"users": {$in:[user]}}, condition]} , {"user": user}];
       } else { // 전체 목록의 경우 대량발송 포함이 아니어도 서명 필요 건은 포함해서 출력해 준다.
-        orParam = [{"users": {$in:[user]}}, {$and:[{"user": user}, {"docType": "G"}]} ];  
+        orParam = [ {$and:[ {"users": {$in:[user]}}, condition]}, {$and:[{"user": user}, {"docType": "G"}]} ];  
       }
+
+      // if(includeBulk) {
+      //   orParam = [{"users": {$in:[user]}}, {"user": user}];
+      // } else { // 전체 목록의 경우 대량발송 포함이 아니어도 서명 필요 건은 포함해서 출력해 준다.
+      //   orParam = [{"users": {$in:[user]}}, {$and:[{"user": user}, {"docType": "G"}]} ];  
+      // }
+
       console.log("전체목록 called")
     }
 

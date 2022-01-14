@@ -40,7 +40,7 @@ const SignDocument = () => {
   // const uploading = useSelector(selectUploading);
   const doc = useSelector(selectDocToSign);
   const user = useSelector(selectUser);
-  const { docRef, docId, docType, docUser, observers } = doc;
+  const { docRef, docId, docType, docUser, observers, sendType, usersTodo, usersOrder } = doc;
   const { _id } = user;
 
   const [annotsToDelete, setAnnotsToDelete] = useState([]);
@@ -311,11 +311,29 @@ const SignDocument = () => {
     const xfdf = await annotManager.exportAnnotations({ widgets: false, links: false, fields: true,	annotList: annotManager.getAnnotationsList() });
     // await updateDocumentToSign(docId, email, xfdf);
 
+
+    // 순차 서명인 경우: 다음 서명 대상자 설정    
+    // 설장 참조값: sendType, usersTodo, usersOrder
+    var todo = [];
+    if(sendType == 'S'){ //순차 서명인 경우 
+      if(usersTodo?.length > 0) {
+        if (usersTodo?.filter(e => e != _id).length > 0) {   // 본인 제외 같은 레벨에 서명할 사람이 있는 경우 본인만 제외
+          todo = usersTodo?.filter(e => e != _id)
+        } else { // 다음 레벨의 서명할 사람들을 입력 
+          var arr = usersOrder?.filter(e => e.user == usersTodo[0])
+          if (arr?.length > 0) {
+            todo = usersOrder?.filter(e => e.order == arr[0].order + 1).map(e => e.user)
+          }
+        }
+      }
+    }
+
     let param = {
       docId: docId,
       // email: email,
       user: _id,
-      xfdf: xfdf
+      xfdf: xfdf,
+      usersTodo: todo
     }
     console.log("completeSigning param:"+param)
 
