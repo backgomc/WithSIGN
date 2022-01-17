@@ -40,7 +40,7 @@ const SignDocument = () => {
   // const uploading = useSelector(selectUploading);
   const doc = useSelector(selectDocToSign);
   const user = useSelector(selectUser);
-  const { docRef, docId, docType, docUser, observers, sendType, usersTodo, usersOrder } = doc;
+  const { docRef, docId, docType, docUser, observers, orderType, usersTodo, usersOrder } = doc;
   const { _id } = user;
 
   const [annotsToDelete, setAnnotsToDelete] = useState([]);
@@ -313,9 +313,9 @@ const SignDocument = () => {
 
 
     // 순차 서명인 경우: 다음 서명 대상자 설정    
-    // 설장 참조값: sendType, usersTodo, usersOrder
+    // 설장 참조값: orderType, usersTodo, usersOrder
     var todo = [];
-    if(sendType == 'S'){ //순차 서명인 경우 
+    if(orderType == 'S'){ //순차 서명인 경우 
       if(usersTodo?.length > 0) {
         if (usersTodo?.filter(e => e != _id).length > 0) {   // 본인 제외 같은 레벨에 서명할 사람이 있는 경우 본인만 제외
           todo = usersTodo?.filter(e => e != _id)

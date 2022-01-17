@@ -158,6 +158,8 @@ const Assign = () => {
   const handlePrepare = () => {
     if (assignees.length > 0) {
       navigate(`/prepareDocument`);
+      // 임시 
+      // navigate(`/assignSort`);
     } else {
       // setShowToast(true);
       // setTimeout(() => setShowToast(false), 1000);

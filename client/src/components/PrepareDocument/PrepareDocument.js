@@ -14,7 +14,7 @@ import { navigate } from '@reach/router';
 // } from 'gestalt';
 import { Upload, message, Badge, Button, Row, Col, List, Card, Checkbox, Tooltip } from 'antd';
 import { InboxOutlined, HighlightOutlined, PlusOutlined, ArrowLeftOutlined, SendOutlined } from '@ant-design/icons';
-import { selectDocumentTempPath, resetAssignAll, selectAssignees, resetSignee, selectDocumentFile, selectDocumentTitle, resetDocumentFile, resetDocumentTitle, selectTemplate, resetTemplate, selectDocumentType, resetDocumentType, selectTemplateTitle, selectSendType } from '../Assign/AssignSlice';
+import { selectDocumentTempPath, resetAssignAll, selectAssignees, resetSignee, selectDocumentFile, selectDocumentTitle, resetDocumentFile, resetDocumentTitle, selectTemplate, resetTemplate, selectDocumentType, resetDocumentType, selectTemplateTitle, selectSendType, selectOrderType } from '../Assign/AssignSlice';
 import { selectUser } from '../../app/infoSlice';
 import WebViewer from '@pdftron/webviewer';
 // import 'gestalt/dist/gestalt.css';
@@ -58,6 +58,7 @@ const PrepareDocument = () => {
   const template = useSelector(selectTemplate);
   const templateTitle = useSelector(selectTemplateTitle);
   const sendType = useSelector(selectSendType);
+  const orderType = useSelector(selectOrderType);
   const documentTempPath = useSelector(selectDocumentTempPath);
 
   const assignees = useSelector(selectAssignees);
@@ -761,7 +762,7 @@ const PrepareDocument = () => {
         thumbnail: thumbnailUrl,
         pageCount: pageCount,
         observers: observers,
-        sendType: observers.length > 0 ? 'S':'A',
+        orderType: observers.length > 0 ? 'S':'A',
         usersOrder: usersOrder,
         usersTodo: usersTodo
       }

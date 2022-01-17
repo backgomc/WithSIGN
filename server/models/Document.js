@@ -20,7 +20,7 @@ const documentSchema = mongoose.Schema({
         type: String,
         default: "G"
     },
-    sendType: {  // A:동차발송 S:순차발송
+    orderType: {  // A:동차발송 S:순차발송
         type: String,
         default: "A"
     },

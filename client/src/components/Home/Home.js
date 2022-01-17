@@ -841,10 +841,10 @@ const Home = () => {
             const docType = item.docType;
             const docUser = item.user;
             const observers = item.observers;
-            const sendType = item.sendType;
+            const orderType = item.orderType;
             const usersTodo = item.usersTodo;
             const usersOrder = item.usersOrder;
-            dispatch(setDocToSign({ docRef, docId, docType, docUser, observers, sendType, usersTodo, usersOrder }));
+            dispatch(setDocToSign({ docRef, docId, docType, docUser, observers, orderType, usersTodo, usersOrder }));
           }}>
             <Badge.Ribbon color={'#54c6e8'} text={(item.observers && item.observers.includes(_id)) ? '수신' : '서명'}>
             <ProCard 

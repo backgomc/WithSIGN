@@ -94,7 +94,7 @@ export function DocumentTypeBadge(props) {
               return (
                 // <b><Badge status="processing" text={(document["observers"] && document["observers"].includes(uid)) ? DOCUMENT_TOCONFIRM : DOCUMENT_TOSIGN} /></b>
 
-                <b><Badge status="processing" text={document["sendType"] == 'S' && !document["usersTodo"].includes(uid) ? '대기' : (document["observers"] && document["observers"].includes(uid) ? DOCUMENT_TOCONFIRM : DOCUMENT_TOSIGN)} /></b>
+                <b><Badge status="processing" text={document["orderType"] == 'S' && !document["usersTodo"].includes(uid) ? '대기' : (document["observers"] && document["observers"].includes(uid) ? DOCUMENT_TOCONFIRM : DOCUMENT_TOSIGN)} /></b>
 
 
                 // {(row["observers"] && row["observers"].includes(_id) ? '확인' : '서명')}

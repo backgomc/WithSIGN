@@ -23,7 +23,7 @@ router.post('/addDocumentToSign', (req, res) => {
     if (err) return res.json({ success: false, err })
 
     // 쪽지 보내기 
-    if (document.sendType == 'S') { //순차 발송: 대상자에게만 메시지 발송
+    if (document.orderType == 'S') { //순차 발송: 대상자에게만 메시지 발송
       restful.callNotify(document.user, document.usersTodo,'[WithSIGN] 서명(수신) 요청 알림', '['+document.docTitle+']' + ' 서명(수신) 요청 건이 있습니다.');
     } else { //동차 발송: 전체에게 메시지 발송
       restful.callNotify(document.user, document.users,'[WithSIGN] 서명(수신) 요청 알림', '['+document.docTitle+']' + ' 서명(수신) 요청 건이 있습니다.');
@@ -157,7 +157,7 @@ router.post('/updateDocumentToSign', (req, res) => {
               } 
 
             } else {
-              if (document.sendType == 'S') {
+              if (document.orderType == 'S') {
                 if (usersTodo?.length > 0) {
                   // 쪽지 보내기 (순차 발송 - 서명 대상자에게)
                   restful.callNotify(document.user, usersTodo,'[WithSIGN] 서명(수신) 요청 알림', '['+document.docTitle+']' + ' 서명(수신) 요청 건이 있습니다.');
@@ -399,7 +399,7 @@ router.post('/searchForDocumentToSign', (req, res) => {
 
         // 순차 서명인 경우: 자기 차례인 경우에만 보여준다.
         // 동차 서명인 경우: 전부 보여준다. 
-        orParam = [{$and:[{"sendType": 'S'}, {"usersTodo": {$in:[user]}}]}, {"sendType": {$ne:'S'}}]
+        orParam = [{$and:[{"orderType": 'S'}, {"usersTodo": {$in:[user]}}]}, {"orderType": {$ne:'S'}}]
 
 
       } else if (status == DOCUMENT_SIGNED) {
@@ -422,7 +422,7 @@ router.post('/searchForDocumentToSign', (req, res) => {
       // 순차 발송인 경우
       // 본인이 서명할 차례의 문서, 서명한 문서 (= 진행중 또는 완료단계) 표시  
       // 본인이 요청자인 경우는 무조건 표시, 화면단에서 본인의 서명 차례가 아닌 경우 서명 대기 상태로 표시 필요 
-      var condition = {$or:[ {"sendType": {$ne:'S'}}, {$and:[{"sendType": 'S'},  {$or:[ {"usersTodo": {$in:[user]}}, {"signedBy.user": user} ]} ]}]}
+      var condition = {$or:[ {"orderType": {$ne:'S'}}, {$and:[{"orderType": 'S'},  {$or:[ {"usersTodo": {$in:[user]}}, {"signedBy.user": user} ]} ]}]}
 
       if(includeBulk) {
         orParam = [ {$and:[ {"users": {$in:[user]}}, condition]} , {"user": user}];

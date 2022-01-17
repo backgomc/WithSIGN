@@ -11,11 +11,12 @@ export const AssignSlice = createSlice({
     templateTitle: null,
     documentType: "PC",
     templateType: null,
-    sendType: "G" // G:일반 / B:벌크방식
+    sendType: "G", // G:일반, B:벌크방식, default: G
+    orderType: "A" // A: 동차, S: 순차, default: A 
   },
   reducers: {
     addSignee: (state, action) => {
-      state.signees = [...state.signees, { key: action.payload.key, name: action.payload.name, JOB_TITLE: action.payload.JOB_TITLE } ];
+      state.signees = [...state.signees, { key: action.payload.key, name: action.payload.name, JOB_TITLE: action.payload.JOB_TITLE, order:action.payload.order } ];
     },
     resetSignee: (state, action) => {
       console.log('resetSignee');
@@ -63,8 +64,14 @@ export const AssignSlice = createSlice({
     resetTemplateType: (state, action) => {
       state.templateType = null;
     },
+    resetOrderType: (state, action) => {
+      state.orderType = null;
+    },
     setSendType: (state, action) => {
       state.sendType = action.payload;
+    },
+    setOrderType: (state, action) => {
+      state.orderType = action.payload;
     },
     resetAssignAll: (state, action) => {
       state.documentType = null;
@@ -76,6 +83,7 @@ export const AssignSlice = createSlice({
       state.templateType = null;
       state.signees = [];
       state.sendType = null;
+      state.orderType = null;
     },
   },
 });
@@ -91,5 +99,6 @@ export const selectTemplateTitle = state => state.assign.templateTitle;
 export const selectDocumentType = state => state.assign.documentType;
 export const selectTemplateType = state => state.assign.templateType;
 export const selectSendType = state => state.assign.sendType;
+export const selectOrderType = state => state.assign.orderType;
 
 export default AssignSlice.reducer;

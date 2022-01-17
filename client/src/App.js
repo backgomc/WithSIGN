@@ -6,6 +6,7 @@ import axios from 'axios';
 import { Button } from "antd";
 import { view as Header } from './components/Header';
 import Assign from './components/Assign/Assign';
+import AssignSort from './components/Assign/AssignSort';
 import UploadDocument from './components/UploadDocument/UploadDocument';
 import Preparation from './components/Preparation';
 import SignList from './components/Lists/SignList';
@@ -195,6 +196,7 @@ const App = () => {
     <Router>
       <Home path="/" default />
       <Assign path="/assign" />
+      <AssignSort path="/assignSort" />
       <UploadDocument path="/uploadDocument" />
       <Preparation path="/prepareDocument" />
       <SignList path="/signList" />
