@@ -16,7 +16,7 @@ const DocumentList = () => {
   const [searchText, setSearchText] = useState('');
   const [searchedColumn, setSearchedColumn] = useState('');
   const [data, setData] = useState([]);
-  const [pagination, setPagination] = useState({current:1, pageSize:10});
+  const [pagination, setPagination] = useState({current:1, pageSize:10, showSizeChanger: true});
   const [loading, setLoading] = useState(false);
   const { formatMessage } = useIntl();
   

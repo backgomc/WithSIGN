@@ -16,6 +16,7 @@ import BoardModify from './components/Board/BoardModify';
 import SystemManage from './components/System/SystemManage';
 import DocumentList from './components/Document/DocumentList';
 import ViewDocument from './components/Document/ViewDocument';
+import AuditDocument from './components/Document/AuditDocument';
 import TemplateList from './components/Template/TemplateList';
 import UploadTemplate from './components/Template/UploadTemplate';
 import Footer from './components/Footer/Footer';
@@ -100,7 +101,7 @@ const App = () => {
     }}
     >
       <ProLayout
-        tie={<img src={LogoText} alt="WithSIGN"/>}
+        title={<img src={LogoText} alt="WithSIGN"/>}
         // logo="https://gw.alipayobjects.com/mdn/rms_b5fcc5/afts/img/A*1NHAQYduQiQAAAAAAAAAAABkARQnAQ" 로고 이미지
         logo={LogoImage}
         menuHeaderRender={(logo, title) => (
@@ -116,7 +117,7 @@ const App = () => {
             <h5 style={{'color':'cyan', 'whiteSpace':'nowrap', 'textAlign':'end'}}>&nbsp;{formatMessage({id: 'AppSubName'})}</h5>
           </div>
         )}
-        {...Menus()}
+        {...Menus(formatMessage)}
         location={{
           pathname,
         }}
@@ -149,6 +150,7 @@ const App = () => {
           <SystemManage path="/systemManage" />
           <DocumentList path="/documentList" />
           <ViewDocument path="/viewDocument" />
+          <AuditDocument path="/auditDocument" />
           <TemplateList path="/templateList" />
           <UploadTemplate path="/uploadTemplate" />
         </Router>

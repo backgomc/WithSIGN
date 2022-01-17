@@ -21,7 +21,7 @@ const TemplateList = () => {
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [hasSelected, setHasSelected] = useState(selectedRowKeys.length > 0);
   
-  const [pagination, setPagination] = useState({current:1, pageSize:10});
+  const [pagination, setPagination] = useState({current:1, pageSize:10, showSizeChanger: true});
   const [loading, setLoading] = useState(false);
   const [visiblePopconfirm, setVisiblePopconfirm] = useState(false);
 
@@ -215,12 +215,12 @@ const TemplateList = () => {
           <Button key={uuidv4()} type="primary" onClick={() => {navigate('/uploadTemplate');}}>
             템플릿 등록
           </Button>,
-          <Popconfirm title="삭제하시겠습니까？" okText="네" cancelText="아니오" visible={visiblePopconfirm} onConfirm={deleteTemplate} onCancel={() => {setVisiblePopconfirm(false);}}>
+          <Popconfirm key={uuidv4()} title="삭제하시겠습니까？" okText="네" cancelText="아니오" visible={visiblePopconfirm} onConfirm={deleteTemplate} onCancel={() => {setVisiblePopconfirm(false);}}>
             <Button key={uuidv4()} type="primary" danger disabled={!hasSelected} onClick={()=>{setVisiblePopconfirm(true);}}>
               삭제
             </Button>
           </Popconfirm>,
-          <span>
+          <span key={uuidv4()}>
             {hasSelected ? `${selectedRowKeys.length} 개의 문서가 선택됨` : ''}
           </span>
           ],
