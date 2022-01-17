@@ -464,7 +464,7 @@ router.post('/document/list', ValidateToken, async (req, res) => {
     .limit(Number(pageSize))
     .populate({
       path: 'user',
-      select: { name: 1, JOB_TITLE: 2, DEPART_CODE: 3 },
+      select: { name: 1, JOB_TITLE: 2, DEPART_CODE: 3 }
     })
     .populate({
       path: 'users',
@@ -479,7 +479,22 @@ router.post('/document/list', ValidateToken, async (req, res) => {
 
 // 문서 관리 > 상세
 router.post('/document/info', ValidateToken, (req, res) => {
-  return res.json({ success: true, message: '/document/info' });
+  if (!req.body.docId) {
+    return res.json({ success: false, message: 'input value not enough!' });
+  }
+  Document.findOne({ '_id': req.body.docId })
+  .populate({
+    path: 'user',
+    select: { name: 1, JOB_TITLE: 2, DEPART_CODE: 3 }
+  })
+  .populate({
+    path: 'users',
+    select: { name: 1, JOB_TITLE: 2, DEPART_CODE: 3 }
+  })
+  .exec(function(err, document) {
+    if (err) return res.json({ success: false, message: err });
+    return res.send({ success: true, document: document });
+  });
 });
 
 // 문서 관리 > 다운(DRM)
@@ -495,7 +510,7 @@ router.get('/document/down/:class/:docId', ValidateToken, async (req, res) => {
           var fileInfo = dataInfo.docRef;
           var filePath = fileInfo.substring(0, fileInfo.lastIndexOf('/'));
           var fileName = fileInfo.substring(fileInfo.lastIndexOf('/')+1, fileInfo.length);
-          var copyPath = filePath.replace(req.params.class, 'temp') + fileName;
+          var copyPath = config.storageDIR + 'temp/' + fileName;
           // console.log(fileName);
           // console.log(filePath);
           // console.log(copyPath);

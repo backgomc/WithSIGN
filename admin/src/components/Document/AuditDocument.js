@@ -1,30 +1,25 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
 import { useIntl } from "react-intl";
-// import { navigate } from '@reach/router';
+import { navigate } from '@reach/router';
 import { Row, Col, Button } from 'antd';
 import { PageContainer } from '@ant-design/pro-layout';
 import { DownloadOutlined, ArrowLeftOutlined } from '@ant-design/icons';
 import 'antd/dist/antd.css';
 import '@ant-design/pro-card/dist/card.css';
 import RcResizeObserver from 'rc-resize-observer';
-// import { selectUser, selectHistory } from '../../app/infoSlice';
 import { LICENSE_KEY } from '../../config/Config';
 import WebViewer from '@pdftron/webviewer';
-import './ViewDocument.css';
+import { pdf } from '@react-pdf/renderer';
+import { saveAs } from 'file-saver';
+import Audit from './Audit';
 
-const ViewDocument = ({location}) => {
-  console.log(location);
-  // const [annotManager, setAnnotatManager] = useState(null);
-  const [instance, setInstance] = useState(null);
+const asPdf = pdf([]);
+
+const AuditDocument = ({location}) => {
+  
   const [responsive, setResponsive] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [loadingDownload, setLoadingDownload] = useState([]);
-
-  // const user = useSelector(selectUser);
-  // const history = useSelector(selectHistory);
-
-  const { docRef, docTitle, _id } = location.state.docInfo;
+  
+  const { docTitle } = location.state.docInfo;
   const { formatMessage } = useIntl();
 
   const viewer = useRef(null);
@@ -47,12 +42,13 @@ const ViewDocument = ({location}) => {
       instance.setToolbarGroup('toolbarGroup-View');
       CoreControls.setCustomFontURL('/webfonts/');
       
-      setInstance(instance);
-
       // DISTO
-      const URL = '/' + docRef;
-      console.log('URL:'+URL);
-      instance.docViewer.loadDocument(URL);
+      // const URL = '/' + docRef;
+      // console.log('URL:'+URL);
+      // instance.docViewer.loadDocument(URL);
+      let audit = <Audit item={location.state.docInfo} />;
+      asPdf.updateContainer(audit);
+      instance.docViewer.loadDocument(await asPdf.toBlob(), { filename: docTitle+'_진본확인.pdf' });
 
       const normalStyles = (widget) => {
         if (widget instanceof Annotations.TextWidgetAnnotation) {
@@ -85,35 +81,28 @@ const ViewDocument = ({location}) => {
         }
       });
     });
-  }, [docRef]);
+  }, []);
 
   return (
     <div>
-      <PageContainer      
-        // ghost
+      <PageContainer
         header={{
-          title: "문서 조회",
-          ghost: true,
-          breadcrumb: {
-            routes: [
-            ],
-          },
+          title: '진본 확인 증명서',
           extra: [
-            <Button key="2" icon={<ArrowLeftOutlined />} onClick={() => window.history.back()}></Button>,
-            <Button key="3" loading={loadingDownload['1']} href={'/admin/document/down/documents/'+_id} download={docTitle+'.pdf'} type="primary" icon={<DownloadOutlined />} onClick={()=> {
-              setLoadingDownload( { "1" : true } )
-              setTimeout(() => {
-                setLoadingDownload( { "1" : false})
-              }, 3000);
-            }}>
-              {formatMessage({id: 'document.download'})}
-            </Button>
-          ],
+            <Button icon={<ArrowLeftOutlined />} onClick={() => navigate('/documentList')}></Button>,
+            // <PDFDownloadLink document={<MyDocument />} fileName={docTitle+'_진본확인.pdf'}>
+            //   {
+            //     ({ blob, url, loading, error }) => <Button key="1" loading={loading} type="primary" icon={<DownloadOutlined />}>{formatMessage({id: 'document.download'})}</Button>
+            //   }
+            // </PDFDownloadLink>
+            <Button icon={<DownloadOutlined />} type="primary" onClick={async () => {
+              let audit = <Audit item={location.state.docInfo} />;
+              asPdf.updateContainer(audit);
+              saveAs(await asPdf.toBlob(), docTitle+'_진본확인.pdf');
+            }}>{formatMessage({id: 'document.download'})}</Button>
+
+          ]
         }}
-        // content= {}
-        footer={[
-        ]}
-        loading={loading}
       >
         <RcResizeObserver
           key="resize-observer"
@@ -127,9 +116,9 @@ const ViewDocument = ({location}) => {
             </Col>
           </Row>
         </RcResizeObserver>
-      </PageContainer> 
+      </PageContainer>
     </div>
   );
 };
 
-export default ViewDocument;
+export default AuditDocument;

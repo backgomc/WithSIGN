@@ -1,15 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import Moment from 'react-moment';
 import axios from 'axios';
+import { v4 as uuidv4 } from 'uuid';
+import { navigate } from '@reach/router';
 import { Tooltip, Tag, Timeline, Button, Alert } from 'antd';
 import ProDescriptions from '@ant-design/pro-descriptions';
-import ProCard from '@ant-design/pro-card';
-import { CheckCircleOutlined, CloseCircleOutlined, ClockCircleOutlined } from '@ant-design/icons';
+import { CheckCircleOutlined, CloseCircleOutlined, ClockCircleOutlined, DownloadOutlined } from '@ant-design/icons';
 import '@ant-design/pro-card/dist/card.css';
 import '@ant-design/pro-descriptions/dist/descriptions.css';
 import 'antd/dist/antd.css';
 import { DocumentTypeBadge, DocumentType, DOCUMENT_SIGNED } from './DocumentType';
-// import AuditDocument from '../Audit/AuditDocument';
+// import AuditDocument from '../Document/AuditDocument';
 
 import ico_bullet from '../../assets/images/table_bullet.png';
 
@@ -36,7 +37,7 @@ const DocumentExpander = (props) => {
 
     const getSignInfo = (user) => {
         return (
-            <div>
+            <div key={uuidv4()}>
                 {user.name} {user.JOB_TITLE} {orgInfos.filter(e => e.DEPART_CODE === user.DEPART_CODE).length > 0 ? '['+orgInfos.filter(e => e.DEPART_CODE === user.DEPART_CODE)[0].DEPART_NAME+']' : ''}
             </div>
         )
@@ -45,7 +46,7 @@ const DocumentExpander = (props) => {
     const activeHistory = (user) => {
         if ((item.signedBy.some(e => e.user === user._id))) {
             return  (
-                <Timeline.Item dot={<CheckCircleOutlined className="timeline-clock-icon" />} color="gray">
+                <Timeline.Item key={uuidv4()} dot={<CheckCircleOutlined className="timeline-clock-icon" />} color="gray">
                     <font color='#A7A7A9'><b>{user.name} {user.JOB_TITLE}</b> {(item.observers && item.observers.includes(user._id)) ? '문서 수신' : '서명 완료'}</font>
                     &nbsp;&nbsp;&nbsp;
                     <Tag color="#BABABC">
@@ -55,7 +56,7 @@ const DocumentExpander = (props) => {
             )
         } else if ((item.canceledBy.some(e => e.user === user._id))) {
             return (
-                <Timeline.Item dot={<CloseCircleOutlined className="timeline-clock-icon"/>} color="red">
+                <Timeline.Item key={uuidv4()} dot={<CloseCircleOutlined className="timeline-clock-icon"/>} color="red">
                     <font color="#A7A7A9"><b>{user.name} {user.JOB_TITLE}</b> {(item.observers && item.observers.includes(user._id)) ? '수신 취소' : '서명 취소'}</font>
                     &nbsp;&nbsp;&nbsp;
                     <Tooltip placement="right" title={item.canceledBy.filter(e => e.user === user._id)[0].message}>
@@ -68,7 +69,7 @@ const DocumentExpander = (props) => {
             )
         } else {
             return (
-                <Timeline.Item dot={<ClockCircleOutlined className="timeline-clock-icon" />}>
+                <Timeline.Item key={uuidv4()} dot={<ClockCircleOutlined className="timeline-clock-icon" />}>
                     <font color="#1890FF"><b>{user.name} {user.JOB_TITLE}</b> {(item.observers && item.observers.includes(user._id)) ? '수신 필요' : '서명 필요'}</font>
                 </Timeline.Item>
             )
@@ -78,11 +79,13 @@ const DocumentExpander = (props) => {
     const buttonList = (
         <div>
             {DocumentType({document: item}) === DOCUMENT_SIGNED ?
-                <ProCard title="">
-                    <div style={{height:'40px'}}>
-                        <Button onClick={() => {}}>진본 확인 증명서</Button>
-                    </div>
-                </ProCard>:''
+                <Button icon={<DownloadOutlined />} onClick={() => { navigate('/auditDocument', { state: { docInfo: item } } ); }}>진본 확인 증명서</Button>
+                // <nav><Link to={('/auditDocument/'+item._id)}>진본 확인 증명서</Link></nav>
+                // <Button icon={<DownloadOutlined />} onClick={async () => {
+                //     const doc = <AuditDocument item={item} />;
+                //     console.log(doc);
+                // }}>진본 확인 증명서</Button>
+                :''
             }
         </div>
     )

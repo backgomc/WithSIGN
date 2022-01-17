@@ -426,7 +426,7 @@ router.get('/:class/:docId', async (req, res) => {
             var fileInfo = dataInfo.docRef;
             var filePath = fileInfo.substring(0, fileInfo.lastIndexOf('/'));
             var fileName = fileInfo.substring(fileInfo.lastIndexOf('/')+1, fileInfo.length);
-            var copyPath = filePath.replace(req.params.class, 'temp') + fileName;
+            var copyPath = config.storageDIR + 'temp/' + fileName;
             // console.log(fileName);
             // console.log(filePath);
             // console.log(copyPath);

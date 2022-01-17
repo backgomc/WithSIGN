@@ -15,7 +15,7 @@ const UserList = () => {
   // console.log('UserList');
   
   const { formatMessage } = useIntl();
-  const [pagination, setPagination] = useState({current:1, pageSize:10});
+  const [pagination, setPagination] = useState({current:1, pageSize:10, showSizeChanger: true});
   const [loading, setLoading] = useState(false);
   const [searchedColumn, setSearchedColumn] = useState('');
   const [syncOrgPopup, setSyncOrgPopup] = useState(false);
@@ -367,7 +367,6 @@ const UserList = () => {
           // rowSelection={rowSelection}
           onChange={handleTableChange}
         />
-
       </PageContainer>
     </div>
   );

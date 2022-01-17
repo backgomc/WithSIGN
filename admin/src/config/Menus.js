@@ -1,9 +1,7 @@
 import React from 'react';
-import { useIntl } from 'react-intl';
 import { CopyOutlined, FileAddOutlined, SoundOutlined, FileTextOutlined, SettingOutlined } from '@ant-design/icons';
 
-export default function Menus() {
-  const { formatMessage } = useIntl();
+export default function Menus(formatMessage) {
   const data = {
     route: {
       path: '/',

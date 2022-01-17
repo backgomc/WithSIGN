@@ -235,15 +235,16 @@ let callIpronetMSG = async (sendInfo, recvInfo, title, message, filePath) => {
 
         // 4. 메시지 전송
         url = config.ipronetURI+'/jsl/NHITMessageAction.Send.jsl';
+        let fileInfo = []
         let fileData;
         let fileName;
-        let fileInfo = []
+        let copyPath;
         if (filePath) {
-            if (fs.existsSync('./'+filePath)) {
+            if (fs.existsSync(filePath)) {
                 fileName = filePath.substring(filePath.lastIndexOf('/')+1, filePath.length);
-                console.log(fileName);
-                fileData = fs.readFileSync('./'+filePath, {filename: fileName});
-                console.log(fileData);
+                copyPath = config.storageDIR + 'temp/' + fileName;
+                await callDRMPackaging(filePath.substring(0,filePath.lastIndexOf('/')+1), fileName, copyPath);
+                fileData = fs.readFileSync(copyPath, {filename: fileName});
                 fileInfo = [{
                     method: 'copy',
                     type: 1,
