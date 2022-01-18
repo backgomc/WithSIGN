@@ -303,7 +303,7 @@ const BoardDetail = ({location}) => {
           <>
           <Descriptions column={2} style={{ marginBottom: -16 }}>
             <Descriptions.Item label="작성자">{board.user.name} {board.user.JOB_TITLE}</Descriptions.Item>
-            <Descriptions.Item label="작성 일시"><Moment format='YYYY/MM/DD HH:mm'>{board.requestedTime}</Moment></Descriptions.Item>
+            <Descriptions.Item label="작성 일시"><Moment format='YYYY/MM/DD HH:mm'>{board.registeredTime}</Moment></Descriptions.Item>
           </Descriptions>
           <Divider style= {{marginBottom: '-24px', height: '10px'}}/>
           </>
