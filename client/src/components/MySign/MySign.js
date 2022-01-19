@@ -99,7 +99,7 @@ const MySign = () => {
     
       let param = {
         user: _id,
-        signData: sigCanvas.current.getTrimmedCanvas().toDataURL("image/png")
+        signData: sigCanvas.current.toDataURL('image/png')
       }
   
       // 서버업로드

@@ -1,3 +1,19 @@
 .webviewer {
-    height: calc(100vh - 83px);
+  height: calc(100vh - 83px);
+}
+
+.signCanvas {
+  border: 1px solid black;
+  width: 100%;
+  min-height: 200px;
+}
+
+.customSignCardCSS img {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.customSignCardCSS .ant-avatar-image {
+  width: 72px !important;
+  height: 48px !important;
 }

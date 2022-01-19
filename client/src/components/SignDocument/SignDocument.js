@@ -1,5 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { useSelector, useDispatch, useStore } from 'react-redux';
+import SignaturePad from 'react-signature-canvas';
 import axios from 'axios';
 import { navigate } from '@reach/router';
 // import { Box, Column, Heading, Row, Stack, Button } from 'gestalt';
@@ -13,11 +14,12 @@ import './SignDocument.css';
 import { useIntl } from "react-intl";
 import RcResizeObserver from 'rc-resize-observer';
 import { PageContainer } from '@ant-design/pro-layout';
-import ProCard from '@ant-design/pro-card';
+import ProCard, { CheckCard } from '@ant-design/pro-card';
 import 'antd/dist/antd.css';
 import '@ant-design/pro-card/dist/card.css';
 import { ExclamationCircleOutlined } from '@ant-design/icons';
 import { LICENSE_KEY } from '../../config/Config';
+import Item from 'antd/lib/list/Item';
 
 const { confirm } = Modal;
 const { TextArea } = Input;
@@ -26,6 +28,7 @@ const SignDocument = () => {
 
   const { formatMessage } = useIntl();
 
+  const [webViewInstance, setWebViewInstance] = useState(null);
   const [annotManager, setAnnotatManager] = useState(null);
   const [annotPosition, setAnnotPosition] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -33,6 +36,9 @@ const SignDocument = () => {
   const [disableNext, setDisableNext] = useState(true);
   const [disableCancel, setDisableCancel] = useState(true);
   const [visiblModal, setVisiblModal] = useState(false);
+  const [signList, setSignList] = useState([]);
+  const [signData, setSignData] = useState('');
+  const [signModal, setSignModal] = useState(false);
   const [pageCount, setPageCount] = useState(0);
   const [textSign, setTextSign] = useState(formatMessage({id: 'sign.complete'}))
 
@@ -48,6 +54,27 @@ const SignDocument = () => {
   const viewer = useRef(null);
   const cancelMessage = useRef({});
 
+  const sigCanvas = useRef({});
+  const clear = () => sigCanvas.current.clear();
+  
+  const handleOk = async () => {
+    if (!sigCanvas.current.isEmpty()) {
+      const { docViewer } = webViewInstance;
+      const signatureTool = docViewer.getTool('AnnotationCreateSignature');
+      await signatureTool.setSignature(sigCanvas.current.getTrimmedCanvas().toDataURL('image/png'));
+      signatureTool.addSignature();
+      webViewInstance.closeElements(['signatureModal']);
+      webViewInstance.setToolbarGroup('toolbarGroup-View');
+    }
+    setSignModal(false);
+    clear();
+  }
+
+  const handleCancel = () => {
+    setSignModal(false);
+    clear();
+  };
+  
   useEffect(() => {
 
     console.log('observers:'+observers)
@@ -55,6 +82,8 @@ const SignDocument = () => {
       setDisableNext(false)
       setTextSign('문서 수신')
     }
+
+    fetchSigns();
 
     WebViewer(
       {
@@ -71,19 +100,38 @@ const SignDocument = () => {
           'calloutToolGroupButton',
           'undo',
           'redo',
-          'eraserToolButton'
+          'eraserToolButton',
+          'signatureToolGroupButton',
+          'viewControlsOverlay',
+          // 'toolsOverlay',  // 서명 도구 상호 작용시 필요
+          'annotationPopup',
+          'annotationStylePopup',
+          'toolStylePopup',   // 서명 목록 팝업
+          'stylePopup',
+          'textPopup',
+          'contextMenuPopup',
+          'annotationNoteConnectorLine'
         ],
       },
       viewer.current,
     ).then(async instance => {
       const { docViewer, annotManager, Annotations, CoreControls } = instance;
       setAnnotatManager(annotManager);
+      setWebViewInstance(instance);
+
+      const signatureTool = docViewer.getTool('AnnotationCreateSignature');
+      signatureTool.on('locationSelected', async () => {
+        setSignModal(true);
+        instance.closeElements(['signatureModal']);
+        instance.setToolbarGroup('toolbarGroup-View');
+      });
 
       // set language
       instance.setLanguage('ko');
 
       // select only the insert group
-      instance.setToolbarGroup('toolbarGroup-Insert');
+      instance.disableElements(['header']);
+      instance.setToolbarGroup('toolbarGroup-View');
       CoreControls.setCustomFontURL("/webfonts/");
 
       // load document
@@ -118,6 +166,12 @@ const SignDocument = () => {
 
         if (!imported && action === 'add') {  // 서명 및 입력값이 추가 된 경우
           setDisableNext(false)
+        }
+
+        if (!imported && action === 'delete') {  // 서명 및 입력값이 삭제 된 경우
+          annotations.forEach(function(annot) {
+            if (annot.ToolName === 'AnnotationCreateSignature') setDisableNext(true);
+          });
         }
 
         if (imported && (action === 'add' || action === 'modify')) {
@@ -161,22 +215,22 @@ const SignDocument = () => {
 
 
       // 내 사인 이미지 가져와서 출력하기
-      const res = await axios.post('/api/sign/signs', {user: _id})
-      if (res.data.success) {
-        const signs = res.data.signs;
+      // const res = await axios.post('/api/sign/signs', {user: _id})
+      // if (res.data.success) {
+      //   const signs = res.data.signs;
 
-        var signDatas = []
-        signs.forEach(element => {
-          signDatas.push(element.signData)
-        });
+      //   var signDatas = []
+      //   signs.forEach(element => {
+      //     signDatas.push(element.signData)
+      //   });
 
-        if (signDatas.length > 0) {
-          const signatureTool = docViewer.getTool('AnnotationCreateSignature');
-          docViewer.on('documentLoaded', () => {
-            signatureTool.importSignatures(signDatas);
-          });
-        }
-      }
+      //   if (signDatas.length > 0) {
+      //     const signatureTool = docViewer.getTool('AnnotationCreateSignature');
+      //     docViewer.on('documentLoaded', () => {
+      //       signatureTool.importSignatures(signDatas);
+      //     });
+      //   }
+      // }
       
       // const signatureTool = docViewer.getTool('AnnotationCreateSignature');
       // console.log('ccc');
@@ -222,6 +276,21 @@ const SignDocument = () => {
     });
   }, [docRef, _id]);
 
+  const fetchSigns = async () => {
+    let param = {
+      user: _id
+    }
+    const res = await axios.post('/api/sign/signs', param);
+    if (res.data.success) {
+      const signs = res.data.signs;
+      setSignList(signs);
+    }
+  }
+
+  const signCard = (sign) => {
+    return <CheckCard style={{width:'auto', height: 'auto'}} value={sign.signData} avatar={sign.signData} className='customSignCardCSS'/>
+  }
+  
   const nextField = () => {
     let annots = annotManager.getAnnotationsList();
     if (annots[annotPosition]) {
@@ -424,6 +493,31 @@ const SignDocument = () => {
           >
             취소사유 :
             <TextArea rows={4} ref={cancelMessage} onChange={(t)=> { setDisableCancel(!(t.currentTarget.value.length > 0)) }} />
+        </Modal>
+
+        <Modal
+          visible={signModal}
+          width={450}
+          title="직접서명 또는 서명선택"
+          onOk={handleOk}
+          onCancel={handleCancel}
+          footer={[
+            <Button key="back" onClick={clear}>지우기</Button>,
+            <Button key="submit" type="primary" loading={loading} onClick={handleOk}>확인</Button>
+          ]}
+          bodyStyle={{padding: '0px 24px'}}
+        >
+          <ProCard>
+            <SignaturePad penColor='black' ref={sigCanvas} canvasProps={{className: 'signCanvas'}} />
+          </ProCard>
+          <CheckCard.Group style={{width: '100%', margin: '0px', padding: '0px', whiteSpace: 'nowrap', overflow: 'auto', textAlign: 'center'}}
+            onChange={(value) => {
+              sigCanvas.current.clear();
+              if (value) sigCanvas.current.fromDataURL(value);
+            }}
+          >
+            {signList.map((sign) => (signCard(sign)))}
+          </CheckCard.Group>
         </Modal>
 
       </RcResizeObserver>
