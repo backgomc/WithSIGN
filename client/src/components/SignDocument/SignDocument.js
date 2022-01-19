@@ -61,7 +61,7 @@ const SignDocument = () => {
     if (!sigCanvas.current.isEmpty()) {
       const { docViewer } = webViewInstance;
       const signatureTool = docViewer.getTool('AnnotationCreateSignature');
-      await signatureTool.setSignature(sigCanvas.current.getTrimmedCanvas().toDataURL('image/png'));
+      await signatureTool.setSignature(sigCanvas.current.toDataURL('image/png'));
       signatureTool.addSignature();
       webViewInstance.closeElements(['signatureModal']);
       webViewInstance.setToolbarGroup('toolbarGroup-View');
