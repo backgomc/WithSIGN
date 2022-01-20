@@ -593,7 +593,7 @@ const PrepareDocument = () => {
     } else {
       if (type == "SIGN") {
         textAnnot.Width = 90.0 / zoom;
-        textAnnot.Height = 90.0 / zoom;
+        textAnnot.Height = 60.0 / zoom;
 
         // console.log('ADD SIGN')
         // console.log('member.key:'+member.key)
@@ -629,7 +629,7 @@ const PrepareDocument = () => {
     // textAnnot.setContents(textAnnot.custom.name);
     // textAnnot.setContents(assignee.label+"_"+type);
     // textAnnot.setContents(member.name+"_"+type);
-    textAnnot.setContents((sendType === 'B') ? type : member.name+"_"+type);
+    textAnnot.setContents((sendType === 'B') ? type : member.name+"\n"+type);
     textAnnot.FontSize = '' + 18.0 / zoom + 'px';
     textAnnot.FillColor = new Annotations.Color(211, 211, 211, 0.5);
     textAnnot.TextColor = new Annotations.Color(0, 165, 228);

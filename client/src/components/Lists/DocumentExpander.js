@@ -256,13 +256,15 @@ const DocumentExpander = (props) => {
 
                 <Button
                 icon={<DownloadOutlined />}
-                onClick={async () => {         
-                    const doc = <AuditDocument item={item} />;
-                    const asPdf = pdf([]);
-                    asPdf.updateContainer(doc);
-                    const blob = await asPdf.toBlob();
-                    saveAs(blob, item.docTitle+'_진본확인.pdf');
-                }}>
+                onClick={() => { navigate('/audit', { state: { docInfo: item } } ); }
+                    // async () => {         
+                    //     const doc = <AuditDocument item={item} />;
+                    //     const asPdf = pdf([]);
+                    //     asPdf.updateContainer(doc);
+                    //     const blob = await asPdf.toBlob();
+                    //     saveAs(blob, item.docTitle+'_진본확인.pdf');
+                    // }
+                }>
                     진본 확인 증명서
                 </Button> : '' 
 

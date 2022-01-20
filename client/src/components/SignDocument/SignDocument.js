@@ -92,6 +92,9 @@ const SignDocument = () => {
         disabledElements: [
           'ribbons',
           'toggleNotesButton',
+          'viewControlsButton',
+          'panToolButton',
+          'selectToolButton', 
           'searchButton',
           'menuButton',
           'rubberStampToolGroupButton',

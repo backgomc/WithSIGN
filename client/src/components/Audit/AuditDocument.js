@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React, {useEffect, useState} from 'react';
 import ReactPDF, { Page, Text, View, Document, StyleSheet, PDFViewer, Font } from '@react-pdf/renderer';
 import Header from './Header';
 import Moment from 'react-moment';
@@ -113,6 +113,24 @@ const styles = StyleSheet.create({
   },
 });
 
+let fontsLoaded = false;
+let forceUpdate = null;
+
+// Force loading and wait for loading to finish
+Promise.all([
+  Font.load({ fontFamily: 'Nanum Gothic' }),
+  Font.load({ fontFamily: 'Nanum Gothic Bold' })
+]).then(() => {
+  fontsLoaded = true;
+  if (forceUpdate) forceUpdate();
+});
+
+// Helper to trigger an update in a functional component
+function useForceUpdate () {
+  const [value, setValue] = useState(0);
+  return () => setValue(value => value + 1);
+}
+
 const AuditDocument = (props) => {
 
   const { item } = props
@@ -120,6 +138,16 @@ const AuditDocument = (props) => {
 
   // const [instance, updateInstance] = usePDF({ document: MyDocument });
 
+  const [data, setData] = useState([]);
+  useEffect(() => {
+    return () => {};
+  }, [data]);
+  
+  forceUpdate = useForceUpdate();
+  if (!fontsLoaded) {
+    data = {}
+    return <div/>
+  }
 
   const createTableRow = (headerName, value, headerCellWidth, valueCellWidth) => {
     let tableColHeaderStyle = {
