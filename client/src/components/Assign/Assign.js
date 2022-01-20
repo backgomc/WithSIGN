@@ -285,7 +285,7 @@ const onDragEnd = (result, columns, setColumns) => {
 };
 
 const sortView = (
-  <ProCard style={{ width:'100%', background: '#FFFFFF'}} bodyStyle={{ marginLeft:'-10px', marginTop:'-12px'}} title="순서 지정" extra={<Button icon={<PlusOutlined />} onClick={() => {
+  <ProCard style={{ width:'100%', background: '#FFFFFF'}} bodyStyle={{ marginLeft:'-10px', marginTop:'-12px'}} title="순차 지정" tooltip="같은 단계에 여러 명인 경우 동시 요청됨" extra={<Button icon={<PlusOutlined />} onClick={() => {
     console.log('btn clicked');
     var lastKey = Object.keys(columns)[Object.keys(columns).length - 1];
     var newKey = Number(lastKey) + 1;
