@@ -10,7 +10,7 @@ import '@ant-design/pro-card/dist/card.css';
 import '@ant-design/pro-descriptions/dist/descriptions.css';
 import 'antd/dist/antd.css';
 import { DocumentTypeBadge, DocumentType, DOCUMENT_SIGNED } from './DocumentType';
-// import AuditDocument from '../Document/AuditDocument';
+// import AuditCertify from '../Document/AuditCertify';
 
 import ico_bullet from '../../assets/images/table_bullet.png';
 
@@ -79,10 +79,10 @@ const DocumentExpander = (props) => {
     const buttonList = (
         <div>
             {DocumentType({document: item}) === DOCUMENT_SIGNED ?
-                <Button icon={<DownloadOutlined />} onClick={() => { navigate('/auditDocument', { state: { docInfo: item } } ); }}>진본 확인 증명서</Button>
-                // <nav><Link to={('/auditDocument/'+item._id)}>진본 확인 증명서</Link></nav>
+                <Button icon={<DownloadOutlined />} onClick={() => { navigate('/auditCertify', { state: { docInfo: item } } ); }}>진본 확인 증명서</Button>
+                // <nav><Link to={('/auditCertify/'+item._id)}>진본 확인 증명서</Link></nav>
                 // <Button icon={<DownloadOutlined />} onClick={async () => {
-                //     const doc = <AuditDocument item={item} />;
+                //     const doc = <AuditCertify item={item} />;
                 //     console.log(doc);
                 // }}>진본 확인 증명서</Button>
                 :''
@@ -93,6 +93,9 @@ const DocumentExpander = (props) => {
     useEffect(() => {
         console.log('DocumentExpander useEffect called');
         fetchOrgInfos();
+        return () => {
+            setOrgInfos([]);
+        }   // cleanup
     }, []);
 
       

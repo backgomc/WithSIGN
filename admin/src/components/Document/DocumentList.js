@@ -227,14 +227,17 @@ const DocumentList = () => {
   ];
 
   useEffect(() => {
-
     console.log('useEffect called');
-
     fetch({
       pagination
     });
-
-    return () => setLoading(false);
+    return () => {
+      setSearchText('');
+      setSearchedColumn('');
+      setData([]);
+      setPagination({current:1, pageSize:10, showSizeChanger: true});
+      setLoading(false);
+    } // cleanup
   }, []);
 
   return (

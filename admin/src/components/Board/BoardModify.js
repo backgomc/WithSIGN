@@ -37,11 +37,11 @@ const BoardModify = ({location}) => {
   const user = useSelector(selectUser);
   const { _id } = user;
   const [form] = Form.useForm();
-  const [disableNext, setDisableNext] = useState(true);
   const fileList = useRef([]);
   const fileListDeleted = useRef([]);
-  const [board, setBoard] = useState({title: '', content: '', requestedTime: '', user: {name: '', JOB_TITLE:''}});  
+  const [board, setBoard] = useState({title: '', content: '', requestedTime: '', user: {name: '', JOB_TITLE: ''}});  
   const [loading, setLoading] = useState(false);
+  const [disableNext, setDisableNext] = useState(true);
   const boardId = location.state?.boardId ? location.state.boardId : '';
   const boardType = location.state?.boardType ? location.state.boardType : '';
   const { formatMessage } = useIntl();
@@ -150,7 +150,11 @@ const BoardModify = ({location}) => {
     fetch({
       boardId: boardId  
     });
-    return () => setLoading(false);
+    return () => {
+      setBoard({title: '', content: '', requestedTime: '', user: {name: '', JOB_TITLE: ''}});  
+      setLoading(false);
+      setDisableNext(true);
+    } // cleanup
   }, []);
 
   return (

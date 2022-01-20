@@ -324,8 +324,17 @@ const UserList = () => {
     fetch({
       pagination
     });
-
-    return () => setLoading(false);
+    return () => {
+      setPagination({current:1, pageSize:10, showSizeChanger: true});
+      setLoading(false);
+      setSearchedColumn('');
+      setSyncOrgPopup(false);
+      setSyncUsrPopup(false);
+      setData([]);
+      setSearchText('');
+      setSearchName('');
+      setSearchOrg('');
+    } // cleanup
   }, []);
 
   return (

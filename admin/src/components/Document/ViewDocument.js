@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
+// import { useSelector } from 'react-redux';
 import { useIntl } from "react-intl";
 // import { navigate } from '@reach/router';
 import { Row, Col, Button } from 'antd';
@@ -7,18 +7,13 @@ import { PageContainer } from '@ant-design/pro-layout';
 import { DownloadOutlined, ArrowLeftOutlined } from '@ant-design/icons';
 import 'antd/dist/antd.css';
 import '@ant-design/pro-card/dist/card.css';
-import RcResizeObserver from 'rc-resize-observer';
 // import { selectUser, selectHistory } from '../../app/infoSlice';
 import { LICENSE_KEY } from '../../config/Config';
 import WebViewer from '@pdftron/webviewer';
 import './ViewDocument.css';
 
 const ViewDocument = ({location}) => {
-  console.log(location);
-  // const [annotManager, setAnnotatManager] = useState(null);
-  const [instance, setInstance] = useState(null);
-  const [responsive, setResponsive] = useState(false);
-  const [loading, setLoading] = useState(false);
+
   const [loadingDownload, setLoadingDownload] = useState([]);
 
   // const user = useSelector(selectUser);
@@ -36,55 +31,30 @@ const ViewDocument = ({location}) => {
       disabledElements: [
         'ribbons',
         'toggleNotesButton',
+        'viewControlsButton',
+        'panToolButton',
+        'selectToolButton', 
+        'searchButton',
+        'menuButton',
+        'commentsButton',
         'contextMenuPopup'
       ]
     },
     viewer.current
     ).then(async instance => {
-      const { annotManager, Annotations, CoreControls } = instance;
+      const { annotManager, CoreControls } = instance;
 
-      // select only the view group
       instance.setToolbarGroup('toolbarGroup-View');
       CoreControls.setCustomFontURL('/webfonts/');
-      
-      setInstance(instance);
+      annotManager.setReadOnly(true);
 
-      // DISTO
       const URL = '/' + docRef;
       console.log('URL:'+URL);
       instance.docViewer.loadDocument(URL);
-
-      const normalStyles = (widget) => {
-        if (widget instanceof Annotations.TextWidgetAnnotation) {
-          return {
-            color: 'black'
-          };
-        } else if (widget instanceof Annotations.SignatureWidgetAnnotation) {
-          return {
-          };
-        }
-      };
-
-      // TODO annotation 수정 안되게 하기
-      annotManager.on('annotationChanged', (annotations, action, { imported }) => {
-        console.log('annotationChanged called');
-        if (imported && action === 'add') {
-          annotations.forEach(function(annot) {
-            console.log('annot', annot);
-            if (annot instanceof Annotations.WidgetAnnotation) {
-              Annotations.WidgetAnnotation.getCustomStyles = normalStyles;
-              console.log("annot.fieldName:"+annot.fieldName);
-              // if (!annot.fieldName.startsWith(_id)) { 
-              //   annot.Hidden = true;
-              //   annot.Listable = false;
-              // }
-              // 모든 입력 필드 숨기기
-              annot.Hidden = true;
-            }
-          });
-        }
-      });
     });
+    return () => {
+      setLoadingDownload([]);
+    } // cleanup
   }, [docRef]);
 
   return (
@@ -113,20 +83,12 @@ const ViewDocument = ({location}) => {
         // content= {}
         footer={[
         ]}
-        loading={loading}
       >
-        <RcResizeObserver
-          key="resize-observer"
-          onResize={(offset) => {
-            setResponsive(offset.width < 596);
-          }}
-        >
-          <Row gutter={[24, 24]}>
-            <Col span={24}>
-              <div className='webviewer' ref={viewer}></div>
-            </Col>
-          </Row>
-        </RcResizeObserver>
+        <Row gutter={[24, 24]}>
+          <Col span={24}>
+            <div className='webviewer' ref={viewer}></div>
+          </Col>
+        </Row>
       </PageContainer> 
     </div>
   );

@@ -135,7 +135,11 @@ const BoardList = () => {
     fetch({
       pagination
     });
-    return () => setLoading(false);
+    return () => {
+      setPagination({current:1, pageSize:2, showSizeChanger: true});
+      setLoading(false);
+      setData([]);
+    } // cleanup
 }, []);
 
   return (

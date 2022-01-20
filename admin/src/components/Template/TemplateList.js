@@ -20,7 +20,6 @@ const TemplateList = () => {
   const [data, setData] = useState([]);
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [hasSelected, setHasSelected] = useState(selectedRowKeys.length > 0);
-  
   const [pagination, setPagination] = useState({current:1, pageSize:10, showSizeChanger: true});
   const [loading, setLoading] = useState(false);
   const [visiblePopconfirm, setVisiblePopconfirm] = useState(false);
@@ -191,12 +190,19 @@ const TemplateList = () => {
   };
 
   useEffect(() => {
-
     fetch({
       pagination
     });
-
-    return () => setLoading(false);
+    return () => {
+      setSearchText('');
+      setSearchedColumn('');
+      setData([]);
+      setSelectedRowKeys([]);
+      setHasSelected(false);
+      setPagination({current:1, pageSize:10, showSizeChanger: true});
+      setLoading(false);
+      setVisiblePopconfirm(false);
+    } // cleanup
   }, []);
 
   return (

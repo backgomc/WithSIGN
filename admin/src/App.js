@@ -16,7 +16,7 @@ import BoardModify from './components/Board/BoardModify';
 import SystemManage from './components/System/SystemManage';
 import DocumentList from './components/Document/DocumentList';
 import ViewDocument from './components/Document/ViewDocument';
-import AuditDocument from './components/Document/AuditDocument';
+import AuditCertify from './components/Document/AuditCertify';
 import TemplateList from './components/Template/TemplateList';
 import UploadTemplate from './components/Template/UploadTemplate';
 import Footer from './components/Footer/Footer';
@@ -90,6 +90,7 @@ const App = () => {
         }
       }
     });
+    return () => {} // cleanup
   }, []);
 
   return user ? (
@@ -150,7 +151,7 @@ const App = () => {
           <SystemManage path="/systemManage" />
           <DocumentList path="/documentList" />
           <ViewDocument path="/viewDocument" />
-          <AuditDocument path="/auditDocument" />
+          <AuditCertify path="/auditCertify" />
           <TemplateList path="/templateList" />
           <UploadTemplate path="/uploadTemplate" />
         </Router>

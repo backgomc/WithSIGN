@@ -3,7 +3,7 @@ import React, { useEffect } from 'react';
 
 const SystemManage = () => {
   useEffect(() => {
-    
+    return () => {} // cleanup
   }, []);
 
   return (

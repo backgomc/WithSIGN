@@ -28,7 +28,6 @@ const BoardDetail = ({location}) => {
   const [comments, setComments] = useState([]);
   const [files, setFiles] = useState([]);
   const [board, setBoard] = useState({title: '', requestedTime: '', user: {name: '', JOB_TITLE:''}});
-  
   const [loading, setLoading] = useState(false);
 
   const { formatMessage } = useIntl();
@@ -226,7 +225,12 @@ const BoardDetail = ({location}) => {
     fetch({
       boardId: boardId
     });
-    return () => setLoading(false);
+    return () => {
+      setComments([]);
+      setFiles([]);
+      setBoard({title: '', requestedTime: '', user: {name: '', JOB_TITLE:''}});
+      setLoading(false);
+    } // cleanup
   }, []);
 
   return (

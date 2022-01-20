@@ -93,7 +93,11 @@ const BoardWrite = () => {
   }
 
   useEffect(() => {
-    return () => setLoading(false);
+    return () => {
+      setDisableNext(true);
+      setFileList([]);
+      setLoading(false);
+    } // cleanup
   }, []);
 
   return (
