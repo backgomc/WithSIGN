@@ -285,7 +285,7 @@ const onDragEnd = (result, columns, setColumns) => {
 };
 
 const sortView = (
-  <ProCard style={{ width:'100%', background: '#FFFFFF'}} bodyStyle={{ marginLeft:'-10px', marginTop:'-12px'}} title="순차 지정" tooltip="같은 단계에 여러 명인 경우 동시 요청됨" extra={<Button icon={<PlusOutlined />} onClick={() => {
+  <ProCard style={{ width:'100%', background: '#FFFFFF'}} bodyStyle={{ marginLeft:'-10px', marginTop:'-12px'}} title="순차 지정" tooltip="같은 단계에 복수인 경우 동시에 요청" extra={<Button icon={<PlusOutlined />} onClick={() => {
     console.log('btn clicked');
     var lastKey = Object.keys(columns)[Object.keys(columns).length - 1];
     var newKey = Number(lastKey) + 1;
@@ -423,7 +423,7 @@ const sortView = (
           newItems.push(newItem)
         })
         if(newItems.length > 0) {
-          newColumns[i] = {name: "# " + (i + 1), items:newItems}
+          newColumns[i] = {name: (i + 1) + " 단계", items:newItems}
         }
       }
 
@@ -476,8 +476,9 @@ const sortView = (
       const key = temp._id
       const name = temp.name
       const JOB_TITLE = temp.JOB_TITLE
-
-      dispatch(addSignee({ key, name, JOB_TITLE }));
+      const DEPART_NAME = orgs.filter(org => org.DEPART_CODE == temp.DEPART_CODE)[0]?.DEPART_NAME
+      const order = 0
+      dispatch(addSignee({ key, name, JOB_TITLE, DEPART_NAME, order }));
 
     }
 
