@@ -3,7 +3,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import axios from 'axios';
 import { useIntl } from "react-intl";
 import { navigate, Link } from '@reach/router';
-import { Transfer, Tree, Input, Button, Space, message } from 'antd';
+import { Transfer, Tree, Input, Button, Card, Avatar, message } from 'antd';
 import { selectUser } from '../../app/infoSlice';
 import { addSignee, resetSignee, selectAssignees, selectSendType } from './AssignSlice';
 import StepWrite from '../Step/StepWrite'
@@ -14,10 +14,33 @@ import 'antd/dist/antd.css';
 import '@ant-design/pro-card/dist/card.css';
 import { selectPathname, setPathname } from '../../config/MenuSlice';
 
-import { ArrowLeftOutlined, ArrowRightOutlined } from '@ant-design/icons';
+import { ArrowLeftOutlined, ArrowRightOutlined, UserOutlined, PlusOutlined } from '@ant-design/icons';
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import { v4 as uuid } from 'uuid';
 
+
+import styled from 'styled-components';
+import { random } from 'lodash';
+const CardStyle = styled.div`
+  .ant-card-meta {
+    margin: -12px 0px 0px -8px;
+  }
+  .ant-card-meta-description {
+    margin: -10px 0px 0px 0px; //top bottom left right
+  }
+`;
+
+const GroupTitle = styled.div`
+  padding: 5px;
+  border: none;
+  background: #216da9;
+  color: #fff;
+  font-weight: bold;
+  align:center;
+`;
+
+
+const { Meta } = Card;
 const { Search } = Input;
 
 
@@ -39,33 +62,21 @@ const AssignSort = () => {
 
 
   const assignees = useSelector(selectAssignees);
-  const itemsFromBackend = assignees.map(user => {
+  const itemsSort = assignees.map(user => {
     return { id: user.key, name: user.name, JOB_TITLE: user.JOB_TITLE };
   });
-  
-  // const itemsFromBackend = [
-  //   { id: uuid(), content: "First task" },
-  //   { id: uuid(), content: "Second task" },
-  //   { id: uuid(), content: "Third task" },
-  //   { id: uuid(), content: "Fourth task" },
-  //   { id: uuid(), content: "Fifth task" }
-  // ];
-  
-  const columnsFromBackend = {
+    
+  const columnsSort = {
     [0]: {
-      name: "1단계",
-      items: itemsFromBackend
+      name: "순서 1",
+      items: itemsSort
     },
     [1]: {
-      name: "2단계",
+      name: "순서 2",
       items: []
     },
     [2]: {
-      name: "3단계",
-      items: []
-    },
-    [3]: {
-      name: "4단계",
+      name: "순서 3",
       items: []
     }
   };
@@ -113,6 +124,22 @@ const AssignSort = () => {
 
     console.log(columns);
 
+    // 유효성 체크 
+    var validation = true;
+    Object.entries(columns).map(([columnId, column], index) => {
+      if (index > 0) {
+        console.log(columns[columnId-1].items.length)
+        if(columns[columnId].items.length != 0 && columns[columnId-1].items.length == 0) {
+          validation = false;
+          message.warning('순서 ' + columnId + '에 1명 이상 등록이 필요합니다.');
+          return; 
+        }
+      }
+    });
+    if (!validation) return;
+
+    
+    // 데이터 갱신
     dispatch(resetSignee());
     Object.entries(columns).map(([columnId, column], index) => {
       console.log('columnId:', columnId)
@@ -136,7 +163,7 @@ const AssignSort = () => {
   useEffect(() => {
   }, []);
 
-  const [columns, setColumns] = useState(columnsFromBackend);
+  const [columns, setColumns] = useState(columnsSort);
 
   return (
   <PageContainer
@@ -159,7 +186,27 @@ const AssignSort = () => {
     footer={[
     ]}
   >
-    <div style={{ display: "flex", justifyContent: "center", height: "100%" }}>
+    {/* <div style={{ display: "flex", justifyContent: "center", height: "100%" }}> */}
+
+    <ProCard style={{ width:'295px', background: '#FFFFFF'}} bodyStyle={{ marginLeft:'-10px', marginTop:'-12px'}} title="순서 지정" extra={<Button icon={<PlusOutlined />} onClick={() => {
+      console.log('btn clicked');
+      var lastKey = Object.keys(columns)[Object.keys(columns).length - 1];
+      var newKey = Number(lastKey) + 1;
+      console.log("last key = " + lastKey);
+
+      if (newKey > 9) {
+        message.warning('최대 순서는 10개까지 가능합니다.');
+        return;
+      }
+
+      setColumns({
+        ...columns,
+        [newKey]: {
+          name: "순서 " + (newKey + 1),
+          items: []
+        }
+      });
+    }}></Button>}>
       <DragDropContext
         onDragEnd={result => onDragEnd(result, columns, setColumns)}
       >
@@ -168,13 +215,15 @@ const AssignSort = () => {
             <div
               style={{
                 display: "flex",
-                flexDirection: "column",
+                flexDirection: "row",
                 alignItems: "center"
               }}
               key={columnId}
             >
-              <h2>{column.name}</h2>
               <div style={{ margin: 8 }}>
+                {/* <Tag color='blue'>{column.name}</Tag> */}
+                
+                <GroupTitle>{column.name}</GroupTitle>
                 <Droppable droppableId={columnId} key={columnId}>
                   {(provided, snapshot) => {
                     return (
@@ -183,11 +232,11 @@ const AssignSort = () => {
                         ref={provided.innerRef}
                         style={{
                           background: snapshot.isDraggingOver
-                            ? "lightblue"
-                            : "lightgrey",
+                            ? "lightgrey"
+                            : "#cfdce6",
                           padding: 4,
                           width: 250,
-                          minHeight: 500
+                          minHeight: 77
                         }}
                       >
                         {column.items.map((item, index) => {
@@ -199,24 +248,31 @@ const AssignSort = () => {
                             >
                               {(provided, snapshot) => {
                                 return (
-                                  <div
-                                    ref={provided.innerRef}
-                                    {...provided.draggableProps}
-                                    {...provided.dragHandleProps}
-                                    style={{
+
+                                  <CardStyle>
+                                  <ProCard 
+                                  ref={provided.innerRef}
+                                  {...provided.draggableProps}
+                                  {...provided.dragHandleProps}
+                                  style={{
+                                      height: "67px",
                                       userSelect: "none",
-                                      padding: 16,
-                                      margin: "0 0 8px 0",
-                                      minHeight: "50px",
+                                      padding: 0,
+                                      margin: "0 0 5px 0",
                                       backgroundColor: snapshot.isDragging
-                                        ? "#263B4A"
-                                        : "#456C86",
+                                        ? "#FFFFFF"
+                                        : "#FFFFFF",
                                       color: "white",
                                       ...provided.draggableProps.style
                                     }}
                                   >
-                                    {item.name} {item.JOB_TITLE}
-                                  </div>
+                                  <Meta
+                                    avatar={item.thumbnail ?  <Avatar src={item.thumbnail} /> : <Avatar size={35} icon={<UserOutlined />} />}
+                                    title={item.name +' '+ item.JOB_TITLE}
+                                    description="팀명"
+                                  />
+                                </ProCard>
+                                </CardStyle>
                                 );
                               }}
                             </Draggable>
@@ -227,12 +283,15 @@ const AssignSort = () => {
                     );
                   }}
                 </Droppable>
+                
               </div>
             </div>
           );
         })}
       </DragDropContext>
-    </div>
+      </ProCard>
+      
+    {/* </div> */}
   </PageContainer>
   );
 };

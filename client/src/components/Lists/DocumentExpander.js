@@ -227,7 +227,7 @@ const DocumentExpander = (props) => {
             )
         } else {
             return (
-                <Timeline.Item dot={<ClockCircleOutlined className="timeline-clock-icon" />}>
+                <Timeline.Item dot={item.usersOrder?.filter(e => e.user == user._id).length > 0 ? <Tag color='blue'>{item.usersOrder.filter(e => e.user == user._id)[0]?.order + 1}</Tag> : <ClockCircleOutlined className="timeline-clock-icon" />}>
                     <font color='#1890FF'><b>{user.name} {user.JOB_TITLE}</b> {(item.observers && item.observers.includes(user._id)) ? '수신 필요' : '서명 필요'}</font>
                 </Timeline.Item>
             )

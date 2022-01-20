@@ -94,12 +94,12 @@ const ViewDocument = () => {
               Annotations.WidgetAnnotation.getCustomStyles = normalStyles;
 
               console.log("annot.fieldName:"+annot.fieldName)
-              // if (!annot.fieldName.startsWith(_id)) { 
-              //   annot.Hidden = true;
-              //   annot.Listable = false;
-              // }
+              if (!annot.fieldName.startsWith(_id)) { 
+                annot.Hidden = true;
+                annot.Listable = false;
+              }
               // 모든 입력 필드 숨기기
-              annot.Hidden = true;
+              // annot.Hidden = true;
             }
           });
         }

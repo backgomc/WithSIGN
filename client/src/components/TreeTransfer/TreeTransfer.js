@@ -204,7 +204,7 @@ class TreeTransfer extends Component {
         this.setState({
           unLoadAlert: false
         });
-        this.props.onChange && this.props.onChange(this.state.treeCheckedKeys);
+        this.props.onChange && this.props.onChange(this.state.treeCheckedKeys, 'right');
       }
     };
 
@@ -218,7 +218,7 @@ class TreeTransfer extends Component {
           listCheckedKeys: [],
           unLoadAlert: false
         });
-        this.props.onChange && this.props.onChange(this.state.listData.map(({key}) => key).filter(key => this.state.listCheckedKeys.indexOf(key) < 0));
+        this.props.onChange && this.props.onChange(this.state.listData.map(({key}) => key).filter(key => this.state.listCheckedKeys.indexOf(key) < 0), 'left');
       }
     };
 

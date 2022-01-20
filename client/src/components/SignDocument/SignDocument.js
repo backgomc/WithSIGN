@@ -130,7 +130,7 @@ const SignDocument = () => {
       instance.setLanguage('ko');
 
       // select only the insert group
-      instance.disableElements(['header']);
+      // instance.disableElements(['header']);
       instance.setToolbarGroup('toolbarGroup-View');
       CoreControls.setCustomFontURL("/webfonts/");
 
@@ -149,17 +149,26 @@ const SignDocument = () => {
 
       const normalStyles = (widget) => {
         if (widget instanceof Annotations.TextWidgetAnnotation) {
-          return {
-            border: '1px solid #a5c7ff',
-            'background-color': '#a5c7ff',
-            color: 'black',
-          };
+
+          if (widget.fieldName.startsWith(_id)) { 
+            return {
+              border: '1px solid #a5c7ff',
+              'background-color': '#a5c7ff',
+              color: 'black',
+            };
+          } else {
+            return {
+              color: 'black',
+            };
+          }
+
         } else if (widget instanceof Annotations.SignatureWidgetAnnotation) {
           return {
             border: '1px solid #a5c7ff',
           };
         }
       };
+
 
       annotManager.on('annotationChanged', (annotations, action, { imported }) => {
         console.log("annotationChanged called(action):"+ action)
@@ -179,6 +188,11 @@ const SignDocument = () => {
             if (annot instanceof Annotations.WidgetAnnotation) {
               Annotations.WidgetAnnotation.getCustomStyles = normalStyles;
 
+              //TODO
+              // 1. [완료]다른 사람의 텍스트가 안보이는 것 수정 
+              // 2. [완료]다른 사람의 텍스트는 스타일 변경 
+              // 3. [진행중]다른 사람의 텍스트 및 사인은 수정 안되게 하기  
+
               console.log("annot.fieldName:"+annot.fieldName)
 
               if (docType === 'B') {
@@ -187,9 +201,23 @@ const SignDocument = () => {
                   annot.Listable = false;
                 }
               } else {
+                // if (!annot.fieldName.startsWith(_id)) { 
+                //   annot.Hidden = true;
+                //   annot.Listable = false;
+                // }
+
                 if (!annot.fieldName.startsWith(_id)) { 
-                  annot.Hidden = true;
-                  annot.Listable = false;
+
+                  // TODO
+                  // 3. [진행중]다른 사람의 텍스트 및 사인은 수정 안되게 하기 | 아래 메서드 안먹힘
+                  // annot.disabled = true;
+                  
+                  console.log('readonly called')
+
+                  if (!annot.fieldName.includes('TEXT')) {  // 다른 사람이 입력한 텍스트는 보여야 됨
+                    annot.Hidden = true;
+                    annot.Listable = false;
+                  }
                 }
               }
 

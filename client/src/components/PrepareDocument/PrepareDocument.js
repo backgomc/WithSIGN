@@ -12,7 +12,7 @@ import { navigate } from '@reach/router';
 //   Button,
 //   SelectList,
 // } from 'gestalt';
-import { Upload, message, Badge, Button, Row, Col, List, Card, Checkbox, Tooltip } from 'antd';
+import { Upload, message, Badge, Button, Row, Col, List, Card, Checkbox, Tooltip, Tag } from 'antd';
 import { InboxOutlined, HighlightOutlined, PlusOutlined, ArrowLeftOutlined, SendOutlined } from '@ant-design/icons';
 import { selectDocumentTempPath, resetAssignAll, selectAssignees, resetSignee, selectDocumentFile, selectDocumentTitle, resetDocumentFile, resetDocumentTitle, selectTemplate, resetTemplate, selectDocumentType, resetDocumentType, selectTemplateTitle, selectSendType, selectOrderType } from '../Assign/AssignSlice';
 import { selectUser } from '../../app/infoSlice';
@@ -58,7 +58,7 @@ const PrepareDocument = () => {
   const template = useSelector(selectTemplate);
   const templateTitle = useSelector(selectTemplateTitle);
   const sendType = useSelector(selectSendType);
-  const orderType = useSelector(selectOrderType);
+  // const orderType = useSelector(selectOrderType);
   const documentTempPath = useSelector(selectDocumentTempPath);
 
   const assignees = useSelector(selectAssignees);
@@ -726,27 +726,41 @@ const PrepareDocument = () => {
     if (sendType === 'G') { // 일반
 
       //users 배열 위치 조정: observer 가 제일 아래로 가도록 한다.
-      observers.map(observer => {
-        if (users.includes(observer)) {
-          const idx = users.indexOf(observer)
-          const item = users.splice(idx, 1) 
-          users.splice(users.length, 0, item[0])
+      // observers.map(observer => {
+      //   if (users.includes(observer)) {
+      //     const idx = users.indexOf(observer)
+      //     const item = users.splice(idx, 1) 
+      //     users.splice(users.length, 0, item[0])
 
-          console.log('result:'+users)
-        }
-      })
+      //     console.log('result:'+users)
+      //   }
+      // })
 
       // 순차 전송을 위해 필드 추가
       var usersOrder = [];
       var usersTodo = [];
-      users.map(user => {
-        if (observers.includes(user)) {
-          usersOrder.push({'user': user, 'order': 1})
-        } else {
-          usersOrder.push({'user': user, 'order': 0})
-          usersTodo.push(user)
+      // SUSIN: 수신 기능만 활성화
+      // users.map(user => {
+      //   if (observers.includes(user)) {
+      //     usersOrder.push({'user': user, 'order': 1})
+      //   } else {
+      //     usersOrder.push({'user': user, 'order': 0})
+      //     usersTodo.push(user)
+      //   }
+      // })
+
+      // SUNCHA: 순차 기능 활성화 
+      var orderType = 'A';
+      assignees.map(user => {
+        usersOrder.push({'user': user.key, 'order': user.order})
+        if (user.order == 0) {
+          usersTodo.push(user.key)
+        }
+        if (user.order > 0) {
+          orderType = 'S';
         }
       })
+
 
       let body = {
         user: _id,
@@ -762,7 +776,8 @@ const PrepareDocument = () => {
         thumbnail: thumbnailUrl,
         pageCount: pageCount,
         observers: observers,
-        orderType: observers.length > 0 ? 'S':'A',
+        // orderType: observers.length > 0 ? 'S':'A', // SUSIN: 수신 기능만 활성화
+        orderType: orderType, //SUNCHA: 순차 기능 활성화 
         usersOrder: usersOrder,
         usersTodo: usersTodo
       }
@@ -922,7 +937,8 @@ const PrepareDocument = () => {
               dataSource={assignees}
               renderItem={item =>
                 <List.Item key={item.key}>
-                  <Card size="small" type="inner" title={item.JOB_TITLE ? item.name+' '+item.JOB_TITLE : item.name} style={{ width: '220px' }} extra={
+                  {/* <Card size="small" type="inner" title={item.JOB_TITLE ? item.name+' '+item.JOB_TITLE : item.name} style={{ width: '220px' }} extra={ */}  
+                  <Card size="small" type="inner" title={<><Tag color='blue'>{Number(item.order)+1}</Tag> {item.JOB_TITLE ? item.name+' '+item.JOB_TITLE : item.name} </>} style={{ width: '240px' }} extra={
                     <Tooltip placement="top" title={'문서에 서명 없이 문서 수신만 하는 경우'}>
                     <Checkbox onChange={e => {
 
@@ -967,7 +983,7 @@ const PrepareDocument = () => {
                         setBoxData(newBoxData)
 
                       }
-                    }}>수신자로 지정</Checkbox></Tooltip>
+                    }}>수신자 지정</Checkbox></Tooltip>
                   }>
                     <p>
                     <Tooltip placement="right" title={'참여자가 사인을 입력할 위치에 넣어주세요.'}>
