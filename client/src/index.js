@@ -13,6 +13,12 @@ import { Provider } from 'react-redux';
 import Intl from './components/Intl';
 // import { BrowserRouter } from 'react-router-dom';
 
+const consoleError = console.error.bind(console);
+console.error = (errObj, ...args) => {
+  if (args.includes('findDOMNode')) return;
+  consoleError(errObj, ...args);
+};
+
 ReactDOM.render(
   <React.StrictMode>
     <Provider store={store}>

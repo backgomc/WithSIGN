@@ -1,10 +1,11 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { useSelector, useDispatch, useStore } from 'react-redux';
 import SignaturePad from 'react-signature-canvas';
+import { v4 as uuidv4 } from 'uuid';
 import axios from 'axios';
 import { navigate } from '@reach/router';
 // import { Box, Column, Heading, Row, Stack, Button } from 'gestalt';
-import { Input, Row, Col, Modal, Button } from 'antd';
+import { Input, Row, Col, Modal, Checkbox, Button } from 'antd';
 import { selectDocToSign } from './SignDocumentSlice';
 import { selectUser } from '../../app/infoSlice';
 import { mergeAnnotations } from '../MergeAnnotations/MergeAnnotations';
@@ -12,14 +13,14 @@ import WebViewer from '@pdftron/webviewer';
 // import 'gestalt/dist/gestalt.css';
 import './SignDocument.css';
 import { useIntl } from "react-intl";
-import RcResizeObserver from 'rc-resize-observer';
+// import RcResizeObserver from 'rc-resize-observer';
 import { PageContainer } from '@ant-design/pro-layout';
 import ProCard, { CheckCard } from '@ant-design/pro-card';
 import 'antd/dist/antd.css';
 import '@ant-design/pro-card/dist/card.css';
-import { ExclamationCircleOutlined } from '@ant-design/icons';
+// import { ExclamationCircleOutlined } from '@ant-design/icons';
 import { LICENSE_KEY } from '../../config/Config';
-import Item from 'antd/lib/list/Item';
+// import Item from 'antd/lib/list/Item';
 
 const { confirm } = Modal;
 const { TextArea } = Input;
@@ -39,6 +40,8 @@ const SignDocument = () => {
   const [signList, setSignList] = useState([]);
   const [signData, setSignData] = useState('');
   const [signModal, setSignModal] = useState(false);
+  const [signCount, setSignCount] = useState(0);
+  const [allCheck, setAllCheck] = useState(false);
   const [pageCount, setPageCount] = useState(0);
   const [textSign, setTextSign] = useState(formatMessage({id: 'sign.complete'}))
 
@@ -55,7 +58,13 @@ const SignDocument = () => {
   const cancelMessage = useRef({});
 
   const sigCanvas = useRef({});
-  const clear = () => sigCanvas.current.clear();
+
+  const clear = () => {
+    sigCanvas.current.clear();
+    let chkObj = document.getElementsByClassName('ant-pro-checkcard-checked'); // 선택한 서명
+    if (chkObj && chkObj[0]) chkObj[0].click();
+    setAllCheck(false);
+  }
   
   const handleOk = async () => {
     if (!sigCanvas.current.isEmpty()) {
@@ -172,12 +181,18 @@ const SignDocument = () => {
         }
       };
 
-
       annotManager.on('annotationChanged', (annotations, action, { imported }) => {
         console.log("annotationChanged called(action):"+ action)
 
         if (!imported && action === 'add') {  // 서명 및 입력값이 추가 된 경우
-          setDisableNext(false)
+          const annotList = annotManager.getAnnotationsList();
+          let widgetCount = 0;
+          let createCount = 0;
+          annotList.forEach(function(annot) {
+            if (annot instanceof Annotations.SignatureWidgetAnnotation && annot.fieldName.startsWith(_id)) widgetCount++;
+            if (annot.ToolName === 'AnnotationCreateSignature') createCount++;
+          });
+          if (widgetCount === 0 || widgetCount > 0 && widgetCount === createCount) setDisableNext(false);
         }
 
         if (!imported && action === 'delete') {  // 서명 및 입력값이 삭제 된 경우
@@ -188,6 +203,10 @@ const SignDocument = () => {
 
         if (imported && (action === 'add' || action === 'modify')) {
           annotations.forEach(function(annot) {
+            // 서명 참여자는 모든 Annotation 이동, 삭제 불가
+            annot.NoMove = true;
+            annot.NoDelete = true;
+            annot.ReadOnly = true;
             if (annot instanceof Annotations.WidgetAnnotation) {
               Annotations.WidgetAnnotation.getCustomStyles = normalStyles;
 
@@ -209,17 +228,20 @@ const SignDocument = () => {
                 //   annot.Listable = false;
                 // }
 
-                if (!annot.fieldName.startsWith(_id)) { 
+                if (!annot.fieldName.startsWith(_id)) {
 
                   // TODO
                   // 3. [진행중]다른 사람의 텍스트 및 사인은 수정 안되게 하기 | 아래 메서드 안먹힘
                   // annot.disabled = true;
                   
-                  console.log('readonly called')
+                  console.log('readonly called');
 
-                  if (!annot.fieldName.includes('TEXT')) {  // 다른 사람이 입력한 텍스트는 보여야 됨
+                  if (annot.fieldName.includes('SIGN')) {  // 다른 사람이 입력한 텍스트는 보여야 됨
                     annot.Hidden = true;
                     annot.Listable = false;
+                  }
+                  if (annot.fieldName.includes('TEXT')) {
+                    annot.fieldFlags.set('ReadOnly', true);
                   }
                 }
               }
@@ -319,7 +341,7 @@ const SignDocument = () => {
   }
 
   const signCard = (sign) => {
-    return <CheckCard style={{width:'auto', height: 'auto'}} value={sign.signData} avatar={sign.signData} className='customSignCardCSS'/>
+    return <CheckCard key={uuidv4()} style={{width:'auto', height: 'auto'}} value={sign.signData} avatar={sign.signData} className="customSignCardCSS"/>
   }
   
   const nextField = () => {
@@ -494,12 +516,12 @@ const SignDocument = () => {
       ]}
       loading={loading}
     >
-      <RcResizeObserver
+      {/* <RcResizeObserver
         key="resize-observer"
         onResize={(offset) => {
           setResponsive(offset.width < 596);
         }}
-      >
+      > */}
         <Row gutter={[24, 24]}>
           <Col span={24}>
           <div className="webviewer" ref={viewer}></div>
@@ -533,13 +555,15 @@ const SignDocument = () => {
           onOk={handleOk}
           onCancel={handleCancel}
           footer={[
+            // <Checkbox key={uuidv4()} checked={allCheck} onChange={e => {setAllCheck(e.target.checked);}} style={{float:'left'}}>전체 서명</Checkbox>,
             <Button key="back" onClick={clear}>지우기</Button>,
             <Button key="submit" type="primary" loading={loading} onClick={handleOk}>확인</Button>
           ]}
           bodyStyle={{padding: '0px 24px'}}
         >
-          <ProCard>
+          <ProCard bodyStyle={{padding: '20px 0px'}}>
             <SignaturePad penColor='black' ref={sigCanvas} canvasProps={{className: 'signCanvas'}} />
+            <div class="signBackground"><div class="signHereText">직접서명 또는 서명선택</div></div>
           </ProCard>
           <CheckCard.Group style={{width: '100%', margin: '0px', padding: '0px', whiteSpace: 'nowrap', overflow: 'auto', textAlign: 'center'}}
             onChange={(value) => {
@@ -551,7 +575,7 @@ const SignDocument = () => {
           </CheckCard.Group>
         </Modal>
 
-      </RcResizeObserver>
+      {/* </RcResizeObserver> */}
     </PageContainer> 
 
 

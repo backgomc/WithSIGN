@@ -3,9 +3,29 @@
 }
 
 .signCanvas {
-  border: 1px solid #dedede;
+  position: absolute;
   width: 100%;
   min-height: 200px;
+  z-index: 1;
+  cursor: crosshair;
+}
+
+.signBackground {
+  position: relative;
+  min-height: 200px;
+  background: #f1f3f5;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 15px;
+}
+
+.signHereText {
+  color: #86868686;
+}
+
+.customSignCardCSS {
+  border-radius: 7px;
 }
 
 .customSignCardCSS img {
