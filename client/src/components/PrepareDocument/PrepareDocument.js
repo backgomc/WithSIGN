@@ -271,10 +271,10 @@ const PrepareDocument = () => {
         const { Annotations, docViewer, Font } = instance;
         console.log(annotations[0].Subject, annotations[0].ToolName, annotations[0].TextAlign) 
        
-        if (annotations[0].ToolName == 'AnnotationCreateFreeText2' && action == 'add') {
+        if (annotations[0].ToolName && annotations[0].ToolName.startsWith('AnnotationCreateFreeText') && action === 'add') {
           annotations[0].TextAlign = 'center'
           annotations[0].setPadding(new Annotations.Rect(0, 0, 0, 2)); // left bottom right top 
-          annotations[0].Font = 'NanumGothic';
+          annotations[0].Font = 'monospace';
         }
         
 

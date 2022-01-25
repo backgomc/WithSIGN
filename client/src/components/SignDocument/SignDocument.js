@@ -425,7 +425,13 @@ const SignDocument = () => {
     //     }
     //   })
     // )
-    console.log('annotsToDelete:'+annotsToDelete)
+    const annotList = annotManager.getAnnotationsList();
+    annotList.forEach(function(annot) { // freetext 제외 처리 위한 설정
+      annot.NoMove = false;
+      annot.NoDelete = false;
+      annot.ReadOnly = false;
+    });
+    console.log('annotsToDelete:'+annotsToDelete);
     annotManager.deleteAnnotations(annotsToDelete, null, true); //다건 처리가 오류나서 일단 단건 처리함
 
     // field: true 를 해줘야 텍스트 값도 저장됨

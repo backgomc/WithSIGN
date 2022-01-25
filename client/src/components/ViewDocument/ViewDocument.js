@@ -90,16 +90,20 @@ const ViewDocument = () => {
         if (imported && action === 'add') {
           annotations.forEach(function(annot) {
             console.log('annot', annot)
+            annot.NoMove = true;
+            annot.NoDelete = true;
+            annot.ReadOnly = true;
             if (annot instanceof Annotations.WidgetAnnotation) {
               Annotations.WidgetAnnotation.getCustomStyles = normalStyles;
 
-              console.log("annot.fieldName:"+annot.fieldName)
-              if (!annot.fieldName.startsWith(_id)) { 
-                annot.Hidden = true;
-                annot.Listable = false;
-              }
+              console.log('annot.fieldName:'+annot.fieldName);
+              // if (!annot.fieldName.startsWith(_id)) { 
+                // annot.Hidden = true;
+                // annot.Listable = false;
+              // }
               // 모든 입력 필드 숨기기
               // annot.Hidden = true;
+              annot.fieldFlags.set('ReadOnly', true);
             }
           });
         }
