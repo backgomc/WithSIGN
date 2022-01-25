@@ -162,7 +162,7 @@ const SignDocument = () => {
       const normalStyles = (widget) => {
         if (widget instanceof Annotations.TextWidgetAnnotation) {
 
-          if (widget.fieldName.startsWith(_id)) { 
+          if (widget.fieldName.startsWith(_id) || widget.fieldName.startsWith('bulk')) { 
             return {
               border: '1px solid #a5c7ff',
               'background-color': '#a5c7ff',

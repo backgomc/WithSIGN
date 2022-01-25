@@ -43,7 +43,13 @@ const ViewDocument = () => {
         disabledElements: [
           'ribbons',
           'toggleNotesButton',
-          'contextMenuPopup',
+          // 'viewControlsButton',
+          // 'panToolButton',
+          // 'selectToolButton', 
+          'searchButton',
+          'menuButton',
+          'commentsButton',
+          'contextMenuPopup'
         ],
       },
       viewer.current,
