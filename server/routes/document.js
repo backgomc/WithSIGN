@@ -150,17 +150,32 @@ router.post('/updateDocumentToSign', (req, res) => {
                   }
               });
               
-              // 문서 완료 시 요청자에게 쪽지 보내기 : 일반 전송만
+              // 문서 완료 시 요청자에게 쪽지 보내기 : 일반 전송만 (대량 전송 제외)
               if (document.docType == 'G') {
-                console.log('쪽지 전송 OK: 일반전송')
-                restful.callNotify(null, document.user,'[WithSIGN] 서명 완료 알림', '['+document.docTitle+']' + ' 의 서명이 완료되었습니다.');
+                console.log('쪽지 전송 OK: 완료')
+                restful.callNotify(null, document.user,'[WithSIGN] 서명(수신) 완료 알림', '['+document.docTitle+']' + ' 의 서명(수신)이 완료되었습니다.');
               } 
 
             } else {
               if (document.orderType == 'S') {
+                
                 if (usersTodo?.length > 0) {
+
+                  // 22.02.07: 동차에 서명할 사람이 여러 명인 경우 최초에만 메시지 발송하기
+                  var arr = document.usersOrder?.filter(e => e.user == usersTodo[0])
+                  if (arr?.length > 0) {
+                    var sameOrderArr = document.usersOrder?.filter(e => e.order == arr[0].order)
+                    if (sameOrderArr?.length == usersTodo?.length) { // 같은 차례에 처음 메시지를 보낸다고 판단 => 메시지 발송
+                      // 메시지 발송하기 
+                      console.log('쪽지 전송 OK: 순차 전송')
+                      restful.callNotify(document.user, usersTodo,'[WithSIGN] 서명(수신) 요청 알림', '['+document.docTitle+']' + ' 서명(수신) 요청 건이 있습니다.');
+                    } else {
+                      console.log('쪽지 전송 NO: 이미 쪽지 보냄')
+                    }
+                  }
+
                   // 쪽지 보내기 (순차 발송 - 서명 대상자에게)
-                  restful.callNotify(document.user, usersTodo,'[WithSIGN] 서명(수신) 요청 알림', '['+document.docTitle+']' + ' 서명(수신) 요청 건이 있습니다.');
+                  // restful.callNotify(document.user, usersTodo,'[WithSIGN] 서명(수신) 요청 알림', '['+document.docTitle+']' + ' 서명(수신) 요청 건이 있습니다.');
                 }
               }
             }
