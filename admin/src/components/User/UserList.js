@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { v4 as uuidv4 } from "uuid";
+import { v4 as uuidv4 } from 'uuid';
 import { useIntl } from 'react-intl';
 import Highlighter from 'react-highlight-words';
 import { Table, Input, Space, Button, Modal, Popconfirm } from 'antd';

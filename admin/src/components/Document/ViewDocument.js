@@ -31,9 +31,9 @@ const ViewDocument = ({location}) => {
       disabledElements: [
         'ribbons',
         'toggleNotesButton',
-        'viewControlsButton',
-        'panToolButton',
-        'selectToolButton', 
+        // 'viewControlsButton',
+        // 'panToolButton',
+        // 'selectToolButton', 
         'searchButton',
         'menuButton',
         'commentsButton',
@@ -42,11 +42,27 @@ const ViewDocument = ({location}) => {
     },
     viewer.current
     ).then(async instance => {
-      const { annotManager, CoreControls } = instance;
+      const { annotManager, Annotations, CoreControls } = instance;
 
       instance.setToolbarGroup('toolbarGroup-View');
       CoreControls.setCustomFontURL('/webfonts/');
       annotManager.setReadOnly(true);
+
+      annotManager.on('annotationChanged', (annotations, action, { imported }) => {
+        if (imported) {
+          annotations.forEach(function(annot) {
+            annot.NoMove = true;
+            annot.NoDelete = true;
+            annot.ReadOnly = true;
+            if (annot instanceof Annotations.WidgetAnnotation) {
+              annot.fieldFlags.set('ReadOnly', true);
+              if (annot.fieldName.includes('SIGN')) { // SIGN annotation 숨김처리
+                annot.Hidden = true;
+              }
+            }
+          });
+        }
+      });
 
       const URL = '/' + docRef;
       console.log('URL:'+URL);

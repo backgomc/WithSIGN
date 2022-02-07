@@ -141,7 +141,7 @@ const App = () => {
           <Footer />
         )}
       >
-        <Router>
+        <Router primary={false}>
           <DocumentList path="/" default />
           <UserList path="/userList" />
           <BoardList path="/boardList" />
@@ -159,7 +159,7 @@ const App = () => {
     </div>
   ) : (
     <div>
-      <Router>
+      <Router primary={false}>
         <Login path="/login" />
         <Blank path="/" default />
       </Router>

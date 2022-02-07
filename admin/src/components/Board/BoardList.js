@@ -14,7 +14,7 @@ const { Option } = Select;
 const BoardList = () => {
 
   const { formatMessage } = useIntl();
-  const [pagination, setPagination] = useState({current:1, pageSize:2, showSizeChanger: true});
+  const [pagination, setPagination] = useState({current:1, pageSize:10, showSizeChanger: true});
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState([]);
 
@@ -136,7 +136,7 @@ const BoardList = () => {
       pagination
     });
     return () => {
-      setPagination({current:1, pageSize:2, showSizeChanger: true});
+      setPagination({current:1, pageSize:10, showSizeChanger: true});
       setLoading(false);
       setData([]);
     } // cleanup
