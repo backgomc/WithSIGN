@@ -9,7 +9,7 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const { makeFolder, generateRandomName } = require('../common/utils');
-
+const Magic = require('mmmagic').Magic;
 const restful = require('../common/restful');
 
 // const upload = multer({ dest: 'storage/docToSign/' })
@@ -75,12 +75,15 @@ const uploadTemp = multer({ dest: config.storageDIR + 'temp/' })
 // 신규 문서 등록
 router.post('/upload', upload.single('file'), async (req, res) => {
     if (req.file) {
-        console.log(await restful.callDRMUnpackaging(req.file.destination, req.file.originalname));
-        return res.json({ success: true, file: req.file })
+        await restful.callDRMUnpackaging(req.file.destination, req.file.originalname);
+        new Magic().detectFile(req.file.destination+req.file.originalname, function(err, result) {
+            console.log('File Content Type : ' + result);
+            if (err || !result.includes('PDF')) return res.json({ success: false, message: 'file upload failed'});
+            return res.json({ success: true, file: req.file });
+        });
     } else {
-        return res.json({ success: false, message: "file upload failed"})
+        return res.json({ success: false, message: 'file upload failed'});
     }
-    
 })
 
 // bulk 파일 복사   
