@@ -662,7 +662,7 @@ const PrepareDocument = () => {
     // console.log("path:"+path)
 
     const filename = `${_id}${Date.now()}.pdf`
-    const path = `documents/${getToday()}`
+    const path = `documents/${getToday()}/`
 
 
     // 1. 파일 저장
