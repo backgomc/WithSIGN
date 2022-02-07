@@ -435,8 +435,14 @@ router.get('/:class/:docId', async (req, res) => {
             // console.log(copyPath);
             if (fs.existsSync(fileInfo)) { // 파일 존재 체크
                 await restful.callDRMPackaging(filePath, fileName, copyPath);
-                var filestream = fs.createReadStream(copyPath);
-                filestream.pipe(res);
+
+                if (fs.existsSync(copyPath)) { // 비동기 메서드는 try/catch 안먹히므로 파일 선체크 로직 추가
+                    var filestream = fs.createReadStream(copyPath);
+                    filestream.pipe(res);
+                } else {
+                    return res.json({ success: false, message: 'file download failed!' });
+                }
+
           } else {
             return res.json({ success: false, message: 'file download failed!' });
           }
