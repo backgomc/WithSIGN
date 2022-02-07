@@ -110,8 +110,9 @@ function ResetPassword({location}) {
           rules={[
             {
               required: true,
-              min: 5,
-              message: '새 비밀번호를 입력하세요 !',
+              min: 8,
+              message: '비밀번호는 영문자, 숫자, 특수문자를 혼합하여 8자리 이상으로 입력하세요.',
+              pattern: /^(?=.*[A-Za-z])(?=.*\d)(?=.*[!-/:-@\[-`{-~])[A-Za-z\d!-/:-@\[-`{-~]{8,}$/
             },
           ]}
         /> 
@@ -128,8 +129,9 @@ function ResetPassword({location}) {
           rules={[
             {
               required: true,
-              min: 5,
-              // message: '새 비밀번호를 다시 입력하세요 !',
+              min: 8,
+              message: '',
+              pattern: /^(?=.*[A-Za-z])(?=.*\d)(?=.*[!-/:-@\[-`{-~])[A-Za-z\d!-/:-@\[-`{-~]{8,}$/
             },
             ({ getFieldValue }) => ({
               validator(_, value) {

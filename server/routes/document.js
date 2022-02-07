@@ -12,8 +12,13 @@ const restful = require('../common/restful');
 router.post('/addDocumentToSign', (req, res) => {
 
   if (!req.body.user || !req.body.docRef) {
-    return res.json({ success: false, message: "input value not enough!" })
-  } 
+    return res.json({ success: false, message: 'input value not enough!' });
+  }
+
+  // 대량 전송외 참여자에 본인만 있을 경우 제한
+  // if (!req.body.docType !== 'B' && req.body.users.length === 1 && req.body.users[0] === req.body.user) {
+  //   return res.json({ success: false, message: 'input value not enough!' });
+  // }
 
   const document = new Document(req.body)
 

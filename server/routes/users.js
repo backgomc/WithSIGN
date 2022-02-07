@@ -87,7 +87,7 @@ router.post('/login', (req, res) => {
 
         console.log('user:'+user)
         console.log(typeof user.terms)
-        if (!user.terms || !user.privacy)
+        if (!user.terms || !user.privacy || req.body.SABUN === req.body.password)
           return res.json({ success: false, user: user._id, message: "약관 동의가 필요합니다." })
   
         //비밀번호 까지 맞다면 토큰을 생성하기.

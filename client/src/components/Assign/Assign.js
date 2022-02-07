@@ -405,10 +405,10 @@ const sortView = (
       });
       setTarget(targets)
 
-      if(assignees.length > 0) {
-        setDisableNext(false)
+      if (assignees.length > 0) {// && !(assignees.length === 1 && assignees[0].key === _id)) { // 참여자에 본인만 있을 경우 제한
+        setDisableNext(false);
       } else {
-        setDisableNext(true)
+        setDisableNext(true);
       }
 
 
@@ -482,7 +482,7 @@ const sortView = (
 
     }
 
-    if(result.length > 0) {
+    if(result.length > 0) {//  && !(result.length === 1 && result[0] === _id)) { // 참여자에 본인만 있을 경우 제한
       setDisableNext(false)
     } else {
       setDisableNext(true)

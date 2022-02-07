@@ -110,6 +110,9 @@ const ViewDocument = () => {
               // 모든 입력 필드 숨기기
               // annot.Hidden = true;
               annot.fieldFlags.set('ReadOnly', true);
+              if (annot.fieldName.includes('SIGN')) { // SIGN annotation 숨김처리
+                annot.Hidden = true;
+              }
             }
           });
         }
