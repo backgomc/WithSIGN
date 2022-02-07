@@ -33,6 +33,7 @@ import Test from './components/Test/Test';
 import Test2 from './components/Test/Test2';
 import Login from './components/Login/Login';
 import Agreement from './components/Login/Agreement';
+import InitPassword from './components/Login/InitPassword';
 import ResetPassword from './components/Login/ResetPassword';
 import Register from './components/Register/Register';
 import Setting from './components/Setting/Setting';
@@ -55,12 +56,10 @@ import LogoText from './assets/images/logo_withsign2.png'
 import Manual from './components/Customer/Manual';
 import ManualModify from './components/Customer/ManualModify';
 import PrepareResult from './components/PrepareDocument/PrepareResult';
-import {
-  FileAddOutlined
-} from '@ant-design/icons';
+import { FileAddOutlined } from '@ant-design/icons';
 
 const App = () => {
-
+  console.log('start');
   const rqUrl = window.location.href.split('?')[1];
   const param = new URLSearchParams(rqUrl);
   const token = param.get('t');
@@ -193,7 +192,7 @@ const App = () => {
         />
       )}     
   >
-    <Router>
+    <Router primary={false}>
       <Home path="/" default />
       <Assign path="/assign" />
       <AssignSort path="/assignSort" />
@@ -235,12 +234,13 @@ const App = () => {
   ) : (
     <div>
       {/* <Header /> */}
-      <Router>
+      <Router primary={false}>
         <Login path="/login" />
         {/* <Register path="register" /> */}
+        <InitPassword path="initPassword" />
         <ResetPassword path="resetPassword" />
         <Agreement path="/agreement" />
-        <defaultPage path="/"/>
+        {/* <defaultPage path="/"/> */}
       </Router>
     </div>
   );
