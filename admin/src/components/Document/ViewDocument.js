@@ -35,7 +35,7 @@ const ViewDocument = ({location}) => {
         // 'panToolButton',
         // 'selectToolButton', 
         'searchButton',
-        'menuButton',
+        // 'menuButton',
         'commentsButton',
         'contextMenuPopup'
       ]
@@ -66,7 +66,7 @@ const ViewDocument = ({location}) => {
 
       const URL = '/' + docRef;
       console.log('URL:'+URL);
-      instance.docViewer.loadDocument(URL);
+      instance.docViewer.loadDocument(URL, { filename: docTitle+'.pdf' });
     });
     return () => {
       setLoadingDownload([]);

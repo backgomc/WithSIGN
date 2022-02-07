@@ -47,7 +47,7 @@ const ViewDocument = () => {
           // 'panToolButton',
           // 'selectToolButton', 
           'searchButton',
-          'menuButton',
+          // 'menuButton',
           'commentsButton',
           'contextMenuPopup'
         ],
@@ -74,7 +74,7 @@ const ViewDocument = () => {
       // DISTO
       const URL = '/' + docRef;
       console.log("URL:"+URL);      
-      instance.docViewer.loadDocument(URL);
+      instance.docViewer.loadDocument(URL, { filename: docTitle+'.pdf' });
 
       const normalStyles = (widget) => {
         if (widget instanceof Annotations.TextWidgetAnnotation) {
