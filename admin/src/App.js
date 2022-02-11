@@ -22,7 +22,6 @@ import UploadTemplate from './components/Template/UploadTemplate';
 import Footer from './components/Footer/Footer';
 import Header from './components/Header/Header';
 import Login from './components/Login/Login';
-import Blank from './components/Blank/Blank';
 import '@ant-design/pro-layout/dist/layout.css';
 import 'antd/dist/antd.css';
 import './App.css';
@@ -166,5 +165,7 @@ const App = () => {
     </div>
   );
 }
+
+const Blank = () => <div></div>
 
 export default App;
