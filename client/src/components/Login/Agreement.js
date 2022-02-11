@@ -19,7 +19,7 @@ import 'antd/dist/antd.css';
 function Agreement({location}) {
     const dispatch = useDispatch();
     const { formatMessage } = useIntl();
-    const user = location.state.user;
+    const user = location.state ? location.state.user : '';
 
     const [terms, setTerms] = useState();
     const [privacy, setPrivacy] = useState();
@@ -222,7 +222,7 @@ function Agreement({location}) {
       </div>
     )
 
-    return (
+    return user ? (
         <>
         <Header></Header>
         <br></br><br></br><br></br>
@@ -262,6 +262,8 @@ function Agreement({location}) {
           WITH SIGN © NH INFORMATION SYSTEM 2021
         </div>
       </>
+    ) : (
+      <></>
     )
 }
 

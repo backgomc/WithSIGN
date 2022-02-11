@@ -1,31 +1,46 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import axios from 'axios';
 import Header from './Header';
-import { useDispatch } from 'react-redux';
 import { navigate, Link } from '@reach/router';
-import { Checkbox, Button, Form, Input, Card, Modal } from 'antd';
-import { LockOutlined, UserOutlined } from '@ant-design/icons';
-import ProForm, { ProFormText, ProFormSelect, ProFormDependency } from '@ant-design/pro-form';
+import { Button, Form, Input, Card } from 'antd';
+import { LockOutlined } from '@ant-design/icons';
 import styles from './login.module.css';
-import { useIntl } from "react-intl";
-import { PageContainer } from '@ant-design/pro-layout';
 import 'antd/dist/antd.css';
-import '@ant-design/pro-form/dist/form.css';
-import '@ant-design/pro-card/dist/card.css';
 
+const { Search } = Input;
 
-function InitPassword({location}) {
-    const dispatch = useDispatch();
-    const { formatMessage } = useIntl();
-    const user = location.state.user ? location.state.user : '';
-    // const user = '111';
-    const [formPassword] = Form.useForm();
+function InitPassword() {
 
-    useEffect(() => {
-    }, []);
+  const [formPassword] = Form.useForm();
+  const [form] = Form.useForm();
+  const [formLayout, setFormLayout] = useState('horizontal');
 
+  const onFormLayoutChange = ({ layout }) => {
+    setFormLayout(layout);
+  };  
 
-    const validateMessages = {
+  const formItemLayout =
+  formLayout === 'horizontal'
+    ? {
+        labelCol: {
+          span: 4,
+        },
+        wrapperCol: {
+          span: 14,
+        },
+      }
+    : null;
+const buttonItemLayout =
+  formLayout === 'horizontal'
+    ? {
+        wrapperCol: {
+          span: 14,
+          offset: 4,
+        },
+      }
+    : null;
+
+  const validateMessages = {
       required: '${label} 을 입력하세요!',
       types: {
         email: '${label}이 유효하지 않습니다!',
@@ -41,7 +56,7 @@ function InitPassword({location}) {
   
       // 비밀번호 변경 API Call
       let param = {
-          user: user,
+          // user: user,
           currentPassword: 'temp',
           isNew: true,
           password: values.password
@@ -59,109 +74,54 @@ function InitPassword({location}) {
 
 
   const updatePassword = (
-    <Card
-    bodyStyle={{ paddingLeft: 58 }}
-    title={'신규 비밀번호를 설정해주세요.'}
+    <Card title={'본인 확인 후 비밀번호를 설정해주세요.'}>
+      <Form
+      {...formItemLayout}
+      layout={formLayout}
+      form={form}
+      labelCol={{ span: 8  }}
+      wrapperCol={{ span: 16 }}
+      initialValues={{
+        layout: formLayout,
+      }}
+      onValuesChange={onFormLayoutChange}
     >
-      <ProForm
-        form={formPassword}
-        onFinish={onFinishPassword}
-        validateMessages={validateMessages}
-        submitter={{
-          // Configure the button text
-          searchConfig: {
-            resetText: '초기화',
-            submitText: '비밀번호 변경',
-          }
-        }}
-
-        initialValues={{
-        }}
-      >
-        {/* <ProFormText.Password
-          width="md"
-          name="currentPassword"
-          label="현재 비밀번호"
-          disabled
-          fieldProps={{
-            size: 'large',
-            prefix: <LockOutlined className={'prefixIcon'} />,
-            defaultValue: '11111'
-          }}
-          placeholder={'현재 비밀번호'}
-          rules={[
-            {
-              required: true,
-              min: 5,
-              message: '현재 비밀번호를 입력하세요 !',
-            },
-          ]}
-        /> */}
-
-        <ProFormText.Password
-          width="md"
-          name="password"
-          label="새 비밀번호"
-          fieldProps={{
-            size: 'large',
-            prefix: <LockOutlined className={'prefixIcon'} />,
-          }}
-          placeholder={'새 비밀번호'}
-          rules={[
-            {
-              required: true,
-              min: 8,
-              message: '비밀번호는 영문자, 숫자, 특수문자를 혼합하여 8자리 이상으로 입력하세요.',
-              pattern: /^(?=.*[A-Za-z])(?=.*\d)(?=.*[!-/:-@\[-`{-~])[A-Za-z\d!-/:-@\[-`{-~]{8,}$/
-            },
-          ]}
-        /> 
-
-        <ProFormText.Password
-          width="md"
-          name="confirmPassword"
-          label="새 비밀번호 확인"
-          fieldProps={{
-            size: 'large',
-            prefix: <LockOutlined className={'prefixIcon'} />,
-          }}
-          placeholder={'비밀번호'}
-          rules={[
-            {
-              required: true,
-              min: 8,
-              message: '',
-              pattern: /^(?=.*[A-Za-z])(?=.*\d)(?=.*[!-/:-@\[-`{-~])[A-Za-z\d!-/:-@\[-`{-~]{8,}$/
-            },
-            ({ getFieldValue }) => ({
-              validator(_, value) {
-                if (!value || getFieldValue('password') === value) {
-                  return Promise.resolve();
-                }
-
-                return Promise.reject(new Error('비밀번호가 일치하지 않습니다.'));
-              },
-            }),
-          ]}
+      <Form.Item label="사번">
+        <Input placeholder="P0000000" allowClear  />
+      </Form.Item>
+      <Form.Item label="이름">
+        <Input placeholder="홍길동" allowClear />
+      </Form.Item>
+      <Form.Item label="With 인증번호">
+        {/* <Input placeholder="oooooooo (8자리)" />
+        <Button htmlType="primary">재발송</Button> */}
+        <Search
+          placeholder="oooooooo (8자리)"
+          allowClear
+          enterButton="재발송"
+          size="large"
+          // onSearch={onSearch}
         />
-      </ProForm>
-
+      </Form.Item>
+      <Form.Item {...buttonItemLayout} >
+        <Button type="primary">뒤로</Button>
+        <Button type="primary">본인 확인</Button>
+      </Form.Item>
+    </Form>
     </Card>
   )   
-
-
-    return (
-        <>
-        <Header></Header>
-        <div className={styles.middleCard}>
-          {updatePassword}
-        </div>
-
-        <div className={styles['footer']}>
-          WITH SIGN © NH INFORMATION SYSTEM 2021
-        </div>
-      </>
-    )
+  
+  return (
+    <>
+      <Header></Header>
+      <div className={styles.middleCard}>
+        {updatePassword}
+      </div>
+      <div className={styles['footer']}>
+        WITH SIGN © NH INFORMATION SYSTEM 2021
+      </div>
+    </>
+  );
 }
 
 export default InitPassword

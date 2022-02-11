@@ -236,14 +236,16 @@ const App = () => {
       {/* <Header /> */}
       <Router primary={false}>
         <Login path="/login" />
-        {/* <Register path="register" /> */}
-        <InitPassword path="initPassword" />
-        <ResetPassword path="resetPassword" />
+        {/* <Register path="/register" /> */}
+        <InitPassword path="/initPassword" />
+        <ResetPassword path="/resetPassword" />
         <Agreement path="/agreement" />
-        {/* <defaultPage path="/"/> */}
+        <Blank path="/" default />
       </Router>
     </div>
   );
 };
+
+const Blank = () => <div></div>
 
 export default App;

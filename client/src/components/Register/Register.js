@@ -2,7 +2,7 @@ import React from 'react'
 import axios from 'axios';
 import { navigate, Link } from '@reach/router';
 import { Checkbox, Button, Form, Input } from 'antd';
-import logo from '../../assets/images/logo.svg';
+import logo from '../../assets/images/logo_withsign.png';
 import styles from './register.module.css';
 import { useIntl } from "react-intl";
 
@@ -68,14 +68,14 @@ function Register(props) {
           <div className={styles['header-wrapper']}>
             <header>
               <a href="/">
-                <img src={logo} alt="ant design mini" />
-                <h2>{formatMessage({id: 'AppName'})}</h2>
+                <img src={logo} alt="With Sign" style={{display: 'block', width: '145px', height: '31px'}} />
+                {/* <h2>{formatMessage({id: 'AppName'})}</h2> */}
               </a>
               <div className={styles['nav-wrapper']}>
                 <nav>
                   <ul>
                     <li>
-                      <Link to="/">{formatMessage({id: 'Login'})}</Link>
+                      <Link to="/login">{formatMessage({id: 'Login'})}</Link>
                     </li>
                   </ul>
                 </nav>

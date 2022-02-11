@@ -53,7 +53,7 @@ function Login() {
             console.log(response);
             if (response.data.success) {
                 dispatch(setUser(response.data.user));
-                navigate('/', { repalce: true });
+                navigate('/', { replace: true });
             } else {
                 if (response.data.user) {   // 약관 동의 절차 필요
                     navigate('/agreement', { state: {user: response.data.user}})
@@ -133,7 +133,8 @@ function Login() {
                 <Form.Item name="remember" valuePropName="checked" style={{display: 'inline-block'}}>
                     <Checkbox>{formatMessage({id: 'RememberMe'})}</Checkbox>
                 </Form.Item>
-                {/* <a className={styles['login-form-forgot']} href="/resetPassword">{formatMessage({id: 'ForgotPassword'})}</a> */}
+                {/* <a className={styles['login-form-forgot']} href="/initPassword">{formatMessage({id: 'ForgotPassword'})}</a> */}
+                <Link to="/initPassword" className={styles['login-form-forgot']} >{formatMessage({id: 'ForgotPassword'})}</Link>
                 <Form.Item>
                     <Button type="primary" htmlType="submit" className={styles['login-form-button']} size="large">{formatMessage({id: 'Login'})}</Button>
                     {/* {formatMessage({id: 'Or'})} <Link to="/register">{formatMessage({id: 'Regist'})}</Link> */}

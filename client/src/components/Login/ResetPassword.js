@@ -17,8 +17,7 @@ import '@ant-design/pro-card/dist/card.css';
 function ResetPassword({location}) {
     const dispatch = useDispatch();
     const { formatMessage } = useIntl();
-    const user = location.state.user ? location.state.user : '';
-    // const user = '111';
+    const user = location.state ? location.state.user : '';
     const [formPassword] = Form.useForm();
 
     useEffect(() => {
@@ -150,17 +149,18 @@ function ResetPassword({location}) {
   )   
 
 
-    return (
+    return user ? (
         <>
         <Header></Header>
         <div className={styles.middleCard}>
           {updatePassword}
         </div>
-
         <div className={styles['footer']}>
           WITH SIGN © NH INFORMATION SYSTEM 2021
         </div>
       </>
+    ) : (
+      <></>
     )
 }
 
