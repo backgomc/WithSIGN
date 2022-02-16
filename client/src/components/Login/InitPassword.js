@@ -1,113 +1,112 @@
-import React, { useState } from 'react'
+import React, { useState, useRef } from 'react'
+import { useIntl } from 'react-intl';
 import axios from 'axios';
 import Header from './Header';
-import { navigate, Link } from '@reach/router';
-import { Button, Form, Input, Card } from 'antd';
-import { LockOutlined } from '@ant-design/icons';
+import { navigate } from '@reach/router';
+import { message, Button, Form, Input, Card, Space, Statistic } from 'antd';
+
+import { ArrowLeftOutlined } from '@ant-design/icons';
 import styles from './login.module.css';
 import 'antd/dist/antd.css';
 
 const { Search } = Input;
+const { Countdown } = Statistic;
 
 function InitPassword() {
-
-  const [formPassword] = Form.useForm();
+  
+  const refCertNo = useRef();
   const [form] = Form.useForm();
-  const [formLayout, setFormLayout] = useState('horizontal');
-
-  const onFormLayoutChange = ({ layout }) => {
-    setFormLayout(layout);
-  };  
-
-  const formItemLayout =
-  formLayout === 'horizontal'
-    ? {
-        labelCol: {
-          span: 4,
-        },
-        wrapperCol: {
-          span: 14,
-        },
-      }
-    : null;
-const buttonItemLayout =
-  formLayout === 'horizontal'
-    ? {
-        wrapperCol: {
-          span: 14,
-          offset: 4,
-        },
-      }
-    : null;
-
-  const validateMessages = {
-      required: '${label} 을 입력하세요!',
-      types: {
-        email: '${label}이 유효하지 않습니다!',
-        number: '${label} is not a valid number!',
-      },
-      number: {
-        range: '${label} must be between ${min} and ${max}',
-      },
-    };
-
-    const onFinishPassword = async (values) => {
-      console.log(values)
+  const [visible, setVisible] = useState('hidden');
+  const [validTime, setValidTime] = useState(0);
+  const [disable1stNext, setDisable1stNext] = useState(true);
+  const [disable2ndNext, setDisable2ndNext] = useState(true);
+  const [btnText, setBtnText] = useState('발송');
+  const { formatMessage } = useIntl();
   
-      // 비밀번호 변경 API Call
-      let param = {
-          // user: user,
-          currentPassword: 'temp',
-          isNew: true,
-          password: values.password
-  
-      }
-      const res = await axios.post('/api/users/updatePassword', param)
-  
-      if (res.data.success) {
-        alert('비밀번호가 변경되었습니다!')
-        navigate('/login');
-      } else {
-        alert(res.data.message? res.data.message : '비밀번호 변경에 실패하였습니다!')
-      }
+  const onFinish = (values) => {
+    let body = {
+      argS : values.argSabun,
+      argN : values.argName,
+      argC : values.argCertNo
     }
+    axios.post('/api/users/verify', body).then(response => {
+      if (response.data.success) {
+        message.success({content: '본인 확인 완료', style: {marginTop: '70vh'}});
+        navigate('/resetPassword', { state: {user: response.data.user}});
+      } else {
+        message.error({content: '사번 또는 이름을 확인할 수 없습니다.', style: {marginTop: '70vh'}});  
+      }
+    });
+  }
 
+  const endCountDown = () => {
+    form.setFieldsValue({argCertNo: ''});
+    setDisable2ndNext(true);
+    setVisible('hidden');
+    setBtnText('발송');
+  }
 
-  const updatePassword = (
+  const sendCertNo = () => {
+    let body = {
+      argS : form.getFieldValue('argSabun'),
+      argN : form.getFieldValue('argName')
+    }
+    axios.post('/api/users/certNo', body).then(response => {
+      if (response.data.success) {
+        form.setFieldsValue({argCertNo: ''});
+        setDisable2ndNext(false);
+        setVisible('visible');
+        setBtnText('재발송');
+        setValidTime(Date.now() + 1000 * 180);
+        message.success({content: 'NH With 메시지를 확인하세요.', style: {marginTop: '70vh'}});  
+      } else {
+        message.error({content: '사번 또는 이름을 확인할 수 없습니다.', style: {marginTop: '70vh'}});  
+      }
+    });
+  }
+
+  const validCheck = () => {
+    if ( form.getFieldValue('argSabun') && form.getFieldValue('argName') ) {
+      setDisable1stNext(false);
+    } else {
+      setDisable1stNext(true);
+      form.setFieldsValue({argCertNo: ''});
+    }
+  }
+
+  const formTag = (
     <Card title={'본인 확인 후 비밀번호를 설정해주세요.'}>
       <Form
-      {...formItemLayout}
-      layout={formLayout}
-      form={form}
-      labelCol={{ span: 8  }}
-      wrapperCol={{ span: 16 }}
-      initialValues={{
-        layout: formLayout,
-      }}
-      onValuesChange={onFormLayoutChange}
-    >
-      <Form.Item label="사번">
-        <Input placeholder="P0000000" allowClear  />
-      </Form.Item>
-      <Form.Item label="이름">
-        <Input placeholder="홍길동" allowClear />
-      </Form.Item>
-      <Form.Item label="With 인증번호">
-        {/* <Input placeholder="oooooooo (8자리)" />
-        <Button htmlType="primary">재발송</Button> */}
-        <Search
-          placeholder="oooooooo (8자리)"
-          allowClear
-          enterButton="재발송"
-          size="large"
-          // onSearch={onSearch}
-        />
-      </Form.Item>
-      <Form.Item {...buttonItemLayout} >
-        <Button type="primary">뒤로</Button>
-        <Button type="primary">본인 확인</Button>
-      </Form.Item>
-    </Form>
+        form={form}
+        labelCol={{ span: 8 }}
+        wrapperCol={{ span: 16 }}
+        onFinish={onFinish}
+      >
+        <Form.Item label="사번" name="argSabun" rules={[{ required: true, message: formatMessage({id: 'input.SABUN'}) }]}>
+          <Input placeholder="P0000000" allowClear onChange={validCheck}/>
+        </Form.Item>
+        <Form.Item label="이름" name="argName" rules={[{ required: true, message: formatMessage({id: 'input.name'}) }]}>
+          <Input placeholder="홍길동" allowClear onChange={validCheck}/>
+        </Form.Item>
+        <Form.Item label="With 인증번호" name="argCertNo" rules={[{ required: true, message: '인증번호를 입력하세요!' }]}>
+          <Search
+            placeholder="oooooooo (8자리)"
+            allowClear
+            enterButton={btnText}
+            size="large"
+            onSearch={sendCertNo}
+            ref={refCertNo}
+            disabled={disable1stNext}
+          />
+        </Form.Item>
+        <Form.Item wrapperCol={{offset: 8 }}>
+          <Space>
+            <Button type="ghost" icon={<ArrowLeftOutlined />} onClick={() => {navigate('/login');}}>로그인</Button>
+            <Button type="primary" htmlType="submit" disabled={disable2ndNext} >본인 확인</Button>
+            <Countdown valueStyle={{fontSize: '1rem', color: '#1890ff', visibility: visible}} value={validTime} onFinish={endCountDown}/>
+          </Space>
+        </Form.Item>
+      </Form>
     </Card>
   )   
   
@@ -115,7 +114,7 @@ const buttonItemLayout =
     <>
       <Header></Header>
       <div className={styles.middleCard}>
-        {updatePassword}
+        {formTag}
       </div>
       <div className={styles['footer']}>
         WITH SIGN © NH INFORMATION SYSTEM 2021

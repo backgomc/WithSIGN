@@ -3,7 +3,7 @@ import axios from 'axios';
 import Header from './Header';
 import { useDispatch } from 'react-redux';
 import { navigate, Link } from '@reach/router';
-import { Checkbox, Button, Form, Input, Card, Modal } from 'antd';
+import { message, Checkbox, Button, Form, Input, Card, Modal } from 'antd';
 import { LockOutlined, UserOutlined } from '@ant-design/icons';
 import ProForm, { ProFormText, ProFormSelect, ProFormDependency } from '@ant-design/pro-form';
 import styles from './login.module.css';
@@ -49,10 +49,10 @@ function ResetPassword({location}) {
       const res = await axios.post('/api/users/updatePassword', param)
   
       if (res.data.success) {
-        alert('비밀번호가 변경되었습니다!')
+        message.success({content: '비밀번호가 변경되었습니다.', style: {marginTop: '70vh'}});  
         navigate('/login');
       } else {
-        alert(res.data.message? res.data.message : '비밀번호 변경에 실패하였습니다!')
+        message.error({content: '비밀번호 변경에 실패하였습니다.', style: {marginTop: '70vh'}});  
       }
     }
 

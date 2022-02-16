@@ -2,9 +2,11 @@ const express = require('express');
 const router = express.Router();
 const { User } = require("../models/User");
 const { Org } = require("../models/Org");
+const restful = require('../common/restful');
+const jwt = require('jsonwebtoken');
 var fs = require('fs');
 var url = require('url');
-const { hexCrypto, isEmpty } = require('../common/utils');
+const { hexCrypto, isEmpty, generateRandomPass } = require('../common/utils');
 
 const { auth } = require("../middleware/auth");
 
@@ -556,5 +558,41 @@ router.post('/paperless', async (req, res) => {
   })
 
 })
+
+// 인증번호(유효시간 3분) 생성 후 JWT로 보관 및 With 발송
+router.post('/certNo', async (req, res) => {
+  if (!req.body.argS || !req.body.argN) return res.json({ success: false, message: "input value not enough!" });
+  var certNo = generateRandomPass(6, 'onlyNum');
+  var ticket = jwt.sign({certNo: certNo}, 'secretToken', {expiresIn: '3m'});
+  User.findOneAndUpdate({ SABUN: req.body.argS, name: req.body.argN }, {ticket: ticket}, (err, user) => {
+    if (err) return res.json({ success: false, error: err });
+    if (user) {
+      restful.callNHWithPUSH(null, req.body.argS, '[WithSIGN] 비밀번호 초기화를 위한 인증번호 안내', '인증번호는 ['+certNo+']입니다.');
+      return res.json({success: true});
+    } else {
+      return res.json({success: false,  message: '사번 또는 이름을 확인할 수 없습니다.'});
+    }
+  });
+});
+
+// 본인확인(사번+이름+인증번호)
+router.post('/verify', async (req, res) => {
+  if (!req.body.argS || !req.body.argN || !req.body.argC) return res.json({ success: false, message: "input value not enough!" });
+  User.findOne({ SABUN: req.body.argS, name: req.body.argN }, (err, user) => {
+    if (err) return res.json({ success: false, error: err });
+    if (user) {
+      jwt.verify(user.ticket, 'secretToken', function (err, payload) {
+        if (err) return res.json({ success: false, error: err });
+        if (payload.certNo === req.body.argC) {
+          return res.json({success: true, user: user._id});
+        } else {
+          return res.json({success: false,  message: '사번 또는 이름을 확인할 수 없습니다.'});
+        }
+      });
+    } else {
+      return res.json({success: false,  message: '사번 또는 이름을 확인할 수 없습니다.'});
+    }
+  });
+});
 
 module.exports = router;

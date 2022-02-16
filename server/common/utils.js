@@ -65,9 +65,23 @@ const generateRandomName = () => {
     return str
 }
 
-const generateRandomPass = () => {
-    let chr = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-    let len = 8;  //8자리
+const generateRandomPass = (size, type) => {
+    let num = "0123456789";
+    let upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    let lower = "abcdefghijklmnopqrstuvwxyz";
+    let chr;
+    switch (type) {
+        case 'onlyNum':
+            chr = num;
+            break;
+        case 'complex':
+            chr = num + upper + lower;
+            break;
+        default:
+            chr = num + lower;
+            break;
+    }
+    let len = size ? size : 8;  // Default : 8자리
     var rnd = '';
     for (let i = 0; i < len; i++) {
         let num = Math.floor(Math.random() * chr.length);
