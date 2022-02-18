@@ -59,7 +59,7 @@ function ResetPassword({location}) {
 
   const updatePassword = (
     <Card
-    bodyStyle={{ paddingLeft: 58 }}
+    // bodyStyle={{ paddingLeft: 58 }}
     title={'신규 비밀번호를 설정해주세요.'}
     >
       <ProForm
@@ -98,7 +98,7 @@ function ResetPassword({location}) {
         /> */}
 
         <ProFormText.Password
-          width="md"
+          width="lg"
           name="password"
           label="새 비밀번호"
           fieldProps={{
@@ -117,7 +117,7 @@ function ResetPassword({location}) {
         /> 
 
         <ProFormText.Password
-          width="md"
+          width="lg"
           name="confirmPassword"
           label="새 비밀번호 확인"
           fieldProps={{

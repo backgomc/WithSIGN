@@ -48,9 +48,9 @@ const documentSchema = mongoose.Schema({
         signedTime: { type: Date },
         ip: {type: String }
     }],
-    // signedBy: {
-    //     type: Array
-    // },
+    signed: {
+        type: Boolean
+    },
     canceledBy: [{
         user: { type: String },
         canceledTime: { type: Date },
@@ -59,8 +59,12 @@ const documentSchema = mongoose.Schema({
     canceled: {
         type: Boolean, default: false 
     },
-    signed: {
-        type: Boolean
+    deletedBy : [{
+        user: { type: String },
+        deletedTime: { type: Date }
+    }],
+    deleted: {
+        type: Boolean, default: false
     },
     requestedTime: {
         type: Date, default: Date.now

@@ -29,9 +29,9 @@ router.post('/addDocumentToSign', (req, res) => {
 
     // 쪽지 보내기 
     if (document.orderType == 'S') { //순차 발송: 대상자에게만 메시지 발송
-      restful.callNotify(document.user, document.usersTodo,'[WithSIGN] 서명(수신) 요청 알림', '['+document.docTitle+']' + ' 서명(수신) 요청 건이 있습니다.');
+      restful.callNotify(document.user, document.usersTodo,'서명(수신) 요청 알림', '['+document.docTitle+']' + ' 서명(수신) 요청 건이 있습니다.');
     } else { //동차 발송: 전체에게 메시지 발송
-      restful.callNotify(document.user, document.users,'[WithSIGN] 서명(수신) 요청 알림', '['+document.docTitle+']' + ' 서명(수신) 요청 건이 있습니다.');
+      restful.callNotify(document.user, document.users,'서명(수신) 요청 알림', '['+document.docTitle+']' + ' 서명(수신) 요청 건이 있습니다.');
     }
     
     return res.status(200).json({
@@ -158,7 +158,7 @@ router.post('/updateDocumentToSign', (req, res) => {
               // 문서 완료 시 요청자에게 쪽지 보내기 : 일반 전송만 (대량 전송 제외)
               if (document.docType == 'G') {
                 console.log('쪽지 전송 OK: 완료')
-                restful.callNotify(null, document.user,'[WithSIGN] 서명(수신) 완료 알림', '['+document.docTitle+']' + ' 의 서명(수신)이 완료되었습니다.');
+                restful.callNotify(null, document.user,'서명(수신) 완료 알림', '['+document.docTitle+']' + ' 의 서명(수신)이 완료되었습니다.');
               } 
 
             } else {
@@ -173,14 +173,14 @@ router.post('/updateDocumentToSign', (req, res) => {
                     if (sameOrderArr?.length == usersTodo?.length) { // 같은 차례에 처음 메시지를 보낸다고 판단 => 메시지 발송
                       // 메시지 발송하기 
                       console.log('쪽지 전송 OK: 순차 전송')
-                      restful.callNotify(document.user, usersTodo,'[WithSIGN] 서명(수신) 요청 알림', '['+document.docTitle+']' + ' 서명(수신) 요청 건이 있습니다.');
+                      restful.callNotify(document.user, usersTodo,'서명(수신) 요청 알림', '['+document.docTitle+']' + ' 서명(수신) 요청 건이 있습니다.');
                     } else {
                       console.log('쪽지 전송 NO: 이미 쪽지 보냄')
                     }
                   }
 
                   // 쪽지 보내기 (순차 발송 - 서명 대상자에게)
-                  // restful.callNotify(document.user, usersTodo,'[WithSIGN] 서명(수신) 요청 알림', '['+document.docTitle+']' + ' 서명(수신) 요청 건이 있습니다.');
+                  // restful.callNotify(document.user, usersTodo,'서명(수신) 요청 알림', '['+document.docTitle+']' + ' 서명(수신) 요청 건이 있습니다.');
                 }
               }
             }
@@ -385,6 +385,8 @@ router.post('/searchForDocumentToSign', (req, res) => {
     var orParam = {};
     var orParam2 = {};
 
+    andParam['deleted'] = { $ne: true }
+
     // 문서제목 검색
     if (req.body.docTitle) {
       andParam['docTitle'] = { $regex: '.*' + req.body.docTitle[0] + '.*', $options: 'i' }
@@ -573,5 +575,34 @@ router.post('/document', (req, res) => {
     }
   });
 })
+
+// 문서 폐기 - 취소 상태 문서는 서명 요청자만 폐기 가능
+router.post('/delete', async (req, res) => {
+  if (!req.body.usrId || !req.body.docId) {
+    return res.json({ success: false, message: 'input value not enough!' });
+  }
+  Document.findOneAndUpdate(
+      { '_id': req.body.docId, 'user': req.body.usrId, 'canceled': true }
+    , {'deleted': true, 'deletedBy': [{'user': req.body.usrId, 'deletedTime': new Date()}]}
+    ).then((doc, err) => {
+    if (err) return res.json({ success: false, err });
+    console.log(doc);
+    return res.status(200).send({success: true});
+  });
+});
+
+// 서명 재요청 알림 보내기
+router.post('/notify', async (req, res) => {
+  if (!req.body.usrId || !req.body.docId) {
+    return res.json({ success: false, message: 'input value not enough!' });
+  }
+  Document.select({ '_id': { $in: _ids }, 'user': req.body.usrId, 'signed': false }).then((doc, err) => {
+    if (err) return res.json({ success: false, err });
+    doc.save((err) => {
+      if (err) return res.json({ success: false, err });
+      return res.status(200).send({success: true});
+    });
+  });
+});
 
 module.exports = router;

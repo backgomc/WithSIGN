@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Tooltip, Tag, Timeline, Button, Alert, Modal, Badge, Descriptions } from 'antd';
+import { Tooltip, Tag, Timeline, Button, Alert, Modal, Badge, Descriptions, Space, message } from 'antd';
 import Moment from 'react-moment';
 import { useSelector, useDispatch } from 'react-redux';
 import { selectUser } from '../../app/infoSlice';
@@ -16,6 +16,8 @@ import {
     MinusCircleOutlined,
     InfoCircleOutlined,
     CloseOutlined,
+    BellFilled,
+    DeleteOutlined,
     DownloadOutlined
   } from '@ant-design/icons';
 import { DocumentTypeBadge, DocumentType, DocumentTypeText } from './DocumentType';
@@ -97,20 +99,77 @@ const DocumentExpander = (props) => {
         setLoadingOrgInfos(false);
     }
 
+    const fetchNotify = async () => {
+        // 작업중
+        let param = {
+          
+        }
+        axios.post('/api/document/notify', param).then(response => {
+            message.success({content: '서명 미완료자에게 아이프로넷 쪽지와 With 메시지로 재요청 알림을 전송하였습니다.', style: {marginTop: '70vh'}});
+        });
+    }
+
+    const fetchDelete = async () => {
+        let param = {
+          usrId: _id,
+          docId: item._id
+        }
+        axios.post('/api/document/delete', param).then(response => {
+            if (response.data.success) {
+                navigate('/resultPage', { state: {status:'success', headerTitle:'결과', title:'서명 문서를 폐기하였습니다.'}}); 
+            } else {
+                navigate('/resultPage', { state: {status:'error', headerTitle:'결과', title:'실패하였습니다.', subTitle:'관리자에게 문의하세요!'}}); 
+            }
+        });
+    }
+    
+    const sendPush = async () => {
+        confirm({
+            title: '서명 재요청',
+            icon: <BellFilled />,
+            content: '미완료자에게 재요청 하시겠습니까?',
+            okType: 'confirm',
+            okText: '네',
+            cancelText: '아니오',
+            onOk() {
+                fetchNotify();
+            },
+            onCancel() {
+                console.log('Cancel');
+            }
+        });
+    }
+
+    const deleteDocument = async () => {
+        confirm({
+            title: '서명 문서 폐기',
+            icon: <BellFilled />,
+            content: '문서를 영구 삭제 하시겠습니까?',
+            okType: 'confirm',
+            okText: '네',
+            cancelText: '아니오',
+            onOk() {
+                fetchDelete();
+            },
+            onCancel() {
+                console.log('Cancel');
+            }
+        });
+    }
 
     const cancelDocument = async (docId) => {
         confirm({
-            title: '서명 요청을 취소하시겠습니까??',
+            title: '서명 요청 취소',
             icon: <ExclamationCircleOutlined />,
-            content: '해당 문서가 영구 삭제됩니다.',
+            content: '서명 요청을 취소하시겠습니까?',
             okText: '네',
             okType: 'danger',
             cancelText: '아니오',
             onOk() {
-            fetchCancel(docId);
+                fetchCancel(docId);
             },
             onCancel() {
-            console.log('Cancel');
+                console.log('Cancel');
             },
         });    
     }
@@ -235,7 +294,7 @@ const DocumentExpander = (props) => {
     }
 
     const buttonList = (
-        <div>
+        <Space>
 
             {/* {DocumentType({uid: _id, document: item}) == DOCUMENT_CANCELED ?
                 <Button
@@ -276,6 +335,10 @@ const DocumentExpander = (props) => {
                 // }
                 // </PDFDownloadLink> : ''
             }
+            {((DocumentType({uid: _id, document: item}) == DOCUMENT_SIGNING || DocumentType({uid: _id, document: item}) == DOCUMENT_TOSIGN) && item.user._id === _id) ? 
+                <Button icon={<BellFilled />} onClick={e => { sendPush(); }}>재요청</Button>
+                 : ''
+            }
             {((DocumentType({uid: _id, document: item}) == DOCUMENT_SIGNING || DocumentType({uid: _id, document: item}) == DOCUMENT_TOSIGN)  
                 && item.user._id === _id 
                 && item.signedBy.length - item.signedBy.filter(e => e.user === _id).length === 0) ?   
@@ -293,7 +356,11 @@ const DocumentExpander = (props) => {
                 // </Popconfirm>
                  : ''
             }
-        </div>
+            {(DocumentType({uid: _id, document: item}) === DOCUMENT_CANCELED && item.user._id === _id) ?
+                <Button danger icon={<DeleteOutlined />} onClick={e => { deleteDocument(); }}>문서 폐기</Button>
+                 : <></>
+            }
+        </Space>
     )
 
     useEffect(() => {

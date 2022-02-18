@@ -10,6 +10,7 @@ const { Org } = require('../models/Org');
 const { User } = require('../models/User');
 
 const saltRounds = 10;
+const titleHeader = '[WithSIGN] ';
 
 // ERP 부서 동기화
 let callOrgAPI = async () => {
@@ -257,7 +258,7 @@ let callIpronetMSG = async (sendInfo, recvInfo, title, message, filePath) => {
         body = {
             sender: sendObj.data['array'][0],
             receivers: recvObj.data['array'],
-            title: title,
+            title: titleHeader + title,
             content: message + '<br/><br/><br/><a href="' + config.withsignURI + '/" target="_blank">WithSIGN 바로가기</a>',
             attachments:fileInfo,
             push:false
@@ -285,7 +286,7 @@ let callNHWithPUSH = async (sendInfo, recvInfo, title, message) => {
         body = {
             sourceInfo: config.nhwithID,
             sourcePassword: config.nhwithPW,
-            title: title,
+            title: titleHeader + title,
             content: message,
             senderId: sendInfo,
             receivers: recvInfo

@@ -265,6 +265,7 @@ const DocumentList = ({location}) => {
       key: 'status',
       width: '110px',
       defaultFilteredValue: location.state.status? [location.state.status]: [],
+      filterMultiple: false,
       filters: [
         {
           text: DOCUMENT_SIGNED,
@@ -294,7 +295,8 @@ const DocumentList = ({location}) => {
       title: '요청자',
       responsive: ["sm"],
       dataIndex: ['user', 'name'],
-      sorter: (a, b) => a.user.name.localeCompare(b.user.name),
+      // sorter: (a, b) => a.user.name.localeCompare(b.user.name),  // Populate Collection 단위로 정렬되고, 전체 Collection에 적용 안되어 대안 필요
+      sorter: false,
       key: 'name',
       width: '110px',
       ...getColumnSearchProps('name'),
@@ -314,7 +316,8 @@ const DocumentList = ({location}) => {
       title: '요청자',
       responsive: ["xs"],
       dataIndex: ['user', 'name'],
-      sorter: (a, b) => a.user.name.localeCompare(b.user.name),
+      // sorter: (a, b) => a.user.name.localeCompare(b.user.name),  // Populate Collection 단위로 정렬되고, 전체 Collection에 적용 안되어 대안 필요
+      sorter: false,
       key: 'name',
       ...getColumnSearchProps('name'),
       onFilter: (value, record) =>

@@ -5,7 +5,7 @@ import { Table, Input, Space, Button, Tooltip } from 'antd';
 import Highlighter from 'react-highlight-words';
 import { SearchOutlined,FileOutlined } from '@ant-design/icons';
 import { navigate } from '@reach/router';
-import { DocumentType, DocumentTypeBadge, DOCUMENT_SIGNED, DOCUMENT_SIGNING, DOCUMENT_CANCELED } from './DocumentType';
+import { DocumentType, DocumentTypeBadge, DOCUMENT_SIGNED, DOCUMENT_SIGNING, DOCUMENT_CANCELED, DOCUMENT_DELETED } from './DocumentType';
 import DocumentExpander from './DocumentExpander';
 import { PageContainer } from '@ant-design/pro-layout';
 import 'antd/dist/antd.css';
@@ -15,6 +15,7 @@ const DocumentList = () => {
 
   const [searchText, setSearchText] = useState('');
   const [searchedColumn, setSearchedColumn] = useState('');
+  const [status, setStatus] = useState();
   const [data, setData] = useState([]);
   const [pagination, setPagination] = useState({current:1, pageSize:10, showSizeChanger: true});
   const [loading, setLoading] = useState(false);
@@ -23,6 +24,7 @@ const DocumentList = () => {
   const handleTableChange = (pagination, filters, sorter) => {
     console.log('handleTableChange called');
     console.log('filters.status:'+filters.status);
+    setStatus(filters.status);
     fetch({
       sortField: sorter.field,
       sortOrder: sorter.order,
@@ -132,6 +134,7 @@ const DocumentList = () => {
       dataIndex: 'status',
       sorter: false,
       key: 'status',
+      filterMultiple: false,
       filters: [
         {
           text: DOCUMENT_SIGNED,
@@ -145,6 +148,10 @@ const DocumentList = () => {
           text: DOCUMENT_CANCELED,
           value: DOCUMENT_CANCELED,
         },
+        {
+          text: DOCUMENT_DELETED,
+          value: DOCUMENT_DELETED,
+        }
       ],
       onFilter: (value, record) => DocumentType({document: record}).indexOf(value) === 0,
       render: (_,row) => {
@@ -157,7 +164,7 @@ const DocumentList = () => {
       title: '요청자',
       responsive: ['sm'],
       dataIndex: ['user', 'name'],
-      sorter: (a, b) => a.user.name.localeCompare(b.user.name),
+      sorter: false,
       key: 'name',
       ...getColumnSearchProps('name'),
       onFilter: (value, record) =>
@@ -186,7 +193,7 @@ const DocumentList = () => {
       title: '요청자',
       responsive: ['xs'],
       dataIndex: ['user', 'name'],
-      sorter: (a, b) => a.user.name.localeCompare(b.user.name),
+      sorter: false,
       key: 'name',
       ...getColumnSearchProps('name'),
       onFilter: (value, record) =>
@@ -229,11 +236,13 @@ const DocumentList = () => {
   useEffect(() => {
     console.log('useEffect called');
     fetch({
-      pagination
+      pagination,
+      status: status
     });
     return () => {
       setSearchText('');
       setSearchedColumn('');
+      setStatus();
       setData([]);
       setPagination({current:1, pageSize:10, showSizeChanger: true});
       setLoading(false);

@@ -1,10 +1,11 @@
 import React from 'react'
 import { Badge, Tag } from 'antd';
-import { CheckCircleOutlined, SyncOutlined, CloseCircleOutlined, CloseCircleTwoTone, ClockCircleTwoTone } from '@ant-design/icons';
+import { CheckCircleOutlined, ClockCircleOutlined, CloseCircleOutlined, StopOutlined, CheckCircleTwoTone, ClockCircleTwoTone, CloseCircleTwoTone, StopTwoTone } from '@ant-design/icons';
 
 export const DOCUMENT_SIGNED = '서명 완료';
 export const DOCUMENT_SIGNING = '서명 진행';
 export const DOCUMENT_CANCELED = '서명 취소';
+export const DOCUMENT_DELETED = '문서 폐기';
 
 export function DocumentType(props) {
 
@@ -13,8 +14,10 @@ export function DocumentType(props) {
   if (document['signed']) { 
     return DOCUMENT_SIGNED;
   } else {
-    if (document['canceled']) {
-      return DOCUMENT_CANCELED;
+    if (document['deleted']) {
+      return DOCUMENT_DELETED;
+    } else if (document['canceled']) {
+      return DOCUMENT_CANCELED;  
     } else {
       return DOCUMENT_SIGNING;
     }
@@ -32,7 +35,13 @@ export function DocumentTypeText(props) {
       </Tag>
     );
   } else {
-    if (document['canceled']) {
+    if (document['deleted']) {
+      return (
+        <Tag icon={<StopOutlined />} color="default">
+          {DOCUMENT_DELETED}
+        </Tag>
+      );
+    } else if (document['canceled']) {
       return (
         <Tag icon={<CloseCircleOutlined />} color="error">
           {DOCUMENT_CANCELED}
@@ -40,7 +49,7 @@ export function DocumentTypeText(props) {
       );
     } else {
       return (
-        <Tag icon={<SyncOutlined spin />} color="default">
+        <Tag icon={<ClockCircleOutlined />} color="processing">
           {DOCUMENT_SIGNING}
         </Tag>
       );
@@ -57,13 +66,17 @@ export function DocumentTypeBadge(props) {
       <b><Badge status="success" text={DOCUMENT_SIGNED} /></b>
     );
   } else {
-    if (document['canceled']) {
+    if (document['deleted']) {
+      return (
+        <b><Badge status="default" text={DOCUMENT_DELETED} /></b>
+      );
+    } else if (document['canceled']) {
       return (
         <b><Badge status="error" text={DOCUMENT_CANCELED} /></b>
       );
     } else {
       return (
-        <b><Badge status="default" text={DOCUMENT_SIGNING} /></b>
+        <b><Badge status="processing" text={DOCUMENT_SIGNING} /></b>
       );
     }
   }
@@ -75,16 +88,20 @@ export function DocumentTypeIcon(props) {
 
   if (document['signed']) { 
     return (
-      <CheckCircleOutlined twoToneColor='#52c41a'/>
+      <CheckCircleTwoTone twoToneColor='#52c41a'/>
     );
   } else {
-    if (document['canceled']) {
+    if (document['deleted']) {
+      return (
+        <StopTwoTone twoToneColor='#d41c1c'/>
+      );
+    } else if (document['canceled']) {
       return (
         <CloseCircleTwoTone twoToneColor='#d41c1c'/>
       );
     } else {
       return (
-        <ClockCircleTwoTone />
+        <ClockCircleTwoTone twoToneColor='#52c41a'/>
       );
     }
   }

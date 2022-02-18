@@ -3,6 +3,7 @@ const router = express.Router();
 const multer = require('multer');
 const config = require('../config/key');
 const restful = require('../common/restful');
+const { ADMIN_DOCUMENT_SIGNED, ADMIN_DOCUMENT_SIGNING, ADMIN_DOCUMENT_CANCELED, ADMIN_DOCUMENT_DELETED } = require('../common/constants');
 const { hexCrypto, generateRandomPass } = require('../common/utils');
 const { Board } = require('../models/Board');
 const { Document } = require('../models/Document');
@@ -354,7 +355,7 @@ router.post('/user/update', ValidateToken, async (req, res) => {
     if (req.body.k == 'auth') user.role = 1 - user.role;
     user.save((err) => {
       if (err) return res.json({ success: false, err });
-      if (req.body.k == 'init') restful.callNotify(null, user,'[WithSIGN] 임시 비밀번호 발급', 'WithSIGN 임시 비밀번호는 ' + pwd + ' 입니다.');
+      if (req.body.k == 'init') restful.callNotify(null, user,'임시 비밀번호 발급', 'WithSIGN 임시 비밀번호는 ' + pwd + ' 입니다.');
       return res.status(200).send({success: true});
     });
   });
@@ -440,6 +441,21 @@ router.post('/document/list', ValidateToken, async (req, res) => {
   if (req.body.docTitle) {
     var regex = new RegExp(req.body.docTitle[0], 'i');
     searchStr['docTitle'] = new RegExp(regex, 'i');
+  }
+
+  // 상태
+  if (req.body.status) {
+    if (req.body.status == ADMIN_DOCUMENT_SIGNED) {
+      searchStr['signed'] = { $eq: true }
+    } else if (req.body.status == ADMIN_DOCUMENT_DELETED) {
+      searchStr['deleted'] = { $eq: true }
+    } else if (req.body.status == ADMIN_DOCUMENT_CANCELED) {
+      searchStr['canceled'] = { $eq: true }
+    } else {
+      searchStr['signed'] = { $ne: true }
+      searchStr['deleted'] = { $ne: true }
+      searchStr['canceled'] = { $ne: true }
+    }
   }
 
   // 요청자

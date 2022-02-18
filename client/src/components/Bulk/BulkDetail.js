@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
-import { Table, Input, Space, Button, Descriptions, Tooltip } from "antd";
+import { Table, Input, Space, Button, Descriptions, Tooltip, Modal, message } from "antd";
 import Highlighter from 'react-highlight-words';
-import { SearchOutlined } from '@ant-design/icons';
+import { SearchOutlined, BellFilled } from '@ant-design/icons';
 import { useSelector, useDispatch } from 'react-redux';
 import { selectUser } from '../../app/infoSlice';
 import { navigate } from '@reach/router';
@@ -24,6 +24,7 @@ import { PageContainer } from '@ant-design/pro-layout';
 import 'antd/dist/antd.css';
 import { useIntl } from "react-intl";
 
+const { confirm } = Modal;
 
 const BulkDetail = ({location}) => {
 
@@ -99,7 +100,37 @@ const BulkDetail = ({location}) => {
     }
     
     setLoadingOrgInfos(false);
-}
+  }
+
+  const fetchNotify = async () => {
+    // 작업중
+    setLoading(true);
+    let param = {
+      
+    }
+    axios.post('/api/document/notify', param).then(response => {
+      message.success({content: '서명 미완료자에게 아이프로넷 쪽지&With 메시지로 재요청 알림 전송하였습니다.', style: {marginTop: '70vh'}});
+      setLoading(false);
+    });
+  }
+
+  const sendPush = async () => {
+    // 대기행건수 확인 후
+    confirm({
+      title: '서명 재요청',
+      icon: <BellFilled />,
+      content: '미완료자에게 서명 재요청을 하시겠습니까?',
+      okType: 'confirm',
+      okText: '네',
+      cancelText: '아니오',
+      onOk() {
+        fetchNotify();
+      },
+      onCancel() {
+        console.log('Cancel');
+      }
+    });
+  }
 
   const getColumnSearchProps = dataIndex => ({
 
@@ -468,10 +499,15 @@ const BulkDetail = ({location}) => {
           //     },
           //   ],
           // },
-          extra: [           
-          <Button icon={<ArrowLeftOutlined />} onClick={() => {navigate('/bulkList');}}>
-            {/* {formatMessage({id: 'Back'})} */}
-          </Button>
+          extra: [
+            <Space>
+              <Button icon={<ArrowLeftOutlined />} onClick={() => {navigate('/bulkList');}}>
+                {/* {formatMessage({id: 'Back'})} */}
+              </Button>
+              <Button icon={<BellFilled />} onClick={() => {sendPush();}}>
+                재요청
+              </Button>
+            </Space>
           ],
         }}
         content={
