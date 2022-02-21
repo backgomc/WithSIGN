@@ -100,12 +100,12 @@ const DocumentExpander = (props) => {
     }
 
     const fetchNotify = async () => {
-        // 작업중
         let param = {
-          
+            usrId: _id,
+            docId: item._id
         }
-        axios.post('/api/document/notify', param).then(response => {
-            message.success({content: '서명 미완료자에게 아이프로넷 쪽지와 With 메시지로 재요청 알림을 전송하였습니다.', style: {marginTop: '70vh'}});
+        axios.post('/api/document/notify/G', param).then(response => {
+            message.success({content: '미서명자에게 아이프로넷 쪽지와 With 메시지로 재요청 알림을 전송하였습니다.', style: {marginTop: '70vh'}});
         });
     }
 
@@ -127,7 +127,7 @@ const DocumentExpander = (props) => {
         confirm({
             title: '서명 재요청',
             icon: <BellFilled />,
-            content: '미완료자에게 재요청 하시겠습니까?',
+            content: '미서명자에게 재요청 하시겠습니까?',
             okType: 'confirm',
             okText: '네',
             cancelText: '아니오',

@@ -1,5 +1,7 @@
 const express = require('express');
 const router = express.Router();
+const { User } = require('../models/User');
+const { Bulk } = require("../models/Bulk");
 const { Document } = require("../models/Document");
 const requestIp = require('request-ip');
 const fs = require('fs');
@@ -337,7 +339,7 @@ router.post('/searchForDocumentToSign', (req, res) => {
   // [서명진행중 문서: signed = false]
   // [취소된 문서: canceled = true]
   // [내가서명해야할 문서: emails:[email], signed = false]
-  router.post('/documents', (req, res) => {
+  router.post('/documents', async (req, res) => {
 
     const user = req.body.user
     if (!user) {
@@ -461,6 +463,16 @@ router.post('/searchForDocumentToSign', (req, res) => {
       console.log("전체목록 called")
     }
 
+    // 요청자
+    if (req.body.name) {
+      var userIds = [];
+      var regex = new RegExp(req.body.name[0], 'i');
+      var dataList = await User.find({ 'name': regex }).exec();
+      for (var idx in dataList) {
+        userIds.push(dataList[idx]['_id']);
+      }
+      andParam['user'] = { $in: userIds };
+    }
 
     Document.countDocuments(andParam).or(orParam).exec(function(err, count) {
       recordsTotal = count;
@@ -592,17 +604,46 @@ router.post('/delete', async (req, res) => {
 });
 
 // 서명 재요청 알림 보내기
-router.post('/notify', async (req, res) => {
-  if (!req.body.usrId || !req.body.docId) {
+router.post('/notify/:type', async (req, res) => {
+  if (!req.params.type || !req.body.usrId) return res.json({ success: false, message: 'input value not enough!' });
+  
+  if (req.params.type === 'B') {  // 대량
+    if (!req.body.bulkId) return res.json({ success: false, message: 'input value not enough!' });
+    
+    var bulk = await Bulk.findOne({ '_id': req.body.bulkId, 'user': req.body.usrId }).exec();
+    if (bulk) {
+      var docList = await Document.find({ '_id': {$in: bulk.docs}, 'user': req.body.usrId, 'docType': 'B', 'signed': false, 'canceled': false }).exec();
+      var rcvUsers = []
+      for (var idx in docList) {
+        rcvUsers.push(docList[idx]['users']);
+      }
+      console.log('rcvUsers : ' + rcvUsers);
+      restful.callNotify(req.body.usrId, rcvUsers,'서명(수신) 요청 알림', '['+docList[idx]['docTitle']+']' + ' 서명(수신) 요청 건이 있습니다.');
+      return res.json({ success: true });
+    } else {
+      return res.json({ success: false });
+    }
+
+  } else if (req.params.type === 'G') { // 일반
+    if (!req.body.docId) return res.json({ success: false, message: 'input value not enough!' });
+    
+    var document = await Document.findOne({ '_id': req.body.docId, 'user': req.body.usrId, 'signed': false, 'canceled': false }).exec();
+    if (document) {
+      if (document.orderType == 'S') { //순차 발송: 대상자에게만 메시지 발송
+        restful.callNotify(document.user, document.usersTodo,'서명(수신) 요청 알림', '['+document.docTitle+']' + ' 서명(수신) 요청 건이 있습니다.');
+      } else { //동차 발송: 미서명자에게만 메시지 발송
+        document.users = document.users.filter(user => user != document.observers);
+        for (var idx in document.signedBy) {
+          console.log(document.signedBy[idx]['user']);
+          document.users = document.users.filter(user => user != document.signedBy[idx]['user']);
+        }
+        restful.callNotify(document.user, document.users,'서명(수신) 요청 알림', '['+document.docTitle+']' + ' 서명(수신) 요청 건이 있습니다.');
+      }
+    }
+    
+  } else {
     return res.json({ success: false, message: 'input value not enough!' });
   }
-  Document.select({ '_id': { $in: _ids }, 'user': req.body.usrId, 'signed': false }).then((doc, err) => {
-    if (err) return res.json({ success: false, err });
-    doc.save((err) => {
-      if (err) return res.json({ success: false, err });
-      return res.status(200).send({success: true});
-    });
-  });
 });
 
 module.exports = router;

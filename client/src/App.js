@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Router } from '@reach/router';
+import { Router, Location } from '@reach/router';
 import { useSelector, useDispatch } from 'react-redux';
 import { navigate } from '@reach/router';
 import axios from 'axios';
@@ -227,6 +227,7 @@ const App = () => {
       <ManualModify path="/manualModify" />
       <PrepareResult path="/prepareResult" />
     </Router>
+    <OnRouteChange action={() => { window.scrollTo(0, 0) }} />
   </ProLayout>
 
   </div>
@@ -247,5 +248,22 @@ const App = () => {
 };
 
 const Blank = () => <div></div>
+
+class OnRouteChangeWorker extends React.Component {
+  componentDidUpdate(prevProps) {
+    if (this.props.location.pathname !== prevProps.location.pathname) {
+      this.props.action();
+    }
+  }
+  render() {
+    return null;
+  }
+}
+
+const OnRouteChange = ({ action }) => (
+  <Location>
+    {({ location }) => <OnRouteChangeWorker location={location} action={action} />}
+  </Location>
+)
 
 export default App;

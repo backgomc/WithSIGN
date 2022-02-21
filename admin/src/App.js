@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { Router, navigate } from '@reach/router';
+import { Router, Location, navigate } from '@reach/router';
 import axios from 'axios';
 import { setUser, selectUser } from './app/infoSlice';
 import { selectPathname, setPathname } from './config/MenuSlice';
@@ -154,6 +154,7 @@ const App = () => {
           <TemplateList path="/templateList" />
           <UploadTemplate path="/uploadTemplate" />
         </Router>
+        <OnRouteChange action={() => { window.scrollTo(0, 0) }} />
       </ProLayout>
     </div>
   ) : (
@@ -167,5 +168,22 @@ const App = () => {
 }
 
 const Blank = () => <div></div>
+
+class OnRouteChangeWorker extends React.Component {
+  componentDidUpdate(prevProps) {
+    if (this.props.location.pathname !== prevProps.location.pathname) {
+      this.props.action();
+    }
+  }
+  render() {
+    return null;
+  }
+}
+
+const OnRouteChange = ({ action }) => (
+  <Location>
+    {({ location }) => <OnRouteChangeWorker location={location} action={action} />}
+  </Location>
+)
 
 export default App;

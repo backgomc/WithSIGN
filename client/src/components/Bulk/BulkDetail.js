@@ -103,23 +103,22 @@ const BulkDetail = ({location}) => {
   }
 
   const fetchNotify = async () => {
-    // 작업중
     setLoading(true);
     let param = {
-      
+      usrId: _id,
+      bulkId: bulk._id
     }
-    axios.post('/api/document/notify', param).then(response => {
-      message.success({content: '서명 미완료자에게 아이프로넷 쪽지&With 메시지로 재요청 알림 전송하였습니다.', style: {marginTop: '70vh'}});
+    axios.post('/api/document/notify/B', param).then(response => {
+      message.success({content: '미서명자에게 아이프로넷 쪽지&With 메시지로 재요청 알림 전송하였습니다.', style: {marginTop: '70vh'}});
       setLoading(false);
     });
   }
 
   const sendPush = async () => {
-    // 대기행건수 확인 후
     confirm({
       title: '서명 재요청',
       icon: <BellFilled />,
-      content: '미완료자에게 서명 재요청을 하시겠습니까?',
+      content: '미서명자에게 서명 재요청을 하시겠습니까?',
       okType: 'confirm',
       okText: '네',
       cancelText: '아니오',
@@ -504,9 +503,9 @@ const BulkDetail = ({location}) => {
               <Button icon={<ArrowLeftOutlined />} onClick={() => {navigate('/bulkList');}}>
                 {/* {formatMessage({id: 'Back'})} */}
               </Button>
-              <Button icon={<BellFilled />} onClick={() => {sendPush();}}>
+              {(filterProcessing().length > 0)?<Button icon={<BellFilled />} onClick={() => {sendPush();}}>
                 재요청
-              </Button>
+              </Button>:<></>}
             </Space>
           ],
         }}
