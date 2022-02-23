@@ -89,7 +89,7 @@ const ESGCard = () => {
           />
           <StatisticCard
             statistic={{
-              title: '절약된 종이',
+              title: '종이 절약',
               value: Math.floor(totalPaperlessNum * 0.14 / 1000 * 1000)/1000 + ' m 높이',
               tip: 'A4 1장 두께 0.14㎜'
             }}
