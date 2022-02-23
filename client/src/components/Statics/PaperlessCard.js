@@ -51,7 +51,7 @@ const PaperlessCard = (props) => {
 
 
   return (
-    <MyStyle>
+    <MyStyle style={{marginBottom: 24}}>
     <StatisticCard.Group loading={loadingPaperless} title='페이퍼리스' tooltip='본인이 요청한 문서를 기준으로 산정'>
       <StatisticCard
         statistic={{
@@ -65,6 +65,7 @@ const PaperlessCard = (props) => {
             />
           ),
         }}
+        bodyStyle={{paddingRight: 0}}
       />
       <StatisticCard
         statistic={{
@@ -79,6 +80,7 @@ const PaperlessCard = (props) => {
             />
           ),
         }}
+        bodyStyle={{paddingRight: 0}}
       />
     </StatisticCard.Group>
     </MyStyle>

@@ -9,6 +9,7 @@ import axios from 'axios';
 import BoardCard from '../Board/BoardCard';
 import FAQCard from '../Board/FAQCard';
 import OpinionCard from '../Board/OpinionCard';
+import ESGCard from '../Statics/ESGCard';
 import DirectCard from '../Customer/DirectCard';
 import PaperlessCard from '../Statics/PaperlessCard';
 import ProCard, { StatisticCard, StatisticProps } from '@ant-design/pro-card';
@@ -605,7 +606,7 @@ const Home = () => {
   };
 
   const pie = (
-    <ProCard title="문서 통계"><Pie {...config} /></ProCard>
+    <ProCard title="문서 통계" style={{marginBottom: 24}}><Pie {...config} /></ProCard>
   )
 
   // const toSignCard = (
@@ -857,7 +858,7 @@ const Home = () => {
               // subTitle={<Tag color="#5BD8A6">private</Tag>}
               // colSpan="200px" 
               layout="center" 
-              style={{ minWidth: "150px", height: "100%" }} // 470px -> 100%
+              style={{ minWidth: "215px", height: "100%" }} // 470px -> 100%
               bodyStyle={{ padding: "5px"}}
               actions={[
                 // <div>{item.user.image ? <Avatar src={item.user.image} /> : <Avatar size={20} icon={<UserOutlined />} />} &nbsp; {item.user.name + ' ' + item.user.JOB_TITLE}</div>,
@@ -867,7 +868,7 @@ const Home = () => {
                 // <Button type="text" icon={<FilePdfOutlined />} onClick={e => { navigate('/previewPDF', {state: {docRef:item.docRef, docTitle:item.docTitle}}) }}>파일보기</Button>,
                 // <Button type="text" danger icon={<DeleteOutlined />} onClick={e => { deleteTemplateSingle(item._id) }}>삭제</Button>,
               ]}>
-                <div><img src={item.thumbnail} style={{ width:'180px', height: '228px'}} /></div>
+                <img src={item.thumbnail} style={{ width:'190px', height: '100%'}} />
             </ProCard>
             </ Badge.Ribbon>
           </Link>
@@ -1211,43 +1212,42 @@ const Home = () => {
       </Row>
       </MyStyle>
 
-      <Card style={{width:'100%'}}>{staticAllContent(checked)}</Card>
+      <Card style={{width:'100%', marginBottom: 24}}>{staticAllContent(checked)}</Card>
       </div>
   )
 
   return (
     <div>
       <div style={{background: 'white',padding:0, marginTop:'-24px', marginLeft:'-24px', marginRight:'-24px', marginBottom:'24px'}}>
-        <img src={banner} />
+        <img src={banner} style={{width: '75%'}}/>
       </div>
 
       <Row gutter={24}>
-          <Col xl={18} lg={24} md={24} sm={24} xs={24}>
-            {/* {staticsAll}<br></br> */}
-            {cardDocument}<br></br>
-            <Row gutter={24}>
-              <Col xl={12} lg={24} md={24} sm={24} xs={24} style={{display: 'flex', paddingBottom: '20px'}}>
-                <BoardCard boardType={'notice'} boardName={'공지사항'}></BoardCard>
-              </Col>
-              <Col xl={12} lg={24} md={24} sm={24} xs={24} style={{display: 'flex', paddingBottom: '20px'}}>
-              {/* <FAQCard boardType={'faq'} boardName={'FAQ'}></FAQCard> */}
+        <Col xl={18} lg={24} md={24} sm={24} xs={24}>
+          {/* {staticsAll} */}
+          {cardDocument}
+          <Row gutter={24}>
+            <Col xl={12} lg={24} md={24} sm={24} xs={24} style={{display: 'flex'}}>
+              <BoardCard boardType={'notice'} boardName={'공지사항'}></BoardCard>
+            </Col>
+            <Col xl={12} lg={24} md={24} sm={24} xs={24} style={{display: 'flex'}}>
+            {/* <FAQCard boardType={'faq'} boardName={'FAQ'}></FAQCard> */}
               <OpinionCard boardType={'opinion'} boardName={'문의/개선'}></OpinionCard>
-              
-              </Col>
-            </Row>
-            <Row gutter={24}>
-              <Col xl={12} lg={24} md={24} sm={24} xs={24}><FAQCard boardType={'faq'} boardName={'FAQ'}></FAQCard></Col>
-            </Row>
-          </Col>
-          <Col xl={6} lg={24} md={24} sm={24} xs={24}>
-            {pie}
-            <br></br>
-            <PaperlessCard />
-            <br></br>
-            <DirectCard></DirectCard>
-          </Col>
+            </Col>
+          </Row>
+          <Row gutter={24}>
+            <Col xl={24} lg={24} md={24} sm={24} xs={24} style={{display: 'flex'}}>
+              <FAQCard boardType={'faq'} boardName={'FAQ'}></FAQCard>
+            </Col>
+          </Row>
+        </Col>
+        <Col xl={6} lg={24} md={24} sm={24} xs={24}>
+          {/* {pie} */}
+          <ESGCard></ESGCard>
+          <PaperlessCard></PaperlessCard>
+          <DirectCard></DirectCard>
+        </Col>
       </Row>
-      
     </div>
   );
 };

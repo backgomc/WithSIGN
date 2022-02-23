@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useSelector, useDispatch } from 'react-redux';
+import { selectPathname, setPathname } from '../../config/MenuSlice';
 import { navigate, Link } from '@reach/router';
 import { Row, Col, Empty, Button } from 'antd';
 import ProCard from '@ant-design/pro-card';
@@ -13,13 +15,14 @@ import iconManual from '../../assets/images/icon_manual.png';
 
 const DirectCard = (props) => {
 
+    const dispatch = useDispatch();
     const { formatMessage } = useIntl();
 
     useEffect(() => {
     }, []);
 
-    const IconLink = ({ src, text }) => (
-        <a style={{marginRight:'16px', lineHeight:'24px'}}>
+    const IconLink = ({ src, text, url }) => (
+        <a style={{lineHeight:'24px'}} onClick={() => {dispatch(setPathname(url));navigate(url);}}>
           <img style={{marginRight:'8px', width:'42px', height:'42px'}} src={src} alt={text} />
           <font color='#373737'>{text}</font>
         </a>
@@ -33,25 +36,22 @@ const DirectCard = (props) => {
 
     return (
     <ProCard title="바로 가기">
-        <Row>
-          <Col span={13}>
-            <Link to='/auditCheck'>
-            <IconLink
-              src={iconCheck}
-              text={formatMessage({id: 'document.check'})}
-            />
-            </Link>
-          </Col>
-          <Col span={11}>
-            <Link to='/manual'>
-              <IconLink2
-                src={iconManual}
-                text="서비스 소개"
-              />
-            </Link>
-          </Col>
-        </Row>
-      </ProCard>
+      <div>
+          <Row gutter={48}>
+              <Col span={12} style={{paddingRight: 0}}>
+                {/* <Link to="/auditCheck" > */}
+                  <IconLink src={iconCheck} text={formatMessage({id: 'document.check'})} url="/auditCheck"/>
+                {/* </Link> */}
+              </Col>
+            
+              <Col span={12} style={{paddingRight: 0}}>
+                {/* <Link to="/manual"> */}
+                  <IconLink src={iconManual} text="서비스 소개" url="/manual"/>
+                {/* </Link> */}
+              </Col>
+          </Row>
+        </div>
+    </ProCard>
     );
 
 };

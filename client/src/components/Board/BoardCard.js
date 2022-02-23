@@ -56,7 +56,7 @@ const BoardCard = (props) => {
         <ProCard
             type='inner'	
             colSpan={{ xs: 24, sm: 12, md: 12, lg: 12, xl: 12 }}
-            style={{ marginBottom: 0, marginRight: 0, padding: 0 }}
+            style={{ marginBottom: 24, marginRight: 0, padding: 0 }}
             title={boardName}
             bordered={false}
             headerBordered

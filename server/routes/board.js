@@ -79,7 +79,7 @@ router.post('/list', (req, res) => {
       select: {name: 1, JOB_TITLE: 2, thumbnail: 3}
     })
     .exec((err, data) => {
-        console.log(data);
+        // console.log(data);
         if (err) return res.json({success: false, error: err});
         return res.json({ success: true, boards: data, total:recordsTotal })
     })
