@@ -862,7 +862,7 @@ const Home = () => {
               bodyStyle={{ padding: "5px"}}
               actions={[
                 // <div>{item.user.image ? <Avatar src={item.user.image} /> : <Avatar size={20} icon={<UserOutlined />} />} &nbsp; {item.user.name + ' ' + item.user.JOB_TITLE}</div>,
-                <div>{item.user.name + ' ' + item.user.JOB_TITLE}</div>,
+                <div>{item.user.name + ' ' + (item.user.JOB_TITLE?item.user.JOB_TITLE:'')}</div>,
                 <div>{moment(item.requestedTime).fromNow()}</div>,
                 // <Button type="text" icon={<FormOutlined />} onClick={e => { signTemplate(item) }}>서명요청</Button>,
                 // <Button type="text" icon={<FilePdfOutlined />} onClick={e => { navigate('/previewPDF', {state: {docRef:item.docRef, docTitle:item.docTitle}}) }}>파일보기</Button>,
