@@ -3,7 +3,7 @@ const router = express.Router();
 const multer = require('multer');
 const config = require('../config/key');
 const restful = require('../common/restful');
-const { ADMIN_DOCUMENT_SIGNED, ADMIN_DOCUMENT_SIGNING, ADMIN_DOCUMENT_CANCELED, ADMIN_DOCUMENT_DELETED } = require('../common/constants');
+const { ADMIN_DOCUMENT_SIGNED, ADMIN_DOCUMENT_CANCELED, ADMIN_DOCUMENT_DELETED } = require('../common/constants');
 const { hexCrypto, generateRandomPass } = require('../common/utils');
 const { Board } = require('../models/Board');
 const { Document } = require('../models/Document');
@@ -94,6 +94,15 @@ router.post('/ipronet', (req, res) => {
   restful.callNotify('6179ff170293112fbceef449',['6179ff170293112fbceef449','6179feef0293112fbceef445'],'title','content');
   // var DocuUtil = java.import('com.nonghyupit.drm.DocuUtil');
   // DocuUtil.unpackagingSync('C:/Users/NHIT_LSW/Desktop/', 'MiNe.xlsx', 'C:/Users/NHIT_LSW/Desktop/TEST.xlsx');
+});
+
+router.post('/excel', (req, res) => {
+  console.log('START');
+  Document.find({}, {'_id': 0, 'docTitle': 1, 'signedTime': 1}, (err, documents) => {
+    console.log('END');
+    if (err) return res.json({ success: false, error: err });
+    return res.json({ success: true, documents: documents });
+  })
 });
 
 

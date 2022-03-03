@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
 import { Table, Input, Space, Button, Descriptions, Tooltip, Modal, message } from "antd";
 import Highlighter from 'react-highlight-words';
-import { SearchOutlined, BellFilled } from '@ant-design/icons';
+import { SearchOutlined, BellFilled, FileExcelOutlined } from '@ant-design/icons';
 import { useSelector, useDispatch } from 'react-redux';
 import { selectUser } from '../../app/infoSlice';
 import { navigate } from '@reach/router';
@@ -13,6 +13,8 @@ import 'moment/locale/ko';
 import BulkExpander from "./BulkExpander";
 import { DocumentType, DocumentTypeBadge, DocumentTypeIcon } from '../Lists/DocumentType';
 import {DOCUMENT_SIGNED, DOCUMENT_TOSIGN, DOCUMENT_SIGNING, DOCUMENT_CANCELED, DOCUMENT_TOCONFIRM} from '../../common/Constants';
+import * as ExcelJS from 'exceljs';
+import { saveAs } from 'file-saver';
 
 import {
   FileOutlined,
@@ -232,6 +234,42 @@ const BulkDetail = ({location}) => {
     );
   }
 
+  // EXCEL 다운로드
+  const handleExcel = async () => {
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet(formatMessage({id: 'document.bulk'}));
+
+    // sheet 데이터 설정
+    worksheet.columns = [
+      { header: '문서명', key: 'docName', width: 32 },
+      { header: '서명 요청자', key: 'rqstUser', width: 16 },
+      { header: '요청일시', key: 'rqstTime', width: 24 },
+      { header: '상태', key: 'status', width: 8 },
+      { header: '서명 참여자', key: 'signUserName', width: 8 },
+      { header: '', key: 'signUserJobTitle', width: 8 },
+      { header: '', key: 'signUserOrgInfo', width: 16 },
+      { header: '서명일시', key: 'signTime', width: 32 }
+    ];
+    
+    for (var idx = 0; idx < bulk['docs'].length; idx++) {
+      worksheet.addRow({docName: bulk['docTitle'],
+                        rqstUser: bulk['user']['name'] + (bulk['user']['JOB_TITLE']?' '+bulk['user']['JOB_TITLE']:''),
+                        rqstTime: moment(bulk['requestedTime']).format('YYYY-MM-DD HH:mm:ss'),
+                        status: DocumentType({uid: _id, document: bulk['docs'][idx]}),
+                        signUserName: filterUsers(bulk['docs'][idx]['users'][0])[0]['name'],
+                        signUserJobTitle: filterUsers(bulk['docs'][idx]['users'][0])[0]['JOB_TITLE'] ? ' ' + filterUsers(bulk['docs'][idx]['users'][0])[0]['JOB_TITLE'] : '',
+                        signUserOrgInfo: orgInfos.filter(e => e.DEPART_CODE == filterUsers(bulk['docs'][idx]['users'][0])[0]['DEPART_CODE']).length > 0 ? orgInfos.filter(e => e.DEPART_CODE == filterUsers(bulk['docs'][idx]['users'][0])[0]['DEPART_CODE'])[0]['DEPART_NAME'] : '',
+                        signTime: bulk['docs'][idx]['signedTime']?moment(bulk['docs'][idx]['signedTime']).format('YYYY-MM-DD HH:mm:ss'):'서명 전'
+                      });
+    }
+    
+    worksheet.mergeCells('E1:G1');
+
+    const mimeType = { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' };
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], mimeType);
+    saveAs(blob, formatMessage({id: 'document.bulk'}) + '' + '.xlsx');
+  };
   
   const columns = [
     {
@@ -503,9 +541,12 @@ const BulkDetail = ({location}) => {
               <Button icon={<ArrowLeftOutlined />} onClick={() => {navigate('/bulkList');}}>
                 {/* {formatMessage({id: 'Back'})} */}
               </Button>
-              {(filterProcessing().length > 0)?<Button icon={<BellFilled />} onClick={() => {sendPush();}}>
+              {(filterProcessing().length > 0)?<Button icon={<BellFilled />} onClick={sendPush}>
                 재요청
               </Button>:<></>}
+              <Button icon={<FileExcelOutlined />} onClick={handleExcel}>
+                {formatMessage({id: 'excel.download'})}
+              </Button>
             </Space>
           ],
         }}
