@@ -9,6 +9,7 @@ const config = require("../config/key");
 const { generateRandomName, makeFolder, today } = require('../common/utils');
 const { DOCUMENT_SIGNED, DOCUMENT_TOSIGN, DOCUMENT_SIGNING, DOCUMENT_CANCELED, DOCUMENT_TOCONFIRM } = require('../common/constants');
 const restful = require('../common/restful');
+const e = require('express');
 
 // 신규 문서 등록  
 router.post('/addDocumentToSign', (req, res) => {
@@ -139,7 +140,24 @@ router.post('/updateDocumentToSign', (req, res) => {
         const signedByArray = [...signedBy, {user:user, signedTime:time, ip:ip}];
         const xfdfArray = [...xfdf, xfdfSigned];
 
-        Document.updateOne({ _id: docId }, {xfdf: xfdfArray, signedBy:signedByArray, usersTodo:usersTodo}, (err, result) => {
+        //S. userTodo 서버 베이스로 변경
+        var todo = [];
+        if (document.orderType == 'S'){
+          if(document.usersTodo?.length > 0) {
+            if(document.usersTodo?.filter(e => e!= user).length > 0) {
+              todo = document.usersTodo?.filter(e => e!= user)
+            } else {
+              const arr = document.usersOrder?.filter(e => e.user == document.usersTodo[0])
+              if (arr?.length > 0) {
+                todo = document.usersOrder?.filter(e => e.order == arr[0].order +1).map(e => e.user)
+              }
+            }
+          }
+        }
+        console.log("todo", todo)
+        //E
+
+        Document.updateOne({ _id: docId }, {xfdf: xfdfArray, signedBy:signedByArray, usersTodo:todo}, (err, result) => {
           if (err) {
             console.log(err);
             return res.json({ success: false, message: err })
