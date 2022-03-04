@@ -543,7 +543,7 @@ const BulkDetail = ({location}) => {
               </Button>
               {(filterProcessing().length > 0)?<Button icon={<BellFilled />} onClick={sendPush}>
                 재요청
-              </Button>:<></>}
+              </Button>:''}
               <Button icon={<FileExcelOutlined />} onClick={handleExcel}>
                 {formatMessage({id: 'excel.download'})}
               </Button>

@@ -567,7 +567,7 @@ router.post('/certNo', async (req, res) => {
   User.findOneAndUpdate({ SABUN: req.body.argS, name: req.body.argN }, {ticket: ticket}, (err, user) => {
     if (err) return res.json({ success: false, error: err });
     if (user) {
-      restful.callNHWithPUSH(null, req.body.argS, '비밀번호 초기화를 위한 인증번호 안내', '인증번호는 ['+certNo+']입니다.');
+      restful.callNHWithPUSH(null, [req.body.argS], '비밀번호 초기화를 위한 인증번호 안내', '인증번호는 ['+certNo+']입니다.');
       return res.json({success: true});
     } else {
       return res.json({success: false,  message: '사번 또는 이름을 확인할 수 없습니다.'});

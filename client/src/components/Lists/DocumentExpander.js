@@ -125,9 +125,9 @@ const DocumentExpander = (props) => {
     
     const sendPush = async () => {
         confirm({
-            title: '서명 재요청',
+            title: '서명 재요청 알림',
             icon: <BellFilled />,
-            content: '미서명자에게 재요청 하시겠습니까?',
+            content: '미서명자에게 아이프로넷 쪽지와 With 메시지로 재요청 알림을 전송하시겠습니까?',
             okType: 'confirm',
             okText: '네',
             cancelText: '아니오',
@@ -336,7 +336,7 @@ const DocumentExpander = (props) => {
                 // </PDFDownloadLink> : ''
             }
             {((DocumentType({uid: _id, document: item}) == DOCUMENT_SIGNING || DocumentType({uid: _id, document: item}) == DOCUMENT_TOSIGN) && item.user._id === _id) ? 
-                <Button icon={<BellFilled />} onClick={e => { sendPush(); }}>재요청</Button>
+                <Button icon={<BellFilled />} onClick={e => { sendPush(); }}>알림</Button>
                  : ''
             }
             {((DocumentType({uid: _id, document: item}) == DOCUMENT_SIGNING || DocumentType({uid: _id, document: item}) == DOCUMENT_TOSIGN)  
@@ -358,7 +358,7 @@ const DocumentExpander = (props) => {
             }
             {(DocumentType({uid: _id, document: item}) === DOCUMENT_CANCELED && item.user._id === _id) ?
                 <Button danger icon={<DeleteOutlined />} onClick={e => { deleteDocument(); }}>문서 폐기</Button>
-                 : <></>
+                 : ''
             }
         </Space>
     )

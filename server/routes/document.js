@@ -538,17 +538,32 @@ router.post('/statics', (req, res) => {
   var canceledNum = 0; // 서명취소 건수
   var signedNum = 0;   // 서명완료 건수
 
-  Document.countDocuments().or([{"users": {$in:[user]}}, {"user": user}]).exec(function(err, count) {
+  Document.countDocuments({"deleted": {$ne: true}}).or(
+    [
+      // 본인 요청자
+      {"user": user},
+      // 본인 참여자
+      {$and:[{"orderType": {$ne:'S'}}, {"users": {$in:[user]}}]}, // 동차
+      {$and:[{"orderType":      'S'} , {"users": {$in:[user]}}, {"signed": true}]}, // 순차이면서 전체 서명 완료
+      {$and:[{"orderType":      'S'} , {"users": {$in:[user]}}, {"signedBy.user": user}]}, // 순차이면서 본인 서명 완료
+      {$and:[{"orderType":      'S'} , {"users": {$in:[user]}}, {"usersTodo": {$in:[user]}}]}  // 순차이면서 본인 서명 차례
+    ]
+  ).exec(function(err, count) {
     if (err) return res.json({success: false, error: err});
     totalNum = count;
     console.log("totalNum:"+totalNum);
 
-    Document.countDocuments({ "users": {$in:[user]}, "signed": false, "canceled": false, "signedBy.user": {$ne:user} }).exec(function(err, count) {
+    Document.countDocuments({"deleted": {$ne: true}, "signed": false, "canceled": false}).or(
+      [ 
+        {$and:[{"orderType": {$ne:'S'}}, {"users": {$in:[user]}}]}, // 동차
+        {$and:[{"orderType":      'S'} , {"users": {$in:[user]}}, {"usersTodo": {$in:[user]}}]}  // 순차이면서 본인 서명 차례
+      ]
+    ).exec(function(err, count) {
       if (err) return res.json({success: false, error: err});
       toSignNum = count;
       console.log("toSignNum:"+toSignNum);
 
-      Document.countDocuments({"signed": false, "canceled": false})
+      Document.countDocuments({"signed": false, "canceled": false, "deleted": {$ne: true}})
               .or([ {$and:[{"users": {$in:[user]}}, {"signedBy.user": user}]},  {$and:[{"user": user}, {"users": {$ne:user}}]} ])
               // .and([{"users": {$in:[user]}}, {"signedBy.user": user}])
               // .and([{"user": user}, {"users": {$ne:user}}])
@@ -558,11 +573,11 @@ router.post('/statics', (req, res) => {
         signingNum = count;
         console.log("signingNum:"+signingNum);
 
-        Document.countDocuments({"canceled": true}).or([{"users": {$in:[user]}}, {"user": user}]).exec(function(err, count) {
+        Document.countDocuments({"canceled": true, "deleted": {$ne: true}}).or([{"users": {$in:[user]}}, {"user": user}]).exec(function(err, count) {
           if (err) return res.json({success: false, error: err});
           canceledNum = count;
 
-          Document.countDocuments({"signed": true}).or([{"users": {$in:[user]}}, {"user": user}]).exec(function(err, count) {
+          Document.countDocuments({"signed": true, "deleted": {$ne: true}}).or([{"users": {$in:[user]}}, {"user": user}]).exec(function(err, count) {
             if (err) return res.json({success: false, error: err});
             signedNum = count;
             return res.json({ success: true, totalNum:totalNum, toSignNum:toSignNum, signingNum:signingNum, canceledNum:canceledNum, signedNum:signedNum })
