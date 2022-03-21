@@ -105,7 +105,7 @@ const DocumentExpander = (props) => {
             docId: item._id
         }
         axios.post('/api/document/notify/G', param).then(response => {
-            message.success({content: '미서명자에게 아이프로넷 쪽지와 With 메시지로 재요청 알림을 전송하였습니다.', style: {marginTop: '70vh'}});
+            message.success({content: '미서명자에게 아이프로넷 쪽지 & With 메시지로 서명 재요청 알림을 보냈습니다.', style: {marginTop: '70vh'}});
         });
     }
 
@@ -127,7 +127,7 @@ const DocumentExpander = (props) => {
         confirm({
             title: '서명 재요청 알림',
             icon: <BellFilled />,
-            content: '미서명자에게 아이프로넷 쪽지와 With 메시지로 재요청 알림을 전송하시겠습니까?',
+            content: '미서명자에게 서명 재요청 알림을 보내시겠습니까?',
             okType: 'confirm',
             okText: '네',
             cancelText: '아니오',

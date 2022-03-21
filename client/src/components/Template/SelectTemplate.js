@@ -73,13 +73,13 @@ const SelectTemplate = forwardRef((props, ref) => {
       sortOrder: sorter.order,
       pagination,
       ...filters,
-      uid: _id
+      uid: _id,
+      type: props.type
     });
   };
 
   const onFinish = (values) => {
-    console.log(values)
-
+    console.log('onFinish : ' + values);
     dispatch(setTemplateTitle(values.documentTitle));
     navigate('/assign')
   }
@@ -256,20 +256,11 @@ const SelectTemplate = forwardRef((props, ref) => {
   };
 
   useEffect(() => {
-
-    if (props.type && props.type === 'C') {
-      fetch({
-        uid: _id,
-        pagination,
-        type: 'C'
-      });
-    } else {
-      fetch({
-        uid: _id,
-        pagination,
-      });
-    }
-
+    fetch({
+      uid: _id,
+      pagination,
+      type: props.type
+    });
   }, [_id]);
 
   return (

@@ -18,6 +18,9 @@ export const AssignSlice = createSlice({
     addSignee: (state, action) => {
       state.signees = [...state.signees, { key: action.payload.key, name: action.payload.name, JOB_TITLE: action.payload.JOB_TITLE, DEPART_NAME:action.payload.DEPART_NAME, order:action.payload.order } ];
     },
+    setSignees: (state, action) => {
+      state.signees = action.payload;
+    },
     resetSignee: (state, action) => {
       console.log('resetSignee');
       state.signees = [];
@@ -88,7 +91,7 @@ export const AssignSlice = createSlice({
   },
 });
 
-export const { addSignee, resetSignee, setDocumentFile, resetDocumentFile, setDocumentTitle, resetDocumentTitle, setTemplate, resetTemplate, setTemplateTitle, resetTemplateTitle, setDocumentType, resetDocumentType, setTemplateType, resetTemplateType, setSendType, resetAssignAll, setDocumentTempPath, resetDocumentTempPath } = AssignSlice.actions;
+export const { addSignee, setSignees, resetSignee, setDocumentFile, resetDocumentFile, setDocumentTitle, resetDocumentTitle, setTemplate, resetTemplate, setTemplateTitle, resetTemplateTitle, setDocumentType, resetDocumentType, setTemplateType, resetTemplateType, setSendType, resetAssignAll, setDocumentTempPath, resetDocumentTempPath } = AssignSlice.actions;
 
 export const selectAssignees = state => state.assign.signees;
 export const selectDocumentFile = state => state.assign.documentFile;

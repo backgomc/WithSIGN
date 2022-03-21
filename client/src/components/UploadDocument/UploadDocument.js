@@ -8,7 +8,7 @@ import { Tabs, Upload, message, Input, Space, Form, Button } from 'antd';
 // import { InboxOutlined, CheckOutlined } from '@ant-design/icons';
 import StepWrite from '../Step/StepWrite';
 import { useIntl } from "react-intl";
-import { setDocumentFile, setDocumentTitle, selectDocumentTitle, setDocumentTempPath, selectDocumentFile, setTemplate, setTemplateType, setDocumentType, selectDocumentType, selectTemplate, selectTemplateTitle, setTemplateTitle, selectSendType, selectTemplateType, resetTemplate, resetTemplateTitle } from '../Assign/AssignSlice';
+import { setSignees, setDocumentFile, setDocumentTitle, selectDocumentTitle, setDocumentTempPath, selectDocumentFile, setTemplate, setTemplateType, setDocumentType, selectDocumentType, selectTemplate, selectTemplateTitle, setTemplateTitle, selectSendType, selectTemplateType, resetTemplate, resetTemplateTitle } from '../Assign/AssignSlice';
 import { PageContainer } from '@ant-design/pro-layout';
 import ProCard from '@ant-design/pro-card';
 import ProForm, { ProFormUploadDragger, ProFormText } from '@ant-design/pro-form';
@@ -149,6 +149,7 @@ const UploadDocument = () => {
         setDisableNext(false)
         dispatch(setTemplate(template));
         dispatch(setTemplateTitle(template.docTitle));
+        dispatch(setSignees(template.signees));
       }
     }
   }

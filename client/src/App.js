@@ -15,6 +15,8 @@ import DocumentList from './components/Lists/DocumentList';
 import TemplateList from './components/Template/TemplateList';
 import PreviewPDF from './components/Template/PreviewPDF';
 import UploadTemplate from './components/Template/UploadTemplate';
+import AssignTemplate from './components/PrepareTemplate/AssignTemplate';
+import PrepareTemplate from './components/PrepareTemplate/PrepareTemplate';
 import BulkList from './components/Bulk/BulkList';
 import BulkDetail from './components/Bulk/BulkDetail';
 import BoardList from './components/Board/BoardList';
@@ -203,6 +205,8 @@ const App = () => {
       <DocumentList path="/documentList" />
       <TemplateList path="/templateList" />
       <UploadTemplate path="/uploadTemplate" />
+      <AssignTemplate path="/assignTemplate" />
+      <PrepareTemplate path="/prepareTemplate" />
       <BulkList path="/bulkList" />
       <BulkDetail path="/bulkDetail" />
       <MySign path="mySign" />

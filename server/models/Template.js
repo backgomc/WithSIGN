@@ -24,6 +24,34 @@ const templateSchema = mongoose.Schema({
     thumbnail: {
         type: String
     },
+    orderType: {    // A:동차발송 S:순차발송
+        type: String,
+        default: "A"
+    },
+    users: [{
+        type: Schema.Types.ObjectId,
+        ref: 'User'
+    }],
+    usersOrder: [{  // 순차 발송 순서
+        user: { type: String },
+        order: { type: Number }
+    }],
+    usersTodo: {    // 순차 발송 : 현재 단계에 서명할 사람 목록 
+        type: Array
+    },
+    observers: {
+        type: Array
+    },
+    signees: [{
+        key: { type: String },
+        name: { type: String },
+        JOB_TITLE: { type: String },
+        DEPART_NAME: { type: String },
+        order: { type: String }
+    }],
+    customRef: {
+        type: String
+    }
 })
 
 // 경로 치환

@@ -111,7 +111,7 @@ const BulkDetail = ({location}) => {
       bulkId: bulk._id
     }
     axios.post('/api/document/notify/B', param).then(response => {
-      message.success({content: '미서명자에게 아이프로넷 쪽지&With 메시지로 재요청 알림 전송하였습니다.', style: {marginTop: '70vh'}});
+      message.success({content: '미서명자에게 아이프로넷 쪽지 & With 메시지로 서명 재요청 알림을 보냈습니다.', style: {marginTop: '70vh'}});
       setLoading(false);
     });
   }
@@ -120,7 +120,7 @@ const BulkDetail = ({location}) => {
     confirm({
       title: '서명 재요청',
       icon: <BellFilled />,
-      content: '미서명자에게 서명 재요청을 하시겠습니까?',
+      content: '미서명자에게 서명 재요청 알림을 보내시겠습니까?',
       okType: 'confirm',
       okText: '네',
       cancelText: '아니오',
@@ -542,7 +542,7 @@ const BulkDetail = ({location}) => {
                 {/* {formatMessage({id: 'Back'})} */}
               </Button>
               {(filterProcessing().length > 0)?<Button icon={<BellFilled />} onClick={sendPush}>
-                재요청
+                알림
               </Button>:''}
               <Button icon={<FileExcelOutlined />} onClick={handleExcel}>
                 {formatMessage({id: 'excel.download'})}

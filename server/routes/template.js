@@ -30,7 +30,8 @@ router.post('/addTemplate', (req, res) => {
       template.save((err, documentInfo) => {
         if (err) return res.json({ success: false, err })
         return res.status(200).json({
-          success: true
+          success: true,
+          templateInfo: documentInfo
         })
       })
 
@@ -160,5 +161,21 @@ router.post('/deleteTemplate', (req, res) => {
   }
   
 })
+
+// 템플릿 설정 등록 및 수정
+router.post('/updateTemplate', (req, res) => {
+  if (!req.body._id || !req.body.user ) return res.json({ success: false, message: 'input value not enough!' });
+
+  // 경로 치환
+  var ref = req.body.customRef.replace(/(\\)/g,'/');
+
+  Template.updateOne(
+    { '_id': req.body._id, 'user': req.body.user },
+    { 'customRef': ref, 'users': req.body.users, 'observers': req.body.observers, 'orderType': req.body.orderType, 'usersOrder': req.body.usersOrder, 'usersTodo': req.body.usersTodo, 'signees': req.body.signees },
+    (err) => {
+      if (err) return res.json({ success: false, message: err });
+      return res.json({ success: true});
+  });
+});
 
 module.exports = router;

@@ -2,9 +2,10 @@ import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
 import { Popover, Tooltip, Badge, Modal, Table, Input, Space, Button, Popconfirm, Tag, Progress, List, Pagination, Card } from "antd";
 import Highlighter from 'react-highlight-words';
-import { SearchOutlined, DeleteOutlined, FileOutlined, DownloadOutlined, FileAddOutlined, FormOutlined, FilePdfOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
+import { SearchOutlined, DeleteOutlined, FileOutlined, DownloadOutlined, FileAddOutlined, FormOutlined, FilePdfOutlined, ExclamationCircleOutlined, SettingTwoTone, QuestionCircleTwoTone } from '@ant-design/icons';
 import { useSelector, useDispatch } from 'react-redux';
 import { selectUser } from '../../app/infoSlice';
+import { setSignees as templateSetSignees, resetSignee, setTemplateInfo } from '../PrepareTemplate/AssignTemplateSlice';
 import { navigate } from '@reach/router';
 import { setDocToView } from '../ViewDocument/ViewDocumentSlice';
 import { setDocToSign } from '../SignDocument/SignDocumentSlice';
@@ -13,7 +14,7 @@ import moment from 'moment';
 import 'moment/locale/ko';
 // import { DocumentType, DocumentTypeText, DOCUMENT_SIGNED, DOCUMENT_TOSIGN, DOCUMENT_SIGNING, DOCUMENT_CANCELED } from './DocumentType';
 import TemplateExpander from "./TemplateExpander";
-import { setTemplate, setDocumentType, setTemplateTitle, setTemplateType, setSendType, resetAssignAll } from '../Assign/AssignSlice';
+import { setTemplate, setDocumentType, setTemplateTitle, setTemplateType, setSendType, resetAssignAll, setSignees } from '../Assign/AssignSlice';
 import { PageContainer } from '@ant-design/pro-layout';
 import 'antd/dist/antd.css';
 import { useIntl } from "react-intl";
@@ -70,9 +71,14 @@ const TemplateList = () => {
   const [cardActionProps, setCardActionProps] = useState('actions');
   
   const [pagination, setPagination] = useState({current:1, pageSize:10});
+  const [paginationPrivate, setPaginationPrivate] = useState({current:1, pageSize:10});
+  const [paginationPublic, setPaginationPublic] = useState({current:1, pageSize:10});
   const [total, setTotal] = useState();
   const [totalPrivate, setTotalPrivate] = useState();
   const [totalPublic, setTotalPublic] = useState();
+  const [current, setCurrent] = useState();
+  const [currentPrivate, setCurrentPrivate] = useState();
+  const [currentPublic, setCurrentPublic] = useState();
   const [pageSize, setPageSize] = useState(10);
 
   const [tab, setTab] = useState('total');
@@ -113,8 +119,8 @@ const TemplateList = () => {
         setLoading(false);
 
       } else {
-          setLoading(false);
-          alert(response.data.error)
+        setLoading(false);
+        alert(response.data.error);
       }
 
     });
@@ -129,14 +135,14 @@ const TemplateList = () => {
       if (response.data.success) {
         const templates = response.data.templates;
 
-        setPagination({...params.pagination, total:response.data.total});
+        setPaginationPrivate({...params.pagination, total:response.data.total});
         setDataPrivate(templates);
         setTotalPrivate(response.data.total);
         setLoadingPrivate(false);
 
       } else {
         setLoadingPrivate(false);
-          alert(response.data.error)
+        alert(response.data.error);
       }
 
     });
@@ -151,14 +157,14 @@ const TemplateList = () => {
       if (response.data.success) {
         const templates = response.data.templates;
 
-        setPagination({...params.pagination, total:response.data.total});
+        setPaginationPublic({...params.pagination, total:response.data.total});
         setDataPublic(templates);
         setTotalPublic(response.data.total);
         setLoadingPublic(false);
 
       } else {
         setLoadingPublic(false);
-          alert(response.data.error)
+        alert(response.data.error);
       }
 
     });
@@ -204,11 +210,12 @@ const TemplateList = () => {
           if (response.data.success) {
             fetchPrivate({
               uid: _id,
-              pagination,
+              pagination: paginationPrivate,
+              type: 'M'
             });
             fetchTotal({
               uid: _id,
-              pagination,
+              pagination: pagination,
               type: 'T'
             });
           }
@@ -222,18 +229,22 @@ const TemplateList = () => {
 
   const signTemplate = (item, sendType) => {
     console.log(item._id);
-    dispatch(resetAssignAll())
-    dispatch(setDocumentType('TEMPLATE'))
+    dispatch(resetAssignAll());
+    dispatch(setDocumentType('TEMPLATE'));
     dispatch(setSendType(sendType)); //G:일반 B:대량
 
     if (item.type && item.type == 'C') {  //C:회사 M:멤버 
-      dispatch(setTemplateType('C'))
+      dispatch(setTemplateType('C'));
     } else {
-      dispatch(setTemplateType('M'))
+      dispatch(setTemplateType('M'));
     }
 
-    dispatch(setTemplateTitle(item.docTitle))
-    dispatch(setTemplate(item))
+    if (sendType === 'G' && item.signees && item.signees.length > 0) {
+      dispatch(setSignees(item.signees)); // 미리 등록한 참여자 설정값으로 서명 요청
+    }
+    
+    dispatch(setTemplateTitle(item.docTitle));
+    dispatch(setTemplate(item));
     navigate('/assign');
   }
 
@@ -363,7 +374,6 @@ const TemplateList = () => {
     },
   ];
 
-
   const rowSelection = {
     selectedRowKeys,
     onChange : selectedRowKeys => {
@@ -384,7 +394,8 @@ const TemplateList = () => {
       fetchPrivate({
         pagination: {current: 1, pageSize: pageSize},
         uid: _id,
-        docTitle: value
+        docTitle: value,
+        type: 'M'
       });
     } else if (tab === 'total') {
       fetchTotal({
@@ -404,19 +415,41 @@ const TemplateList = () => {
 
   }
 
+  const confirmToPrepare = (item) => {
+    console.log(item.signees);
+    confirm({
+      title: '참여자 설정',
+      icon: <QuestionCircleTwoTone />,
+      content: '참여자 및 입력 항목을 등록 또는 수정 하시겠습니까?',
+      okText: '네',
+      okType: 'confirm',
+      cancelText: '아니오',
+      onOk() {
+        dispatch(resetSignee());
+        dispatch(setTemplateInfo(item));
+        dispatch(templateSetSignees(item.signees));
+        navigate('/assignTemplate');
+      },
+      onCancel() {
+        // navigate('/templateList');
+      },
+    });
+  }
 
   const description = (
     <div>
       <table width='100%' style={{tableLayout:'fixed'}}>
-        <tr>
-          <td align='left' width='280px'>
-            자주 사용하는 문서를 미리 등록할 수 있습니다.
-            회사 템플릿 등록은 관리자에게 문의 해주세요.
-          </td>
-          <td align='right'>
-          < img src={banner} />
-          </td>
-        </tr>
+        <tbody>
+          <tr>
+            <td align='left' width='280px'>
+              자주 사용하는 문서를 미리 등록할 수 있습니다.
+              회사 템플릿 등록은 관리자에게 문의 해주세요.
+            </td>
+            <td align='right'>
+            < img src={banner} />
+            </td>
+          </tr>
+        </tbody>
       </table>
     </div>
   )
@@ -464,6 +497,12 @@ const TemplateList = () => {
   // )
 
   const btnReqeust = (item) => {
+    // let txt = '한 문서를 여러 명에게 보내 개별 문서에 각각 서명 받을 필요가 있을 경우 (개별 동의서, 보안서약서 등)';
+    // let chk = false;
+    // if (item.type !== 'C' && item.users && item.users.length > 0) {
+    //   txt = '참여자 설정된 템플릿은 대량 요청 불가';
+    //   chk = true;
+    // }
     return (
       <Popover
           content={
@@ -500,6 +539,44 @@ const TemplateList = () => {
     }
   }
 
+  const CustomLabel = (item) => {
+    let label = '';
+    let text = '';
+    if (item.type !== 'C') {
+      if (item.users && item.users.length > 0) {
+        text = '파일 + 참여자';
+      } else {
+        text = '파일';
+      }
+      label = (
+        <div style={{
+          // transform: 'skew(0deg, 200deg)',
+          fontSize: '1rem',
+          backgroundColor: '#000000AA',
+          color: 'white',
+          textAlign: 'center',
+          width: '280px'
+        }}>
+          <span>{text}<SettingTwoTone twoToneColor="#52c41a" style={{fontSize: '1rem'}} onClick={()=>{confirmToPrepare(item);}}/></span>
+        </div>
+      )
+    }
+    return (
+      <div style={{
+        backgroundImage: 'url('+item.thumbnail+')',
+        backgroundRepeat: 'no-repeat',
+        backgroundPosition: 'center',
+        justifyContent: 'center',
+        alignItems: 'center',
+        width: '280px',
+        height: '395px',
+        display: 'flex'
+      }}>
+        {label}
+      </div>
+    )
+  }
+
   const cardModePrivate = (
     <List
     rowKey="id"
@@ -510,13 +587,16 @@ const TemplateList = () => {
     pagination={{
       onChange: page => {
         console.log('page:'+page);
+        setCurrentPrivate(page);
         fetchPrivate({
           pagination: {current: page, pageSize: pageSize},
-          uid: _id
+          uid: _id,
+          type: 'M'
         });
       },
       pageSize: pageSize,
-      total: totalPrivate
+      total: totalPrivate,
+      current: currentPrivate
     }}
     // pagination={pagination}
     renderItem={item => (
@@ -534,7 +614,8 @@ const TemplateList = () => {
           style={{ minWidth: "320px", height: "100%" }}
           bodyStyle={{ padding: "5px"}}
           actions={actionItems(item)}>
-            <div><img src={item.thumbnail} style={{width: '280px', height: '395px'}} /></div>
+            {/* <div><img src={item.thumbnail} style={{width: '280px', height: '395px'}} /></div> */}
+            {CustomLabel(item)}
         </ProCard>
         </Badge.Ribbon>
       </List.Item>
@@ -552,6 +633,7 @@ const TemplateList = () => {
     pagination={{
       onChange: page => {
         console.log('page:'+page);
+        setCurrentPublic(page);
         fetchPublic({
           pagination: {current: page, pageSize: pageSize},
           uid: _id,
@@ -559,7 +641,8 @@ const TemplateList = () => {
         });
       },
       pageSize: pageSize,
-      total: totalPublic
+      total: totalPublic,
+      current: currentPublic
     }}
     // pagination={pagination}
     renderItem={item => (
@@ -577,7 +660,8 @@ const TemplateList = () => {
           style={{ minWidth: "320px", height: "100%" }}
           bodyStyle={{ padding: "5px"}}
           actions={actionItems(item)}>
-            <div><img src={item.thumbnail} style={{width: '280px', height: '395px'}} /></div>
+            {/* <div><img src={item.thumbnail} style={{width: '280px', height: '395px'}} /></div> */}
+            {CustomLabel(item)}
         </ProCard>
         </Badge.Ribbon>
       </List.Item>
@@ -595,14 +679,16 @@ const TemplateList = () => {
     pagination={{
       onChange: page => {
         console.log('page:'+page);
-        fetchPublic({
+        setCurrent(page);
+        fetchTotal({
           pagination: {current: page, pageSize: pageSize},
           uid: _id,
           type: 'T'
         });
       },
       pageSize: pageSize,
-      total: totalPublic
+      total: total,
+      current: current
     }}
     // pagination={pagination}
     renderItem={item => (
@@ -616,7 +702,8 @@ const TemplateList = () => {
           style={{ minWidth: "320px", height: "100%" }}
           bodyStyle={{ padding: "5px"}}
           actions={actionItems(item)}>
-            <div><img src={item.thumbnail} style={{width: '280px', height: '395px'}} /></div>
+            {/* <div><img src={item.thumbnail} style={{width: '280px', height: '395px'}} /></div> */}
+            {CustomLabel(item)}
         </ProCard>
         </Badge.Ribbon>
       </List.Item>
@@ -638,18 +725,19 @@ const TemplateList = () => {
 
     fetchTotal({
       uid: _id,
-      pagination,
+      pagination: pagination,
       type: 'T'
     });
 
     fetchPrivate({
       uid: _id,
-      pagination,
+      pagination: paginationPrivate,
+      type: 'M'
     });
 
     fetchPublic({
       uid: _id,
-      pagination,
+      pagination: paginationPublic,
       type: 'C'
     });
 
