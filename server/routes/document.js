@@ -25,6 +25,10 @@ router.post('/addDocumentToSign', (req, res) => {
 
   const document = new Document(req.body)
 
+  // 서명요청자 ip 정보 추가
+  const ip = requestIp.getClientIp(req)
+  document.ip = ip
+
   console.log('document:', document)
 
   document.save((err, document) => {

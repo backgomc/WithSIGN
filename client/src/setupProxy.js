@@ -17,4 +17,11 @@ module.exports = function(app) {
     })
   );
 
+  app.use(
+    '/block',
+    createProxyMiddleware({
+      target: 'http://localhost:3003',
+      changeOrigin: true,
+    })
+  );
 };

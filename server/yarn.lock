@@ -1582,6 +1582,13 @@
   "resolved" "https://registry.npmjs.org/mkdirp/-/mkdirp-1.0.4.tgz"
   "version" "1.0.4"
 
+"mmmagic@^0.5.3":
+  "integrity" "sha512-xLqCu7GJYTzJczg0jafXFuh+iPzQL/ru0YYf4GiTTz8Cehru/wiXtUS8Pp8Xi77zNaiVndJ0OO1yAFci6iHyFg=="
+  "resolved" "https://registry.npmjs.org/mmmagic/-/mmmagic-0.5.3.tgz"
+  "version" "0.5.3"
+  dependencies:
+    "nan" "^2.13.2"
+
 "moment-timezone@^0.5.31":
   "integrity" "sha512-3zAEHh2hKUs3EXLESx/wsgw6IQdusOT8Bxm3D9UrHPQR7zlMmzwybC8zHEM1tQ4LJwP7fcxrWr8tuBg05fFCbg=="
   "resolved" "https://registry.npmjs.org/moment-timezone/-/moment-timezone-0.5.34.tgz"
@@ -1692,7 +1699,7 @@
     "type-is" "^1.6.4"
     "xtend" "^4.0.0"
 
-"nan@2.14.0":
+"nan@^2.13.2", "nan@2.14.0":
   "integrity" "sha512-INOFj37C7k3AfaNTtX8RhsTw7qRy7eLET14cROi9+5HAVbbHuIWUHEauBv5qT4Av2tWasiTY1Jw6puUNqRJXQg=="
   "resolved" "https://registry.npmjs.org/nan/-/nan-2.14.0.tgz"
   "version" "2.14.0"

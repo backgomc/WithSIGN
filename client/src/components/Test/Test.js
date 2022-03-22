@@ -242,6 +242,12 @@ const Test = () => {
     ))
   }
 
+
+  const fetchBlock = async (params = {}) => {
+    const res = await axios.post('/block/saveDocHash', {docHash: "ABC"})
+    console.log(res);
+  };
+
   const fetch = async (params = {}) => {
     setLoading(true);
 
@@ -346,6 +352,8 @@ const Test = () => {
     fetch({
       OFFICE_CODE: "7831"
     });
+
+    fetchBlock();
 
   }, []);
 

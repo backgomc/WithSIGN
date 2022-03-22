@@ -204,6 +204,7 @@ const AuditDocument = (props) => {
               {createTableRow("문서명", docTitle, 20, 80)}
               {createTableRow("문서 ID",item._id, 20, 80)}
               {createTableRow("문서 Hash", item.docHash, 20, 80)}
+              {item.transactionHash ? createTableRow("트랜잭션 Hash", item.transactionHash, 20, 80) : <View />}
               {createTableRow("기준 시간", "(UTC+09:00) 한국 표준시", 20, 80)}
               {createTableRow("서명 진행 상태","완료", 20, 80)}
            </View>
@@ -219,6 +220,7 @@ const AuditDocument = (props) => {
            <View style={tableStyle}>
               {createTableRow("이름", item.user.name +" "+ item.user.JOB_TITLE, 20, 80)}
               {createTableRow("요청 시간", <Moment format='YYYY/MM/DD HH:mm'>{item.requestedTime}</Moment>, 20, 80)}
+              {item.ip ? createTableRow("IP 정보", item.ip, 20, 80) : <View />}
            </View>
 
           <View style={{margin:12}}/>
@@ -233,7 +235,7 @@ const AuditDocument = (props) => {
            {item.signedBy.map(({ user, signedTime, ip }) => (
             <View style={{display: "table", width: "auto", marginBottom: "10"}}>
             {createTableRow("이름", item.users.filter(e => e._id === user)[0].name + " " + item.users.filter(e => e._id === user)[0].JOB_TITLE, 20, 80)}
-            {createTableRow("서명 시간", <Moment format='YYYY/MM/DD HH:mm'>{signedTime}</Moment>, 20, 80)}
+            {createTableRow(item.observers.includes(user) ? "수신 시간" : "서명 시간", <Moment format='YYYY/MM/DD HH:mm'>{signedTime}</Moment>, 20, 80)}
             {createTableRow("IP 정보", ip, 20, 80)}
             </View>
           ))}

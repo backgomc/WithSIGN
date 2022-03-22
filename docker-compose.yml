@@ -7,7 +7,7 @@ services:
     container_name: nhsign_admin # 컨테이너 명
     restart: always
     ports:
-      - 3002:3002
+      - 4002:3002
     volumes: # 볼륨 설정
       - ./admin/build:/app/build
 

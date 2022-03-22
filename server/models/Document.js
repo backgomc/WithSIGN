@@ -10,6 +10,9 @@ const documentSchema = mongoose.Schema({
         type: String,
         trim: true    
     },
+    ip: {   // 서명요청자 ip 정보
+        type: String
+    },
     docTitle: {
         type: String
     },
@@ -25,6 +28,9 @@ const documentSchema = mongoose.Schema({
         default: "A"
     },
     docHash: {
+        type: String
+    },
+    transactionHash: {
         type: String
     },
     // users: { type: Array },  //ISSUE: 아래 걸로 하면 리스트 하나를 못가지고 옴 

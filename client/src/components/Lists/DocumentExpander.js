@@ -4,10 +4,11 @@ import { Tooltip, Tag, Timeline, Button, Alert, Modal, Badge, Descriptions, Spac
 import Moment from 'react-moment';
 import { useSelector, useDispatch } from 'react-redux';
 import { selectUser } from '../../app/infoSlice';
+import { TRANSACTION_URL } from '../../config/Config';
 import ReactPDF, { pdf, Page, Text, View, Document, StyleSheet, PDFViewer, PDFDownloadLink } from '@react-pdf/renderer';
 import { saveAs } from 'file-saver';
 import AuditDocument from '../Audit/AuditDocument';
-import {
+import Icon, {
     CheckCircleOutlined,
     SyncOutlined,
     CloseCircleOutlined,
@@ -18,8 +19,10 @@ import {
     CloseOutlined,
     BellFilled,
     DeleteOutlined,
-    DownloadOutlined
+    DownloadOutlined,
+    FileProtectOutlined
   } from '@ant-design/icons';
+import { ReactComponent as Blockchain} from '../../assets/images/blockchain.svg';
 import { DocumentTypeBadge, DocumentType, DocumentTypeText } from './DocumentType';
 import { DOCUMENT_SIGNED, DOCUMENT_TOSIGN, DOCUMENT_SIGNING, DOCUMENT_CANCELED, DOCUMENT_TOCONFIRM } from '../../common/Constants';
 import ProCard from '@ant-design/pro-card';
@@ -39,7 +42,6 @@ import styled from 'styled-components';
 import ico_bullet from '../../assets/images/table_bullet.png';
 
 const { confirm } = Modal;
-
 const Container = styled.div`
     padding: 0px;
     width: 100%;
@@ -305,6 +307,12 @@ const DocumentExpander = (props) => {
                 </Button> : '' 
             } */}
 
+            {item.transactionHash ? <Button 
+                                        icon={<Icon component={Blockchain} />}
+                                        onClick={() => { window.open(TRANSACTION_URL+item.transactionHash, "Blockchain", "width=1280, height=800, toolbar=no, menubar=no, scrollbars=no, resizable=yes" ); }}>
+                                    트랜잭션
+                                    </Button> : ''}
+
             {DocumentType({uid: _id, document: item}) == DOCUMENT_SIGNED ?
                 // <Button
                 // onClick={() => {         
@@ -314,7 +322,7 @@ const DocumentExpander = (props) => {
                 // </Button> : '' 
 
                 <Button
-                icon={<DownloadOutlined />}
+                icon={<FileProtectOutlined />}
                 onClick={() => { navigate('/audit', { state: { docInfo: item } } ); }
                     // async () => {         
                     //     const doc = <AuditDocument item={item} />;

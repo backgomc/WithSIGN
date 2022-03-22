@@ -8,6 +8,7 @@ const { hexCrypto, makeFolder, generateRandomName } = require('../common/utils')
 const { Emp } = require('../models/Emp');
 const { Org } = require('../models/Org');
 const { User } = require('../models/User');
+const { Document } = require('../models/Document');
 
 const saltRounds = 10;
 const titleHeader = '[WithSIGN] ';
@@ -298,4 +299,27 @@ let callNHWithPUSH = async (sendInfo, recvInfo, title, message) => {
     }
 }
 
-module.exports = {callOrgAPI, callUserAPI, callDRMPackaging, callDRMUnpackaging, callNotify, callIpronetMSG, callNHWithPUSH}
+// 블록체인 해시값 저장
+// docHash : String 
+let callSaveDocHash = async (docId, docHash) => {
+    console.log('NHWITH SEND PUSH');
+    if (!docHash) return;
+    try {
+        let url = config.blockURI+'/block/saveDocHash';
+        let conf = {headers: {'Content-Type': 'application/json'}}
+        let body = {
+            docHash: docHash
+        }
+        let res = await axios.post(url, JSON.stringify(body), conf);
+        console.log(res);
+
+        if(res.data.success) {
+            await Document.updateOne({ _id: docId }, {transactionHash: res.data.result.transactionHash});
+        }
+
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+module.exports = {callOrgAPI, callUserAPI, callDRMPackaging, callDRMUnpackaging, callNotify, callIpronetMSG, callNHWithPUSH, callSaveDocHash}

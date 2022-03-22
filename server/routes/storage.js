@@ -225,7 +225,7 @@ router.post('/checkHashByFile', uploadTemp.single('file'), async (req, res) => {
 })
 
 // file hash 값 업데이트 
-router.post('/updateHash', (req, res) => {
+router.post('/updateHash', async (req, res) => {
 
     if (!req.body.docId) {
         return res.json({ success: false, message: "input value not enough!" })
@@ -249,11 +249,13 @@ router.post('/updateHash', (req, res) => {
           console.log('md5:'+hex);
       
           // DOCUMENT에 HASH 값 저장
-          Document.updateOne({ _id: docId }, {docHash: hex}, (err, result) => {
+          Document.updateOne({ _id: docId }, {docHash: hex}, async (err, result) => {
               if (err) {
                   res.json({ success: false, message: err });
               } else {
-                  return res.json({ success: true, hash: hex })
+                // 블록체인 해시값 저장
+                restful.callSaveDocHash(docId, hex);
+                return res.json({ success: true, hash: hex })
               }
           });
 

@@ -13,5 +13,6 @@ module.exports = {
     nhwithID: "NHSIGN",
     nhwithPW: "32833422e7335100e61a8ef710729a82d235ab1800471d63126497460f6d7b66",
     nhwithSNDR: "fa81071cefc938ebc99e01dc7677cd24",
-    withsignURI: "http://10.220.141.91:3001"
+    withsignURI: "http://10.220.141.91:3001",
+    blockURI: "http://10.220.141.92:3003",
 }
