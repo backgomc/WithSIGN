@@ -595,4 +595,20 @@ router.post('/verify', async (req, res) => {
   });
 });
 
+// 유저 상태 확인
+router.post('/check', (req, res) => {
+  if (!req.body.assignees) return res.json({ success: false, message: "input value not enough!" });
+  
+  var assignees = req.body.assignees;
+  var ids = assignees.map((data) => data['key']);
+  
+  User.find({ '_id': {$in: ids}, 'use': true }, {'_id': 1}).exec(function(err, userList) {
+    if (err) return res.json({ success: false, error: err });
+    var assigneesCheck = assignees.filter((element) => {
+      return userList.some(e => element['key'] == e['_id']);
+    });
+    return res.json({success: true, assignees: assigneesCheck});
+  });
+});
+
 module.exports = router;
