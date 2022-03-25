@@ -371,13 +371,12 @@ const sortView = (
             const newItem = {id:element.key, name:element.name, JOB_TITLE:element.JOB_TITLE, DEPART_NAME:element.DEPART_NAME };
             newItems.push(newItem);
           });
-          if(newItems.length > 0 || assigneesCheck.filter(e => e.order > i).length > 0) {
+          if (newItems.length > 0 || assigneesCheck.filter(e => e.order > i).length > 0) {
             newColumns[i] = {name: (i + 1) + ' 단계', items:newItems}
           }
         }
         
         console.log('newColumns', newColumns);
-
         if (Object.keys(newColumns).length > 0) {
           setColumns(newColumns);
         } else {

@@ -5,7 +5,7 @@ import { useIntl } from "react-intl";
 import { navigate, Link } from '@reach/router';
 import { Transfer, Tree, Input, Button, Card, Avatar, message, Row, Col, Tag } from 'antd';
 import { selectUser } from '../../app/infoSlice';
-import { addSignee, resetSignee, selectAssignees, selectSendType } from './AssignSlice';
+import { addSignee, setSignees, resetSignee, selectAssignees, selectSendType } from './AssignSlice';
 import StepWrite from '../Step/StepWrite'
 import TreeTransfer from '../TreeTransfer/TreeTransfer';
 import { PageContainer } from '@ant-design/pro-layout';
@@ -398,48 +398,49 @@ const sortView = (
       OFFICE_CODE: "7831"
     });
 
+    // 순차 서명 유저 셋팅
+    var newColumns = {};
+
     if (assignees) {
-      var targets = []
-      assignees.forEach(element => {
-        targets.push(element.key)
-      });
-      setTarget(targets)
+      // 참여자 설정되어 있을 경우 유저 상태 체크 필요 
+      axios.post('/api/users/check', {assignees: assignees}).then(response => {
+        let assigneesCheck  = response.data.assignees;
+        dispatch(setSignees(assigneesCheck));
 
-      if (assignees.length > 0) {// && !(assignees.length === 1 && assignees[0].key === _id)) { // 참여자에 본인만 있을 경우 제한
-        setDisableNext(false);
-      } else {
-        setDisableNext(true);
-      }
+        var targets = []
+        assignees.forEach(element => {
+          targets.push(element.key);
+        });
+        setTarget(targets);
 
-
-      // 순차 서명 유저 셋팅
-      var newColumns = {};
-
-      for(let i=0; i<10; i++){
-        const assigneesFiltered = assignees.filter(e => e.order == i)
-        var newItems = [];
-        assigneesFiltered.map(element => {
-          const newItem = {id:element.key, name:element.name, JOB_TITLE:element.JOB_TITLE, DEPART_NAME:element.DEPART_NAME };
-          newItems.push(newItem)
-        })
-        if(newItems.length > 0) {
-          newColumns[i] = {name: (i + 1) + " 단계", items:newItems}
+        if (assigneesCheck.length > 0) {// && !(assigneesCheck.length === 1 && assigneesCheck[0].key === _id)) { // 참여자에 본인만 있을 경우 제한
+          setDisableNext(false);
+        } else {
+          setDisableNext(true);
         }
-      }
 
-      console.log('newColumns', newColumns)
-      console.log(newColumns.length)
-      if (assignees.length > 0) {
-        setColumns(newColumns);
-      } else {
-        setColumns(columnsDefault);
-      }
-      //
+        for (let i=0; i<10; i++) {
+          const assigneesFiltered = assigneesCheck.filter(e => e.order == i);
+          var newItems = [];
+          assigneesFiltered.map(element => {
+            const newItem = {id:element.key, name:element.name, JOB_TITLE:element.JOB_TITLE, DEPART_NAME:element.DEPART_NAME };
+            newItems.push(newItem);
+          })
+          if (newItems.length > 0 || assigneesCheck.filter(e => e.order > i).length > 0) {
+            newColumns[i] = {name: (i + 1) + " 단계", items:newItems}
+          }
+        }
 
-
-
+        console.log('newColumns', newColumns);
+        if (Object.keys(newColumns).length > 0) {
+          setColumns(newColumns);
+        } else {
+          setColumns(columnsDefault);
+        }
+      });
+    } else {
+      setColumns(columnsDefault);
     }
-
   }, []);
 
 
