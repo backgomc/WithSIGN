@@ -364,7 +364,7 @@ const sortView = (
                                 >
                                 <Meta
                                   avatar={item.thumbnail ?  <Avatar src={item.thumbnail} /> : <Avatar size={35} icon={<UserOutlined />} />}
-                                  title={item.name +' '+ item.JOB_TITLE}
+                                  title={(item.JOB_TITLE)?item.name+' '+item.JOB_TITLE:item.name}
                                   description={item.DEPART_NAME}
                                 />
                               </ProCard>

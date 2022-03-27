@@ -114,53 +114,54 @@ router.post('/templates', (req, res) => {
 router.post('/deleteTemplate', (req, res) => {
 
   if (!req.body._ids) {
-      return res.json({ success: false, message: "input value not enough!" })
+    return res.json({ success: false, message: "input value not enough!" });
   } 
 
-  const _ids = req.body._ids
+  const _ids = req.body._ids;
   
   try {
-
     // 스토리지 파일 삭제 
     Template
     .find({"_id" : {$in: _ids} })
     .exec((err, rows) => {
       rows.forEach(template => {
-        console.log(template.docRef)
+        console.log(template.docRef);
+        console.log(template.customRef);
 
         fs.unlink(template.docRef, function (err) {            
-          if (err) {                                                 
-              console.error(err);
-              // return res.json({ success: false, msg:err });                                    
-          }                                                          
+          if (err) {
+            console.error(err);
+            // return res.json({ success: false, msg:err });
+          }
           console.log('File has been Deleted');    
           
           // 썸네일 이미지 삭제 
           fs.access(template.thumbnail, fs.constants.F_OK, (err) => { // A
             if (err) return console.log('삭제할 수 없는 파일입니다');
-          
-            fs.unlink(template.thumbnail, (err) => err ?  
+            fs.unlink(template.thumbnail, (err) => err ?
               console.log(err) : console.log(`${template.thumbnail} 를 정상적으로 삭제했습니다`));
           });
 
-        });        
-
+          // 사용자 템플릿 삭제
+          fs.access(template.customRef, fs.constants.F_OK, (err) => { // A
+            if (err) return console.log('삭제할 수 없는 파일입니다');
+            fs.unlink(template.customRef, (err) => err ?
+              console.log(err) : console.log(`${template.customRef} 를 정상적으로 삭제했습니다`));
+          });
+        });
       });
 
       // DB 삭제
       Template.deleteMany({_id: { $in: _ids}}, function(err) {
-        if (err) { return res.json({ success: false, msg:err }) }
-        return res.status(200).json({ success: true})     
-      })
-
-    })
-
+        if (err) { return res.json({ success: false, msg:err }); }
+        return res.status(200).json({ success: true});
+      });
+    });
   } catch(error) {
-    console.log(error)
-    return res.json({ success: false, msg:error })
+    console.log(error);
+    return res.json({ success: false, msg:error });
   }
-  
-})
+});
 
 // 템플릿 설정 등록 및 수정
 router.post('/updateTemplate', (req, res) => {

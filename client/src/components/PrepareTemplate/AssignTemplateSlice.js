@@ -4,6 +4,7 @@ export const AssignTemplateSlice = createSlice({
   name: 'assignTemplate',
   initialState: {
     signees: [],
+    observers: [],
     templateId: '',
     templateRef: '',
     templateFileName: ''
@@ -18,6 +19,12 @@ export const AssignTemplateSlice = createSlice({
     resetSignee: (state, action) => {
       state.signees = [];
     },
+    setObservers: (state, action) => {
+      state.observers = action.payload;
+    },
+    resetObservers: (state, action) => {
+      state.observers = [];
+    },
     setTemplateInfo: (state, action) => {
       state.templateId = action.payload._id;
       if (action.payload.signees && action.payload.signees.length > 0) {
@@ -30,15 +37,17 @@ export const AssignTemplateSlice = createSlice({
     },
     resetAssignAll: (state, action) => {
       state.signees = [];
+      state.observers = [];
       state.templateId = null;
       state.templateRef = null;
     }
   }
 });
 
-export const { addSignee, setSignees, resetSignee, setTemplateInfo, resetAssignAll } = AssignTemplateSlice.actions;
+export const { addSignee, setSignees, resetSignee, setObservers, resetObservers, setTemplateInfo, resetAssignAll } = AssignTemplateSlice.actions;
 
-export const selectAssignees = state => state.assignTemplate.signees;
+export const selectSignees = state => state.assignTemplate.signees;
+export const selectObservers = state => state.assignTemplate.observers;
 export const selectTemplateId = state => state.assignTemplate.templateId;
 export const selectTemplateRef = state => state.assignTemplate.templateRef;
 export const selectTemplateFileName = state => state.assignTemplate.templateFileName;

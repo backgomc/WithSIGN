@@ -8,7 +8,7 @@ import { Tabs, Upload, message, Input, Space, Form, Button } from 'antd';
 // import { InboxOutlined, CheckOutlined } from '@ant-design/icons';
 import StepWrite from '../Step/StepWrite';
 import { useIntl } from "react-intl";
-import { setSignees, setDocumentFile, setDocumentTitle, selectDocumentTitle, setDocumentTempPath, selectDocumentFile, setTemplate, setTemplateType, setDocumentType, selectDocumentType, selectTemplate, selectTemplateTitle, setTemplateTitle, selectSendType, selectTemplateType, resetTemplate, resetTemplateTitle } from '../Assign/AssignSlice';
+import { setSignees, setObservers, setDocumentFile, setDocumentTitle, selectDocumentTitle, setDocumentTempPath, selectDocumentFile, setTemplate, setTemplateType, setDocumentType, selectDocumentType, selectTemplate, selectTemplateTitle, setTemplateTitle, selectSendType, selectTemplateType, resetTemplate, resetTemplateTitle } from '../Assign/AssignSlice';
 import { PageContainer } from '@ant-design/pro-layout';
 import ProCard from '@ant-design/pro-card';
 import ProForm, { ProFormUploadDragger, ProFormText } from '@ant-design/pro-form';
@@ -136,20 +136,23 @@ const UploadDocument = () => {
   }
 
   const templateNext = () => {
-
-    dispatch(setDocumentType('TEMPLATE'))
     dispatch(setTemplateTitle(templateTitle));
-    navigate('/assign')
+    navigate('/assign');
   }
 
   const templateChanged = (template) => {
+    dispatch(setDocumentType('TEMPLATE'));
     if(template) {
       console.log(template);
       if (template.docTitle.length > 0) {
-        setDisableNext(false)
+        setDisableNext(false);
         dispatch(setTemplate(template));
         dispatch(setTemplateTitle(template.docTitle));
-        dispatch(setSignees(template.signees));
+        if (sendType !== 'B') {
+          dispatch(setDocumentType('TEMPLATE_CUSTOM'));
+          dispatch(setSignees(template.signees));
+          dispatch(setObservers(template.observers));
+        }
       }
     }
   }
@@ -228,9 +231,9 @@ const UploadDocument = () => {
               setTab(activeKey)
 
               if (activeKey === "tab1") {
-                dispatch(setDocumentType('PC'))
+                // dispatch(setDocumentType('PC'))
               } else if (activeKey === "tab2") {
-                dispatch(setDocumentType('TEMPLATE'))
+                // dispatch(setDocumentType('TEMPLATE'))
                 dispatch(setTemplateType('M'))
 
                 dispatch(resetTemplate());
@@ -240,7 +243,7 @@ const UploadDocument = () => {
                 // templateRef_M.current.resetSelect();
                 
               } else {
-                dispatch(setDocumentType('TEMPLATE'))
+                // dispatch(setDocumentType('TEMPLATE'))
                 dispatch(setTemplateType('C'))
 
                 dispatch(resetTemplate());

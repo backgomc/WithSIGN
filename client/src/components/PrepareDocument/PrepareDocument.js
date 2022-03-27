@@ -14,13 +14,13 @@ import { navigate } from '@reach/router';
 // } from 'gestalt';
 import { Upload, message, Badge, Button, Row, Col, List, Card, Checkbox, Tooltip, Tag } from 'antd';
 import { InboxOutlined, HighlightOutlined, PlusOutlined, ArrowLeftOutlined, SendOutlined } from '@ant-design/icons';
-import { selectDocumentTempPath, resetAssignAll, selectAssignees, resetSignee, selectDocumentFile, selectDocumentTitle, resetDocumentFile, resetDocumentTitle, selectTemplate, resetTemplate, selectDocumentType, resetDocumentType, selectTemplateTitle, selectSendType, selectOrderType } from '../Assign/AssignSlice';
+import { selectDocumentTempPath, resetAssignAll, selectAssignees, selectObservers, resetSignee, selectDocumentFile, selectDocumentTitle, resetDocumentFile, resetDocumentTitle, selectTemplate, resetTemplate, selectDocumentType, resetDocumentType, selectTemplateTitle, selectSendType, selectOrderType } from '../Assign/AssignSlice';
 import { selectUser } from '../../app/infoSlice';
 import WebViewer from '@pdftron/webviewer';
 // import 'gestalt/dist/gestalt.css';
 import './PrepareDocument.css';
 import StepWrite from '../Step/StepWrite'
-import { useIntl } from "react-intl";
+import { useIntl } from 'react-intl';
 import RcResizeObserver from 'rc-resize-observer';
 import { PageContainer } from '@ant-design/pro-layout';
 import ProCard from '@ant-design/pro-card';
@@ -60,13 +60,13 @@ const PrepareDocument = () => {
   const sendType = useSelector(selectSendType);
   // const orderType = useSelector(selectOrderType);
   const documentTempPath = useSelector(selectDocumentTempPath);
-
+  const preObserver = useSelector(selectObservers);
   const assignees = useSelector(selectAssignees);
   const assigneesValues = assignees.map(user => {
     return { value: user.key, label: user.name };
   });
   const box = assignees.map(user => {
-    return { key:user.key, sign:0, text:0, observer:0 };
+    return { key:user.key, sign:0, text:0, observer:(preObserver.filter(v => v === user.key).length > 0)?1:0};
   });
   const box_bulk = [{key:'bulk', sign:0, text:0}]
 
@@ -148,6 +148,9 @@ const PrepareDocument = () => {
     //     return { [user.key]: {sign:0, text:0} };
     // }))
 
+    setObservers(preObserver.filter((value) => {
+      return assignees.some(v => value == v.key);
+    }));
 
     WebViewer(
       {
@@ -195,7 +198,7 @@ const PrepareDocument = () => {
       instance.setToolbarGroup('toolbarGroup-View');
 
       // set local font 
-      CoreControls.setCustomFontURL("/webfonts/");
+      CoreControls.setCustomFontURL('/webfonts/');
 
       // set language
       instance.setLanguage('ko');
@@ -217,12 +220,14 @@ const PrepareDocument = () => {
 
       if (documentType === 'TEMPLATE') {
         // /storage/... (O) storage/...(X)
-        instance.loadDocument('/'+template.docRef)
-      } else if(documentType === 'PC') {
-        // instance.loadDocument(documentFile)
-        instance.loadDocument('/'+documentTempPath)
+        instance.loadDocument('/'+template.docRef);
+      } else if (documentType === 'TEMPLATE_CUSTOM') {
+        // /storage/... (O) storage/...(X)
+        instance.loadDocument('/'+template.customRef);
+      } else if (documentType === 'PC') {
+        // instance.loadDocument(documentFile);
+        instance.loadDocument('/'+documentTempPath);
       }
-
 
       docViewer.on('documentLoaded', () => {
         console.log('documentLoaded called');
@@ -264,11 +269,46 @@ const PrepareDocument = () => {
 
       annotManager.on('annotationChanged', (annotations, action, info) => {
 
-        console.log('called annotationChanged:'+ action)
+        console.log('called annotationChanged:'+ action);
 
+        const { Annotations, docViewer, Font } = instance;
+        let firstChk = false;
+
+        annotations.forEach(function(annot) {
+          console.log(annot.getCustomData('id'));
+          // 템플릿 항목 설정 체크
+          if (annot.getCustomData('id') && annot.getCustomData('id').endsWith('CUSTOM')) {
+            let name = annot.getCustomData('id'); // sample: 6156a3c9c7f00c0d4ace4744_SIGN_CUSTOM
+            let user = name.split('_')[0];
+            let type = name.split('_')[1];
+            
+            firstChk = true;
+
+            // boxData 와 일치하는 annotation 없을 경우 삭제 (퇴사자)
+            console.log(boxData);
+
+            let member = boxData.filter(e => e.key === user)[0];
+            console.log(member);
+            if (name.includes('SIGN')) {
+              member.sign = member.sign + 1;
+            } else if (name.includes('TEXT')) {
+              member.text = member.text + 1;
+            }
+            let newBoxData = boxData.slice();
+            newBoxData[boxData.filter(e => e.key === user).index] = member;
+            setBoxData(newBoxData);
+
+            // annotation 구분값 복원
+            annot.FontSize = '' + 18.0 / docViewer.getZoom() + 'px';
+            annot.custom = {
+              type,
+              name : user + '_' + type
+            }
+            annot.deleteCustomData('id');
+          }
+        });
 
         // TODO : 자유 텍스트 상단 짤리는 문제 ...
-        const { Annotations, docViewer, Font } = instance;
         console.log(annotations[0].Subject, annotations[0].ToolName, annotations[0].TextAlign) 
        
         if (annotations[0].ToolName && annotations[0].ToolName.startsWith('AnnotationCreateFreeText') && action === 'add') {
@@ -278,9 +318,9 @@ const PrepareDocument = () => {
         }
         
 
-        // applyFields 에서 호출 시는 아래가 호출되지 않도록 처리 
-        if (!annotations[0].custom) {
-          return
+        // 최초 실행 또는 applyFields 에서 호출 시는 아래가 호출되지 않도록 처리 
+        if (firstChk || !annotations[0].custom) {
+          return;
         } 
 
         //TODO
@@ -289,7 +329,7 @@ const PrepareDocument = () => {
         if (action === 'add') {
           console.log('added annotation');
 
-          const name = annotations[0].custom.name //sample: 6156a3c9c7f00c0d4ace4744_SIGN_
+          const name = annotations[0].custom.name; //sample: 6156a3c9c7f00c0d4ace4744_SIGN_
           const user = name.split('_')[0]
 
           const member = boxData.filter(e => e.key === user)[0]
@@ -385,7 +425,7 @@ const PrepareDocument = () => {
       if (res.data.success) {
         const signs = res.data.signs;
 
-        var signDatas = []
+        var signDatas = [];
         signs.forEach(element => {
           signDatas.push(element.signData)
         });
@@ -591,7 +631,7 @@ const PrepareDocument = () => {
       textAnnot.Width = 50.0 / zoom;
       textAnnot.Height = 250.0 / zoom;
     } else {
-      if (type == "SIGN") {
+      if (type == 'SIGN') {
         textAnnot.Width = 90.0 / zoom;
         textAnnot.Height = 60.0 / zoom;
 
@@ -603,7 +643,7 @@ const PrepareDocument = () => {
         // updateInputValue(member.key, {sign:updateNum, text:asisInputValue.text})
 
 
-      } else if (type == "TEXT") {
+      } else if (type == 'TEXT') {
         textAnnot.Width = 200.0 / zoom;
         textAnnot.Height = 30.0 / zoom;
       } else {
@@ -629,7 +669,7 @@ const PrepareDocument = () => {
     // textAnnot.setContents(textAnnot.custom.name);
     // textAnnot.setContents(assignee.label+"_"+type);
     // textAnnot.setContents(member.name+"_"+type);
-    textAnnot.setContents((sendType === 'B') ? type : member.name+"\n"+type);
+    textAnnot.setContents((sendType === 'B') ? type : member.name+(type==='SIGN'?'\n'+type:' '+type));
     textAnnot.FontSize = '' + 18.0 / zoom + 'px';
     textAnnot.FillColor = new Annotations.Color(211, 211, 211, 0.5);
     textAnnot.TextColor = new Annotations.Color(0, 165, 228);
@@ -648,8 +688,8 @@ const PrepareDocument = () => {
   const getToday = () => {
     var date = new Date();
     var year = date.getFullYear();
-    var month = ("0" + (1 + date.getMonth())).slice(-2);
-    var day = ("0" + date.getDate()).slice(-2);
+    var month = ('0' + (1 + date.getMonth())).slice(-2);
+    var day = ('0' + date.getDate()).slice(-2);
 
     return year + month + day;
   }
@@ -906,7 +946,7 @@ const PrepareDocument = () => {
         },
         extra: [
           <Button key="3" icon={<ArrowLeftOutlined />} onClick={() => {navigate(`/assign`);}}></Button>,,
-          <Button key="2" icon={<SendOutlined />} type="primary" onClick={() => applyFields()} disabled={disableNext} loading={loading}>
+          <Button key="2" icon={<SendOutlined />} type="primary" onClick={applyFields} disabled={disableNext} loading={loading}>
             {formatMessage({id: 'Send'})}
           </Button>,
         ],
@@ -983,24 +1023,23 @@ const PrepareDocument = () => {
                         setBoxData(newBoxData)
 
                       }
-                    }}>수신자 지정</Checkbox></Tooltip>
+                    }}
+                    checked={observers.filter(v => v === item.key).length > 0}
+                    >수신자 지정</Checkbox></Tooltip>
                   }>
-                    <p>
                     <Tooltip placement="right" title={'참여자가 사인을 입력할 위치에 넣어주세요.'}>
                       <Badge count={boxData.filter(e => e.key === item.key)[0].sign}>
                         <Button style={{width:'190px', textAlign:'left'}} disabled={observers.filter(v => v === item.key).length > 0} icon={<PlusOutlined />} onClick={e => { addField('SIGN', {}, item); }}>{formatMessage({id: 'input.sign'})}</Button>
                       </Badge>
                     </Tooltip>
                       {/* {boxData.filter(e => e.key === item.key)[0].sign} */}
-                    </p>
-                    <p>
+                      <p></p>
                     <Tooltip placement="right" title={'참여자가 텍스트를 입력할 위치에 넣어주세요.'}>
                       <Badge count={boxData.filter(e => e.key === item.key)[0].text}>
                         <Button style={{width:'190px', textAlign:'left'}} disabled={observers.filter(v => v === item.key).length > 0} icon={<PlusOutlined />} onClick={e => { addField('TEXT', {}, item); }}>{formatMessage({id: 'input.text'})}</Button>
                       </Badge>
                     </Tooltip>
                       {/* {boxData.filter(e => e.key === item.key)[0].text} */}
-                    </p>
                     {/* 옵저버 기능 추가 */}
                     {/* <p>
                       <Checkbox onChange={e => {

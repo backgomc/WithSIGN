@@ -3,7 +3,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import axios from 'axios';
 import { navigate } from '@reach/router';
 import { selectUser } from '../../app/infoSlice';
-import { resetSignee, setTemplateInfo } from '../PrepareTemplate/AssignTemplateSlice';
+import { resetSignee, resetObservers, setTemplateInfo } from '../PrepareTemplate/AssignTemplateSlice';
 import 'antd/dist/antd.css';
 import { Upload, message, Form, Button, Modal } from 'antd';
 import { useIntl } from "react-intl";
@@ -206,6 +206,7 @@ const UploadTemplate = () => {
       cancelText: '아니오',
       onOk() {
         dispatch(resetSignee());
+        dispatch(resetObservers());
         dispatch(setTemplateInfo(templateInfo));
         navigate('/assignTemplate');
       },

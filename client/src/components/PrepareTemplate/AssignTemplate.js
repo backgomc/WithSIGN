@@ -9,7 +9,7 @@ import ProCard from '@ant-design/pro-card';
 import { PageContainer } from '@ant-design/pro-layout';
 import { ArrowLeftOutlined, ArrowRightOutlined, UserOutlined, PlusOutlined } from '@ant-design/icons';
 import { selectUser } from '../../app/infoSlice';
-import { addSignee, setSignees, resetSignee, selectAssignees } from './AssignTemplateSlice';
+import { addSignee, setSignees, resetSignee, selectSignees } from './AssignTemplateSlice';
 import StepWrite from '../PrepareTemplate/StepTemplate';
 import TreeTransfer from '../TreeTransfer/TreeTransfer';
 
@@ -41,7 +41,7 @@ const AssignTemplate = () => {
   
   const dispatch = useDispatch();
   const { formatMessage } = useIntl();
-  const assignees = useSelector(selectAssignees);
+  const assignees = useSelector(selectSignees);
   const user = useSelector(selectUser);
   const { _id } = user;
   const [disableNext, setDisableNext] = useState(true);

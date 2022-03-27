@@ -5,7 +5,7 @@ import Highlighter from 'react-highlight-words';
 import { SearchOutlined, DeleteOutlined, FileOutlined, DownloadOutlined, FileAddOutlined, FormOutlined, FilePdfOutlined, ExclamationCircleOutlined, SettingTwoTone, QuestionCircleTwoTone } from '@ant-design/icons';
 import { useSelector, useDispatch } from 'react-redux';
 import { selectUser } from '../../app/infoSlice';
-import { setSignees as templateSetSignees, resetSignee, setTemplateInfo } from '../PrepareTemplate/AssignTemplateSlice';
+import { resetSignee, setTemplateInfo, setSignees as setTemplateSignees, setObservers as setTemplateObservers } from '../PrepareTemplate/AssignTemplateSlice';
 import { navigate } from '@reach/router';
 import { setDocToView } from '../ViewDocument/ViewDocumentSlice';
 import { setDocToSign } from '../SignDocument/SignDocumentSlice';
@@ -14,7 +14,7 @@ import moment from 'moment';
 import 'moment/locale/ko';
 // import { DocumentType, DocumentTypeText, DOCUMENT_SIGNED, DOCUMENT_TOSIGN, DOCUMENT_SIGNING, DOCUMENT_CANCELED } from './DocumentType';
 import TemplateExpander from "./TemplateExpander";
-import { setTemplate, setDocumentType, setTemplateTitle, setTemplateType, setSendType, resetAssignAll, setSignees } from '../Assign/AssignSlice';
+import { setTemplate, setDocumentType, setTemplateTitle, setTemplateType, setSendType, resetAssignAll, setSignees, setObservers } from '../Assign/AssignSlice';
 import { PageContainer } from '@ant-design/pro-layout';
 import 'antd/dist/antd.css';
 import { useIntl } from "react-intl";
@@ -224,7 +224,7 @@ const TemplateList = () => {
       onCancel() {
         console.log('Cancel');
       },
-    });    
+    });
   }
 
   const signTemplate = (item, sendType) => {
@@ -240,7 +240,10 @@ const TemplateList = () => {
     }
 
     if (sendType === 'G' && item.signees && item.signees.length > 0) {
-      dispatch(setSignees(item.signees)); // 미리 등록한 참여자 설정값으로 서명 요청
+      // 미리 등록한 참여자 설정값으로 서명 요청
+      dispatch(setDocumentType('TEMPLATE_CUSTOM'));
+      dispatch(setSignees(item.signees));
+      dispatch(setObservers(item.observers));
     }
     
     dispatch(setTemplateTitle(item.docTitle));
@@ -427,7 +430,8 @@ const TemplateList = () => {
       onOk() {
         dispatch(resetSignee());
         dispatch(setTemplateInfo(item));
-        dispatch(templateSetSignees(item.signees));
+        dispatch(setTemplateSignees(item.signees));
+        dispatch(setTemplateObservers(item.observers));
         navigate('/assignTemplate');
       },
       onCancel() {

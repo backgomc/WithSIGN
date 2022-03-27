@@ -2,14 +2,14 @@ import React, { useRef, useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import axios from 'axios';
 import { navigate } from '@reach/router';
-import { Upload, message, Badge, Button, Row, Col, List, Card, Checkbox, Tooltip, Tag } from 'antd';
+import { Badge, Button, Row, Col, List, Card, Checkbox, Tooltip, Tag } from 'antd';
 import { PlusOutlined, ArrowLeftOutlined, SendOutlined } from '@ant-design/icons';
-import { selectAssignees, resetAssignAll, selectTemplateId, selectTemplateRef, selectTemplateFileName } from './AssignTemplateSlice';
+import { selectSignees, selectObservers, selectTemplateId, selectTemplateRef, selectTemplateFileName, resetAssignAll } from './AssignTemplateSlice';
 import { selectUser } from '../../app/infoSlice';
 import WebViewer from '@pdftron/webviewer';
 import './PrepareTemplate.css';
 import StepWrite from '../PrepareTemplate/StepTemplate';
-import { useIntl } from "react-intl";
+import { useIntl } from 'react-intl';
 import { PageContainer } from '@ant-design/pro-layout';
 import ProCard from '@ant-design/pro-card';
 import 'antd/dist/antd.css';
@@ -30,17 +30,12 @@ const PrepareTemplate = () => {
   const templateId = useSelector(selectTemplateId);
   const templateRef = useSelector(selectTemplateRef);
   const templateFileName = useSelector(selectTemplateFileName);
-  const assignees = useSelector(selectAssignees);
-  const assigneesValues = assignees.map(user => {
-    return { value: user.key, label: user.name };
-  });
+  const preObserver = useSelector(selectObservers);
+  const assignees = useSelector(selectSignees);
   const box = assignees.map(user => {
-    return { key:user.key, sign:0, text:0, observer:0 };
+    return { key:user.key, sign:0, text:0, observer:(preObserver.filter(v => v === user.key).length > 0)?1:0};
   });
   const [boxData, setBoxData] = useState(box);
-
-  let initialAssignee = assigneesValues.length > 0 ? assigneesValues[0] : '';
-  // const [assignee, setAssignee] = useState(initialAssignee);
   const [disableNext, setDisableNext] = useState(true);
 
   const user = useSelector(selectUser);
@@ -71,6 +66,11 @@ const PrepareTemplate = () => {
 
   // if using a class, equivalent of componentDidMount
   useEffect(() => {
+
+    setObservers(preObserver.filter((value) => {
+      return assignees.some(v => value == v.key);
+    }));
+    
     WebViewer(
       {
         path: 'webviewer',
@@ -92,7 +92,7 @@ const PrepareTemplate = () => {
       instance.setToolbarGroup('toolbarGroup-View');
 
       // set local font 
-      CoreControls.setCustomFontURL("/webfonts/");
+      CoreControls.setCustomFontURL('/webfonts/');
 
       // set language
       instance.setLanguage('ko');
@@ -129,8 +129,44 @@ const PrepareTemplate = () => {
 
         console.log('called annotationChanged:'+ action);
 
-        // TODO : 자유 텍스트 상단 짤리는 문제 ...
         const { Annotations, docViewer, Font } = instance;
+        let firstChk = false;
+
+        annotations.forEach(function(annot) {
+          console.log(annot.getCustomData('id'));
+          // 템플릿 항목 설정 체크
+          if (annot.getCustomData('id') && annot.getCustomData('id').endsWith('CUSTOM')) {
+            let name = annot.getCustomData('id'); // sample: 6156a3c9c7f00c0d4ace4744_SIGN_CUSTOM
+            let user = name.split('_')[0];
+            let type = name.split('_')[1];
+            
+            firstChk = true;
+
+            // boxData 와 일치하는 annotation 없을 경우 삭제 (퇴사자)
+            console.log(boxData);
+
+            let member = boxData.filter(e => e.key === user)[0];
+            console.log(member);
+            if (name.includes('SIGN')) {
+              member.sign = member.sign + 1;
+            } else if (name.includes('TEXT')) {
+              member.text = member.text + 1;
+            }
+            let newBoxData = boxData.slice();
+            newBoxData[boxData.filter(e => e.key === user).index] = member;
+            setBoxData(newBoxData);
+
+            // annotation 구분값 복원
+            annot.FontSize = '' + 18.0 / docViewer.getZoom() + 'px';
+            annot.custom = {
+              type,
+              name : user + '_' + type
+            }
+            annot.deleteCustomData('id');
+          }
+        });
+        
+        // TODO : 자유 텍스트 상단 짤리는 문제 ...
         console.log(annotations[0].Subject, annotations[0].ToolName, annotations[0].TextAlign);
         if (annotations[0].ToolName && annotations[0].ToolName.startsWith('AnnotationCreateFreeText') && action === 'add') {
           annotations[0].TextAlign = 'center';
@@ -138,9 +174,9 @@ const PrepareTemplate = () => {
           annotations[0].Font = 'monospace';
         }
         
-        // applyFields 에서 호출 시는 아래가 호출되지 않도록 처리 
-        if (!annotations[0].custom) {
-          return
+        // 최초 실행 또는 applyFields 에서 호출 시는 아래가 호출되지 않도록 처리 
+        if (firstChk || !annotations[0].custom) {
+          return;
         } 
 
         //TODO
@@ -149,7 +185,7 @@ const PrepareTemplate = () => {
         if (action === 'add') {
           console.log('added annotation');
 
-          const name = annotations[0].custom.name //sample: 6156a3c9c7f00c0d4ace4744_SIGN_
+          const name = annotations[0].custom.name; //sample: 6156a3c9c7f00c0d4ace4744_SIGN_
           const user = name.split('_')[0];
 
           const member = boxData.filter(e => e.key === user)[0];
@@ -200,7 +236,7 @@ const PrepareTemplate = () => {
       const res = await axios.post('/api/sign/signs', {user: _id});
       if (res.data.success) {
         const signs = res.data.signs;
-        var signDatas = []
+        var signDatas = [];
         signs.forEach(element => {
           signDatas.push(element.signData);
         });
@@ -232,135 +268,20 @@ const PrepareTemplate = () => {
 
     console.log('applyFields called');
     
-    const { Annotations, docViewer } = instance;
+    const { docViewer } = instance;
     const annotManager = docViewer.getAnnotationManager();
-    const fieldManager = annotManager.getFieldManager();
     const annotationsList = annotManager.getAnnotationsList();
-    const annotsToDelete = [];
-    const annotsToDraw = [];
 
     await Promise.all(
-      annotationsList.map(async (annot, index) => {
-        let inputAnnot;
-        let field;
-
-        if (typeof annot.custom !== 'undefined') {
-          // create a form field based on the type of annotation
-          if (annot.custom.type === 'TEXT') {
-            console.log("annot.custom.name:"+annot.custom.name);
-            field = new Annotations.Forms.Field(
-              // annot.getContents() + Date.now() + index,
-              annot.custom.name + Date.now() + index,
-              {
-                type: 'Tx',
-                value: annot.custom.value
-              }
-            );
-            inputAnnot = new Annotations.TextWidgetAnnotation(field);
-          } else if (annot.custom.type === 'SIGN') {
-            console.log("annot.custom.name:"+annot.custom.name);
-            field = new Annotations.Forms.Field(
-              // annot.getContents() + Date.now() + index,
-              annot.custom.name + Date.now() + index,
-              {
-                type: 'Sig'
-              }
-            );
-            inputAnnot = new Annotations.SignatureWidgetAnnotation(field, {
-              appearance: '_DEFAULT',
-              appearances: {
-                _DEFAULT: {
-                  Normal: {
-                    data:
-                      'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAYdEVYdFNvZnR3YXJlAHBhaW50Lm5ldCA0LjEuMWMqnEsAAAANSURBVBhXY/j//z8DAAj8Av6IXwbgAAAAAElFTkSuQmCC',
-                    offset: {
-                      x: 100,
-                      y: 100,
-                    },
-                  },
-                },
-              }
-            });
-          } else if (annot.custom.type === 'DATE') {
-            field = new Annotations.Forms.Field(
-              // annot.getContents() + Date.now() + index,
-              annot.custom.name + Date.now() + index,
-              {
-                type: 'Tx',
-                value: 'm-d-yyyy',
-                // Actions need to be added for DatePickerWidgetAnnotation to recognize this field.
-                actions: {
-                  F: [
-                    {
-                      name: 'JavaScript',
-                      // You can customize the date format here between the two double-quotation marks
-                      // or leave this blank to use the default format
-                      javascript: 'AFDate_FormatEx("mmm d, yyyy");'
-                    }
-                  ],
-                  K: [
-                    {
-                      name: 'JavaScript',
-                      // You can customize the date format here between the two double-quotation marks
-                      // or leave this blank to use the default format
-                      javascript: 'AFDate_FormatEx("mmm d, yyyy");'
-                    }
-                  ]
-                }
-              }
-            );
-            inputAnnot = new Annotations.DatePickerWidgetAnnotation(field);
-          } else {
-            // exit early for other annotations
-            annotManager.deleteAnnotation(annot, false, true); // prevent duplicates when importing xfdf
-            return;
-          }
-        } else {
-          // exit early for other annotations
-          return;
+      annotationsList.map(async (annot) => {
+        if (annot.custom) {
+          console.log(annot.custom);
+          annot.setCustomData('id', annot.custom.name + 'CUSTOM');  // 템플릿 항목 설정 표시
         }
-
-        // set position
-        inputAnnot.PageNumber = annot.getPageNumber();
-        inputAnnot.X = annot.getX();
-        inputAnnot.Y = annot.getY();
-        inputAnnot.rotation = annot.Rotation;
-        if (annot.Rotation === 0 || annot.Rotation === 180) {
-          inputAnnot.Width = annot.getWidth();
-          inputAnnot.Height = annot.getHeight();
-        } else {
-          inputAnnot.Width = annot.getHeight();
-          inputAnnot.Height = annot.getWidth();
-        }
-
-        // delete original annotation
-        annotsToDelete.push(annot);
-
-        // customize styles of the form field
-        Annotations.WidgetAnnotation.getCustomStyles = function (widget) {
-          if (widget instanceof Annotations.SignatureWidgetAnnotation) {
-            return {
-              border: '1px solid #a5c7ff'
-            };
-          }
-        };
-        Annotations.WidgetAnnotation.getCustomStyles(inputAnnot);
-
-        // draw the annotation the viewer
-        annotManager.addAnnotation(inputAnnot);
-        fieldManager.addField(field);
-        annotsToDraw.push(inputAnnot);
       })
     );
 
-    // delete old annotations
-    annotManager.deleteAnnotations(annotsToDelete, null, true);
-
-    // refresh viewer
-    await annotManager.drawAnnotationsFromList(annotsToDraw);
     await uploadForSigning();
-
-    // setLoading(false);
   };
 
   const addField = (type, point = {}, member = {}, name = '', value = '', flag = {}) => {
@@ -388,10 +309,10 @@ const PrepareTemplate = () => {
       textAnnot.Width = 50.0 / zoom;
       textAnnot.Height = 250.0 / zoom;
     } else {
-      if (type == "SIGN") {
+      if (type == 'SIGN') {
         textAnnot.Width = 90.0 / zoom;
         textAnnot.Height = 60.0 / zoom;
-      } else if (type == "TEXT") {
+      } else if (type == 'TEXT') {
         textAnnot.Width = 200.0 / zoom;
         textAnnot.Height = 30.0 / zoom;
       } else {
@@ -411,7 +332,7 @@ const PrepareTemplate = () => {
     };
 
     // set the type of annot
-    textAnnot.setContents(member.name+"\n"+type);
+    textAnnot.setContents(member.name+(type==='SIGN'?'\n'+type:' '+type));
     textAnnot.FontSize = '' + 18.0 / zoom + 'px';
     textAnnot.FillColor = new Annotations.Color(211, 211, 211, 0.5);
     textAnnot.TextColor = new Annotations.Color(0, 165, 228);
@@ -429,15 +350,14 @@ const PrepareTemplate = () => {
   const getToday = () => {
     var date = new Date();
     var year = date.getFullYear();
-    var month = ("0" + (1 + date.getMonth())).slice(-2);
-    var day = ("0" + date.getDate()).slice(-2);
+    var month = ('0' + (1 + date.getMonth())).slice(-2);
+    var day = ('0' + date.getDate()).slice(-2);
     return year + month + day;
   }
 
   const uploadForSigning = async () => {
 
-    // const filename = `${_id}${Date.now()}.pdf`;
-    const path = `templates/`;
+    const path = 'templates/';
     const { docViewer, annotManager } = instance;
     const doc = docViewer.getDocument();
     const xfdfString = await annotManager.exportAnnotations({ widgets: true, fields: true });
@@ -525,7 +445,7 @@ const PrepareTemplate = () => {
           },
           extra: [
             <Button key="3" icon={<ArrowLeftOutlined />} onClick={() => {navigate('/assignTemplate');}}></Button>,
-            <Button key="2" icon={<SendOutlined />} type="primary" onClick={() => applyFields()} disabled={disableNext} loading={loading}>{formatMessage({id: 'Save'})}</Button>
+            <Button key="2" icon={<SendOutlined />} type="primary" onClick={applyFields} disabled={disableNext} loading={loading}>{formatMessage({id: 'Save'})}</Button>
           ]
         }}
         content= { <ProCard style={{ background: '#ffffff'}} layout="center"><StepWrite current={2} /></ProCard> }
@@ -576,23 +496,22 @@ const PrepareTemplate = () => {
                             newBoxData[boxData.filter(e => e.key === item.key).index] = member;
                             setBoxData(newBoxData);
                           }
-                        }}>수신자 지정</Checkbox>
+                        }}
+                        checked={observers.filter(v => v === item.key).length > 0}
+                        >수신자 지정</Checkbox>
                       </Tooltip>
                     }>
-                      <p>
-                        <Tooltip placement="right" title={'참여자가 사인을 입력할 위치에 넣어주세요.'}>
-                          <Badge count={boxData.filter(e => e.key === item.key)[0].sign}>
-                            <Button style={{width:'190px', textAlign:'left'}} disabled={observers.filter(v => v === item.key).length > 0} icon={<PlusOutlined />} onClick={e => { addField('SIGN', {}, item); }}>{formatMessage({id: 'input.sign'})}</Button>
-                          </Badge>
-                        </Tooltip>
-                      </p>
-                      <p>
-                        <Tooltip placement="right" title={'참여자가 텍스트를 입력할 위치에 넣어주세요.'}>
-                          <Badge count={boxData.filter(e => e.key === item.key)[0].text}>
-                            <Button style={{width:'190px', textAlign:'left'}} disabled={observers.filter(v => v === item.key).length > 0} icon={<PlusOutlined />} onClick={e => { addField('TEXT', {}, item); }}>{formatMessage({id: 'input.text'})}</Button>
-                          </Badge>
-                        </Tooltip>
-                      </p>
+                      <Tooltip placement="right" title={'참여자가 사인을 입력할 위치에 넣어주세요.'}>
+                        <Badge count={boxData.filter(e => e.key === item.key)[0].sign}>
+                          <Button style={{width:'190px', textAlign:'left'}} disabled={observers.filter(v => v === item.key).length > 0} icon={<PlusOutlined />} onClick={e => { addField('SIGN', {}, item); }}>{formatMessage({id: 'input.sign'})}</Button>
+                        </Badge>
+                      </Tooltip>
+                      <p></p>
+                      <Tooltip placement="right" title={'참여자가 텍스트를 입력할 위치에 넣어주세요.'}>
+                        <Badge count={boxData.filter(e => e.key === item.key)[0].text}>
+                          <Button style={{width:'190px', textAlign:'left'}} disabled={observers.filter(v => v === item.key).length > 0} icon={<PlusOutlined />} onClick={e => { addField('TEXT', {}, item); }}>{formatMessage({id: 'input.text'})}</Button>
+                        </Badge>
+                      </Tooltip>
                     </Card>
                   </List.Item>
                 }
