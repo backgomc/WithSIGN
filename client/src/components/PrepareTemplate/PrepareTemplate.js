@@ -142,27 +142,30 @@ const PrepareTemplate = () => {
             
             firstChk = true;
 
-            // boxData 와 일치하는 annotation 없을 경우 삭제 (퇴사자)
-            console.log(boxData);
-
             let member = boxData.filter(e => e.key === user)[0];
             console.log(member);
-            if (name.includes('SIGN')) {
-              member.sign = member.sign + 1;
-            } else if (name.includes('TEXT')) {
-              member.text = member.text + 1;
-            }
-            let newBoxData = boxData.slice();
-            newBoxData[boxData.filter(e => e.key === user).index] = member;
-            setBoxData(newBoxData);
 
-            // annotation 구분값 복원
-            annot.FontSize = '' + 18.0 / docViewer.getZoom() + 'px';
-            annot.custom = {
-              type,
-              name : user + '_' + type
+            if (member) {
+              if (name.includes('SIGN')) {
+                member.sign = member.sign + 1;
+              } else if (name.includes('TEXT')) {
+                member.text = member.text + 1;
+              }
+              let newBoxData = boxData.slice();
+              newBoxData[boxData.filter(e => e.key === user).index] = member;
+              setBoxData(newBoxData);
+  
+              // annotation 구분값 복원
+              annot.FontSize = '' + 18.0 / docViewer.getZoom() + 'px';
+              annot.custom = {
+                type,
+                name : `${member.key}_${type}_`
+              }
+              annot.deleteCustomData('id');
+            } else {
+              // boxData 와 일치하는 annotation 없을 경우 삭제
+              annotManager.deleteAnnotation(annot);
             }
-            annot.deleteCustomData('id');
           }
         });
         
