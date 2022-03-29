@@ -85,7 +85,7 @@ const MyStyle = styled.div`
   .ant-pro-checkcard-title {
     text-align: right;
     // font-size: 16px;
-    font-size: calc(13px + .2vw);
+    font-size: calc(13px + .17vw);
     font-weight: bold;
     color: #666666;
     margin: 0px 0px 0px 0px;
