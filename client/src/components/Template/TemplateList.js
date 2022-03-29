@@ -572,6 +572,7 @@ const TemplateList = () => {
         backgroundImage: 'url('+item.thumbnail+')',
         backgroundRepeat: 'no-repeat',
         backgroundPosition: 'center',
+        backgroundSize: 'cover',
         justifyContent: 'center',
         alignItems: 'center',
         width: '280px',
