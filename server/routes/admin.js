@@ -69,7 +69,6 @@ const upload = multer({storage});
 // /admin/document/list
 // /admin/document/info
 // /admin/document/down
-// /
 // -- 템플릿 관리 --
 // /admin/templates/list
 // /admin/templates/info
@@ -84,7 +83,9 @@ const upload = multer({storage});
 // /admin/board/delete
 // /admin/board/attach
 // /admin/board/addComment
-// /admin/board/delComment;
+// /admin/board/delComment
+// -- 통계 --
+// /admin/statistic
 
 // 시스템 연계 확인용
 router.post('/ipronet', (req, res) => {
@@ -881,6 +882,87 @@ router.post('/board/delComment', ValidateToken, (req, res) => {
     if (err) return res.json({ success: false, message: err });
     return res.json({ success: true});
   });
+});
+
+// -- 통계 --
+router.post('/statistic', ValidateToken, async (req, res) => {
+  var usrStat = await User.aggregate([
+    {
+      '$group': {
+        '_id': '', 
+        'totalPage': {
+          '$sum': '$paperless'
+        }, 
+        'totalCount': {
+          '$sum': '$docCount'
+        }
+      }
+    }
+  ]);
+  var docStat = await Document.aggregate([
+    {
+      '$match': {
+        'signed': true
+      }
+    }, {
+      '$group': {
+        '_id': '', 
+        'totalPage': {
+          '$sum': '$pageCount'
+        }, 
+        'totalCount': {
+          '$sum': 1
+        }
+      }
+    }
+  ]);
+  var docStatByUser = await Document.aggregate([
+    {
+      '$match': {
+        'signed': true
+      }
+    }, {
+      '$group': {
+        '_id': '$user', 
+        'totalPage': {
+          '$sum': '$pageCount'
+        }, 
+        'totalCount': {
+          '$sum': 1
+        }
+      }
+    }, {
+      '$lookup': {
+        'from': 'users', 
+        'localField': '_id', 
+        'foreignField': '_id', 
+        'as': 'usrInfo'
+      }
+    }
+  ]);
+  var docStatByDate = await Document.aggregate([
+    {
+      '$match': {
+        'signed': true
+      }
+    }, {
+      '$group': {
+        '_id': {
+          '$dateToString': {
+            'format': '%Y-%m', 
+            'date': '$signedTime'
+          }
+        }, 
+        'totalPage': {
+          '$sum': '$pageCount'
+        }, 
+        'totalCount': {
+          '$sum': 1
+        }
+      }
+    }
+  ]);
+  return res.json({ success: true, usrStat: usrStat, docStat: docStat, docStatByUser: docStatByUser, docStatByDate: docStatByDate});
 });
 ///////////////////////////////////////////////////////////////////////// 게시판 정보 관리 종료 /////////////////////////////////////////////////////////////////////////
 
