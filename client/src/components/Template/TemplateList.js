@@ -246,7 +246,7 @@ const TemplateList = () => {
       dispatch(setObservers(item.observers));
     }
     
-    dispatch(setTemplateTitle(item.docTitle));
+    dispatch(setTemplateTitle(`${item.docTitle}_${moment().format('YYYYMMDD')}`));
     dispatch(setTemplate(item));
     navigate('/assign');
   }
@@ -554,14 +554,16 @@ const TemplateList = () => {
       }
       label = (
         <div style={{
-          // transform: 'skew(0deg, 200deg)',
-          fontSize: '1rem',
-          backgroundColor: '#000000AA',
-          color: 'white',
-          textAlign: 'center',
-          width: '280px'
-        }}>
-          <span>{text}<SettingTwoTone twoToneColor="#52c41a" style={{fontSize: '1rem'}} onClick={()=>{confirmToPrepare(item);}}/></span>
+            // transform: 'skew(0deg, 200deg)',
+            fontSize: '1rem',
+            backgroundColor: '#000000AA',
+            color: 'white',
+            textAlign: 'center',
+            width: '280px'
+          }}
+          onClick={()=>{confirmToPrepare(item);}}
+        >
+          <span>{text}<SettingTwoTone twoToneColor="#52c41a" style={{fontSize: '1rem'}}/></span>
         </div>
       )
     }

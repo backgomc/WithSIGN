@@ -92,7 +92,7 @@ const UploadDocument = () => {
       } else {
         setDisableNext(true)
       }
-    } else if (documentType === 'TEMPLATE') {
+    } else if (documentType === 'TEMPLATE' || documentType === 'TEMPLATE_CUSTOM') {
       if (templateType === 'C') { // 회사 템플릿인 경우
         setTab("tab3")
       } else {
