@@ -358,7 +358,7 @@ const sortView = (
         });
         setTarget(targets);
         
-        if (assigneesCheck.length > 0 && !(assigneesCheck.length === 1 && assigneesCheck[0].key === _id)) { // 참여자에 본인만 있을 경우 제한
+        if (assigneesCheck.length > 0) {// && !(assigneesCheck.length === 1 && assigneesCheck[0].key === _id)) { // 참여자에 본인만 있을 경우 제한
           setDisableNext(false);
         } else {
           setDisableNext(true);
@@ -423,7 +423,7 @@ const sortView = (
       dispatch(addSignee({ key, name, JOB_TITLE, DEPART_NAME, order }));
     }
 
-    if (result.length > 0  && !(result.length === 1 && result[0] === _id)) { // 참여자에 본인만 있을 경우 제한
+    if (result.length > 0 ) {// && !(result.length === 1 && result[0] === _id)) { // 참여자에 본인만 있을 경우 제한
       setDisableNext(false);
     } else {
       setDisableNext(true);
