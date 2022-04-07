@@ -559,7 +559,7 @@ router.post('/statics', (req, res) => {
 
     Document.countDocuments({"deleted": {$ne: true}, "signed": false, "canceled": false}).or(
       [ 
-        {$and:[{"orderType": {$ne:'S'}}, {"users": {$in:[user]}}]}, // 동차
+        {$and:[{"orderType": {$ne:'S'}}, {"users": {$in:[user]}}, {"signedBy.user": {$ne:user}}]}, // 동차
         {$and:[{"orderType":      'S'} , {"users": {$in:[user]}}, {"usersTodo": {$in:[user]}}]}  // 순차이면서 본인 서명 차례
       ]
     ).exec(function(err, count) {

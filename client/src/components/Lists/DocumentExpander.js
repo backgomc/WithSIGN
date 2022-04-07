@@ -296,7 +296,7 @@ const DocumentExpander = (props) => {
     }
 
     const buttonList = (
-        <Space>
+        <Space size='small'>
 
             {/* {DocumentType({uid: _id, document: item}) == DOCUMENT_CANCELED ?
                 <Button
