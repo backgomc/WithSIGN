@@ -148,7 +148,7 @@ const UploadDocument = () => {
         setDisableNext(false);
         dispatch(setTemplate(template));
         dispatch(setTemplateTitle(template.docTitle));
-        if (sendType !== 'B') {
+        if (sendType !== 'B' && template.signees && template.signees.length > 0) {
           dispatch(setDocumentType('TEMPLATE_CUSTOM'));
           dispatch(setSignees(template.signees));
           dispatch(setObservers(template.observers));
