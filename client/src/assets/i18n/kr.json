@@ -80,5 +80,6 @@
 	"document.check": "문서 진본 확인",
 	"Opinion": "문의/개선",
 	"Manual": "서비스 소개",
-	"Modify": "수정"
+	"Modify": "수정",
+	"folder.management": "폴더 관리"
 }

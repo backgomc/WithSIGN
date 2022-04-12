@@ -938,6 +938,13 @@ router.post('/statistic', ValidateToken, async (req, res) => {
         'foreignField': '_id', 
         'as': 'usrInfo'
       }
+    }, {
+      '$lookup': {
+        'from': 'orgs', 
+        'localField': 'usrInfo.DEPART_CODE', 
+        'foreignField': 'DEPART_CODE', 
+        'as': 'orgInfo'
+      }
     }
   ]);
   var docStatByDate = await Document.aggregate([

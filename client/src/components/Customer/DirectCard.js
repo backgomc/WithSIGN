@@ -19,6 +19,7 @@ const DirectCard = (props) => {
     const { formatMessage } = useIntl();
 
     useEffect(() => {
+      return () => {} // cleanup
     }, []);
 
     const IconLink = ({ src, text, url }) => (

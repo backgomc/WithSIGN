@@ -42,6 +42,7 @@ const ESGCard = () => {
 
   useEffect(() => {
     fetchPaperless();
+    return () => {} // cleanup
   }, []);
 
   return (

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { v4 as uuidv4 } from 'uuid';
 import { navigate, Link } from '@reach/router';
 import { List, Space, Collapse, Empty } from 'antd';
 import { useSelector, useDispatch } from 'react-redux';
@@ -40,6 +41,7 @@ const FAQCard = (props) => {
 
     useEffect(() => {
         fetch();
+        return () => {} // cleanup
     }, []);
 
     return (
@@ -77,7 +79,7 @@ const FAQCard = (props) => {
 
             <Space direction="vertical" style={{width:'100%'}}>
                 {data.length > 0 ? data.map((item, index) => (
-                    <Collapse collapsible="header">
+                    <Collapse key={uuidv4()} collapsible="header">
                         <Panel header={item.title} key={index}>
                             {/* <p style={{whiteSpace:'pre-wrap', wordWrap:'break-word'}}>{item.content}</p> */}
                             <div

@@ -350,12 +350,12 @@ const UserList = () => {
             ],
           },
           extra: [           
-            <Popconfirm title="수동으로 ERP 부서 정보로 갱신하시겠습니까？" okText="네" cancelText="아니오" visible={syncOrgPopup} onConfirm={syncOrg} onCancel={() => {setSyncOrgPopup(false);}}>
+            <Popconfirm key={uuidv4()} title="수동으로 ERP 부서 정보로 갱신하시겠습니까？" okText="네" cancelText="아니오" visible={syncOrgPopup} onConfirm={syncOrg} onCancel={() => {setSyncOrgPopup(false);}}>
               <Button key={uuidv4()} type="primary" danger onClick={()=>{setSyncOrgPopup(true);}}>
                 부서 동기화
               </Button>
             </Popconfirm>,
-            <Popconfirm title="수동으로 ERP 직원 정보로 갱신하시겠습니까？" okText="네" cancelText="아니오" visible={syncUsrPopup} onConfirm={syncUsr} onCancel={() => {setSyncUsrPopup(false);}}>
+            <Popconfirm key={uuidv4()} title="수동으로 ERP 직원 정보로 갱신하시겠습니까？" okText="네" cancelText="아니오" visible={syncUsrPopup} onConfirm={syncUsr} onCancel={() => {setSyncUsrPopup(false);}}>
               <Button key={uuidv4()} type="primary" danger onClick={()=>{setSyncUsrPopup(true);}}>
                 직원 동기화
               </Button>

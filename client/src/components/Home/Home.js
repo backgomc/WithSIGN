@@ -249,6 +249,7 @@ const Home = () => {
     fetchSigned();
     // fetchPaperless();
     // fetchNotice();
+    return () => {} // cleanup
   }, []);
 
   const fetchToSign = async () => {

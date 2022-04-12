@@ -5,7 +5,7 @@ import axios from 'axios';
 import { setUser, selectUser } from './app/infoSlice';
 import { selectPathname, setPathname } from './config/MenuSlice';
 import ProLayout from '@ant-design/pro-layout';
-import { useIntl } from "react-intl";
+import { useIntl } from 'react-intl';
 import Menus from './config/Menus';
 // import Home from './components/Home/Home';
 import UserList from './components/User/UserList';

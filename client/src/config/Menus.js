@@ -1,11 +1,7 @@
-// import { useMemo } from "react"
 import React from 'react';
-import { useIntl } from "react-intl";
-import { FileProtectOutlined, CustomerServiceOutlined, TeamOutlined, CopyOutlined, FileAddOutlined, SettingOutlined, FileTextOutlined, HighlightOutlined, DashboardOutlined } from '@ant-design/icons';
+import { FileProtectOutlined, CustomerServiceOutlined, TeamOutlined, CopyOutlined, FileAddOutlined, SettingOutlined, FileTextOutlined, HighlightOutlined, FolderOpenOutlined , DashboardOutlined } from '@ant-design/icons';
 
-
-export default function Menus() {
-  const { formatMessage } = useIntl();
+export default function Menus(formatMessage) {
   const data = {
     route: {
       path: '/',
@@ -36,6 +32,11 @@ export default function Menus() {
           icon: <CopyOutlined />,
         },
         {
+        //   path: '/myFolder',
+        //   name: formatMessage({id: 'folder.management'}),
+        //   icon: <FolderOpenOutlined  />,
+        // },
+        // {
           path: '/mySign',
           name: formatMessage({id: 'sign.management'}),
           icon: <HighlightOutlined />,
