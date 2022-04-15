@@ -23,6 +23,7 @@
     "cors": "^2.8.5",
     "express": "^4.17.1",
     "form-data": "^4.0.0",
+    "gotenberg-js-client": "^0.7.2",
     "java": "^0.12.2",
     "jsonwebtoken": "^8.5.1",
     "mmmagic": "^0.5.3",

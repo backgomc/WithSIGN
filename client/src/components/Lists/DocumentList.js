@@ -329,7 +329,7 @@ const DocumentList = ({location}) => {
             <React.Fragment>
             {row['user']['name']}
             <br />
-            <font color='#787878'>{moment(row["requestedTime"]).fromNow()}</font>
+            <font color='#787878'>{moment(row["recentTime"]).fromNow()}</font>
             </React.Fragment>
           )
       } 
@@ -366,15 +366,15 @@ const DocumentList = ({location}) => {
     //     : ''
     // },
     {
-      title: '요청 일시',
-      dataIndex: 'requestedTime',
+      title: '최근 활동',
+      dataIndex: 'recentTime',
       responsive: ["sm"],
       sorter: true,
-      key: 'requestedTime',
+      key: 'recentTime',
       width: '100px',
       render: (text, row) => {
           // return <Moment format='YYYY/MM/DD HH:mm'>{row["requestedTime"]}</Moment>
-          return (<font color='#787878'>{moment(row["requestedTime"]).fromNow()}</font>)
+          return (<font color='#787878'>{moment(row["recentTime"]).fromNow()}</font>)
       } 
     },
     {

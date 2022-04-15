@@ -18,8 +18,12 @@ import 'antd/dist/antd.css';
 import '@ant-design/pro-form/dist/form.css';
 import SelectTemplate from '../Template/SelectTemplate';
 import * as common from "../../util/common";
+import { ReactComponent as PDF_ICON} from '../../assets/images/pdf-icon.svg';
+import { ReactComponent as DOC_ICON} from '../../assets/images/word-icon.svg';
+import { ReactComponent as PPT_ICON} from '../../assets/images/ppt-icon.svg';
+import { ReactComponent as XLS_ICON} from '../../assets/images/excel-icon.svg';
 
-import { ReloadOutlined, ArrowRightOutlined } from '@ant-design/icons';
+import Icon, { ReloadOutlined, ArrowRightOutlined } from '@ant-design/icons';
 
 const UploadDocument = () => {
 
@@ -52,8 +56,10 @@ const UploadDocument = () => {
   const fetchUploadTempFile = async () => {
     setLoading(true);
 
-    console.log("파일 임시 업로드 !")
-    const filename = `${_id}${Date.now()}.pdf`
+
+    console.log("파일 임시 업로드 !", file.name.substring(file.name.lastIndexOf('.'), file.name.length).toLowerCase())
+    // const filename = `${_id}${Date.now()}.pdf`
+    const filename = `${_id}${Date.now()}${file.name.substring(file.name.lastIndexOf('.'), file.name.length).toLowerCase()}`
     const formData = new FormData()
     formData.append('path', 'temp/')
     formData.append('file', file, filename)
@@ -160,6 +166,16 @@ const UploadDocument = () => {
   const templateTitleChanged = (title) => {
     dispatch(setTemplateTitle(title))
   }
+
+  const description = (
+    <div>
+      <Icon component={PDF_ICON} style={{ fontSize: '300%'}} />
+      <Icon component={DOC_ICON} style={{ fontSize: '300%'}} />
+      <Icon component={PPT_ICON} style={{ fontSize: '300%'}} />
+      <Icon component={XLS_ICON} style={{ fontSize: '300%'}} />
+      <br></br>{formatMessage({id: 'input.fileupload.volume'})}
+    </div>
+  )
 
   // const initSelectTemplate = (type) => {
   //   if (type === 'C') {
@@ -295,7 +311,8 @@ const UploadDocument = () => {
                 label="" 
                 name="dragger" 
                 title={formatMessage({id: 'input.fileupload'})}
-                description={formatMessage({id: 'input.fileupload.support'})+", "+formatMessage({id: 'input.fileupload.volume'})}
+                description={description}
+                // description={formatMessage({id: 'input.fileupload.support'})+", "+formatMessage({id: 'input.fileupload.volume'})}
                 fieldProps={{
                   onChange: (info) => {
                     console.log(info.file, info.fileList);
@@ -307,10 +324,16 @@ const UploadDocument = () => {
                     }
                   },
                   beforeUpload: file => {
-                    console.log("AAAAA")
-                    if (file.type !== 'application/pdf') {
+                    console.log("file.type", file.type)
+                    if (!(file.type == 'application/pdf' ||
+                          file.type == 'application/msword' || 
+                          file.type == 'application/vnd.ms-excel' ||
+                          file.type == 'application/vnd.ms-powerpoint' || 
+                          file.type == 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' ||
+                          file.type == 'application/vnd.openxmlformats-officedocument.presentationml.presentation' ||
+                          file.type == 'application/vnd.openxmlformats-officedocument.wordprocessingml.document')) {
                       console.log(file.type)
-                      message.error(`${file.name} is not a pdf file`);
+                      message.error(`${file.name} is not a pdf, msoffice file`);
                       return Upload.LIST_IGNORE;
                     }
 

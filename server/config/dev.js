@@ -17,5 +17,6 @@ module.exports = {
     nhwithPW: "aaaabbbb",
     nhwithSNDR: "fa81071cefc938ebc99e01dc7677cd24",
     withsignURI: "http://10.220.141.91:3001",
-    blockURI: "http://localhost:3003"
+    blockURI: "http://localhost:3003",
+    gotenbergURI: "http://localhost:3018"
 }

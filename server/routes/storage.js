@@ -75,11 +75,27 @@ const uploadTemp = multer({ dest: config.storageDIR + 'temp/' })
 // 신규 문서 등록
 router.post('/upload', upload.single('file'), async (req, res) => {
     if (req.file) {
+        console.log(req.file.destination)
+        console.log(req.file.originalname)
         await restful.callDRMUnpackaging(req.file.destination, req.file.originalname);
-        new Magic().detectFile(req.file.destination+req.file.originalname, function(err, result) {
+        new Magic().detectFile(req.file.destination+req.file.originalname, async function(err, result) {
             console.log('File Content Type : ' + result);
-            if (err || !result.includes('PDF')) return res.json({ success: false, message: 'file upload failed'});
-            return res.json({ success: true, file: req.file });
+
+            if (err) {
+                return res.json({ success: false, message: 'file upload failed'});
+            } else if (result.includes('PDF')) {
+                return res.json({ success: true, file: req.file });
+            } else if (result.includes('Microsoft')) {
+                // PDF로 변환
+                const result = await restful.convertOfficeToPDF(req.file.destination, req.file.originalname);
+                console.log('result.outputPath:', result.outputPath)
+                req.file.path = result.outputPath;
+                return res.json({ success: true, file: req.file });
+            } else {
+                return res.json({ success: false, message: 'file upload failed'});
+            }
+            // if (err || !result.includes('PDF')) return res.json({ success: false, message: 'file upload failed'});
+            // return res.json({ success: true, file: req.file });
         });
     } else {
         return res.json({ success: false, message: 'file upload failed'});
@@ -214,9 +230,29 @@ router.post('/checkHashByFile', uploadTemp.single('file'), async (req, res) => {
     // fs.unlinkSync(tmp_path);
 
     // DB에 HASH값 체크
-    Document.findOne({ docHash: hex }, (err, document) => {
+    // Document.findOne({ docHash: hex }, (err, document) => {
+    //     if(document) {
+    //         return res.json({ success: true, isReal: true, hash:hex, document:document })
+    //     } else {
+    //         return res.json({ success: true, isReal: false, hash:hex })
+    //     }
+    // })
+
+    // DB에 HASH값 체크, 진본확인증명서 출력을 위해 세부 정보 리턴
+    Document
+    .findOne({ docHash: hex })
+    .populate({
+        path: "user", 
+        select: {name: 1, JOB_TITLE: 2, DEPART_CODE: 3, thumbnail: 4},
+        // match: { name : searchName? searchName : !'' }
+    })
+    .populate({
+        path: "users", 
+        select: {name: 1, JOB_TITLE: 2, DEPART_CODE: 3}
+    })
+    .exec((err, document) => {
         if(document) {
-            return res.json({ success: true, isReal: true, hash:hex })
+            return res.json({ success: true, isReal: true, hash:hex, document:document })
         } else {
             return res.json({ success: true, isReal: false, hash:hex })
         }

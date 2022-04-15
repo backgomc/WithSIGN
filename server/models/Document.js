@@ -78,6 +78,9 @@ const documentSchema = mongoose.Schema({
     signedTime: {
         type: Date
     },
+    recentTime: {   //최근 활동 시간
+        type: Date, default: Date.now
+    },
     thumbnail: {
         type: String
     },

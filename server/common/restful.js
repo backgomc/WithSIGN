@@ -9,6 +9,20 @@ const { Emp } = require('../models/Emp');
 const { Org } = require('../models/Org');
 const { User } = require('../models/User');
 const { Document } = require('../models/Document');
+const { pipe, gotenberg, convert, office, to, landscape, set, filename, please, ping, html, adjust } = require('gotenberg-js-client'); 
+
+const toPDF = pipe(
+    gotenberg(''),
+    convert,
+    office,
+    // to(landscape),
+    set(filename('result.pdf')),
+    adjust({
+      // manually adjust endpoint
+      url: config.gotenbergURI + '/forms/libreoffice/convert'
+    }),
+    please
+);
 
 const saltRounds = 10;
 const titleHeader = '[WithSIGN] ';
@@ -322,4 +336,33 @@ let callSaveDocHash = async (docId, docHash) => {
     }
 }
 
-module.exports = {callOrgAPI, callUserAPI, callDRMPackaging, callDRMUnpackaging, callNotify, callIpronetMSG, callNHWithPUSH, callSaveDocHash}
+// OFFICE 문서 PDF 변환
+// filepath : String 
+// filename : String 
+let convertOfficeToPDF = async (filepath, filename) => {
+
+    try {
+        // const destination = 'storage/temp';
+        // const filename = 'kk.xls';
+      
+        const inputPath = `${filepath}/${filename}`;
+        const outputPath = `${filepath}/${filename.split('.')[0]}.pdf`;
+    
+        if (fs.existsSync(inputPath)) { // 비동기 메서드는 try/catch 안먹히므로 파일 선체크 로직 추가
+    
+          const pdf = await toPDF(`file://${inputPath}`)
+          pdf.pipe(fs.createWriteStream(outputPath))
+    
+          return { success: true, inputPath: inputPath, outputPath: outputPath };
+    
+        } else {
+            return { success: false, message: 'file not existed!' };
+        }
+    
+      } catch (error) {
+        console.log(error);
+        return { success: false, message: error };
+      }
+}
+
+module.exports = {callOrgAPI, callUserAPI, callDRMPackaging, callDRMUnpackaging, callNotify, callIpronetMSG, callNHWithPUSH, callSaveDocHash, convertOfficeToPDF}

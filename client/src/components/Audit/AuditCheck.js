@@ -5,11 +5,12 @@ import { navigate } from '@reach/router';
 import { selectUser } from '../../app/infoSlice';
 import 'antd/dist/antd.css';
 import { Upload, message, Form, Button, Result, Alert } from 'antd';
-import { ArrowLeftOutlined, ReloadOutlined, FileProtectOutlined } from '@ant-design/icons';
+import Icon, { ArrowLeftOutlined, ReloadOutlined, FileProtectOutlined } from '@ant-design/icons';
 import { useIntl } from "react-intl";
 import { PageContainer } from '@ant-design/pro-layout';
 import ProCard from '@ant-design/pro-card';
 import ProForm, { ProFormUploadDragger } from '@ant-design/pro-form';
+import { ReactComponent as PDF_ICON} from '../../assets/images/pdf-icon.svg';
 import '@ant-design/pro-card/dist/card.css';
 import 'antd/dist/antd.css';
 import '@ant-design/pro-form/dist/form.css';
@@ -22,14 +23,18 @@ const AuditCheck = () => {
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [disableNext, setDisableNext] = useState(true);
+  const [visibleAudit, setVisibleAudit] = useState(false);
 
   const [resultDisplay, setResultDisplay] = useState('none');
   const [resultStatus, setResultStatus] = useState('success');
   const [resultTitle, setResultTitle] = useState('');
   const [resultSubTitle, setResultSubTitle] = useState('');
 
+  const [document, setDocument] = useState();
+
   const user = useSelector(selectUser);
   const { email, _id } = user;
+
 
   useEffect(() => {
   }, []);
@@ -50,15 +55,25 @@ const AuditCheck = () => {
       setResultTitle('해당 문서는 진본입니다.')
       setResultSubTitle('Hash: '+res.data.hash)
       setResultStatus('success')
+      setVisibleAudit(true)
+      setDocument(res.data.document)
     } else {
       setResultDisplay('')
       setResultTitle('해당 문서는 진본이 아닙니다.')
       setResultSubTitle('Hash: '+res.data.hash)
       setResultStatus('error')
+      setVisibleAudit(false)
     }
 
     setLoading(false);
   }
+
+  const description = (
+    <div>
+      <Icon component={PDF_ICON} style={{ fontSize: '300%'}} />
+      <br></br>{formatMessage({id: 'input.fileupload.volume'})}
+    </div>
+  )
 
   return (
     <div
@@ -148,7 +163,8 @@ const AuditCheck = () => {
                 label="" 
                 name="dragger" 
                 title={formatMessage({id: 'input.fileupload'})}
-                description={formatMessage({id: 'input.fileupload.support'})+", "+formatMessage({id: 'input.fileupload.volume'})}
+                // description={formatMessage({id: 'input.fileupload.support'})+", "+formatMessage({id: 'input.fileupload.volume'})}
+                description={description}
                 fieldProps={{
                   onChange: (info) => {
                     console.log(info.file, info.fileList);
@@ -182,13 +198,19 @@ const AuditCheck = () => {
                   status={resultStatus}
                   title={resultTitle}
                   subTitle={resultSubTitle}
-                  // extra={[
-                  //   <Button type="primary" key="console">
-                  //     Go Console
-                  //   </Button>,
-                  //   <Button key="buy">Buy Again</Button>,
-                  // ]}
+                  extra={[
+                    <Button
+                    icon={<FileProtectOutlined />}
+                    hidden={!visibleAudit}
+                    onClick={() => { navigate('/audit', { state: { docInfo: document } } ); }
+                    }>
+                        진본 확인 증명서
+                    </Button>
+                  ]}
                 />
+
+
+                
               </div>
 
             </ProForm>

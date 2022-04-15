@@ -161,7 +161,7 @@ router.post('/updateDocumentToSign', (req, res) => {
         console.log("todo", todo)
         //E
 
-        Document.updateOne({ _id: docId }, {xfdf: xfdfArray, signedBy:signedByArray, usersTodo:todo}, (err, result) => {
+        Document.updateOne({ _id: docId }, {xfdf: xfdfArray, signedBy:signedByArray, usersTodo:todo, recentTime:time}, (err, result) => {
           if (err) {
             console.log(err);
             return res.json({ success: false, message: err })
@@ -241,7 +241,7 @@ router.post('/updateDocumentCancel', (req, res) => {
 
         const canceledByArray = [...canceledBy, {user:user, canceledTime:time, message: message}];
 
-        Document.updateOne({ _id: docId }, {canceled: true, canceledBy:canceledByArray}, (err, result) => {
+        Document.updateOne({ _id: docId }, {canceled: true, canceledBy:canceledByArray, recentTime:time}, (err, result) => {
           if (err) {
             console.log(err);
             return res.json({ success: false, message: err })
@@ -390,7 +390,8 @@ router.post('/searchForDocumentToSign', (req, res) => {
       start = (current - 1) * pageSize
     }
 
-    var order = "requestedTime" 
+    // var order = "requestedTime"
+    var order = "recentTime"
     var dir = "desc"
     if (req.body.sortField) {
       order = req.body.sortField
@@ -682,5 +683,47 @@ router.post('/notify/:type', async (req, res) => {
     return res.json({ success: false, message: 'input value not enough!' });
   }
 });
+
+
+// 최근시간 업데이트 - 빈값인 경우
+router.post('/updateRecentTime', async (req, res) => {
+
+  Document.find(
+      { 'recentTime': null }
+    ).then((docs, err) => {
+
+    if (err) return res.json({ success: false, err });
+
+    docs.forEach(doc => {
+      console.log(doc._id)
+      let recentTime = doc.requestedTime
+      if(doc.signed) {  // 서명완료
+        recentTime = doc.signedTime
+        console.log('서명완료', recentTime)
+      } else if(doc.canceled) { //서명취소
+        recentTime = doc.canceledBy.length > 0 ? doc.canceledBy.sort((a, b) => b.canceledTime - a.canceledTime)[0].canceledTime : doc.requestedTime
+        console.log('서명취소', recentTime)
+      } else if (doc.signedBy.length > 0) { //서명진행중
+        recentTime = doc.signedBy.sort((a, b) => b.signedTime - a.signedTime)[0].signedTime
+        console.log('서명진행중', recentTime)
+      } else {
+        recentTime = doc.requestedTime
+        console.log('서명요청상태', recentTime)
+      }
+
+      Document.updateOne({ _id: doc._id }, {recentTime: recentTime}, (err, result) => {
+        if (err) {
+          console.log(err);
+          return res.json({ success: false, message: err })
+        }
+      });
+
+    })
+    
+    return res.send({success: true, docsCnt: docs.length});
+
+  });
+});
+
 
 module.exports = router;

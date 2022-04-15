@@ -15,7 +15,12 @@ import 'antd/dist/antd.css';
 import '@ant-design/pro-form/dist/form.css';
 import WebViewer from '@pdftron/webviewer';
 import { LICENSE_KEY } from '../../config/Config';
-import { CheckCircleTwoTone } from '@ant-design/icons';
+import Icon, { CheckCircleTwoTone } from '@ant-design/icons';
+import { ReactComponent as PDF_ICON} from '../../assets/images/pdf-icon.svg';
+import { ReactComponent as DOC_ICON} from '../../assets/images/word-icon.svg';
+import { ReactComponent as PPT_ICON} from '../../assets/images/ppt-icon.svg';
+import { ReactComponent as XLS_ICON} from '../../assets/images/excel-icon.svg';
+import * as common from "../../util/common";
 
 const { confirm } = Modal;
 
@@ -216,6 +221,17 @@ const UploadTemplate = () => {
     });
   }
 
+  const description = (
+    <div>
+      <Icon component={PDF_ICON} style={{ fontSize: '300%'}} />
+      <Icon component={DOC_ICON} style={{ fontSize: '300%'}} />
+      <Icon component={PPT_ICON} style={{ fontSize: '300%'}} />
+      <Icon component={XLS_ICON} style={{ fontSize: '300%'}} />
+      <br></br>{formatMessage({id: 'input.fileupload.volume'})}
+    </div>
+  )
+  
+
   return (
     <div
     style={{
@@ -302,7 +318,8 @@ const UploadTemplate = () => {
                 label="" 
                 name="dragger" 
                 title={formatMessage({id: 'input.fileupload'})}
-                description={formatMessage({id: 'input.fileupload.support'})+", "+formatMessage({id: 'input.fileupload.volume'})}
+                // description={formatMessage({id: 'input.fileupload.support'})+", "+formatMessage({id: 'input.fileupload.volume'})}
+                description={description}
                 fieldProps={{
                   onChange: (info) => {
                     console.log(info.file, info.fileList);
@@ -315,11 +332,30 @@ const UploadTemplate = () => {
                     }
                   },
                   beforeUpload: file => {
-                    if (file.type !== 'application/pdf') {
-                      console.log(file.type)
-                      message.error(`${file.name} is not a pdf file`);
+                    // if (file.type !== 'application/pdf') {
+                    //   console.log(file.type)
+                    //   message.error(`${file.name} is not a pdf file`);
+                    //   return Upload.LIST_IGNORE;
+                    // }
+
+                    if (!(file.type == 'application/pdf' ||
+                          file.type == 'application/msword' || 
+                          file.type == 'application/vnd.ms-excel' ||
+                          file.type == 'application/vnd.ms-powerpoint' || 
+                          file.type == 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' ||
+                          file.type == 'application/vnd.openxmlformats-officedocument.presentationml.presentation' ||
+                          file.type == 'application/vnd.openxmlformats-officedocument.wordprocessingml.document')) {
+                          console.log(file.type)
+                          message.error(`${file.name} is not a pdf, msoffice file`);
+                          return Upload.LIST_IGNORE;
+                    }
+
+                    if (file.size > 1048576 * 5) {  //5MB
+                      console.log(file.size)
+                      message.error(`filesize(${common.formatBytes(file.size)}) is bigger than 5MB`);
                       return Upload.LIST_IGNORE;
                     }
+
                     setFile(file);
                     
                     form.setFieldsValue({
