@@ -296,7 +296,7 @@ const DocumentExpander = (props) => {
     }
 
     const buttonList = (
-        <Space size='small'>
+        <Space>
 
             {/* {DocumentType({uid: _id, document: item}) == DOCUMENT_CANCELED ?
                 <Button
@@ -311,7 +311,7 @@ const DocumentExpander = (props) => {
                                         icon={<Icon component={Blockchain} />}
                                         onClick={() => { window.open(TRANSACTION_URL+item.transactionHash, "Blockchain", "width=1280, height=800, toolbar=no, menubar=no, scrollbars=no, resizable=yes" ); }}>
                                     트랜잭션
-                                    </Button> : ''}
+                                    </Button> : <></>}
 
             {DocumentType({uid: _id, document: item}) == DOCUMENT_SIGNED ?
                 // <Button
@@ -333,7 +333,7 @@ const DocumentExpander = (props) => {
                     // }
                 }>
                     진본 확인 증명서
-                </Button> : '' 
+                </Button> : <></>
 
                 // <PDFDownloadLink document={<AuditDocument item={item} />} fileName={item.docTitle+'_진본확인.pdf'}>
                 // {({ blob, url, loading, error }) =>
@@ -345,7 +345,7 @@ const DocumentExpander = (props) => {
             }
             {((DocumentType({uid: _id, document: item}) == DOCUMENT_SIGNING || DocumentType({uid: _id, document: item}) == DOCUMENT_TOSIGN) && item.user._id === _id) ? 
                 <Button icon={<BellFilled />} onClick={e => { sendPush(); }}>알림</Button>
-                 : ''
+                 : <></>
             }
             {((DocumentType({uid: _id, document: item}) == DOCUMENT_SIGNING || DocumentType({uid: _id, document: item}) == DOCUMENT_TOSIGN)  
                 && item.user._id === _id && item.signedBy.length === 0)?
@@ -362,11 +362,11 @@ const DocumentExpander = (props) => {
                 // >
                     <Button icon={<CloseOutlined style={{color:'red'}} />} onClick={e => { cancelDocument(item._id) }}>요청 취소</Button>
                 // </Popconfirm>
-                 : ''
+                 : <></>
             }
             {(DocumentType({uid: _id, document: item}) === DOCUMENT_CANCELED && item.user._id === _id) ?
                 <Button danger icon={<DeleteOutlined />} onClick={e => { deleteDocument(); }}>문서 폐기</Button>
-                 : ''
+                 : <></>
             }
         </Space>
     )

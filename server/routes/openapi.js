@@ -8,7 +8,13 @@ router.get('/signCount', async (req, res) => {
   if (!req.query.SABUN) return res.jsonp({success: false, error: 'input value not enough!'});
   var user = await User.findOne({'SABUN': req.query.SABUN}, {'_id': 1});
   if (!user) return res.jsonp({success: false, error: 'no user!'});
-  Document.countDocuments({ 'users': {$in:[user['_id']]}, 'signed': false, 'canceled': false, 'signedBy.user': {$ne: user['_id']} }).exec(function(err, count) {
+  var userId = user['_id'].toString();
+  Document.countDocuments({"deleted": {$ne: true}, "signed": false, "canceled": false}).or(
+    [
+      {$and:[{"orderType": {$ne:'S'}}, {"users": {$in:[userId]}}, {"signedBy.user": {$ne:userId}}]}, // 동차
+      {$and:[{"orderType":      'S'} , {"users": {$in:[userId]}}, {"usersTodo": {$in:[userId]}}]}  // 순차이면서 본인 서명 차례
+    ]
+  ).exec(function(err, count) {
     if (err) return res.jsonp({success: false, error: err});
     return res.jsonp({ success: true, count: count});
   });
@@ -19,7 +25,13 @@ router.post('/signCount', async (req, res) => {
   if (!req.body.SABUN) return res.json({success: false, error: 'input value not enough!'});
   var user = await User.findOne({'SABUN': req.body.SABUN}, {'_id': 1});
   if (!user) return res.json({success: false, error: 'no user!'});
-  Document.countDocuments({ 'users': {$in:[user['_id']]}, 'signed': false, 'canceled': false, 'signedBy.user': {$ne: user['_id']} }).exec(function(err, count) {
+  var userId = user['_id'].toString();
+  Document.countDocuments({"deleted": {$ne: true}, "signed": false, "canceled": false}).or(
+    [
+      {$and:[{"orderType": {$ne:'S'}}, {"users": {$in:[userId]}}, {"signedBy.user": {$ne:userId}}]}, // 동차
+      {$and:[{"orderType":      'S'} , {"users": {$in:[userId]}}, {"usersTodo": {$in:[userId]}}]}  // 순차이면서 본인 서명 차례
+    ]
+  ).exec(function(err, count) {
     if (err) return res.json({success: false, error: err});
     return res.json({ success: true, count: count});
   });

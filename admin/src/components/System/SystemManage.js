@@ -11,6 +11,7 @@ import { useIntl } from 'react-intl';
 
 const SystemManage = () => {
   
+  const [pagination, setPagination] = useState({showSizeChanger: true});
   const [usrStat, setUsrStat] = useState([]);
   const [docStat, setDocStat] = useState([]);
   const [docStatByUser, setDocStatByUser] = useState([]);
@@ -85,23 +86,27 @@ const SystemManage = () => {
       title: 'USRS - 절약 문서 (건)',
       render: (row) => {
         return <font>{row['usrInfo'][0]['docCount']}</font>
-      }
+      },
+      sorter: (a, b) => a.totalCount - b.totalCount
     },
     {
       title: 'USRS - 절약 종이 (장)',
       render: (row) => {
         return <font>{row['usrInfo'][0]['paperless']}</font>
-      }
+      },
+      sorter: (a, b) => a.totalCount - b.totalCount
     },
     {
       title: 'DOCS - 절약 문서 (건)',
       dataIndex: 'totalCount',
-      key: 'totalCount'
+      key: 'totalCount',
+      sorter: (a, b) => a.totalCount - b.totalCount
     },
     {
       title: 'DOCS - 절약 종이 (장)',
       dataIndex: 'totalPage',
-      key: 'totalPage'
+      key: 'totalPage',
+      sorter: (a, b) => a.totalPage - b.totalPage
     }
   ]
 
@@ -110,24 +115,23 @@ const SystemManage = () => {
       title: '년 월',
       dataIndex: '_id',
       key: '_id',
-      sorter: (a, b) => a._id.localeCompare(b._id),
+      sorter: (a, b) => a._id.localeCompare(b._id)
     },
     {
       title: '절약 문서 (건)',
       dataIndex: 'totalCount',
       key: 'totalCount',
-      sorter: (a, b) => a.totalCount - b.totalCount,
+      sorter: (a, b) => a.totalCount - b.totalCount
     },
     {
       title: '절약 종이 (장)',
       dataIndex: 'totalPage',
       key: 'totalPage',
-      sorter: (a, b) => a.totalPage - b.totalPage,
+      sorter: (a, b) => a.totalPage - b.totalPage
     }
   ];
   const fetch = () => {
     axiosInterceptor.post('/admin/statistic').then(response => {
-      console.log(response.data);
       setUsrStat(response.data.usrStat);
       setDocStat(response.data.docStat);
       setDocStatByUser(response.data.docStatByUser);
@@ -190,7 +194,7 @@ const SystemManage = () => {
             </List.Item>
           )}
         />
-        <Table columns={columnsByDate} dataSource={docStatByDate} pagination={{current:1, pageSize:10, showSizeChanger: true}}/>
+        <Table columns={columnsByDate} dataSource={docStatByDate} pagination={pagination} onChange={setPagination}/>
         <List
           grid={{ gutter: 16, column: 2 }}
           dataSource={usrStat}
@@ -200,7 +204,7 @@ const SystemManage = () => {
             </List.Item>
           )}
         />
-        <Table columns={columnsByUser} dataSource={docStatByUser} pagination={{current:1, pageSize:10, showSizeChanger: true}}/>
+        <Table columns={columnsByUser} dataSource={docStatByUser} pagination={pagination} onChange={setPagination}/>
         <button onClick={handleExcel}>엑셀 내보내기!!</button>
       </PageContainer>
     </div>
