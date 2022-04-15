@@ -47,6 +47,7 @@ const PaperlessCard = (props) => {
 
   useEffect(() => {
     fetchPaperless();
+    return () => {} // cleanup
   }, []);
 
 

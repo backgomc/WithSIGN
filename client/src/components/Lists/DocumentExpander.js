@@ -348,8 +348,8 @@ const DocumentExpander = (props) => {
                  : ''
             }
             {((DocumentType({uid: _id, document: item}) == DOCUMENT_SIGNING || DocumentType({uid: _id, document: item}) == DOCUMENT_TOSIGN)  
-                && item.user._id === _id 
-                && item.signedBy.length - item.signedBy.filter(e => e.user === _id).length === 0) ?   
+                && item.user._id === _id && item.signedBy.length === 0)?
+                // && item.signedBy.length - item.signedBy.filter(e => e.user === _id).length === 0) ? // 본인 요청 && 본인 서명 완료 경우 제외
                 // <Popconfirm
                 //     placement="bottomRight"
                 //     title='요청 취소하시겠습니까? (해당 문서가 삭제됩니다.)'

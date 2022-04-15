@@ -39,6 +39,7 @@ import InitPassword from './components/Login/InitPassword';
 import ResetPassword from './components/Login/ResetPassword';
 import Register from './components/Register/Register';
 import Setting from './components/Setting/Setting';
+import MyFolder from './components/MyFolder/MyFolder';
 import MySign from './components/MySign/MySign';
 import Audit from './components/Audit/Audit';
 import Terms from './components/Login/Terms';
@@ -46,6 +47,7 @@ import Policy from './components/Login/Policy';
 import ResultPage from './components/ResultPage/ResultPage';
 import AuditCheck from './components/Audit/AuditCheck';
 import { setUser, selectUser } from './app/infoSlice';
+import { useIntl } from 'react-intl';
 import ProLayout, { DefaultFooter } from '@ant-design/pro-layout';
 import Menus from './config/Menus';
 import '@ant-design/pro-layout/dist/layout.css';
@@ -68,6 +70,7 @@ const App = () => {
 
   const user = useSelector(selectUser);
   const dispatch = useDispatch();
+  const { formatMessage } = useIntl();
 
   // const [pathname, setPathname] = useState('/');
   const pathname = useSelector(selectPathname);
@@ -107,7 +110,7 @@ const App = () => {
         }
       }
     });
-
+    return () => {} // cleanup
   }, []);
 
   return user ? (
@@ -138,7 +141,7 @@ const App = () => {
           {/* <img src={LogoText} />  */}
         </div>
       )}
-      {...Menus()}
+      {...Menus(formatMessage)}
       location={{
         pathname,
       }}
@@ -209,6 +212,7 @@ const App = () => {
       <PrepareTemplate path="/prepareTemplate" />
       <BulkList path="/bulkList" />
       <BulkDetail path="/bulkDetail" />
+      <MyFolder path="myFolder" />
       <MySign path="mySign" />
       <Sign path="/signDocument" />
       <View path="/viewDocument" />

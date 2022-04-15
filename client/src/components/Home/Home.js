@@ -249,6 +249,7 @@ const Home = () => {
     fetchSigned();
     // fetchPaperless();
     // fetchNotice();
+    return () => {} // cleanup
   }, []);
 
   const fetchToSign = async () => {
@@ -719,7 +720,7 @@ const Home = () => {
       <List
         // bordered
         style={{ paddingLeft: 10, paddingRight: 10}}
-        loadMore={totalNum > 6 ? loadmore('') : ''}
+        loadMore={totalNum > 5 ? loadmore('') : ''}
         dataSource={documentsTotal}
         renderItem={item => (
           <List.Item>
@@ -753,7 +754,7 @@ const Home = () => {
       <List
         // bordered
         style={{ paddingLeft: 10, paddingRight: 10}}
-        loadMore={signingNum > 6 ? loadmore(DOCUMENT_SIGNING) : ''}
+        loadMore={signingNum > 5 ? loadmore(DOCUMENT_SIGNING) : ''}
         dataSource={documentsSigning}
         renderItem={item => (
           <List.Item>
@@ -832,7 +833,7 @@ const Home = () => {
       loading={loadingToSign}
       grid={{ gutter: 24, lg: 3, md: 3, sm: 2, xs: 2 }}
       dataSource={documentsToSign}
-      loadMore={toSignNum > 6 ? loadmore(DOCUMENT_TOSIGN) : ''}
+      loadMore={toSignNum > 5 ? loadmore(DOCUMENT_TOSIGN) : ''}
       renderItem={item => (
         <List.Item key={item._id}>
 
@@ -921,7 +922,7 @@ const Home = () => {
       <List
         // bordered
         style={{ paddingLeft: 10, paddingRight: 10}}
-        loadMore={canceledNum > 6 ? loadmore(DOCUMENT_CANCELED) : ''}
+        loadMore={canceledNum > 5 ? loadmore(DOCUMENT_CANCELED) : ''}
         dataSource={documentsCanceled}
         renderItem={item => (
           <List.Item>
@@ -954,7 +955,7 @@ const Home = () => {
       <List
         // bordered
         style={{ paddingLeft: 10, paddingRight: 10}}
-        loadMore={signedNum > 6 ? loadmore(DOCUMENT_SIGNED) : ''}
+        loadMore={signedNum > 5 ? loadmore(DOCUMENT_SIGNED) : ''}
         dataSource={documentsSigned}
         renderItem={item => (
           <List.Item>

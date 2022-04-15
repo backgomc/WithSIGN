@@ -55,6 +55,7 @@ const OpinionCard = (props) => {
 
     useEffect(() => {
         fetch();
+        return () => {} // cleanup
     }, []);
 
     return (

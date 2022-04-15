@@ -1,9 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import axiosInterceptor from '../../config/AxiosConfig';
 import * as ExcelJS from 'exceljs';
+import { get } from 'lodash-es';
 import { saveAs } from 'file-saver';
-import { Table, List, Card } from 'antd';
+import { v4 as uuidv4 } from 'uuid';
+import { Table, List, Card, Input, Space, Button } from 'antd';
 import { PageContainer } from '@ant-design/pro-layout';
+import { SearchOutlined } from '@ant-design/icons';
 import { useIntl } from 'react-intl';
 
 const SystemManage = () => {
@@ -12,14 +15,71 @@ const SystemManage = () => {
   const [docStat, setDocStat] = useState([]);
   const [docStatByUser, setDocStatByUser] = useState([]);
   const [docStatByDate, setDocStatByDate] = useState([]);
+  const [searchedColumn, setSearchedColumn] = useState('');
+  const [searchText, setSearchText] = useState('');
   const { formatMessage } = useIntl();
+  
+  const getColumnSearchProps = dataIndex => ({
+    filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
+      <div style={{ padding: 8 }}>
+        <Input
+          placeholder={`Search ${dataIndex}`}
+          value={selectedKeys[0]}
+          onChange={e => setSelectedKeys(e.target.value ? [e.target.value] : [])}
+          onPressEnter={() => handleSearch(selectedKeys, confirm, dataIndex)}
+          style={{ marginBottom: 8, display: 'block' }}
+        />
+        <Space>
+          <Button
+            key={uuidv4()}
+            type="primary"
+            onClick={() => handleSearch(selectedKeys, confirm, dataIndex)}
+            icon={<SearchOutlined />}
+            size="small"
+            style={{ width: 90 }}
+          >
+            검색
+          </Button>
+          <Button key={uuidv4()} onClick={() => handleReset(clearFilters, dataIndex)} size="small" style={{ width: 90 }}>
+            초기화
+          </Button>
+        </Space>
+      </div>
+    ),
+    filterIcon: filtered => <SearchOutlined style={{ color: filtered ? '#1890ff' : undefined }} />,
+    onFilter: (value, record) => {
+      return get(record, dataIndex).toString().toLowerCase().includes(value.toLowerCase());
+    },
+    render: (text) => text
+  });
+
+  const handleSearch = (selectedKeys, confirm, dataIndex) => {
+    confirm();
+    setSearchedColumn(dataIndex);
+    setSearchText(selectedKeys[0]);
+  }
+
+  const handleReset = (clearFilters, dataIndex) => {
+    clearFilters();
+    setSearchText(searchText);
+  }
 
   const columnsByUser = [
     {
       title: '이름',
-      render: (row) => {
-        return <font>{row['usrInfo'][0]['name']}</font>
-      }
+      dataIndex: ['usrInfo', 0, 'name'],
+      key: 'name',
+      ...getColumnSearchProps(['usrInfo', 0, 'name']),
+      sorter: (a, b) => a.usrInfo[0]['name'].localeCompare(b.usrInfo[0]['name']),
+      align: 'center'
+    },
+    {
+      title: '부서',
+      dataIndex: ['orgInfo', 0, 'DEPART_NAME'],
+      key: 'DEPART_NAME',
+      ...getColumnSearchProps(['orgInfo', 0, 'DEPART_NAME']),
+      sorter: (a, b) => a.orgInfo[0]['DEPART_NAME'].localeCompare(b.orgInfo[0]['DEPART_NAME']),
+      align: 'center'
     },
     {
       title: 'USRS - 절약 문서 (건)',
@@ -49,20 +109,22 @@ const SystemManage = () => {
     {
       title: '년 월',
       dataIndex: '_id',
-      key: '_id'
+      key: '_id',
+      sorter: (a, b) => a._id.localeCompare(b._id),
     },
     {
       title: '절약 문서 (건)',
       dataIndex: 'totalCount',
-      key: 'totalCount'
+      key: 'totalCount',
+      sorter: (a, b) => a.totalCount - b.totalCount,
     },
     {
       title: '절약 종이 (장)',
       dataIndex: 'totalPage',
-      key: 'totalPage'
+      key: 'totalPage',
+      sorter: (a, b) => a.totalPage - b.totalPage,
     }
   ];
-
   const fetch = () => {
     axiosInterceptor.post('/admin/statistic').then(response => {
       console.log(response.data);
@@ -128,7 +190,7 @@ const SystemManage = () => {
             </List.Item>
           )}
         />
-        <Table columns={columnsByDate} dataSource={docStatByDate}/>
+        <Table columns={columnsByDate} dataSource={docStatByDate} pagination={{current:1, pageSize:10, showSizeChanger: true}}/>
         <List
           grid={{ gutter: 16, column: 2 }}
           dataSource={usrStat}
@@ -138,7 +200,7 @@ const SystemManage = () => {
             </List.Item>
           )}
         />
-        <Table columns={columnsByUser} dataSource={docStatByUser}/>
+        <Table columns={columnsByUser} dataSource={docStatByUser} pagination={{current:1, pageSize:10, showSizeChanger: true}}/>
         <button onClick={handleExcel}>엑셀 내보내기!!</button>
       </PageContainer>
     </div>

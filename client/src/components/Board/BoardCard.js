@@ -49,6 +49,7 @@ const BoardCard = (props) => {
 
     useEffect(() => {
         fetch();
+        return () => {} // cleanup
     }, []);
 
     return (
