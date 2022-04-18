@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef, forwardRef, useImperativeHandle } from 'react';
 import axios from 'axios';
-import { Table, Input, Space, Button, Form, Radio } from "antd";
+import { Table, Input, Space, Button, Form, Tooltip } from 'antd';
 import Highlighter from 'react-highlight-words';
 import { SearchOutlined } from '@ant-design/icons';
 import { useSelector, useDispatch } from 'react-redux';
@@ -207,26 +207,26 @@ const SelectTemplate = forwardRef((props, ref) => {
       expandable: true,
       render: (text,row) => <div><FileOutlined /> {text}</div>, // 여러 필드 동시 표시에 사용
     },
-    {
-      title: '생성자',
-      width: '110px',
-      dataIndex: ['user', 'name'],
-      sorter: (a, b) => a.user.name.localeCompare(b.user.name),
-      key: 'name',
-      ...getColumnSearchProps('name'),
-      onFilter: (value, record) =>
-      record['user']['name']
-        ? record['user']['name'].toString().toLowerCase().includes(value.toLowerCase())
-        : ''
-    },
+    // {
+    //   title: '생성자',
+    //   width: '110px',
+    //   dataIndex: ['user', 'name'],
+    //   sorter: (a, b) => a.user.name.localeCompare(b.user.name),
+    //   key: 'name',
+    //   ...getColumnSearchProps('name'),
+    //   onFilter: (value, record) =>
+    //   record['user']['name']
+    //     ? record['user']['name'].toString().toLowerCase().includes(value.toLowerCase())
+    //     : ''
+    // },
     {
       title: '생성 일시',
-      dataIndex: 'requestedTime',
+      dataIndex: 'registeredTime',
       sorter: true,
-      key: 'requestedTime',
+      key: 'registeredTime',
       width: '110px',
-      render: (text, row) => {
-        return (<font color='#787878'>{moment(row["requestedTime"]).fromNow()}</font>)
+      render: (text) => {
+        return <Tooltip placement="topLeft" title={moment(text).format('YYYY/MM/DD HH:mm')}><font color='#787878'>{moment(text).fromNow()}</font></Tooltip>
       } 
     },
   ];

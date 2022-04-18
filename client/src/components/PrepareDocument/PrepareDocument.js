@@ -31,6 +31,9 @@ import { LICENSE_KEY } from '../../config/Config';
 
 const { Dragger } = Upload;
 
+const { detect } = require('detect-browser');
+const browser = detect();
+
 const PrepareDocument = () => {
   const [instance, setInstance] = useState(null);
   const [dropPoint, setDropPoint] = useState(null);
@@ -288,22 +291,27 @@ const PrepareDocument = () => {
             console.log(member);
 
             if (member) {
-              if (name.includes('SIGN')) {
-                member.sign = member.sign + 1;
-              } else if (name.includes('TEXT')) {
-                member.text = member.text + 1;
-              }
-              let newBoxData = boxData.slice();
-              newBoxData[boxData.filter(e => e.key === user).index] = member;
-              setBoxData(newBoxData);
+              if ((browser && browser.name.includes('chrom') && parseInt(browser.version) < 87) && name.includes('TEXT')) {
+                // 브라우저 버전이 87보다 낮을 경우 삭제
+                annotManager.deleteAnnotation(annot);
+              } else {
+                if (name.includes('SIGN')) {
+                  member.sign = member.sign + 1;
+                } else if (name.includes('TEXT')) {
+                  member.text = member.text + 1;
+                }
+                let newBoxData = boxData.slice();
+                newBoxData[boxData.filter(e => e.key === user).index] = member;
+                setBoxData(newBoxData);
   
-              // annotation 구분값 복원
-              annot.FontSize = '' + 18.0 / docViewer.getZoom() + 'px';
-              annot.custom = {
-                type,
-                name : `${member.key}_${type}_`
+                // annotation 구분값 복원
+                annot.FontSize = '' + 18.0 / docViewer.getZoom() + 'px';
+                annot.custom = {
+                  type,
+                  name : `${member.key}_${type}_`
+                }
+                annot.deleteCustomData('id');
               }
-              annot.deleteCustomData('id');
             } else {
               // boxData 와 일치하는 annotation 없을 경우 삭제
               annotManager.deleteAnnotation(annot);
@@ -312,7 +320,7 @@ const PrepareDocument = () => {
         });
 
         // TODO : 자유 텍스트 상단 짤리는 문제 ...
-        console.log(annotations[0].Subject, annotations[0].ToolName, annotations[0].TextAlign) 
+        console.log(annotations[0].Subject, annotations[0].ToolName, annotations[0].TextAlign);
        
         if (annotations[0].ToolName && annotations[0].ToolName.startsWith('AnnotationCreateFreeText') && action === 'add') {
           annotations[0].TextAlign = 'center'
@@ -393,8 +401,7 @@ const PrepareDocument = () => {
             newBoxData[boxData.filter(e => e.key === user).index] = member 
             
             setBoxData(newBoxData)
-          })
-
+          });
 
         }
 
@@ -412,7 +419,7 @@ const PrepareDocument = () => {
         // });
         // setDisableNext(check)
 
-      })
+      });
 
       // filePicker.current.onchange = e => {
       //   const file = e.target.files[0];
@@ -1036,9 +1043,9 @@ const PrepareDocument = () => {
                     </Tooltip>
                       {/* {boxData.filter(e => e.key === item.key)[0].sign} */}
                       <p></p>
-                    <Tooltip placement="right" title={'참여자가 텍스트를 입력할 위치에 넣어주세요.'}>
+                    <Tooltip placement="right" title={(browser && browser.name.includes('chrom') && parseInt(browser.version) < 87) ? '사용중인 브라우저의 버전이 낮습니다.(버전 87 이상 지원)' : '참여자가 텍스트를 입력할 위치에 넣어주세요.'}>
                       <Badge count={boxData.filter(e => e.key === item.key)[0].text}>
-                        <Button style={{width:'190px', textAlign:'left'}} disabled={observers.filter(v => v === item.key).length > 0} icon={<PlusOutlined />} onClick={e => { addField('TEXT', {}, item); }}>{formatMessage({id: 'input.text'})}</Button>
+                        <Button style={{width:'190px', textAlign:'left'}} disabled={observers.filter(v => v === item.key).length > 0 || (browser && browser.name.includes('chrom') && parseInt(browser.version) < 87)} icon={<PlusOutlined />} onClick={e => { addField('TEXT', {}, item); }}>{formatMessage({id: 'input.text'})}</Button>
                       </Badge>
                     </Tooltip>
                       {/* {boxData.filter(e => e.key === item.key)[0].text} */}
