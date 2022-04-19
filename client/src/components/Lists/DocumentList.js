@@ -43,7 +43,7 @@ const DocumentList = ({location}) => {
   const [searchedColumn, setSearchedColumn] = useState('');
   const [status, setStatus] = useState();
   const [data, setData] = useState([]);
-  const [pagination, setPagination] = useState({current:1, pageSize:10});
+  const [pagination, setPagination] = useState({current:1, pageSize:10, showSizeChanger:true, pageSizeOptions: ["10", "20", "30"]});
   const [loading, setLoading] = useState(false);
   const [loadingDownload, setLoadingDownload] = useState([]);
   const [includeBulk, setIncludeBulk] = useState(false);
