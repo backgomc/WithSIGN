@@ -57,7 +57,7 @@ const ESGCard = () => {
           <StatisticCard
             statistic={{
               title: '물 사용량',
-              value: (totalPaperlessNum * 10).toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ',') + ' ℓ 절약',
+              value: (totalPaperlessNum * 10).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',') + ' ℓ 절약',
               tip: 'A4 1장 생산시 물 10 ℓ 필요'
             }}
             chart={
@@ -74,7 +74,7 @@ const ESGCard = () => {
           <StatisticCard
             statistic={{
               title: '탄소 배출량',
-              value: (Math.floor(totalPaperlessNum * 2.88 * 1000)/1000).toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ',') + ' g 감소',
+              value: (Math.floor(totalPaperlessNum * 2.88 * 1000)/1000).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',') + ' g 감소',
               tip: 'A4 1장 생산시 탄소 2.88 g 배출'
             }}
             chart={

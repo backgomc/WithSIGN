@@ -1086,7 +1086,7 @@ const Home = () => {
       <Col xl={5} lg={5} md={6} sm={6} xs={12}>
       <MyStyle_ToSign>
       <CheckCard
-        title={DOCUMENT_TODO}
+        title={responsive ? DOCUMENT_TOSIGN : DOCUMENT_TODO}
         avatar={
           <Avatar
             src={imgToSign}
@@ -1219,6 +1219,13 @@ const Home = () => {
 
   return (
     <div>
+
+      <RcResizeObserver
+        key="resize-observer"
+        onResize={(offset) => {
+          setResponsive(offset.width < 1280);
+        }}
+      >
       <div style={{background: 'white',padding:0, marginTop:'-24px', marginLeft:'-24px', marginRight:'-24px', marginBottom:'24px'}}>
         <img src={banner} style={{width: '75%'}}/>
       </div>
@@ -1249,6 +1256,7 @@ const Home = () => {
           <DirectCard></DirectCard>
         </Col>
       </Row>
+      </RcResizeObserver>
     </div>
   );
 };

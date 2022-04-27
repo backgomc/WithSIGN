@@ -28,7 +28,7 @@ import RcResizeObserver from 'rc-resize-observer';
 import { useIntl } from "react-intl";
 import { setSendType } from '../Assign/AssignSlice';
 import banner from '../../assets/images/sub_top2.png';
-import ico_sign from '../../assets/images/ico_sign.png';
+import banner_small from '../../assets/images/sub_top2_2.png';
 
 moment.locale("ko");
 
@@ -179,7 +179,7 @@ const DocumentList = ({location}) => {
             <b><Badge status="success" text={DOCUMENT_SIGNED} /></b> : 모든 서명 참여자의 서명이 완료된 문서 
           </td>
           <td align='right'>
-          < img src={banner} width="500px" />
+          <img src={responsive? banner_small : banner} width={responsive ? "100px" : "500px"} />
           </td>
         </tr>
       </table>
@@ -298,7 +298,7 @@ const DocumentList = ({location}) => {
       // sorter: (a, b) => a.user.name.localeCompare(b.user.name),  // Populate Collection 단위로 정렬되고, 전체 Collection에 적용 안되어 대안 필요
       sorter: false,
       key: 'name',
-      width: '110px',
+      width: responsive ? '87px' : '110px',
       ...getColumnSearchProps('name'),
       onFilter: (value, record) =>
       record['user']['name']
@@ -307,36 +307,37 @@ const DocumentList = ({location}) => {
       render: (text, row) => {
         return (
           <React.Fragment>
-          {row['user']['name']} {row['user']['JOB_TITLE']}
+            {responsive ? row['user']['name'] : row['user']['name'] + ' ' + row['user']['JOB_TITLE']}
+          {/* {row['user']['name']} {row['user']['JOB_TITLE']} */}
           </React.Fragment>
         )
       } 
     },
-    {
-      title: '요청자',
-      responsive: ["xs"],
-      dataIndex: ['user', 'name'],
-      // sorter: (a, b) => a.user.name.localeCompare(b.user.name),  // Populate Collection 단위로 정렬되고, 전체 Collection에 적용 안되어 대안 필요
-      sorter: false,
-      key: 'name',
-      ...getColumnSearchProps('name'),
-      onFilter: (value, record) =>
-      record['user']['name']
-        ? record['user']['name'].toString().toLowerCase().includes(value.toLowerCase())
-        : '',
-      render: (text, row) => {
-          return (
-            <React.Fragment>
-            {row['user']['name']}
-            <br />
-            <font color='#787878'>{moment(row["recentTime"]).fromNow()}</font>
-            </React.Fragment>
-          )
-      } 
-    },
+    // {
+    //   title: '요청자',
+    //   responsive: ["xs"],
+    //   dataIndex: ['user', 'name'],
+    //   // sorter: (a, b) => a.user.name.localeCompare(b.user.name),  // Populate Collection 단위로 정렬되고, 전체 Collection에 적용 안되어 대안 필요
+    //   sorter: false,
+    //   key: 'name',
+    //   ...getColumnSearchProps('name'),
+    //   onFilter: (value, record) =>
+    //   record['user']['name']
+    //     ? record['user']['name'].toString().toLowerCase().includes(value.toLowerCase())
+    //     : '',
+    //   render: (text, row) => {
+    //       return (
+    //         <React.Fragment>
+    //         {row['user']['name']}
+    //         <br />
+    //         <font color='#787878'>{moment(row["recentTime"]).fromNow()}</font>
+    //         </React.Fragment>
+    //       )
+    //   } 
+    // },
     {
       title: '참여자',
-      responsive: ["sm"],
+      responsive: ["xl"],
       dataIndex: ['users'],
       key: 'users',
       width: '120px',
@@ -366,12 +367,12 @@ const DocumentList = ({location}) => {
     //     : ''
     // },
     {
-      title: '최근 활동',
+      title: responsive ? '활동' : '최근 활동',
       dataIndex: 'recentTime',
       responsive: ["sm"],
       sorter: true,
       key: 'recentTime',
-      width: '100px',
+      width: responsive ? '90px' : '100px',
       render: (text, row) => {
           // return <Moment format='YYYY/MM/DD HH:mm'>{row["requestedTime"]}</Moment>
           return (<font color='#787878'>{moment(row["recentTime"]).fromNow()}</font>)
@@ -656,6 +657,13 @@ const DocumentList = ({location}) => {
         ]}
     >
       <br></br>      
+
+      <RcResizeObserver
+        key="resize-observer"
+        onResize={(offset) => {
+          setResponsive(offset.width < 1280);
+        }}
+      >
       <Table
         rowKey={ item => { return item._id } }
         columns={columns}
@@ -673,6 +681,7 @@ const DocumentList = ({location}) => {
         })}
         onChange={handleTableChange}
       />
+      </RcResizeObserver>
 
     </PageContainer>
     </div>

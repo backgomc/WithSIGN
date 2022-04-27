@@ -1,4 +1,5 @@
-if (navigator.userAgent.indexOf('Chrome') > -1) {
+console.log(navigator.userAgent)
+if (navigator.userAgent.indexOf('Chrome') > -1 || navigator.userAgent.indexOf('Mozilla') > -1) {
     // Chromium 오픈소스 프로젝트 기반으로 제작된 브라우저
 } else {
     // 그 외

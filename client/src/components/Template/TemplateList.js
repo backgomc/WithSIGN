@@ -16,9 +16,11 @@ import 'moment/locale/ko';
 import TemplateExpander from "./TemplateExpander";
 import { setTemplate, setDocumentType, setTemplateTitle, setTemplateType, setSendType, resetAssignAll, setSignees, setObservers } from '../Assign/AssignSlice';
 import { PageContainer } from '@ant-design/pro-layout';
+import RcResizeObserver from 'rc-resize-observer';
 import 'antd/dist/antd.css';
 import { useIntl } from "react-intl";
 import banner from '../../assets/images/sub_top4.png'
+import banner_small from '../../assets/images/sub_top4_2.png'
 
 import ProList from '@ant-design/pro-list';
 import { ProFormRadio } from '@ant-design/pro-form';
@@ -80,6 +82,7 @@ const TemplateList = () => {
   const [currentPrivate, setCurrentPrivate] = useState();
   const [currentPublic, setCurrentPublic] = useState();
   const [pageSize, setPageSize] = useState(10);
+  const [responsive, setResponsive] = useState(false);
 
   const [tab, setTab] = useState('total');
 
@@ -450,7 +453,7 @@ const TemplateList = () => {
               회사 템플릿 등록은 관리자에게 문의 해주세요.
             </td>
             <td align='right'>
-            < img src={banner} />
+            <img src={responsive? banner_small : banner} width={responsive ? "100px" : "500px"} />
             </td>
           </tr>
         </tbody>
@@ -806,7 +809,14 @@ const TemplateList = () => {
     >
       <br></br>
 
-      {viewCard()}
+      <RcResizeObserver
+        key="resize-observer"
+        onResize={(offset) => {
+          setResponsive(offset.width < 1280);
+        }}
+      >
+        {viewCard()}
+      </RcResizeObserver>
 
     </PageContainer>
     </div>

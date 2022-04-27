@@ -974,7 +974,7 @@ const PrepareDocument = () => {
       > */}
         <Row gutter={[24, 24]}>
           {/* <Col span={responsive ? 24 : 5}> */}
-          <Col xl={4} lg={4} md={4} sm={24} xs={24}>
+          <Col xl={4} lg={4} md={8} sm={24} xs={24}>
 
             {/* 일반 발송 */}
             {(sendType === 'G') ? (<div>  
@@ -1141,7 +1141,7 @@ const PrepareDocument = () => {
 
           </Col>
           {/* <Col span={responsive ? 24 : 19}> */}
-          <Col xl={20} lg={20} md={20} sm={24} xs={24}>
+          <Col xl={20} lg={20} md={16} sm={24} xs={24}>
             <div className="webviewer" ref={viewer}></div>
           </Col>
         </Row>
