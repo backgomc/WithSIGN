@@ -3,6 +3,16 @@ import { navigate } from '@reach/router';
 import { Steps } from 'antd';
 import { useSelector, useDispatch } from 'react-redux';
 import { selectDocumentTitle, selectSendType } from '../Assign/AssignSlice';
+import styled from 'styled-components';
+
+const StepStyle = styled.div`
+    .ant-steps-item-title {
+        // font-size: 16px;
+        font-weight: bold;
+        // color: #666666;
+    }
+    width:100%; 
+`;
 
 const StepWrite = (props) => {
 
@@ -32,11 +42,13 @@ const StepWrite = (props) => {
     }, [current]);
 
     return (
-        <Steps size="small" current={curr} onChange={onChange}>
+        <StepStyle>
+        <Steps size="default" current={curr} onChange={onChange}>
             <Step title="문서 등록" description="문서 업로드 또는 템플릿 선택" />
             <Step title="참여자 설정" description={sendType == 'B' ? "서명(수신) 참여자 선택" : "서명(수신) 참여자 선택 (최대 10명)" } />
             <Step title="입력 설정" description="참여자 입력 항목 지정" />
         </Steps>
+        </StepStyle>
     );
 
 };

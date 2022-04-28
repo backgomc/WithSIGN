@@ -90,7 +90,7 @@ function InitPassword() {
         </Form.Item>
         <Form.Item label="With 인증번호" name="argCertNo" rules={[{ required: true, message: '인증번호를 입력하세요!' }]}>
           <Search
-            placeholder="oooooooo (8자리)"
+            placeholder="oooooo (6자리)"
             allowClear
             enterButton={btnText}
             size="large"

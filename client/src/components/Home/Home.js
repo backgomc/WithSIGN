@@ -38,7 +38,7 @@ import iconDocument from '../../assets/images/icon_save2.png';
 import iconCheck from '../../assets/images/icon_check.png';
 import iconManual from '../../assets/images/icon_manual.png';
 import { DocumentType, DocumentTypeText, DocumentTypeBadge, DocumentTypeIcon } from '../Lists/DocumentType';
-import {DOCUMENT_TODO, DOCUMENT_SIGNED, DOCUMENT_TOSIGN, DOCUMENT_SIGNING, DOCUMENT_CANCELED, DOCUMENT_TOCONFIRM} from '../../common/Constants';
+import {DOCUMENT_TODO, DOCUMENT_SIGNED, DOCUMENT_TOSIGN, DOCUMENT_SIGNING, DOCUMENT_CANCELED, DOCUMENT_TOCONFIRM, DOCUMENT_TODO_SHORT} from '../../common/Constants';
 
 import { CheckCard } from '@ant-design/pro-card';
 import BTN01 from '../../assets/images/btn_board01.png';
@@ -1086,7 +1086,7 @@ const Home = () => {
       <Col xl={5} lg={5} md={6} sm={6} xs={12}>
       <MyStyle_ToSign>
       <CheckCard
-        title={responsive ? DOCUMENT_TOSIGN : DOCUMENT_TODO}
+        title={responsive ? DOCUMENT_TODO_SHORT : DOCUMENT_TODO}
         avatar={
           <Avatar
             src={imgToSign}
