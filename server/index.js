@@ -41,6 +41,7 @@ app.use('/api/template', require('./routes/template'));
 app.use('/api/sign', require('./routes/sign'));
 app.use('/api/bulk', require('./routes/bulk'));
 app.use('/api/board', require('./routes/board'));
+app.use('/api/folder', require('./routes/folder'));
 app.use('/api/openapi', require('./routes/openapi')); // 외부 연계 제공
 app.use('/admin', require('./routes/admin')); // 관리자
 

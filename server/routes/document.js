@@ -497,6 +497,11 @@ router.post('/searchForDocumentToSign', (req, res) => {
       andParam['user'] = { $in: userIds };
     }
 
+    // folderId 있을 경우에만 OR 조건 추가 (폴더 접근 권한 체크 추가 필요) - 추후 논의
+    // if (req.body.folderId && req.body.folderId !== '') {
+    //   andParam['folders'] = req.body.folderId;
+    //   // orParam.push( {folders: req.body.folderId } );
+    // }
     Document.countDocuments(andParam).or(orParam).exec(function(err, count) {
       recordsTotal = count;
       console.log("recordsTotal:"+recordsTotal)
@@ -515,6 +520,11 @@ router.post('/searchForDocumentToSign', (req, res) => {
       .populate({
         path: "users", 
         select: {name: 1, JOB_TITLE: 2, DEPART_CODE: 3}
+      })
+      .populate({
+        path: "folders", 
+        select: {folderName: 1},
+        match: { user: user }
       })
       .exec((err, documents) => {
           // console.log(documents);
@@ -725,5 +735,15 @@ router.post('/updateRecentTime', async (req, res) => {
   });
 });
 
+// 문서 다운시 업데이트(최초 1회)
+router.post('/updateDownloads', (req, res) => {
+  if (!req.body.usrId || !req.body.docId) {
+    return res.json({ success: false, message: 'input value not enough!' });
+  }
+  Document.findOneAndUpdate( { '_id': req.body.docId }, { $addToSet: {'downloads': req.body.usrId} } ).then((doc, err) => {
+    if (err) return res.json({ success: false, err });
+    return res.status(200).send({success: true});
+  });
+});
 
 module.exports = router;

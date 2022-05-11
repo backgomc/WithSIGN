@@ -180,7 +180,7 @@ const PrepareTemplate = () => {
         // TODO : 자유 텍스트 상단 짤리는 문제 ...
         console.log(annotations[0].Subject, annotations[0].ToolName, annotations[0].TextAlign);
         if (annotations[0].ToolName && annotations[0].ToolName.startsWith('AnnotationCreateFreeText') && action === 'add') {
-          annotations[0].TextAlign = 'center';
+          // annotations[0].TextAlign = 'center';
           annotations[0].setPadding(new Annotations.Rect(0, 0, 0, 2)); // left bottom right top 
           annotations[0].Font = 'monospace';
         }
@@ -449,7 +449,7 @@ const PrepareTemplate = () => {
       <PageContainer
         // ghost
         header={{
-          title: '템플릿 참여자 설정',
+          title: '입력 설정',
           ghost: true,
           breadcrumb: {
             routes: [],

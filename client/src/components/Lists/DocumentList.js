@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import useDidMountEffect from '../Common/useDidMountEffect';
 import axios from 'axios';
-import { Table, Input, Space, Button, Checkbox, Badge, Tooltip } from "antd";
+import { Table, Input, Space, Button, Checkbox, Badge, Tooltip, Select, Divider, Typography, Modal, message, TreeSelect, Switch, Radio } from "antd";
 import Highlighter from 'react-highlight-words';
 import {
   SearchOutlined,
@@ -9,6 +9,15 @@ import {
   FileAddOutlined,
   FilePdfOutlined,
   DownloadOutlined,
+  CheckCircleTwoTone,
+  FolderOpenOutlined,
+  FolderOpenTwoTone,
+  FolderAddTwoTone,
+  FolderTwoTone,
+  FolderOutlined,
+  DeleteTwoTone,
+  SettingOutlined,
+  TeamOutlined,
   FormOutlined
 } from '@ant-design/icons';
 import { useSelector, useDispatch } from 'react-redux';
@@ -31,6 +40,8 @@ import banner from '../../assets/images/sub_top2.png';
 import banner_small from '../../assets/images/sub_top2_2.png';
 
 moment.locale("ko");
+const { Option } = Select;
+const { SHOW_PARENT } = TreeSelect;
 
 const DocumentList = ({location}) => {
 
@@ -46,12 +57,256 @@ const DocumentList = ({location}) => {
   const [pagination, setPagination] = useState({current:1, pageSize:10, showSizeChanger:true, pageSizeOptions: ["10", "20", "30"]});
   const [loading, setLoading] = useState(false);
   const [loadingDownload, setLoadingDownload] = useState([]);
+  const [loadingFolder, setLoadingFolder] = useState(false);
+  const [manageInput, setManageInput] = useState('');
+  const [manageModal, setManageModal] = useState(false);
+  const [moveModal, setMoveModal] = useState(false);
+  const [shareModal, setShareModal] = useState(false);
+  const [disableLink, setDisableLink] = useState(true);
+  const [users, setUsers] = useState([]);
+  const [orgs, setOrgs] = useState([]);
+  const [myOrgs, setMyOrgs] = useState();
+  const [treeValue, setTreeValue] = useState();
+  const [treeData, setTreeData] = useState();
+  const [editable, setEditable] = useState(false);
+  const [expandable, setExpandable] = useState(true);
+  const [moveFolderId, setMoveFolderId] = useState();
+  const [folderList, setFolderList] = useState([]);
+  const [folderName, setFolderName] = useState('');
+  const [selectFolderId, setSelectFolderId] = useState('');
+  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+  const [hasSelected, setHasSelected] = useState(selectedRowKeys.length > 0);
   const [includeBulk, setIncludeBulk] = useState(false);
   const [responsive, setResponsive] = useState(false);
 
   const searchInput = useRef<Input>(null)
 
+  const treeProps = {
+    treeData,
+    value: treeValue,
+    onChange: (value) => {console.log(value);setTreeValue(value);},
+    treeCheckable: true,
+    showArrow: true,
+    showCheckedStrategy: SHOW_PARENT,
+    placeholder: '부서 또는 직원 검색',
+    size: 'large',
+    style: {
+      width: '100%',
+      marginTop: '10px'
+    },
+  };
 
+  // 폴더 추가
+  const addFolder = () => {
+    setLoadingFolder(true);
+    if (folderName ) {
+      let params = {
+        user: _id,
+        folderName: folderName
+      }
+      axios.post('/api/folder/createFolder', params).then(response => {
+        console.log(response.data);
+        fetchFolders(params);
+        setFolderName('');
+        setLoadingFolder(false);
+      });
+    }
+  };
+
+  // 폴더 수정
+  const updateFolder = () => {
+    setLoadingFolder(true);
+    let params = {
+      _id: selectFolderId,
+      user: _id,
+      folderName: manageInput
+    }
+    axios.post('/api/folder/updateFolder', params).then(response => {
+      console.log(response.data);
+      if (response.data.success) {
+        fetchFolders({
+          user: _id
+        });
+        setSelectFolderId(selectFolderId);
+        selectFolder(selectFolderId);
+      } else {
+        message.success({content: '권한이 없습니다.', style: {marginTop: '70vh'}});
+      }
+      setManageModal(false);
+      setLoadingFolder(false);
+    });
+  };
+
+  // 폴더 삭제
+  const deleteFolder = () => {
+    setLoadingFolder(true);
+    let params = {
+      _id: selectFolderId,
+      user: _id
+    }
+    axios.post('/api/folder/deleteFolder', params).then(response => {
+      console.log(response.data);
+      if (response.data.success) {
+        fetchFolders({
+          user: _id
+        });
+        setSelectFolderId('');
+        selectFolder('');
+      } else {
+        message.success({content: '권한이 없습니다.', style: {marginTop: '70vh'}});
+      }
+      setManageModal(false);
+      setLoadingFolder(false);
+    });
+  };
+
+  // 폴더 이동
+  const moveFolder = () => {
+    setLoadingFolder(true);
+    console.log(selectedRowKeys);
+    let params = {
+      _id: moveFolderId,
+      user: _id,
+      docIds: selectedRowKeys
+    }
+    axios.post('/api/folder/moveFolder', params).then(response => {
+      console.log(response.data);
+      if (response.data.success) {
+        fetchFolders({
+          user: _id
+        });
+        setSelectFolderId('');
+        selectFolder('');
+      } else {
+        message.success({content: '권한이 없습니다.', style: {marginTop: '70vh'}});
+      }
+      setMoveModal(false);
+      setLoadingFolder(false);
+    });
+  }
+
+  // 공유 설정
+  const updateShare = () => {
+    setLoadingFolder(true);
+    console.log(treeValue);
+    let params = {
+      _id: selectFolderId,
+      user: _id,
+      editable: editable,
+      targets: treeValue
+    }
+    axios.post('/api/folder/shareFolder', params).then(response => {
+      console.log(response.data);
+      if (response.data.success) {
+        fetchFolders({
+          user: _id
+        });
+        // 공유 설정 후 자신의 권한이 빠졌을 경우 전체 조회
+        if (true) {
+          setSelectFolderId(selectFolderId);
+          selectFolder(selectFolderId);
+        } else {
+          setSelectFolderId('');
+          selectFolder('');
+        }
+      } else {
+        message.success({content: '권한이 없습니다.', style: {marginTop: '70vh'}});
+      }
+      setShareModal(false);
+      setLoadingFolder(false);
+    });
+  }
+
+  // 폴더 선택
+  const selectFolder = (key) => {
+    setSelectFolderId(key);
+    if (key) {
+      let folderInfo = folderList.find(item => item._id === key);
+      let targetInfo = folderInfo.sharedTarget.filter(item => item.editable && myOrgs.find(e => e === item.target)); // 권한 & 공유자
+      if (folderInfo.user === _id || targetInfo.length > 0) {
+        setDisableLink(false);
+        console.log(folderInfo.sharedTarget.map(item => item.target));
+
+        // 코드 기반 DISP 조립
+        let targetTreeValue = folderInfo.sharedTarget.map(item => {
+          let disp = '';
+          let data = orgs.find(e => e.DEPART_CODE === item.target);
+          if (data) {
+            disp = '|' + data.DEPART_NAME;
+          } else {
+            data = users.find(e => e.SABUN === item.target);
+            if (data) disp = '|' + data.name + (data.JOB_TITLE?' '+data.JOB_TITLE:'');
+          } 
+          return item.target + disp;
+        });
+        setTreeValue(targetTreeValue);      // setTreeValue(['A11000|경영전략부', 'P2000002|이원삼 대표이사']);
+        
+        // 권한 표시
+        setEditable(targetInfo.find(e => e.editable));
+      } else {
+        setDisableLink(true);
+      }
+      setExpandable(false);
+    } else {
+      setDisableLink(true);
+      setExpandable(true);
+    }
+
+    // 문서 목록 조회
+    fetch({
+      user: _id,
+      pagination,
+      folderId: key,
+      status:location.state.status
+    });
+  }; 
+
+  // 폴더 추가 InputText State
+  const onChangeFolderName = event => {
+    setFolderName(event.target.value);
+  };
+
+  // 폴더 수정 InputText State
+  const onChangeManageInput = event => {
+    setManageInput(event.target.value);
+  };
+
+  // 폴더 이동 InputRadio State
+  const onChangeMoveFolder = e => {
+    console.log('radio checked', e.target.value);
+    setMoveFolderId(e.target.value);
+  }
+
+  // 폴더 수정 Modal Show
+  const onClickManage = event => {
+    setManageInput(folderList.find(item => item._id === selectFolderId).folderName);
+    setManageModal(true);
+  };
+
+  // 폴더 이동 Modal Show
+  const onClickMove = event => {
+    setMoveModal(true);
+  };
+
+  // 공유 수정 Modal Show
+  const onClickShare = event => {
+    setShareModal(true);
+  };
+
+  // 폴더 수정 Modal Close
+  const handleCancelManageModal = () => {
+    setManageModal(false);
+  };
+
+  // 폴더 이동 Modal Close
+  const handleCancelMoveModal = () => {
+    setMoveModal(false);
+  };
+
+  // 공유 수정 Modal Close
+  const handleCancelShareModal = () => {
+    setShareModal(false);
+  };
 
   const handleTableChange = (pagination, filters, sorter) => {
     console.log("handleTableChange called")
@@ -65,8 +320,126 @@ const DocumentList = ({location}) => {
       pagination,
       ...filters,
       user: _id,
+      folderId: selectFolderId,
       includeBulk: includeBulk
       // status:status  //필터에 포함되어 있음 
+    });
+  };
+
+  const insertUser = (org, users, depart_code) => {
+    let filterUser = users.filter(e => e.DEPART_CODE === depart_code);
+    filterUser.map(user => (
+      org.children.push({key: user._id, value: user.SABUN + '|' + user.name + (user.JOB_TITLE ? ' ' + user.JOB_TITLE : ''), title: user.name + (user.JOB_TITLE ? ' ' + user.JOB_TITLE : '')})
+    ));
+  };
+
+  const fetchTreeSelect = async (params = {}) => {
+    let users = [];
+    let resp = await axios.post('/api/users/list', params);
+    if (resp.data.success) {
+      users = resp.data.users;
+      setUsers(resp.data.users);
+    }
+    resp = await axios.post('/api/users/orgList', params);
+    if (resp.data.success) {
+      let orgs = resp.data.orgs;
+      let tree = [];
+      setOrgs(orgs);
+
+      let level1 = orgs.filter(e => e.PARENT_NODE_ID === '');
+      level1.forEach(function(org) {
+        let level2 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE);
+        let org1 = {key: org.DEPART_CODE, value: org.DEPART_CODE + '|' + org.DEPART_NAME, title: org.DEPART_NAME, children: []}
+        insertUser(org1, users, org.DEPART_CODE);
+
+        level2.forEach(function(org) {
+          let org2 = {key: org.DEPART_CODE, value: org.DEPART_CODE + '|' + org.DEPART_NAME, title: org.DEPART_NAME, children: []}
+          insertUser(org2, users, org.DEPART_CODE);
+
+          let level3 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE);
+          level3.forEach(function(org) {
+            let org3 = {key: org.DEPART_CODE, value: org.DEPART_CODE + '|' + org.DEPART_NAME, title: org.DEPART_NAME, children: []}
+            insertUser(org3, users, org.DEPART_CODE);
+
+            let level4 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE);
+            level4.forEach(function(org) {
+              let org4 = {key: org.DEPART_CODE, value: org.DEPART_CODE + '|' + org.DEPART_NAME, title: org.DEPART_NAME, children: []}
+              insertUser(org4, users, org.DEPART_CODE);
+              
+              let level5 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE);
+              level5.forEach(function(org) {
+                let org5 = {key: org.DEPART_CODE, value: org.DEPART_CODE + '|' + org.DEPART_NAME, title: org.DEPART_NAME, children: []}
+                insertUser(org5, users, org.DEPART_CODE);
+
+                let level6 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE);
+                level6.forEach(function(org) {
+                  let org6 = {key: org.DEPART_CODE, value: org.DEPART_CODE + '|' + org.DEPART_NAME, title: org.DEPART_NAME, children: []}
+                  insertUser(org6, users, org.DEPART_CODE);
+                 
+                  let level7 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE);
+                  level7.forEach(function(org) {
+                    let org7 = {key: org.DEPART_CODE, value: org.DEPART_CODE + '|' + org.DEPART_NAME, title: org.DEPART_NAME, children: []}
+                    insertUser(org7, users, org.DEPART_CODE);
+
+                    let level8 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE);
+                    level8.forEach(function(org) {
+                      let org8 = {key: org.DEPART_CODE, value: org.DEPART_CODE + '|' + org.DEPART_NAME, title: org.DEPART_NAME, children: []}
+                      insertUser(org8, users, org.DEPART_CODE);
+
+                      let level9 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE);
+                      level9.forEach(function(org) {
+                        let org9 = {key: org.DEPART_CODE, value: org.DEPART_CODE + '|' + org.DEPART_NAME, title: org.DEPART_NAME, children: []}
+                        insertUser(org9, users, org.DEPART_CODE);
+
+                        let level10 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE);
+                        level10.forEach(function(org) {
+                          let org10 = {key: org.DEPART_CODE, value: org.DEPART_CODE + '|' + org.DEPART_NAME, title: org.DEPART_NAME, children: []}
+                          insertUser(org10, users, org.DEPART_CODE);
+                          org9.children.push(org10);
+                        });
+                        org8.children.push(org9);
+                      });
+                      org7.children.push(org8);
+                    });
+                    org6.children.push(org7);
+                  });
+                  org5.children.push(org6);
+                });
+                org4.children.push(org5);
+              });
+              org3.children.push(org4);
+            });
+            org2.children.push(org3);
+          });
+          org1.children.push(org2);
+        });
+        tree.push(org1);
+      });
+      console.log(tree);
+      setTreeData(tree);
+    } else {
+      console.log('ERROR');
+    }
+  };
+
+  // 사용자의 부서 정보 조회
+  const fetchMyOrgs = (params = {}) => {
+    axios.post('/api/users/myOrgs', params).then(response => {
+      if (response.data.success) {
+        setMyOrgs(response.data.orgs);
+      }
+    });
+  };
+
+  // 사용자별 폴더 목록 조회  
+  const fetchFolders = (params = {}) => {
+    axios.post('/api/folder/listFolder', params).then(response => {
+      console.log(response.data.folders);
+      if (response.data.success && response.data.folders.length > 0) {
+        setFolderList([{'_id': '', 'folderName': '전체 폴더', 'user': _id}, ...response.data.folders]);
+      } else {
+        setFolderList([{'_id': '', 'folderName': '전체 폴더', 'user': _id}]);
+      }
     });
   };
 
@@ -171,6 +544,7 @@ const DocumentList = ({location}) => {
   const description = (
     <div>
       <table width='100%' style={{tableLayout:'fixed'}}>
+      <tbody>
         <tr>
           <td align='left' width='350px'>
             <b><Badge status="processing" text={DOCUMENT_TODO} /></b> : 본인의 서명 또는 수신이 필요한 문서<br></br>
@@ -182,6 +556,7 @@ const DocumentList = ({location}) => {
           <img src={responsive? banner_small : banner} width={responsive ? "100px" : "500px"} />
           </td>
         </tr>
+      </tbody>
       </table>
       {/* <div style={{textAlign:'left'}}>
         <b><Badge status="processing" text="서명 필요" /></b> : 본인의 서명이 필요한 문서<br></br>
@@ -215,6 +590,15 @@ const DocumentList = ({location}) => {
   //   }
   // }
   
+  const rowSelection = {
+    selectedRowKeys,
+    onChange : selectedRowKeys => {
+      console.log('selectedRowKeys changed: ', selectedRowKeys);
+      setSelectedRowKeys(selectedRowKeys);
+      setHasSelected(selectedRowKeys.length > 0);
+    }
+  };
+
   const columns = [
     {
       title: '문서명',
@@ -224,6 +608,7 @@ const DocumentList = ({location}) => {
       ...getColumnSearchProps('docTitle'),
       expandable: true,
       render: (text,row) =>  <div style={{ wordWrap: 'break-word', wordBreak: 'break-word' }}><FileOutlined /> {text}</div>, // 여러 필드 동시 표시에 사용
+      // render: (text,row) =>  <Typography.Paragraph editable style={{ wordWrap: 'break-word', wordBreak: 'break-word' }}><FileOutlined /> {text}</Typography.Paragraph>, // 여러 필드 동시 표시에 사용
     },
     // {
     //   title: '상태',
@@ -366,6 +751,29 @@ const DocumentList = ({location}) => {
     //     ? record['_id'].toString().toLowerCase().includes(value.toLowerCase())
     //     : ''
     // },
+    // 폴더관리 부분
+    // {
+    //   title: '위치',
+    //   dataIndex: 'folders',
+    //   responsive: ['xl'],
+    //   render: (text) => {
+    //     return (
+    //       selectFolderId === '' ?
+    //         text.length > 0 ?
+    //           text.length > 1 ?
+    //             <Tooltip placement="top" title={text.map((e, i) => e.folderName + (i===text.length-1?'':', '))} ><Space><FolderTwoTone />{text[0]['folderName'] + ' 외 '+ (text.length - 1)}</Space></Tooltip>
+    //             :
+    //             <Space><FolderTwoTone />{text[0]['folderName']}</Space>
+    //           :
+    //           ''
+    //         :
+    //         <Space>
+    //           {folderList.find(folder => folder._id === selectFolderId).user === _id ? <FolderTwoTone /> : <FolderOutlined />}
+    //           {folderList.find(folder => folder._id === selectFolderId).folderName}
+    //         </Space>
+    //     );
+    //   }
+    // },
     {
       title: responsive ? '활동' : '최근 활동',
       dataIndex: 'recentTime',
@@ -501,21 +909,26 @@ const DocumentList = ({location}) => {
                 const docRef = row["docRef"]
                 const docType = row["docType"]
                 const docTitle = row["docTitle"]
+                const downloads = row["downloads"]
                 const status = DOCUMENT_SIGNED
-                dispatch(setDocToView({ docRef, docId, docType, docTitle, status }));
+                dispatch(setDocToView({ docRef, docId, docType, docTitle, status, downloads }));
                 navigate(`/viewDocument`);
               }}></Button></Tooltip>&nbsp;&nbsp;
               {/* <a href={row["docRef"]} download={row["docTitle"]+'.pdf'}> */}
+              <Badge count={row['downloads'].find(e => e === _id)?<CheckCircleTwoTone/>:0}>
                 <Tooltip placement="top" title={'다운로드'}>
                 <Button key="2" href={'/api/storage/documents/'+row["_id"]} download={row["docTitle"]+'.pdf'} icon={<DownloadOutlined />} loading={loadingDownload[row["_id"]]}  onClick={(e) => {
                 // <Button key="2" href={row["docRef"]} download={row["docTitle"]+'.pdf'} icon={<DownloadOutlined />} loading={loadingDownload[row["_id"]]}  onClick={(e) => {
-                  setLoadingDownload( { [row["_id"]] : true } )
+                  row['downloads'].push(_id);
+                  axios.post('/api/document/updateDownloads', {docId:row['_id'], usrId:_id});
+                  setLoadingDownload( { [row['_id']] : true } );
                   setTimeout(() => {
-                    setLoadingDownload( { [row["_id"]] : false})
+                    setLoadingDownload( { [row['_id']] : false } );
                   }, 3000);
                 }}>
                 </Button>
                 </Tooltip>
+              </Badge>
              {/* </a> */}
               </div>
             )
@@ -584,6 +997,18 @@ const DocumentList = ({location}) => {
       status:location.state.status
     });
 
+    // 폴더관리 부분
+    // fetchFolders({
+    //   user: _id
+    // });
+
+    // fetchMyOrgs({
+    //   user: _id
+    // });
+
+    // fetchTreeSelect({
+    //   OFFICE_CODE: '7831'
+    // });
     console.log("location.state.docId:"+ location.state.docId)
 
   }, []);
@@ -599,6 +1024,7 @@ const DocumentList = ({location}) => {
 
     fetch({
       user: _id,
+      folderId: selectFolderId,
       pagination,
       status:location.state.status,
       includeBulk: includeBulk,
@@ -656,8 +1082,45 @@ const DocumentList = ({location}) => {
         footer={[
         ]}
     >
-      <br></br>      
-
+      <br></br>
+      {/* 추후 논의 */}
+      {/* {hasSelected ? 
+        (<Space style={{margin: '15px 0px'}}>
+          {`선택한 문서 (${selectedRowKeys.length})`}<Typography.Link onClick={onClickMove}><FolderTwoTone /> 폴더로 이동</Typography.Link>
+          <Typography.Link onClick={onClickMove}><DeleteTwoTone /> 폴더에서 삭제</Typography.Link>
+        </Space>)
+      :
+        (<Space style={{margin: '10px 0px'}}>
+        <Select
+          style={{ width: 200 }}
+          // placeholder={<Space><FolderOpenTwoTone />폴더 선택</Space>}
+          dropdownRender={optionList => (
+            <>
+              {optionList}
+              <Divider style={{ margin: '8px 0' }} />
+              <Space align="center" style={{ padding: '0 8px 4px' }}>
+                <Input placeholder="폴더명" value={folderName} onChange={onChangeFolderName}/>
+                <Typography.Link onClick={addFolder} style={{ whiteSpace: 'nowrap' }}>
+                  <FolderAddTwoTone /> 추가
+                </Typography.Link>
+              </Space>
+            </>
+          )}
+          onChange={selectFolder}
+          onPressEnter={(e)=>{console.log(e)}}
+          loading={loadingFolder}
+          value={selectFolderId}
+        >
+          {folderList.map(folder => (
+            <Option key={folder._id}><Space size="small">{folder.user === _id ? <FolderOpenTwoTone /> : <FolderOpenOutlined />}{folder.folderName}{folder.shared?<TeamOutlined/>:''}</Space></Option>
+          ))}
+        </Select>
+        <Space size={"middle"}>
+          <Typography.Link disabled={disableLink} onClick={onClickManage}><SettingOutlined /> 수정</Typography.Link>
+          <Typography.Link disabled={disableLink} onClick={onClickShare}><TeamOutlined /> 공유</Typography.Link>
+        </Space>
+      </Space>)
+      } */}
       <RcResizeObserver
         key="resize-observer"
         onResize={(offset) => {
@@ -670,10 +1133,11 @@ const DocumentList = ({location}) => {
         dataSource={data}
         pagination={pagination}
         loading={loading}
+        // rowSelection={rowSelection}
         // expandable={expandableData}
         defaultExpandedRowKeys={[location.state.docId]}
-        expandedRowRender={row => <DocumentExpander item={row} />}
-        expandRowByClick
+        expandedRowRender={expandable ? row => <DocumentExpander item={row} /> : null}
+        expandRowByClick={expandable}
         onRow={record => ({
           onClick: e => {
             // console.log(`user clicked on row ${record.t1}!`);
@@ -684,6 +1148,63 @@ const DocumentList = ({location}) => {
       </RcResizeObserver>
 
     </PageContainer>
+    <Modal
+      visible={manageModal}
+      width={400}
+      title="폴더 수정"
+      onCancel={handleCancelManageModal}
+      footer={[
+        <Button type="primary" onClick={updateFolder}>
+          수정
+        </Button>,
+        <Button danger onClick={deleteFolder}>
+          삭제
+        </Button>
+      ]}
+    >
+      <Input size="large" allowClear prefix={<FolderOpenTwoTone />} value={manageInput} onChange={onChangeManageInput}/>
+    </Modal>
+    <Modal
+      visible={moveModal}
+      width={300}
+      title="폴더 선택"
+      onCancel={handleCancelMoveModal}
+      footer={[
+        <Button type="primary" onClick={moveFolder}>
+          이동
+        </Button>
+      ]}
+      bodyStyle={{textAlign: 'Center'}}
+    >
+      <Radio.Group onChange={onChangeMoveFolder} value={moveFolderId} buttonStyle="solid" style={{textAlign: 'left'}}>
+        <Space direction="vertical">
+          {folderList.filter(e => e._id!=='').map(folder => (
+            <Radio.Button style={{width:'100%'}} value={folder._id} disabled={(folder.user===_id || folder.sharedTarget.find(item => item.editable && myOrgs.find(e => e === item.target)))?false:true}>
+              <Space size="small">{folder.user === _id ? <FolderTwoTone /> : <FolderOutlined />}{folder.folderName}{folder.shared?<TeamOutlined/>:''}</Space>
+            </Radio.Button>
+          ))}
+        </Space>
+      </Radio.Group>
+    </Modal>
+    <Modal
+      visible={shareModal}
+      width={400}
+      title="공유 설정"
+      onCancel={handleCancelShareModal}
+      footer={[
+        <Button type="primary" onClick={updateShare}>
+          설정
+        </Button>
+      ]}
+    >
+      <Switch
+        checkedChildren="수정 권한"
+        unCheckedChildren="수정 권한"
+        checked={editable}
+        onChange={() => setEditable(!editable)}
+      />
+      <TreeSelect {...treeProps} />
+    </Modal>
     </div>
     
   );
