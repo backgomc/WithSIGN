@@ -6,6 +6,7 @@ export const AssignSlice = createSlice({
     signees: [],
     observers: [],
     documentFile: null,
+    attachFiles: [],
     documentTempPath: null,
     documentTitle: null,
     template: null,
@@ -34,6 +35,12 @@ export const AssignSlice = createSlice({
     },
     resetDocumentFile: (state, action) => {
       state.documentFile = null;
+    },
+    setAttachFiles: (state, action) => {
+      state.attachFiles = action.payload;
+    },
+    resetAttachFiles: (state, action) => {
+      state.attachFiles = [];
     },
     setDocumentTempPath: (state, action) => {
       state.documentTempPath = action.payload;
@@ -91,15 +98,17 @@ export const AssignSlice = createSlice({
       state.signees = [];
       state.sendType = null;
       state.orderType = null;
+      state.attachFiles = [];
     },
   },
 });
 
-export const { addSignee, setSignees, resetSignee, setObservers, setDocumentFile, resetDocumentFile, setDocumentTitle, resetDocumentTitle, setTemplate, resetTemplate, setTemplateTitle, resetTemplateTitle, setDocumentType, resetDocumentType, setTemplateType, resetTemplateType, setSendType, resetAssignAll, setDocumentTempPath, resetDocumentTempPath } = AssignSlice.actions;
+export const { addSignee, setSignees, resetSignee, setObservers, setDocumentFile, resetDocumentFile, setDocumentTitle, resetDocumentTitle, setTemplate, resetTemplate, setTemplateTitle, resetTemplateTitle, setDocumentType, resetDocumentType, setTemplateType, resetTemplateType, setSendType, resetAssignAll, setDocumentTempPath, resetDocumentTempPath, setAttachFiles, resetAttachFiles } = AssignSlice.actions;
 
 export const selectAssignees = state => state.assign.signees;
 export const selectObservers = state => state.assign.observers;
 export const selectDocumentFile = state => state.assign.documentFile;
+export const selectAttachFiles = state => state.assign.attachFiles;
 export const selectDocumentTempPath = state => state.assign.documentTempPath;
 export const selectDocumentTitle = state => state.assign.documentTitle;
 export const selectTemplate = state => state.assign.template;
@@ -108,5 +117,7 @@ export const selectDocumentType = state => state.assign.documentType;
 export const selectTemplateType = state => state.assign.templateType;
 export const selectSendType = state => state.assign.sendType;
 export const selectOrderType = state => state.assign.orderType;
+
+
 
 export default AssignSlice.reducer;

@@ -8,10 +8,10 @@ import { Tabs, Upload, message, Input, Space, Form, Button } from 'antd';
 // import { InboxOutlined, CheckOutlined } from '@ant-design/icons';
 import StepWrite from '../Step/StepWrite';
 import { useIntl } from "react-intl";
-import { setSignees, setObservers, setDocumentFile, setDocumentTitle, selectDocumentTitle, setDocumentTempPath, selectDocumentFile, setTemplate, setTemplateType, setDocumentType, selectDocumentType, selectTemplate, selectTemplateTitle, setTemplateTitle, selectSendType, selectTemplateType, resetTemplate, resetTemplateTitle } from '../Assign/AssignSlice';
+import { setSignees, setObservers, setDocumentFile, setDocumentTitle, selectDocumentTitle, setDocumentTempPath, selectDocumentFile, setTemplate, setTemplateType, setDocumentType, selectDocumentType, selectTemplate, selectTemplateTitle, setTemplateTitle, selectSendType, selectTemplateType, resetTemplate, resetTemplateTitle, setAttachFiles, selectAttachFiles } from '../Assign/AssignSlice';
 import { PageContainer } from '@ant-design/pro-layout';
 import ProCard from '@ant-design/pro-card';
-import ProForm, { ProFormUploadDragger, ProFormText } from '@ant-design/pro-form';
+import ProForm, { ProFormUploadDragger, ProFormText, ProFormUploadButton } from '@ant-design/pro-form';
 import TemplateList from '../Template/TemplateList';
 import '@ant-design/pro-card/dist/card.css';
 import 'antd/dist/antd.css';
@@ -36,6 +36,7 @@ const UploadDocument = () => {
 
   const [instance, setInstance] = useState(null);
   const [file, setFile] = useState(null);
+  const [fileList, setFileList] = useState(useSelector(selectAttachFiles)); // 첨부 파일 (max:3개)
   const [hiddenFileUpload, setHiddenFileUpload] = useState(false);
   const [hiddenForm, setHiddenForm] = useState(true);
   const [disableNext, setDisableNext] = useState(true);
@@ -52,6 +53,61 @@ const UploadDocument = () => {
   const templateTitle = useSelector(selectTemplateTitle);
   const sendType = useSelector(selectSendType);
   const templateType = useSelector(selectTemplateType);
+
+  const propsAttach = {
+    onRemove: file => {
+      console.log('onRemove called', file)
+
+      const index = fileList.indexOf(file);
+      const newFileList = fileList.slice();
+      newFileList.splice(index, 1);
+      setFileList(newFileList)
+
+      // 첨부파일 셋팅
+      dispatch(setAttachFiles(newFileList));
+    },
+    beforeUpload: file => {
+
+      console.log('beforeUpload called', file)
+
+      if(fileList.length > 2) {
+        message.error('첨부파일 개수는 3개까지 가능합니다!');
+        return Upload.LIST_IGNORE;
+      }
+
+      const isLt2M = file.size / 1024 / 1024 < 10;
+      if (!isLt2M) {
+        message.error('File must smaller than 10MB!');
+        return Upload.LIST_IGNORE;
+      }
+      
+      file.url = URL.createObjectURL(file)  // 업로드 전에 preview 를 위해 추가
+      setFileList([...fileList, file])
+
+      // 첨부파일 셋팅
+      dispatch(setAttachFiles([...fileList, file]));
+
+      return false;
+    },
+    fileList,
+    onPreview: async file => {
+      console.log('aa', file)
+      // let src = file.url;
+      let src = URL.createObjectURL(file)
+      console.log('src', src)
+      if (!src) {
+        src = await new Promise(resolve => {
+          const reader = new FileReader();
+          reader.readAsDataURL(file.originFileObj);
+          reader.onload = () => resolve(reader.result);
+        });
+      }
+      const image = new Image();
+      image.src = src;
+      const imgWindow = window.open(src);
+      imgWindow.document.write(image.outerHTML);
+    },
+  };
 
   const fetchUploadTempFile = async () => {
     setLoading(true);
@@ -138,6 +194,7 @@ const UploadDocument = () => {
 
     dispatch(setDocumentType('PC'))
     dispatch(setDocumentTitle(values.documentTitle))
+
     navigate('/assign')
   }
 
@@ -192,6 +249,23 @@ const UploadDocument = () => {
 
   //   }
   // };
+
+  const fileAttachment = (
+    <ProFormUploadButton
+      name="attachFile"
+      label="첨부파일"
+      title="가져오기"
+      tooltip="해당 문서에 파일을 첨부하는 경우 사용"
+      max={3}
+      fieldProps={{
+        name: 'file',
+        // listType: 'picture-card',
+        ...propsAttach
+      }}
+      // action="/upload.do"
+      extra="최대 파일수 3개, 최대 용량 10MB"
+    />
+  )
 
 
   return (
@@ -366,6 +440,8 @@ const UploadDocument = () => {
                 rules={[{ required: true, message: formatMessage({id: 'input.documentTitle'}) }]}
               />
 
+              {fileAttachment}
+
             </ProForm>
 
           </ProCard.TabPane>
@@ -373,10 +449,13 @@ const UploadDocument = () => {
 
           <ProCard.TabPane key="tab2" tab="개인 템플릿">
               <SelectTemplate type='M' ref={templateRef_M} templateChanged={templateChanged} templateTitleChanged={templateTitleChanged} />
+              {fileAttachment}
           </ProCard.TabPane>
 
           <ProCard.TabPane key="tab3" tab="회사 템플릿">
               <SelectTemplate type='C' ref={templateRef_C} templateChanged={templateChanged} templateTitleChanged={templateTitleChanged} />
+              <br></br>
+              {fileAttachment}
           </ProCard.TabPane>
 
 

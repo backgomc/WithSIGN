@@ -14,7 +14,24 @@ import { navigate } from '@reach/router';
 // } from 'gestalt';
 import { Upload, message, Badge, Button, Row, Col, List, Card, Checkbox, Tooltip, Tag } from 'antd';
 import { InboxOutlined, HighlightOutlined, PlusOutlined, ArrowLeftOutlined, SendOutlined } from '@ant-design/icons';
-import { selectDocumentTempPath, resetAssignAll, selectAssignees, selectObservers, resetSignee, selectDocumentFile, selectDocumentTitle, resetDocumentFile, resetDocumentTitle, selectTemplate, resetTemplate, selectDocumentType, resetDocumentType, selectTemplateTitle, selectSendType, selectOrderType } from '../Assign/AssignSlice';
+import { selectDocumentTempPath, 
+         resetAssignAll,
+         selectAssignees, 
+         selectObservers, 
+         resetSignee, 
+         selectDocumentFile, 
+         selectDocumentTitle, 
+         resetDocumentFile, 
+         resetDocumentTitle, 
+         selectTemplate, 
+         resetTemplate, 
+         selectDocumentType, 
+         resetDocumentType, 
+         selectTemplateTitle, 
+         selectSendType, 
+         selectOrderType,
+         selectAttachFiles,
+         resetAttachFiles } from '../Assign/AssignSlice';
 import { selectUser } from '../../app/infoSlice';
 import WebViewer from '@pdftron/webviewer';
 // import 'gestalt/dist/gestalt.css';
@@ -55,6 +72,7 @@ const PrepareDocument = () => {
   const dispatch = useDispatch();
   const { formatMessage } = useIntl();
 
+  const attachFiles = useSelector(selectAttachFiles);
   const documentFile = useSelector(selectDocumentFile);
   const documentTitle = useSelector(selectDocumentTitle);
   const documentType = useSelector(selectDocumentType);
@@ -761,6 +779,35 @@ const PrepareDocument = () => {
       thumbnailUrl = resThumbnail.data.thumbnail 
     }
 
+
+
+
+
+    // 2-1. 첨부파일 저장히기 
+    const attachPaths = []
+    var files = []
+    console.log('attachFiles:', attachFiles)
+    if (attachFiles.length > 0) {
+
+      const formData = new FormData()
+      formData.append('path', 'attachfiles/'+Date.now()+'/');
+
+      attachFiles.forEach(file => formData.append('files', file));
+
+      const resFile = await axios.post(`/api/storage/uploadFiles`, formData)
+      if (resFile.data.success) {
+        // resFile.data.files.map(file => {
+        //   attachPaths.push(file.path)
+        // })
+        files = resFile.data.files
+      }
+    }
+
+
+
+
+
+
     // 3. SAVE DOCUMENT
     const signed = false;
     const xfdf = [];
@@ -828,7 +875,8 @@ const PrepareDocument = () => {
         // orderType: observers.length > 0 ? 'S':'A', // SUSIN: 수신 기능만 활성화
         orderType: orderType, //SUNCHA: 순차 기능 활성화 
         usersOrder: usersOrder,
-        usersTodo: usersTodo
+        usersTodo: usersTodo,
+        attachFiles: files
       }
       console.log("일반 전송")
       const res2 = await axios.post('/api/document/addDocumentToSign', body)
@@ -862,7 +910,8 @@ const PrepareDocument = () => {
           signedTime: signedTime,
           thumbnail: thumbnailUrl,
           pageCount: pageCount,
-          observers: observers
+          observers: observers,
+          attachFiles: files
         }
         const res = await axios.post('/api/document/addDocumentToSign', body)
         if (res.data.success) {

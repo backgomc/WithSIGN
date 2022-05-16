@@ -90,7 +90,10 @@ const documentSchema = mongoose.Schema({
     },
     observers: {
         type: Array
-    }
+    },
+    attachFiles: {
+        type: Array
+    },
 })
 
 // 경로 치환
