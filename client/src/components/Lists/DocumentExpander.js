@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { v4 as uuidv4 } from 'uuid';
-import { Tooltip, Tag, Timeline, Button, Alert, Modal, Badge, Descriptions, Space, message, Typography } from 'antd';
+import { Tooltip, Tag, Timeline, Button, Alert, Modal, Badge, Descriptions, Space, message, List, Typography } from 'antd';
 import Moment from 'react-moment';
 import { useSelector, useDispatch } from 'react-redux';
 import { selectUser } from '../../app/infoSlice';
@@ -26,7 +26,8 @@ import Icon, {
     FolderOpenFilled,
     TeamOutlined,
     RightOutlined,
-    FileProtectOutlined
+    FileProtectOutlined,
+    PaperClipOutlined
   } from '@ant-design/icons';
 import { ReactComponent as Blockchain} from '../../assets/images/blockchain.svg';
 import { DocumentTypeBadge, DocumentType, DocumentTypeText } from './DocumentType';
@@ -479,30 +480,44 @@ const DocumentExpander = (props) => {
                 }
             </Timeline>
       </ProDescriptions.Item>
-      {
-        item.folders.length > 0 && item.folders.find(folder => folder.shared) ?
-            <ProDescriptions.Item span={2} label={<b>공유 현황</b>}>
-                {item.folders.map(folder => {
-                    let docTitle = folder.docs.find(e => e._id === item._id).alias;
-                    return (folder.shared ? (
-                        <div>
-                            <Space>
-                                {folder.user._id === _id ? <FolderOpenTwoTone /> : <FolderOpenFilled />}
-                                <Typography.Link
-                                    onClick={()=>{
-                                        navigate('/inFolder', {state: {folderInfo: folder}});
-                                    }}
-                                >{folder.folderName}</Typography.Link>
-                                <TeamOutlined /><RightOutlined /><FileOutlined />{docTitle}
-                            </Space>
-                        </div>
-                    ) : '')
-                })}
-                
-            </ProDescriptions.Item>
-            :
-            ''
-      }
+      {item.attachFiles?.length > 0 ?       
+        <ProDescriptions.Item span={2} label={<b>첨부 파일</b>}>
+            <List
+            size="small"
+            split={false}
+            dataSource={item.attachFiles}
+            // header={`첨부파일 ${item.attachFiles.length}`}
+            // bordered
+            itemLayout="horizontal"
+            renderItem={item =>
+                <List.Item>
+                <List.Item.Meta
+                    avatar={<PaperClipOutlined />}
+                    description={ <a href={item.path} download={item.originalname} style={{color:'gray'}}>{item.originalname}</a> }
+                />
+                </List.Item>
+            }
+            />
+      </ProDescriptions.Item> : <></>}
+      {item.folders.length > 0 && item.folders.find(folder => folder.shared) ?
+        <ProDescriptions.Item span={2} label={<b>공유 현황</b>}>
+            {item.folders.map(folder => {
+                let docTitle = folder.docs.find(e => e._id === item._id).alias;
+                return (folder.shared ? (
+                    <div>
+                        <Space>
+                            {folder.user._id === _id ? <FolderOpenTwoTone /> : <FolderOpenFilled />}
+                            <Typography.Link
+                                onClick={()=>{
+                                    navigate('/inFolder', {state: {folderInfo: folder}});
+                                }}
+                            >{folder.folderName}</Typography.Link>
+                            <TeamOutlined /><RightOutlined /><FileOutlined />{docTitle}
+                        </Space>
+                    </div>
+                ) : '')
+            })} 
+        </ProDescriptions.Item> : <></>}
     </ProDescriptions>
 </Container>
 

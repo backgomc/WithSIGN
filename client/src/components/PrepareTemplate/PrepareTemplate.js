@@ -375,7 +375,8 @@ const PrepareTemplate = () => {
     const data = await doc.getFileData({ xfdfString });
     const arr = new Uint8Array(data);
     const blob = new Blob([arr], { type: 'application/pdf' });
-    const users = assignees.map(assignee => {
+    const assigneesExceptRequester = assignees.filter(el => el.key !== 'requester')
+    const users = assigneesExceptRequester.map(assignee => {
       return assignee.key;
     });
     
@@ -398,7 +399,9 @@ const PrepareTemplate = () => {
     var usersOrder = [];
     var usersTodo = [];
     var orderType = 'A';
-    assignees.map(user => {
+
+    //TODO: request가 0단계인 경우 1단계 서명자를 TODO로 내려준다???
+    assigneesExceptRequester.map(user => {
       usersOrder.push({'user': user.key, 'order': user.order});
       if (user.order == 0) {
         usersTodo.push(user.key);
@@ -417,7 +420,8 @@ const PrepareTemplate = () => {
       orderType: orderType, //SUNCHA: 순차 기능 활성화 
       usersOrder: usersOrder,
       usersTodo: usersTodo,
-      signees: assignees
+      signees: assigneesExceptRequester,
+      hasRequester: assignees.some(v => v.key === 'requester')
     }
     
     res = await axios.post('/api/template/updateTemplate', body);

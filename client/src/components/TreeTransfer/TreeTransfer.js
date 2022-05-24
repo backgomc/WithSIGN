@@ -70,7 +70,7 @@ class TreeTransfer extends Component {
             nodeTitle = (
               <span>
                 {title.substr(0, idx)}
-                <span style={{ color: 'green' }}>{treeSearchKey}</span>
+                <span style={{ color: 'black', background: 'yellow' }}>{treeSearchKey}</span>
                 {title.substr(idx + treeSearchKey.length)}
               </span>
             );

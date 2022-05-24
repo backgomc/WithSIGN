@@ -64,6 +64,7 @@
 	"input.fileupload.file.max": "Maximum file number: 3",
 	"input.sign": "add sign",
 	"input.text": "add text",
+	"input.checkbox": "add checkbox",
 	"Send": "Send",
 	"Processing": "Processing...",
 	"Initialize": "Initialize",

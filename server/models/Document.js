@@ -91,6 +91,9 @@ const documentSchema = mongoose.Schema({
     observers: {
         type: Array
     },
+    attachFiles: {
+        type: Array
+    },
     folders: [{
         type: Schema.Types.ObjectId,
         ref: 'Folder'

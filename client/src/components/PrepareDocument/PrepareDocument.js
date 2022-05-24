@@ -13,8 +13,25 @@ import { navigate } from '@reach/router';
 //   SelectList,
 // } from 'gestalt';
 import { Upload, message, Badge, Button, Row, Col, List, Card, Checkbox, Tooltip, Tag } from 'antd';
-import { InboxOutlined, HighlightOutlined, PlusOutlined, ArrowLeftOutlined, SendOutlined } from '@ant-design/icons';
-import { selectDocumentTempPath, resetAssignAll, selectAssignees, selectObservers, resetSignee, selectDocumentFile, selectDocumentTitle, resetDocumentFile, resetDocumentTitle, selectTemplate, resetTemplate, selectDocumentType, resetDocumentType, selectTemplateTitle, selectSendType, selectOrderType } from '../Assign/AssignSlice';
+import Icon, { InboxOutlined, HighlightOutlined, PlusOutlined, ArrowLeftOutlined, SendOutlined } from '@ant-design/icons';
+import { selectDocumentTempPath, 
+         resetAssignAll,
+         selectAssignees, 
+         selectObservers, 
+         resetSignee, 
+         selectDocumentFile, 
+         selectDocumentTitle, 
+         resetDocumentFile, 
+         resetDocumentTitle, 
+         selectTemplate, 
+         resetTemplate, 
+         selectDocumentType, 
+         resetDocumentType, 
+         selectTemplateTitle, 
+         selectSendType, 
+         selectOrderType,
+         selectAttachFiles,
+         resetAttachFiles } from '../Assign/AssignSlice';
 import { selectUser } from '../../app/infoSlice';
 import WebViewer from '@pdftron/webviewer';
 // import 'gestalt/dist/gestalt.css';
@@ -28,7 +45,9 @@ import 'antd/dist/antd.css';
 import '@ant-design/pro-card/dist/card.css';
 import logo from '../../assets/images/logo.svg';
 import { LICENSE_KEY } from '../../config/Config';
-
+import { ReactComponent as IconSign} from '../../assets/images/sign.svg';
+import { ReactComponent as IconText} from '../../assets/images/text.svg';
+import { ReactComponent as IconCheckbox} from '../../assets/images/checkbox.svg';
 const { Dragger } = Upload;
 
 const { detect } = require('detect-browser');
@@ -55,6 +74,7 @@ const PrepareDocument = () => {
   const dispatch = useDispatch();
   const { formatMessage } = useIntl();
 
+  const attachFiles = useSelector(selectAttachFiles);
   const documentFile = useSelector(selectDocumentFile);
   const documentTitle = useSelector(selectDocumentTitle);
   const documentType = useSelector(selectDocumentType);
@@ -69,9 +89,9 @@ const PrepareDocument = () => {
     return { value: user.key, label: user.name };
   });
   const box = assignees.map(user => {
-    return { key:user.key, sign:0, text:0, observer:(preObserver.filter(v => v === user.key).length > 0)?1:0};
+    return { key:user.key, sign:0, text:0, checkbox:0, observer:(preObserver.filter(v => v === user.key).length > 0)?1:0};
   });
-  const box_bulk = [{key:'bulk', sign:0, text:0}]
+  const box_bulk = [{key:'bulk', sign:0, text:0, checkbox:0}]
 
   const [boxData, setBoxData] = useState((sendType === 'B') ? box_bulk:box);
 
@@ -84,6 +104,7 @@ const PrepareDocument = () => {
 
   const user = useSelector(selectUser);
   const { _id, email } = user;
+  const myname = user.name;
 
   const viewer = useRef(null);
   const filePicker = useRef(null);
@@ -111,6 +132,8 @@ const PrepareDocument = () => {
       console.log('Dropped files', e.dataTransfer.files);
     },
   };
+
+
 
 
   // S. control inputValue map
@@ -168,7 +191,7 @@ const PrepareDocument = () => {
       },
       viewer.current,
     ).then(async instance => {
-      const { iframeWindow, docViewer, CoreControls } = instance;
+      const { iframeWindow, docViewer, CoreControls, Annotations } = instance;
       
       // select only the view group
       // toolbarGroup-View, toolbarGroup-Annotate, toolbarGroup-Shapes, toolbarGroup-Insert, toolbarGroup-Measure, toolbarGroup-Edit, toolbarGroup-FillAndSign
@@ -190,6 +213,7 @@ const PrepareDocument = () => {
       //   // header.push(toolsOverlay);
       // });
 
+    
       // set the ribbons(상단 그룹) and second header
       instance.enableElements(['ribbons']);
       instance.disableElements(['toolbarGroup-View', 'toolbarGroup-Shapes', 'toolbarGroup-Measure', 'toolbarGroup-Edit']);
@@ -232,9 +256,11 @@ const PrepareDocument = () => {
         instance.loadDocument('/'+documentTempPath);
       }
 
-      docViewer.on('documentLoaded', () => {
-        console.log('documentLoaded called');
+      const annotManager = docViewer.getAnnotationManager();
 
+      docViewer.on('documentLoaded', async () => {
+        console.log('documentLoaded called');
+        
         // 디폴트 설정
         // docViewer.setToolMode(docViewer.getTool('AnnotationCreateFreeText'));
 
@@ -268,16 +294,30 @@ const PrepareDocument = () => {
 
       });
 
-      const annotManager = docViewer.getAnnotationManager();
+      // const normalStyles = (widget) => {
+      //   if (widget instanceof Annotations.TextWidgetAnnotation) {
+      //     return {
+      //       border: '1px solid #a5c7ff',
+      //       'background-color': '#a5c7ff',
+      //       color: 'black',
+      //     };
+      //   } else if (widget instanceof Annotations.SignatureWidgetAnnotation) {
+      //     return {
+      //       border: '1px solid #a5c7ff',
+      //     };
+      //   }
+      // };
 
-      annotManager.on('annotationChanged', (annotations, action, info) => {
+      // Annotations.WidgetAnnotation.getCustomStyles = normalStyles;
+
+      annotManager.on('annotationChanged', async (annotations, action, info) => {
 
         console.log('called annotationChanged:'+ action);
 
-        const { Annotations, docViewer, Font } = instance;
+        const { docViewer, Font } = instance; 
         let firstChk = false;
 
-        annotations.forEach(function(annot) {
+        annotations.forEach(async function(annot) {
           console.log(annot.getCustomData('id'));
           // 템플릿 항목 설정 체크
           if (annot.getCustomData('id') && annot.getCustomData('id').endsWith('CUSTOM')) {
@@ -287,7 +327,19 @@ const PrepareDocument = () => {
             
             firstChk = true;
 
+
             let member = boxData.filter(e => e.key === user)[0];
+
+            // user 가 requester 이면 현재 본인으로 매핑해준다.
+            if (user === 'requester') {
+              if (sendType === 'B') {
+                member = boxData.filter(e => e.key === 'bulk')?.[0];
+                annot.setContents(type);
+              } else {
+                member = boxData.filter(e => e.key === _id)?.[0];
+                annot.setContents(myname+(type==='SIGN'?'\n'+type:' '+type));
+              }
+            }
             console.log(member);
 
             if (member) {
@@ -299,6 +351,8 @@ const PrepareDocument = () => {
                   member.sign = member.sign + 1;
                 } else if (name.includes('TEXT')) {
                   member.text = member.text + 1;
+                } else if (name.includes('CHECKBOX')) {
+                  member.checkbox = member.checkbox + 1;
                 }
                 let newBoxData = boxData.slice();
                 newBoxData[boxData.filter(e => e.key === user).index] = member;
@@ -312,6 +366,9 @@ const PrepareDocument = () => {
                 }
                 annot.deleteCustomData('id');
               }
+            // } else if (user === 'requester') {
+            //   console.log('requester field')
+
             } else {
               // boxData 와 일치하는 annotation 없을 경우 삭제
               annotManager.deleteAnnotation(annot);
@@ -319,7 +376,7 @@ const PrepareDocument = () => {
           }
         });
 
-        // TODO : 자유 텍스트 상단 짤리는 문제 ...
+        // 자유 텍스트 상단 짤리는 문제 ...
         console.log(annotations[0].Subject, annotations[0].ToolName, annotations[0].TextAlign);
        
         if (annotations[0].ToolName && annotations[0].ToolName.startsWith('AnnotationCreateFreeText') && action === 'add') {
@@ -334,7 +391,6 @@ const PrepareDocument = () => {
           return;
         } 
 
-        //TODO
         // 해당 메서드에서는 state 값을 제대로 못불러온다 ... 
         // Ref 를 써서 해결 ...
         if (action === 'add') {
@@ -349,6 +405,8 @@ const PrepareDocument = () => {
             member.sign = member.sign + 1
           } else if (name.includes('TEXT')) {
             member.text = member.text + 1
+          } else if (name.includes('CHECKBOX')) {
+            member.checkbox = member.checkbox + 1
           }
 
           const newBoxData = boxData.slice()
@@ -395,6 +453,8 @@ const PrepareDocument = () => {
               member.sign = member.sign - 1
             } else if (name.includes('TEXT')) {
               member.text = member.text - 1
+            } else if (name.includes('CHECKBOX')) {
+              member.checkbox = member.checkbox - 1
             }
   
             const newBoxData = boxData.slice()
@@ -475,6 +535,7 @@ const PrepareDocument = () => {
 
   }, [boxData]);
 
+
   const applyFields = async () => {
 
     console.log('applyFields called');
@@ -529,6 +590,18 @@ const PrepareDocument = () => {
                 },
               },
             });
+
+          } else if (annot.custom.type === 'CHECKBOX') {
+              console.log("annot.custom.name:"+annot.custom.name)
+              field = new Annotations.Forms.Field(
+                annot.custom.name + Date.now() + index,
+                {
+                  type: 'Btn',
+                  value: annot.custom.value,
+                },
+              );
+              inputAnnot = new Annotations.CheckButtonWidgetAnnotation(field);
+
           } else if (annot.custom.type === 'DATE') {
             field = new Annotations.Forms.Field(
               // annot.getContents() + Date.now() + index,
@@ -592,6 +665,13 @@ const PrepareDocument = () => {
               border: '1px solid #a5c7ff',
             };
           }
+
+          if (widget instanceof Annotations.CheckButtonWidgetAnnotation) {
+            return {
+              border: '1px solid #a5c7ff',
+            };
+          }
+
         };
         Annotations.WidgetAnnotation.getCustomStyles(inputAnnot);
 
@@ -654,6 +734,9 @@ const PrepareDocument = () => {
 
       } else if (type == 'TEXT') {
         textAnnot.Width = 200.0 / zoom;
+        textAnnot.Height = 30.0 / zoom;
+      } else if (type == 'CHECKBOX') {
+        textAnnot.Width = 30.0 / zoom;
         textAnnot.Height = 30.0 / zoom;
       } else {
         textAnnot.Width = 250.0 / zoom;
@@ -761,6 +844,35 @@ const PrepareDocument = () => {
       thumbnailUrl = resThumbnail.data.thumbnail 
     }
 
+
+
+
+
+    // 2-1. 첨부파일 저장히기 
+    const attachPaths = []
+    var files = []
+    console.log('attachFiles:', attachFiles)
+    if (attachFiles.length > 0) {
+
+      const formData = new FormData()
+      formData.append('path', 'attachfiles/'+Date.now()+'/');
+
+      attachFiles.forEach(file => formData.append('files', file));
+
+      const resFile = await axios.post(`/api/storage/uploadFiles`, formData)
+      if (resFile.data.success) {
+        // resFile.data.files.map(file => {
+        //   attachPaths.push(file.path)
+        // })
+        files = resFile.data.files
+      }
+    }
+
+
+
+
+
+
     // 3. SAVE DOCUMENT
     const signed = false;
     const xfdf = [];
@@ -828,7 +940,8 @@ const PrepareDocument = () => {
         // orderType: observers.length > 0 ? 'S':'A', // SUSIN: 수신 기능만 활성화
         orderType: orderType, //SUNCHA: 순차 기능 활성화 
         usersOrder: usersOrder,
-        usersTodo: usersTodo
+        usersTodo: usersTodo,
+        attachFiles: files
       }
       console.log("일반 전송")
       const res2 = await axios.post('/api/document/addDocumentToSign', body)
@@ -862,7 +975,8 @@ const PrepareDocument = () => {
           signedTime: signedTime,
           thumbnail: thumbnailUrl,
           pageCount: pageCount,
-          observers: observers
+          observers: observers,
+          attachFiles: files
         }
         const res = await axios.post('/api/document/addDocumentToSign', body)
         if (res.data.success) {
@@ -1038,14 +1152,20 @@ const PrepareDocument = () => {
                   }>
                     <Tooltip placement="right" title={'참여자가 사인을 입력할 위치에 넣어주세요.'}>
                       <Badge count={boxData.filter(e => e.key === item.key)[0].sign}>
-                        <Button style={{width:'190px', textAlign:'left'}} disabled={observers.filter(v => v === item.key).length > 0} icon={<PlusOutlined />} onClick={e => { addField('SIGN', {}, item); }}>{formatMessage({id: 'input.sign'})}</Button>
+                        <Button style={{width:'190px', textAlign:'left'}} disabled={observers.filter(v => v === item.key).length > 0} icon={<Icon component={IconSign} style={{ fontSize: '120%'}} />} onClick={e => { addField('SIGN', {}, item); }}>{formatMessage({id: 'input.sign'})}</Button>
                       </Badge>
                     </Tooltip>
                       {/* {boxData.filter(e => e.key === item.key)[0].sign} */}
                       <p></p>
                     <Tooltip placement="right" title={(browser && browser.name.includes('chrom') && parseInt(browser.version) < 87) ? '사용중인 브라우저의 버전이 낮습니다.(버전 87 이상 지원)' : '참여자가 텍스트를 입력할 위치에 넣어주세요.'}>
                       <Badge count={boxData.filter(e => e.key === item.key)[0].text}>
-                        <Button style={{width:'190px', textAlign:'left'}} disabled={observers.filter(v => v === item.key).length > 0 || (browser && browser.name.includes('chrom') && parseInt(browser.version) < 87)} icon={<PlusOutlined />} onClick={e => { addField('TEXT', {}, item); }}>{formatMessage({id: 'input.text'})}</Button>
+                        <Button style={{width:'190px', textAlign:'left'}} disabled={observers.filter(v => v === item.key).length > 0 || (browser && browser.name.includes('chrom') && parseInt(browser.version) < 87)} icon={<Icon component={IconText} style={{ fontSize: '120%'}} />} onClick={e => { addField('TEXT', {}, item); }}>{formatMessage({id: 'input.text'})}</Button>
+                      </Badge>
+                    </Tooltip>
+                    <p></p>
+                    <Tooltip placement="right" title={(browser && browser.name.includes('chrom') && parseInt(browser.version) < 87) ? '사용중인 브라우저의 버전이 낮습니다.(버전 87 이상 지원)' : '참여자가 체크박스를 입력할 위치에 넣어주세요.'}>
+                      <Badge count={boxData.filter(e => e.key === item.key)[0].checkbox}>
+                        <Button style={{width:'190px', textAlign:'left'}} disabled={observers.filter(v => v === item.key).length > 0 || (browser && browser.name.includes('chrom') && parseInt(browser.version) < 87)} icon={<Icon component={IconCheckbox} style={{ fontSize: '120%'}} />} onClick={e => { addField('CHECKBOX', {}, item); }}>{formatMessage({id: 'input.checkbox'})}</Button>
                       </Badge>
                     </Tooltip>
                       {/* {boxData.filter(e => e.key === item.key)[0].text} */}
@@ -1108,14 +1228,21 @@ const PrepareDocument = () => {
                     <p>
                     <Tooltip block placement="right" title={'참여자가 사인을 입력할 위치에 넣어주세요.'}>
                       <Badge count={boxData.filter(e => e.key === 'bulk')[0] ? boxData.filter(e => e.key === 'bulk')[0].sign : 0}>
-                        <Button style={{width:'190px', textAlign:'left'}} icon={<PlusOutlined />} onClick={e => { addField('SIGN', {}); }}>{formatMessage({id: 'input.sign'})}</Button>
+                        <Button style={{width:'190px', textAlign:'left'}} icon={<Icon component={IconSign} style={{ fontSize: '120%'}} />} onClick={e => { addField('SIGN', {}); }}>{formatMessage({id: 'input.sign'})}</Button>
                       </Badge>
                     </Tooltip>
                     </p>
                     <p>
                     <Tooltip placement="right" title={'참여자가 텍스트를 입력할 위치에 넣어주세요.'}>
                       <Badge count={boxData.filter(e => e.key === 'bulk')[0] ? boxData.filter(e => e.key === 'bulk')[0].text : 0}>
-                        <Button style={{width:'190px', textAlign:'left'}} icon={<PlusOutlined />} onClick={e => { addField('TEXT', {}); }}>{formatMessage({id: 'input.text'})}</Button>
+                        <Button style={{width:'190px', textAlign:'left'}} icon={<Icon component={IconText} style={{ fontSize: '120%'}} />} onClick={e => { addField('TEXT', {}); }}>{formatMessage({id: 'input.text'})}</Button>
+                      </Badge>
+                    </Tooltip>
+                    </p>
+                    <p>
+                    <Tooltip placement="right" title={'참여자가 체크박스를 입력할 위치에 넣어주세요.'}>
+                      <Badge count={boxData.filter(e => e.key === 'bulk')[0] ? boxData.filter(e => e.key === 'bulk')[0].checkbox : 0}>
+                        <Button style={{width:'190px', textAlign:'left'}} icon={<Icon component={IconCheckbox} style={{ fontSize: '120%'}} />} onClick={e => { addField('CHECKBOX', {}); }}>{formatMessage({id: 'input.checkbox'})}</Button>
                       </Badge>
                     </Tooltip>
                     </p>

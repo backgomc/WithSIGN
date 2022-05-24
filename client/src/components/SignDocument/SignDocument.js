@@ -164,8 +164,10 @@ const SignDocument = () => {
 
           if (widget.fieldName.startsWith(_id) || widget.fieldName.startsWith('bulk')) { 
             return {
+              // border: '1px solid #a5c7ff',
+              // 'background-color': '#a5c7ff',
               border: '1px solid #a5c7ff',
-              'background-color': '#a5c7ff',
+              'background-color': '#e8e8e8',
               color: 'black',
             };
           } else {
@@ -175,6 +177,10 @@ const SignDocument = () => {
           }
 
         } else if (widget instanceof Annotations.SignatureWidgetAnnotation) {
+          return {
+            border: '1px solid #a5c7ff',
+          };
+        } else if (widget instanceof Annotations.CheckButtonWidgetAnnotation) {
           return {
             border: '1px solid #a5c7ff',
           };
@@ -241,6 +247,11 @@ const SignDocument = () => {
                     annot.Listable = false;
                   }
                   if (annot.fieldName.includes('TEXT')) {
+                    annot.fieldFlags.set('ReadOnly', true);
+                  }
+                  if (annot.fieldName.includes('CHECKBOX')) {
+                    // annot.Hidden = true;
+                    // annot.Listable = false;
                     annot.fieldFlags.set('ReadOnly', true);
                   }
                 }

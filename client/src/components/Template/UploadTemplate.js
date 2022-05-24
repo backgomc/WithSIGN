@@ -24,7 +24,9 @@ import * as common from "../../util/common";
 
 const { confirm } = Modal;
 
-const UploadTemplate = () => {
+const UploadTemplate = ({location}) => {
+
+  const templateType = location.state.templateType
 
   const dispatch = useDispatch();
   const { formatMessage } = useIntl();
@@ -190,7 +192,8 @@ const UploadTemplate = () => {
       docTitle: form.getFieldValue('documentTitle'),
       email: email,
       docRef: docRef,
-      thumbnail: thumbnail
+      thumbnail: thumbnail,
+      type: templateType
     }
     const res2 = await axios.post('/api/template/addTemplate', body);
     setLoading(false);

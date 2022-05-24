@@ -64,6 +64,7 @@
 	"input.fileupload.file.max": "최대 파일 등록 갯수: 3개",
 	"input.sign": "서명 입력란",
 	"input.text": "텍스트 입력란",
+	"input.checkbox": "체크박스 입력란",
 	"Send": "보내기",
 	"Processing": "처리 중...",
 	"Initialize": "초기화",
