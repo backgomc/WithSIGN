@@ -242,7 +242,7 @@ const TemplateList = () => {
       dispatch(setTemplateType('M'));
     }
 
-    if (sendType === 'G' && item.signees && item.signees.length > 0) {
+    if (sendType === 'G' && item.hasRequester || (item.signees && item.signees.length > 0)) {
       // 미리 등록한 참여자 설정값으로 서명 요청
       dispatch(setDocumentType('TEMPLATE_CUSTOM'));
       
@@ -274,7 +274,7 @@ const TemplateList = () => {
       dispatch(setObservers(item.observers));
     
       // 대량전송도 템플릿 이용시 컴포넌트 적용
-    } else if (sendType === 'B' && item.signees && item.signees.length > 0) {
+    } else if (sendType === 'B' && item.hasRequester || (item.signees && item.signees.length > 0)) {
       dispatch(setDocumentType('TEMPLATE_CUSTOM'));
       if (item.hasRequester) {
         dispatch(setHasRequester(true));
@@ -591,7 +591,7 @@ const TemplateList = () => {
     let label = '';
     let text = '';
     if (item.type !== 'C' || (item.type === 'C' && user.role)) {
-      if (item.users && item.users.length > 0) {
+      if (item.hasRequester || (item.users && item.users.length > 0)) {
         text = '파일 + 참여자';
       } else {
         text = '파일';
