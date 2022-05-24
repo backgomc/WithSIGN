@@ -14,7 +14,7 @@ import moment from 'moment';
 import 'moment/locale/ko';
 // import { DocumentType, DocumentTypeText, DOCUMENT_SIGNED, DOCUMENT_TOSIGN, DOCUMENT_SIGNING, DOCUMENT_CANCELED } from './DocumentType';
 import TemplateExpander from "./TemplateExpander";
-import { setTemplate, setDocumentType, setTemplateTitle, setTemplateType, setSendType, resetAssignAll, setSignees, setObservers } from '../Assign/AssignSlice';
+import { setHasRequester, setTemplate, setDocumentType, setTemplateTitle, setTemplateType, setSendType, resetAssignAll, setSignees, setObservers } from '../Assign/AssignSlice';
 import { PageContainer } from '@ant-design/pro-layout';
 import RcResizeObserver from 'rc-resize-observer';
 import 'antd/dist/antd.css';
@@ -230,7 +230,7 @@ const TemplateList = () => {
     });
   }
 
-  const signTemplate = (item, sendType) => {
+  const signTemplate = async (item, sendType) => {
     console.log(item._id);
     dispatch(resetAssignAll());
     dispatch(setDocumentType('TEMPLATE'));
@@ -245,12 +245,47 @@ const TemplateList = () => {
     if (sendType === 'G' && item.signees && item.signees.length > 0) {
       // 미리 등록한 참여자 설정값으로 서명 요청
       dispatch(setDocumentType('TEMPLATE_CUSTOM'));
-      dispatch(setSignees(item.signees));
+      
+      // dispatch(setSignees(item.signees));
+      if (item.hasRequester) {
+
+        // 본인이 포함된 경우가 아니면 => 본인 추가 
+        // 본인이 포함되 있으면 => 정렬순서에 order가 0인게 있는지 체크해서 없으면 정렬 순서 한칸 내림
+        let newSignees;
+        if (item.signees.some(el => el.key === _id)) {
+          if (item.signees.some(el => el.order !== 0)) {
+            newSignees = [...item.signees].map(el => {
+              el.order = el.order - 1;
+              return el;
+            })
+          }
+        } else {
+          const res = await axios.post('/api/users/orgInfo', {DEPART_CODE: user.DEPART_CODE})
+          newSignees = [...item.signees, {_id: '', key: _id, name: user.name, JOB_TITLE: user.JOB_TITLE, DEPART_CODE: user.DEPART_CODE, DEPART_NAME: res?.data?.org?.DEPART_NAME, order: 0}]          
+        }
+
+        dispatch(setSignees(newSignees));
+        dispatch(setHasRequester(true));
+      } else {
+        dispatch(setSignees(item.signees));
+        dispatch(setHasRequester(false));
+      }
+
       dispatch(setObservers(item.observers));
+    
+      // 대량전송도 템플릿 이용시 컴포넌트 적용
+    } else if (sendType === 'B' && item.signees && item.signees.length > 0) {
+      dispatch(setDocumentType('TEMPLATE_CUSTOM'));
+      if (item.hasRequester) {
+        dispatch(setHasRequester(true));
+      } else {
+        dispatch(setHasRequester(false));
+      }
     }
     
     dispatch(setTemplateTitle(`${item.docTitle}_${moment().format('YYYYMMDD')}`));
     dispatch(setTemplate(item));
+
     navigate('/assign');
   }
 
@@ -433,8 +468,14 @@ const TemplateList = () => {
       onOk() {
         dispatch(resetSignee());
         dispatch(setTemplateInfo(item));
-        dispatch(setTemplateSignees(item.signees));
+        if(item.hasRequester) {
+          dispatch(setTemplateSignees([...item.signees, {key:'requester',name:'서명요청자',order:0}]));
+        } else {
+          dispatch(setTemplateSignees(item.signees));
+        }
+        // dispatch(setTemplateSignees(item.signees));
         dispatch(setTemplateObservers(item.observers));
+        dispatch(setTemplateType(item.type));
         navigate('/assignTemplate');
       },
       onCancel() {
@@ -549,7 +590,7 @@ const TemplateList = () => {
   const CustomLabel = (item) => {
     let label = '';
     let text = '';
-    if (item.type !== 'C') {
+    if (item.type !== 'C' || (item.type === 'C' && user.role)) {
       if (item.users && item.users.length > 0) {
         text = '파일 + 참여자';
       } else {
@@ -775,9 +816,12 @@ const TemplateList = () => {
           },
           extra: [  
           <Search style={{ width: 200 }} placeholder="문서명 검색" onSearch={onSearch} enterButton />,           
-          (tab != 'public') ? <Button type="primary" icon={<FileAddOutlined />} onClick={() => {navigate('/uploadTemplate');}}>
-            템플릿 등록
-          </Button> : '',
+          (tab === 'public') ? 
+            user.role ? <Button type="primary" icon={<FileAddOutlined />} onClick={() => {navigate('/uploadTemplate', {state: {templateType:'C'}} );}}>템플릿 등록</Button> 
+            : '' 
+          : <Button type="primary" icon={<FileAddOutlined />} onClick={() => {navigate('/uploadTemplate', {state: {templateType:'M'}} );}}>
+          템플릿 등록
+          </Button>,
           // <Popconfirm title="삭제하시겠습니까？" okText="네" cancelText="아니오" visible={visiblePopconfirm} onConfirm={deleteTemplate} onCancel={() => {setVisiblePopconfirm(false);}}>
           //   <Button type="primary" danger disabled={!hasSelected} onClick={()=>{setVisiblePopconfirm(true);}}>
           //     삭제

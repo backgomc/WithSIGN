@@ -8,8 +8,9 @@ import { Button, Card, Avatar, message, Row, Col } from 'antd';
 import ProCard from '@ant-design/pro-card';
 import { PageContainer } from '@ant-design/pro-layout';
 import { ArrowLeftOutlined, ArrowRightOutlined, UserOutlined, PlusOutlined } from '@ant-design/icons';
-import { selectUser } from '../../app/infoSlice';
+import { selectUser, setUser } from '../../app/infoSlice';
 import { addSignee, setSignees, resetSignee, selectSignees } from './AssignTemplateSlice';
+import { selectTemplateType } from '../Assign/AssignSlice';
 import StepWrite from '../PrepareTemplate/StepTemplate';
 import TreeTransfer from '../TreeTransfer/TreeTransfer';
 
@@ -43,6 +44,7 @@ const AssignTemplate = () => {
   const { formatMessage } = useIntl();
   const assignees = useSelector(selectSignees);
   const user = useSelector(selectUser);
+  const templateType = useSelector(selectTemplateType);
   const { _id } = user;
   const [disableNext, setDisableNext] = useState(true);
   const [loading, setLoading] = useState(false);
@@ -59,6 +61,19 @@ const AssignTemplate = () => {
       org.children.push({key: user._id, title:user.name+' '+(user.JOB_TITLE? user.JOB_TITLE: '')})
     ));
   }
+  const dfs = (currentOrg, level, users, orgs) => {
+    level.forEach(org => {
+      const current = {key: org.DEPART_CODE, title:org.DEPART_NAME, children:[], disableCheckbox: false, selectable: true}
+      insertUser(current, users, org.DEPART_CODE)
+
+      currentOrg.children?.push(current)
+
+      const subLevel = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE)
+      if (subLevel && subLevel.length > 0) {
+        dfs(current, subLevel, users, orgs)
+      }
+    })  
+  }
 
   const fetch = async (params = {}) => {
     setLoading(true);
@@ -67,7 +82,11 @@ const AssignTemplate = () => {
     const res1 = await axios.post('/api/users/list', {OFFICE_CODE: '7831'});
     if (res1.data.success) {
       users = res1.data.users;
-      setUsers(res1.data.users);
+      if (templateType === 'C' && user.role) {
+        users.push({_id: "requester", name:"서명요청자", DEPART_CODE: ""})
+      }
+      // setUsers(res1.data.users);
+      setUsers(users)
     }
     
     const res = await axios.post('/api/users/orgList', params);
@@ -76,77 +95,27 @@ const AssignTemplate = () => {
       const tree = []
       setOrgs(orgs);
 
-      const level1 = orgs.filter(e => e.PARENT_NODE_ID === '');
-      level1.forEach(function(org){
-        const level2 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE);
+      const level1 = orgs.filter(e => e.PARENT_NODE_ID === "")
+      level1.forEach(org => {
         const org1 = {key: org.DEPART_CODE, title:org.DEPART_NAME, children:[], disableCheckbox: false, selectable: true}
-        insertUser(org1, users, org.DEPART_CODE);
+        insertUser(org1, users, org.DEPART_CODE)
 
-        level2.forEach(function(org){
-          const org2 = {key: org.DEPART_CODE, title:org.DEPART_NAME, children:[], disableCheckbox: false, selectable: true}
-          insertUser(org2, users, org.DEPART_CODE);
+        const level2 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE)
+        if (level2) {
+          dfs(org1, level2, users, orgs)
+        }
+        
+        tree.push(org1)
+        if (templateType === 'C' && user.role) {
+          tree.push({key: 'requester', title:'서명요청자'})
+        }
+        
+      })
 
-          const level3 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE);
-          level3.forEach(function(org){
-            const org3 = {key: org.DEPART_CODE, title:org.DEPART_NAME, children:[], disableCheckbox: false, selectable: true}
-            insertUser(org3, users, org.DEPART_CODE);
+      // 서명참여자 추가
+      // tree.push({key: 'requester', title:'서명요청자'})
 
-            const level4 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE);
-            level4.forEach(function(org){
-              const org4 = {key: org.DEPART_CODE, title:org.DEPART_NAME, children:[], disableCheckbox: false, selectable: true}
-              insertUser(org4, users, org.DEPART_CODE);
-              
-              const level5 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE);
-              level5.forEach(function(org){
-                const org5 = {key: org.DEPART_CODE, title:org.DEPART_NAME, children:[], disableCheckbox: false, selectable: true}
-                insertUser(org5, users, org.DEPART_CODE);
-
-                const level6 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE);
-                level6.forEach(function(org){
-                  const org6 = {key: org.DEPART_CODE, title:org.DEPART_NAME, children:[], disableCheckbox: false, selectable: true}
-                  insertUser(org6, users, org.DEPART_CODE);
-                 
-                  const level7 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE);
-                  level7.forEach(function(org){
-                    const org7 = {key: org.DEPART_CODE, title:org.DEPART_NAME, children:[], disableCheckbox: false, selectable: true}
-                    insertUser(org7, users, org.DEPART_CODE);
-
-                    const level8 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE);
-                    level8.forEach(function(org){
-                      const org8 = {key: org.DEPART_CODE, title:org.DEPART_NAME, children:[], disableCheckbox: false, selectable: true}
-                      insertUser(org8, users, org.DEPART_CODE);
-
-                      const level9 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE);
-                      level9.forEach(function(org){
-                        const org9 = {key: org.DEPART_CODE, title:org.DEPART_NAME, children:[], disableCheckbox: false, selectable: true}
-                        insertUser(org9, users, org.DEPART_CODE);
-
-                        const level10 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE);
-                        level10.forEach(function(org){
-                          const org10 = {key: org.DEPART_CODE, title:org.DEPART_NAME, children:[], disableCheckbox: false, selectable: true}
-                          insertUser(org10, users, org.DEPART_CODE);
-                          org9.children.push(org10);
-                        });
-                        org8.children.push(org9);
-                      });
-                      org7.children.push(org8);
-                    });
-                    org6.children.push(org7);
-                  });
-                  org5.children.push(org6);
-                });
-                org4.children.push(org5);
-              });
-              org3.children.push(org4);
-            });
-            org2.children.push(org3);
-          });
-          org1.children.push(org2);
-        });
-        tree.push(org1);
-      });
-      
-      setSource(tree);
+      setSource(tree)
       setLoading(false);
 
     } else {
@@ -347,42 +316,66 @@ const sortView = (
     var newColumns = {};
 
     if (assignees) {
-      // 참여자 설정되어 있을 경우 유저 상태 체크 필요 
-      axios.post('/api/users/check', {assignees: assignees}).then(response => {
-        let assigneesCheck  = response.data.assignees;
-        dispatch(setSignees(assigneesCheck));
-        
-        var targets = [];
-        assigneesCheck.forEach(element => {
-          targets.push(element.key);
-        });
-        setTarget(targets);
-        
-        if (assigneesCheck.length > 0) {// && !(assigneesCheck.length === 1 && assigneesCheck[0].key === _id)) { // 참여자에 본인만 있을 경우 제한
-          setDisableNext(false);
-        } else {
-          setDisableNext(true);
-        }
 
-        for (let i=0; i<10; i++) {
-          const assigneesFiltered = assigneesCheck.filter(e => e.order == i);
-          var newItems = [];
-          assigneesFiltered.map(element => {
-            const newItem = {id:element.key, name:element.name, JOB_TITLE:element.JOB_TITLE, DEPART_NAME:element.DEPART_NAME };
-            newItems.push(newItem);
+      const assigneesExceptRequester = assignees.filter(el => el.key !== 'requester')
+      if (assigneesExceptRequester) {
+        // 참여자 설정되어 있을 경우 유저 상태 체크 필요 
+        axios.post('/api/users/check', {assignees: assigneesExceptRequester}).then(response => {
+          let assigneesCheck  = response.data.assignees;
+          dispatch(setSignees(assigneesCheck));
+          
+          var targets = [];
+          assigneesCheck.forEach(element => {
+            targets.push(element.key);
           });
-          if (newItems.length > 0 || assigneesCheck.filter(e => e.order > i).length > 0) {
-            newColumns[i] = {name: (i + 1) + ' 단계', items:newItems}
+
+          if (assignees.some(el => el.key === 'requester')) targets.push('requester')
+          setTarget(targets);
+          
+          if (assigneesCheck.length > 0) {// && !(assigneesCheck.length === 1 && assigneesCheck[0].key === _id)) { // 참여자에 본인만 있을 경우 제한
+            setDisableNext(false);
+          } else {
+            setDisableNext(true);
           }
-        }
-        
-        console.log('newColumns', newColumns);
-        if (Object.keys(newColumns).length > 0) {
-          setColumns(newColumns);
-        } else {
-          setColumns(columnsDefault);
-        }
-      });
+
+          for (let i=0; i<10; i++) {
+            const assigneesFiltered = assigneesCheck.filter(e => e.order == i);
+            var newItems = [];
+
+            if (i==0 && assignees.filter(el => el.key === 'requester')?.length > 0) {
+              const element = assignees.filter(el => el.key === 'requester')[0]
+              const newItem = {id:element.key, name:element.name, JOB_TITLE:element.JOB_TITLE, DEPART_NAME:element.DEPART_NAME };
+              newItems.push(newItem);
+            }
+            assigneesFiltered.map(element => {
+              const newItem = {id:element.key, name:element.name, JOB_TITLE:element.JOB_TITLE, DEPART_NAME:element.DEPART_NAME };
+              newItems.push(newItem);
+            });
+            if (newItems.length > 0 || assigneesCheck.filter(e => e.order > i).length > 0) {
+              newColumns[i] = {name: (i + 1) + ' 단계', items:newItems}
+            }
+          }
+          
+          console.log('newColumns', newColumns);
+          if (Object.keys(newColumns).length > 0) {
+            setColumns(newColumns);
+          } else {
+            setColumns(columnsDefault);
+          }
+        });
+      } else {  // requester만 있는 경우
+
+        var targets = [];
+        if (assignees.some(el => el.key === 'requester')) targets.push('requester')
+        setTarget(targets);
+
+        var newItems = [];
+        const element = assignees.filter(el => el.key === 'requester')[0]
+        const newItem = {id:element.key, name:element.name, JOB_TITLE:element.JOB_TITLE, DEPART_NAME:element.DEPART_NAME };
+        newItems.push(newItem);
+        newColumns[0] = {name: 1 + ' 단계', items:newItems}
+      }
+
     } else {
       setColumns(columnsDefault);
     }
@@ -390,8 +383,8 @@ const sortView = (
 
   const onChange = (result, direction) => {
     console.log(treeRef);
-    if (result.length > 10) {
-      message.error('서명참여자는 최대 10명까지 지정할 수 있습니다.');
+    if (result.length > 20) {
+      message.error('서명참여자는 최대 20명까지 지정할 수 있습니다.');
       return;
     }
     

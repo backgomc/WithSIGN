@@ -13,8 +13,9 @@ export const AssignSlice = createSlice({
     templateTitle: null,
     documentType: "PC",
     templateType: null,
-    sendType: "G", // G:일반, B:벌크방식, default: G
-    orderType: "A" // A: 동차, S: 순차, default: A 
+    sendType: "G",  // G:일반, B:벌크방식, default: G
+    orderType: "A", // A: 동차, S: 순차, default: A
+    hasRequester: false 
   },
   reducers: {
     addSignee: (state, action) => {
@@ -87,6 +88,9 @@ export const AssignSlice = createSlice({
     setOrderType: (state, action) => {
       state.orderType = action.payload;
     },
+    setHasRequester: (state, action) => {
+      state.hasRequester = action.payload;
+    },
     resetAssignAll: (state, action) => {
       state.documentType = null;
       state.documentFile = null;
@@ -99,11 +103,12 @@ export const AssignSlice = createSlice({
       state.sendType = null;
       state.orderType = null;
       state.attachFiles = [];
+      state.hasRequester = null;
     },
   },
 });
 
-export const { addSignee, setSignees, resetSignee, setObservers, setDocumentFile, resetDocumentFile, setDocumentTitle, resetDocumentTitle, setTemplate, resetTemplate, setTemplateTitle, resetTemplateTitle, setDocumentType, resetDocumentType, setTemplateType, resetTemplateType, setSendType, resetAssignAll, setDocumentTempPath, resetDocumentTempPath, setAttachFiles, resetAttachFiles } = AssignSlice.actions;
+export const { addSignee, setSignees, resetSignee, setObservers, setDocumentFile, resetDocumentFile, setDocumentTitle, resetDocumentTitle, setTemplate, resetTemplate, setTemplateTitle, resetTemplateTitle, setDocumentType, resetDocumentType, setTemplateType, resetTemplateType, setSendType, resetAssignAll, setDocumentTempPath, resetDocumentTempPath, setAttachFiles, resetAttachFiles, setHasRequester } = AssignSlice.actions;
 
 export const selectAssignees = state => state.assign.signees;
 export const selectObservers = state => state.assign.observers;
@@ -117,6 +122,7 @@ export const selectDocumentType = state => state.assign.documentType;
 export const selectTemplateType = state => state.assign.templateType;
 export const selectSendType = state => state.assign.sendType;
 export const selectOrderType = state => state.assign.orderType;
+export const selectHasRequester = state => state.assign.hasRequester;
 
 
 

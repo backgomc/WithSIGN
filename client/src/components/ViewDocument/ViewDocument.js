@@ -86,7 +86,12 @@ const ViewDocument = () => {
           return {
             // border: '1px solid #a5c7ff',
           };
+        } else if (widget instanceof Annotations.CheckButtonWidgetAnnotation) {
+          return {
+            // border: '1px solid #a5c7ff',
+          };
         }
+        
       };
 
       // TODO annotation 수정 안되게 하기
@@ -113,6 +118,9 @@ const ViewDocument = () => {
               if (annot.fieldName.includes('SIGN')) { // SIGN annotation 숨김처리
                 annot.Hidden = true;
               }
+              // if (annot.fieldName.includes('CHECKBOX')) { // CHECKBOX annotation 숨김처리
+              //   annot.Hidden = true;
+              // }
             }
           });
         }

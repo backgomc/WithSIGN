@@ -8,3 +8,5 @@ bcrypt_lib.node is not a valid Win32 application
 > const bcrypt = require("bcrypt"); for const bcrypt = require("bcryptjs"); and npm i bcryptjs --save
 * [3]
 pdf 가 한장인 경우 PDF뷰어 높이가 여백이 많이 생기는 문제 발생 
+* [4]  엣지 예전버전에서 <></> <Space></Space>에 값이 없는 경우 출력이 안됨 (DocumentExpander)
+> Space 에 옵션을 일단 줘 봄

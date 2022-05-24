@@ -65,6 +65,20 @@ const Assign = () => {
     ))
   }
 
+  const dfs = (currentOrg, level, users, orgs) => {
+    level.forEach(org => {
+      const current = {key: org.DEPART_CODE, title:org.DEPART_NAME, children:[], disableCheckbox: false, selectable: true}
+      insertUser(current, users, org.DEPART_CODE)
+
+      currentOrg.children?.push(current)
+
+      const subLevel = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE)
+      if (subLevel && subLevel.length > 0) {
+        dfs(current, subLevel, users, orgs)
+      }
+    })  
+  }
+
   const fetch = async (params = {}) => {
     setLoading(true);
 
@@ -82,92 +96,108 @@ const Assign = () => {
       const tree = []
       setOrgs(orgs);
 
+
       const level1 = orgs.filter(e => e.PARENT_NODE_ID === "")
-      level1.forEach(function(org){
-        const level2 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE)
+      level1.forEach(org => {
         const org1 = {key: org.DEPART_CODE, title:org.DEPART_NAME, children:[], disableCheckbox: false, selectable: true}
-        // const org1 = {key: org.DEPART_CODE, title:org.DEPART_NAME, children:[], disableCheckbox: true, selectable: false}
         insertUser(org1, users, org.DEPART_CODE)
 
-        level2.forEach(function(org){
-          const org2 = {key: org.DEPART_CODE, title:org.DEPART_NAME, children:[], disableCheckbox: false, selectable: true}
-          insertUser(org2, users, org.DEPART_CODE)
-
-          const level3 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE)
-          level3.forEach(function(org){
-            const org3 = {key: org.DEPART_CODE, title:org.DEPART_NAME, children:[], disableCheckbox: false, selectable: true}
-            insertUser(org3, users, org.DEPART_CODE)
-
-            const level4 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE)
-            level4.forEach(function(org){
-              const org4 = {key: org.DEPART_CODE, title:org.DEPART_NAME, children:[], disableCheckbox: false, selectable: true}
-              insertUser(org4, users, org.DEPART_CODE)
-              
-              const level5 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE)
-              level5.forEach(function(org){
-                const org5 = {key: org.DEPART_CODE, title:org.DEPART_NAME, children:[], disableCheckbox: false, selectable: true}
-                insertUser(org5, users, org.DEPART_CODE)
-
-                const level6 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE)
-                level6.forEach(function(org){
-                  const org6 = {key: org.DEPART_CODE, title:org.DEPART_NAME, children:[], disableCheckbox: false, selectable: true}
-                  insertUser(org6, users, org.DEPART_CODE)
-                 
-                  const level7 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE)
-                  level7.forEach(function(org){
-                    const org7 = {key: org.DEPART_CODE, title:org.DEPART_NAME, children:[], disableCheckbox: false, selectable: true}
-                    insertUser(org7, users, org.DEPART_CODE)
-
-                    const level8 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE)
-                    level8.forEach(function(org){
-                      const org8 = {key: org.DEPART_CODE, title:org.DEPART_NAME, children:[], disableCheckbox: false, selectable: true}
-                      insertUser(org8, users, org.DEPART_CODE)
-
-                      const level9 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE)
-                      level9.forEach(function(org){
-                        const org9 = {key: org.DEPART_CODE, title:org.DEPART_NAME, children:[], disableCheckbox: false, selectable: true}
-                        insertUser(org9, users, org.DEPART_CODE)
-
-                        const level10 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE)
-                        level10.forEach(function(org){
-                          const org10 = {key: org.DEPART_CODE, title:org.DEPART_NAME, children:[], disableCheckbox: false, selectable: true}
-                          insertUser(org10, users, org.DEPART_CODE)
-                          org9.children.push(org10)
-                        })
-
-                        org8.children.push(org9)
-                      })
-
-                      org7.children.push(org8)
-                    })
-
-                    org6.children.push(org7)
-                  })
-
-
-                  org5.children.push(org6)
-                })
-
-                org4.children.push(org5)
-              })
-
-              // insertUser(org4, users, org.DEPART_CODE)
-              org3.children.push(org4)
-              
-            })
-
-            // insertUser(org3, users, org.DEPART_CODE)
-            org2.children.push(org3)
-          })
-          
-          // insertUser(org2, users, org.DEPART_CODE)
-          org1.children.push(org2)
-        })
-        // insertUser(org1, users, org.DEPART_CODE)
+        const level2 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE)
+        if (level2) {
+          dfs(org1, level2, users, orgs)
+        }
+        
         tree.push(org1)
       })
-      
+
       setSource(tree)
+
+      // const level1 = orgs.filter(e => e.PARENT_NODE_ID === "")
+      // level1.forEach(function(org){
+      //   const level2 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE)
+      //   const org1 = {key: org.DEPART_CODE, title:org.DEPART_NAME, children:[], disableCheckbox: false, selectable: true}
+      //   // const org1 = {key: org.DEPART_CODE, title:org.DEPART_NAME, children:[], disableCheckbox: true, selectable: false}
+      //   insertUser(org1, users, org.DEPART_CODE)
+
+      //   level2.forEach(function(org){
+      //     const org2 = {key: org.DEPART_CODE, title:org.DEPART_NAME, children:[], disableCheckbox: false, selectable: true}
+      //     insertUser(org2, users, org.DEPART_CODE)
+
+      //     const level3 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE)
+      //     level3.forEach(function(org){
+      //       const org3 = {key: org.DEPART_CODE, title:org.DEPART_NAME, children:[], disableCheckbox: false, selectable: true}
+      //       insertUser(org3, users, org.DEPART_CODE)
+
+      //       const level4 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE)
+      //       level4.forEach(function(org){
+      //         const org4 = {key: org.DEPART_CODE, title:org.DEPART_NAME, children:[], disableCheckbox: false, selectable: true}
+      //         insertUser(org4, users, org.DEPART_CODE)
+              
+      //         const level5 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE)
+      //         level5.forEach(function(org){
+      //           const org5 = {key: org.DEPART_CODE, title:org.DEPART_NAME, children:[], disableCheckbox: false, selectable: true}
+      //           insertUser(org5, users, org.DEPART_CODE)
+
+      //           const level6 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE)
+      //           level6.forEach(function(org){
+      //             const org6 = {key: org.DEPART_CODE, title:org.DEPART_NAME, children:[], disableCheckbox: false, selectable: true}
+      //             insertUser(org6, users, org.DEPART_CODE)
+                 
+      //             const level7 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE)
+      //             level7.forEach(function(org){
+      //               const org7 = {key: org.DEPART_CODE, title:org.DEPART_NAME, children:[], disableCheckbox: false, selectable: true}
+      //               insertUser(org7, users, org.DEPART_CODE)
+
+      //               const level8 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE)
+      //               level8.forEach(function(org){
+      //                 const org8 = {key: org.DEPART_CODE, title:org.DEPART_NAME, children:[], disableCheckbox: false, selectable: true}
+      //                 insertUser(org8, users, org.DEPART_CODE)
+
+      //                 const level9 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE)
+      //                 level9.forEach(function(org){
+      //                   const org9 = {key: org.DEPART_CODE, title:org.DEPART_NAME, children:[], disableCheckbox: false, selectable: true}
+      //                   insertUser(org9, users, org.DEPART_CODE)
+
+      //                   const level10 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE)
+      //                   level10.forEach(function(org){
+      //                     const org10 = {key: org.DEPART_CODE, title:org.DEPART_NAME, children:[], disableCheckbox: false, selectable: true}
+      //                     insertUser(org10, users, org.DEPART_CODE)
+      //                     org9.children.push(org10)
+      //                   })
+
+      //                   org8.children.push(org9)
+      //                 })
+
+      //                 org7.children.push(org8)
+      //               })
+
+      //               org6.children.push(org7)
+      //             })
+
+
+      //             org5.children.push(org6)
+      //           })
+
+      //           org4.children.push(org5)
+      //         })
+
+      //         // insertUser(org4, users, org.DEPART_CODE)
+      //         org3.children.push(org4)
+              
+      //       })
+
+      //       // insertUser(org3, users, org.DEPART_CODE)
+      //       org2.children.push(org3)
+      //     })
+          
+      //     // insertUser(org2, users, org.DEPART_CODE)
+      //     org1.children.push(org2)
+      //   })
+      //   // insertUser(org1, users, org.DEPART_CODE)
+      //   tree.push(org1)
+      // })
+      
+      // setSource(tree)
 
       // setData(tree)
       setLoading(false);
@@ -446,8 +476,8 @@ const sortView = (
 
   const onChange = (result, direction) => {
     if (sendType != 'B') {
-      if (result.length > 10) {
-        message.error('서명참여자는 최대 10명까지 지정할 수 있습니다.');
+      if (result.length > 20) {
+        message.error('서명참여자는 최대 20명까지 지정할 수 있습니다.');
         return
       }
     }

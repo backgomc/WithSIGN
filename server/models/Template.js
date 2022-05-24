@@ -51,7 +51,10 @@ const templateSchema = mongoose.Schema({
     }],
     customRef: {
         type: String
-    }
+    },
+    hasRequester: {
+        type: Boolean, default: false 
+    },
 })
 
 // 경로 치환

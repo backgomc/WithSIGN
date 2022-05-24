@@ -201,11 +201,11 @@
  docker 컴파일 시 server에 storage 날리기
 # 뷰에서 어노테이션 편집 막기 
 # 진행중에 취소 항목 나오는 문제 - 서버 수정함 (진행중일때 취소 확인 조건 추가)
-* 문서 편집 입력값 필요한것만 
+# 문서 편집 입력값 필요한것만 
 # 대량 요청 문서 강조 
-* 재요청 기능
+# 재요청 기능
 * 템플릿 사용자 및 입력값까지 저장
-* 순차 적용 
+# 순차 적용 
 # 수신 기능 순차 적용
   - 요청시 users 가 혼자인 경우에만 푸시 발송하기 
   - 목록에 수신자인 경우 앞에 서명 사인이 끝났을때만 노출하기 
@@ -214,9 +214,41 @@
   usersOrder - {user, order}
   usersTodo - [user]
 * 대량 테스트
-* 한글 변환 견적 받기 - 한컴
-* 활용사례 #3 - 서버 올리기  
-* 텍스트 입력 위젯 SignDocument 에서 남이 작성한 내용이 안보임 - 다른 사용자의 위젯은 수정안되도록 변경 필요
+# 한글 변환 견적 받기 - 한컴
+# 활용사례 #3 - 일일점검 - 일단 보류
+# 텍스트 입력 위젯 SignDocument 에서 남이 작성한 내용이 안보임 - 다른 사용자의 위젯은 수정안되도록 변경 필요
+# 순차발송인 경우 동차 사용자가 복수인 경우 메시지 반복 발송 문제 
+* 일반 사용자 버전 별도 개발: 사용자 선택 (이메일 또는 SMS), 약관 동의, 서버 구성
+
+# 월별 통계 쿼리 작성
+# 진본 확인 기능 개선 - 요청자 ip 기록 추가, 서명/수산자 구분 표시
+# 진본확인 기능 시  진본확인 증명서 링크 걸기 
+# 카드팀에서 접속 확인
+* 서명완료 순으로 정렬 (기본)
+* 본인이 다운로드 한 문서인지 표시
+
+
+# 트리 구조 코드 리팩토링
+* 신청서 양식 폼 등록 기능 
+  - requester 를 user db 에 안넣고 하드코딩한 이유는 users 에 들어가면 화면단에 수정해야 할 것 이 더 많다 .... 차피 템플릿을 통한 등록만 되므로 hasRequester 값으로 보유여부만 체크하기로 결정
+  - 작성자가 requester 이므로 별도로 user 추가시 더 꼬임 ...
+  - TODO: 서명하기 (assign) requester는 안보이게 처리하되 prepare에서는 바로 입력컴포넌트로 변환하여 출력해준다.
+  - TODO: requester 가 있는 경우 userTodo 와 usersOrder 재조정이 필요하다.
+  - TODO: 템플릿 목록에서 일반 요청시 hasRequester :true 이면 바로 입력화면으로 보내자.
+
+템플릿 저장시 컴포넌트 변경 작업해서 파일 별도로 저장해 두자.
+템플릿 목록에서 신청시 해당 폼을 이용해 바로 sign 화면 노출.
+sign 화면에서 requester 는 나로 한다.
+document에 db에 문서 생성 프로세스를 모두 담는다.
+
+신청서용 sign 을 별도로 생성한다.
+* 체크박스 컴포넌트 추가 
+  - TODO: 템플릿 prepare 에도 적용하기
+  - TODO: 컴포넌트 스타일시트 조정
+
+* 서명요청자 -> 네이밍을 바꾸자! 아래 의미를 중의적으로 사용 가능한 키워드로 변경 하자.
+  - 일반요청인 경우 서명요청자는 본인으로 교체된다.
+  - 대량요청인 경우 서명요청자는 참여자로 교체된다.
 
 
 
@@ -256,37 +288,18 @@ http://localhost:5000/api/bulk/addBulk
  > docker login (niceharu / password)
  > docker pull niceharu/nhsign:1.0 (다운로드)
 
-# 배포
-* client
- > yarn build
-* docker 배포
 
-//user
-		String  sourceInfo     = Strings.emptyToNull((String)parameter.get("sourceInfo"));
-		String  sourcePassword = Strings.emptyToNull((String)parameter.get("sourcePassword"));
-		String  userId         = Strings.emptyToNull((String)parameter.get("userId"));
-		String  name           = Strings.emptyToNull((String)parameter.get("name"));
-		String  jobTitle       = Strings.emptyToNull((String)parameter.get("jobTitle"));
-		String  jobGrade       = Strings.emptyToNull((String)parameter.get("jobGrade"));
-		String  mobilePhoneNo  = Strings.emptyToNull((String)parameter.get("mobilePhoneNo"));
-		String  officePhoneNo  = Strings.emptyToNull((String)parameter.get("officePhoneNo"));
-		String  companyName    = Strings.emptyToNull((String)parameter.get("companyName"));
-		String  companyCode    = Strings.emptyToNull((String)parameter.get("companyCode"));
-		String  departCode     = Strings.emptyToNull((String)parameter.get("departCode"));
-		String  companyDsc     = Strings.emptyToNull((String)parameter.get("companyDsc"));
-		String  vacationType   = Strings.emptyToNull((String)parameter.get("vacationType"));
-		boolean inUse          = (Boolean)parameter.get("inUse");
+# 월별 페이지수
+db.documents.aggregate({ $match: {
+    $and: [
+        { "requestedTime": {$gte: new Date('2022-03-01'), $lte: new Date('2022-03-31')} },
+        { signed: true }
+    ]
+} },
+{ $group: { _id : null, sum : { $sum: "$pageCount" } } });
 
-//org
-		String  sourceInfo      = Strings.emptyToNull((String)parameter.get("sourceInfo"));
-		String  sourcePassword  = Strings.emptyToNull((String)parameter.get("sourcePassword"));
-		String  companyDsc      = Strings.emptyToNull((String)parameter.get("companyDsc"));
-		String  companyName     = Strings.emptyToNull((String)parameter.get("companyName"));
-		String  officeCode      = Strings.emptyToNull((String)parameter.get("officeCode"));
-		String  officeName      = Strings.emptyToNull((String)parameter.get("officeName"));
-		String  departCode      = Strings.emptyToNull((String)parameter.get("departCode"));
-		String  departName      = Strings.emptyToNull((String)parameter.get("departName"));
-		int     displayOrder    = (Integer)parameter.get("displayOrder");
-		String  parentNodeId    = Strings.emptyToNull((String)parameter.get("parentNodeId"));
-		boolean inUse           = (Boolean)parameter.get("inUse");
-
+# 월별 건수
+db.documents.find( {$and: [
+        { "requestedTime": {$gte: new Date('2022-03-01'), $lte: new Date('2022-03-31')} },
+        { signed: true }
+]}).count()
