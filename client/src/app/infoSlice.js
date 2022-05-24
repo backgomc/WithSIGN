@@ -7,7 +7,8 @@ export const infoSlice = createSlice({
     docs: [],
     docsSigned: [],
     uploading: false,
-    history: null
+    history: null,
+    includeOption: false
   },
   reducers: {
     setUser: (state, action) => {
@@ -30,11 +31,18 @@ export const infoSlice = createSlice({
       // which detects changes to a "draft state" and produces a brand new
       // immutable state based off those changes
       state.history = action.payload;
+    },
+    setIncludeOption: (state, action) => {
+      // Redux Toolkit allows us to write "mutating" logic in reducers. It
+      // doesn't actually mutate the state because it uses the Immer library,
+      // which detects changes to a "draft state" and produces a brand new
+      // immutable state based off those changes
+      state.includeOption = action.payload;
     }
   },
 });
 
-export const { setUser, setUploading, setHistory } = infoSlice.actions;
+export const { setUser, setUploading, setHistory, setIncludeOption } = infoSlice.actions;
 
 // The function below is called a selector and allows us to select a value from
 // the state. Selectors can also be defined inline where they're used instead of
@@ -42,5 +50,6 @@ export const { setUser, setUploading, setHistory } = infoSlice.actions;
 export const selectUser = state => state.info.user;
 export const selectUploading = state => state.info.uploading;
 export const selectHistory= state => state.info.history;
+export const selectIncludeOption = state => state.info.includeOption;
 
 export default infoSlice.reducer;

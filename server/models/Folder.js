@@ -10,7 +10,7 @@ const folderSchema = mongoose.Schema({
         type: String
     },
     docs: [{            // 파일 목록
-        document: { type: Schema.Types.ObjectId, ref: 'Document'},
+        _id: { type: Schema.Types.ObjectId, ref: 'Document'},
         alias: { type: String }
     }],
     shared: {           // 공유 유무

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Tooltip, Tag, Timeline, Button, Alert, Modal, Badge, Descriptions, Space, message, List } from 'antd';
+import { v4 as uuidv4 } from 'uuid';
+import { Tooltip, Tag, Timeline, Button, Alert, Modal, Badge, Descriptions, Space, message, List, Typography } from 'antd';
 import Moment from 'react-moment';
 import { useSelector, useDispatch } from 'react-redux';
 import { selectUser } from '../../app/infoSlice';
@@ -20,6 +21,11 @@ import Icon, {
     BellFilled,
     DeleteOutlined,
     DownloadOutlined,
+    FileOutlined,
+    FolderOpenTwoTone,
+    FolderOpenFilled,
+    TeamOutlined,
+    RightOutlined,
     FileProtectOutlined,
     PaperClipOutlined
   } from '@ant-design/icons';
@@ -179,7 +185,7 @@ const DocumentExpander = (props) => {
 
     const getSignInfo = (user) => {
         return (
-            <div>
+            <div key={uuidv4()}>
                 {/* {user.name} {getSignedTime(user)} */}
                 {user.name} {user.JOB_TITLE} {orgInfos.filter(e => e.DEPART_CODE == user.DEPART_CODE).length > 0 ? '['+orgInfos.filter(e => e.DEPART_CODE == user.DEPART_CODE)[0].DEPART_NAME+']' : ''}
             </div>
@@ -474,7 +480,6 @@ const DocumentExpander = (props) => {
                 }
             </Timeline>
       </ProDescriptions.Item>
-
       {item.attachFiles?.length > 0 ?       
         <ProDescriptions.Item span={2} label={<b>첨부 파일</b>}>
             <List
@@ -494,7 +499,25 @@ const DocumentExpander = (props) => {
             }
             />
       </ProDescriptions.Item> : <></>}
-
+      {item.folders.length > 0 && item.folders.find(folder => folder.shared) ?
+        <ProDescriptions.Item span={2} label={<b>공유 현황</b>}>
+            {item.folders.map(folder => {
+                let docTitle = folder.docs.find(e => e._id === item._id).alias;
+                return (folder.shared ? (
+                    <div>
+                        <Space>
+                            {folder.user._id === _id ? <FolderOpenTwoTone /> : <FolderOpenFilled />}
+                            <Typography.Link
+                                onClick={()=>{
+                                    navigate('/inFolder', {state: {folderInfo: folder}});
+                                }}
+                            >{folder.folderName}</Typography.Link>
+                            <TeamOutlined /><RightOutlined /><FileOutlined />{docTitle}
+                        </Space>
+                    </div>
+                ) : '')
+            })} 
+        </ProDescriptions.Item> : <></>}
     </ProDescriptions>
 </Container>
 

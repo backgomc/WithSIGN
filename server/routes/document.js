@@ -522,9 +522,12 @@ router.post('/searchForDocumentToSign', (req, res) => {
         select: {name: 1, JOB_TITLE: 2, DEPART_CODE: 3}
       })
       .populate({
-        path: "folders", 
-        select: {folderName: 1},
-        match: { user: user }
+        path: "folders",
+        select: {folderName: 1, user: 1, docs: 1, shared: 1, sharedTarget: 1},
+        populate: {
+          path: "user",
+          select: {name: 1, JOB_TITLE: 2}
+        }
       })
       .exec((err, documents) => {
           // console.log(documents);
