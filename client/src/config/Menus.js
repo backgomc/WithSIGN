@@ -31,12 +31,12 @@ export default function Menus(formatMessage) {
           name: formatMessage({id: 'document.template'}),
           icon: <CopyOutlined />,
         },
-        {
+        // {
         //   path: '/myFolder',
         //   name: formatMessage({id: 'folder.management'}),
         //   icon: <FolderOpenOutlined  />,
         // },
-        // {
+        {
           path: '/mySign',
           name: formatMessage({id: 'sign.management'}),
           icon: <HighlightOutlined />,

@@ -4,6 +4,7 @@ import { useDispatch } from 'react-redux';
 import { navigate, Link } from '@reach/router';
 // import { loginUser } from '../../api/api'
 import { setUser } from '../../app/infoSlice';
+import { selectPathname, setPathname } from '../../config/MenuSlice';
 import Header from './Header';
 import { Checkbox, Button, Form, Input } from 'antd';
 import Icon, { UserOutlined, EyeOutlined, LockOutlined } from '@ant-design/icons';
@@ -53,6 +54,7 @@ function Login() {
             console.log(response);
             if (response.data.success) {
                 dispatch(setUser(response.data.user));
+                dispatch(setPathname('/'));
                 navigate('/', { replace: true });
             } else {
                 if (response.data.user) {   // 약관 동의 절차 필요

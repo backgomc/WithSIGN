@@ -83,6 +83,7 @@ const App = () => {
       console.log(response);
       if (response.data.isAuth) {
         dispatch(setUser(response.data));
+        dispatch(setPathname('/'));
         // navigate('/');
       } else {
         // 통합 로그인

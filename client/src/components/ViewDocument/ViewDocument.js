@@ -1,8 +1,9 @@
 import React, { useRef, useEffect, useState } from 'react';
+import axios from 'axios';
 import { useSelector } from 'react-redux';
 import { navigate, Link } from '@reach/router';
 // import { Box, Column, Heading, Row, Stack, Button } from 'gestalt';
-import { Row, Col, Button } from 'antd';
+import { Row, Col, Button, Badge } from 'antd';
 import { selectDocToView } from './ViewDocumentSlice';
 import { selectUser, selectHistory } from '../../app/infoSlice';
 import WebViewer from '@pdftron/webviewer';
@@ -14,7 +15,7 @@ import { PageContainer } from '@ant-design/pro-layout';
 import ProCard from '@ant-design/pro-card';
 import 'antd/dist/antd.css';
 import '@ant-design/pro-card/dist/card.css';
-import { DownloadOutlined, ArrowLeftOutlined } from '@ant-design/icons';
+import { DownloadOutlined, ArrowLeftOutlined, CheckCircleTwoTone } from '@ant-design/icons';
 import { LICENSE_KEY } from '../../config/Config';
 import {DOCUMENT_SIGNED, DOCUMENT_TOSIGN, DOCUMENT_SIGNING, DOCUMENT_CANCELED, DOCUMENT_TOCONFIRM, DOCUMENT_TODO} from '../../common/Constants';
 
@@ -24,12 +25,13 @@ const ViewDocument = () => {
   const [responsive, setResponsive] = useState(false);
   const [loading, setLoading] = useState(false);
   const [loadingDownload, setLoadingDownload] = useState([]);
+  const [chkeckDownload, setCheckDownload] = useState(false);
 
   const doc = useSelector(selectDocToView);
   const user = useSelector(selectUser);
   const history = useSelector(selectHistory);
 
-  const { docRef, docTitle, docId, status } = doc;
+  const { docRef, docTitle, docId, status, downloads } = doc;
   const { _id } = user;
   const { formatMessage } = useIntl();
 
@@ -161,14 +163,16 @@ const ViewDocument = () => {
             // <Button key="3" loading={loadingDownload['1']} href={docRef} download={docTitle+'.pdf'} type="primary" icon={<DownloadOutlined />} onClick={()=> {
           
           // 서명 완료된 문서만 다운로드 되도록 수정 
-          (status == DOCUMENT_SIGNED) ? <Button key="3" loading={loadingDownload['1']} href={'/api/storage/documents/'+docId} download={docTitle+'.pdf'} type="primary" icon={<DownloadOutlined />} onClick={()=> {
-              setLoadingDownload( { "1" : true } )
-              setTimeout(() => {
-                setLoadingDownload( { "1" : false})
-              }, 3000);
-            }}>
-              {formatMessage({id: 'document.download'})}
-            </Button> : ''
+          (status == DOCUMENT_SIGNED) ? <Badge count={downloads.find(e => e === _id)||chkeckDownload?<CheckCircleTwoTone />:0}><Button key="3" loading={loadingDownload['1']} href={'/api/storage/documents/'+docId} download={docTitle+'.pdf'} type="primary" icon={<DownloadOutlined />} onClick={()=> {
+            axios.post('/api/document/updateDownloads', {docId:docId, usrId:_id});
+            setCheckDownload(true);
+            setLoadingDownload( { "1" : true } );
+            setTimeout(() => {
+              setLoadingDownload( { "1" : false } );
+            }, 3000);
+          }}>
+            {formatMessage({id: 'document.download'})}
+          </Button></Badge> : ''
         ],
       }}
       // content= {}

@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const mongoose = require('mongoose');
 const { User } = require("../models/User");
 const { Org } = require("../models/Org");
 const restful = require('../common/restful');
@@ -608,6 +609,32 @@ router.post('/check', (req, res) => {
       return userList.some(e => element['key'] == e['_id']);
     });
     return res.json({success: true, assignees: assigneesCheck});
+  });
+});
+
+// 유저 소속 정보
+router.post('/myOrgs', (req, res) => {
+  if (!req.body.user) return res.json({ success: false, message: "input value not enough!" });
+  User.aggregate([
+    { $match: {'_id': new mongoose.Types.ObjectId(req.body.user)} },
+    { $graphLookup: {
+      'from': 'orgs',
+      'startWith': '$DEPART_CODE',
+      'connectFromField': 'PARENT_NODE_ID',
+      'connectToField': 'DEPART_CODE',
+      'as': 'orgs',
+      'maxDepth': 10,
+      'depthField': 'LEVEL'
+    } },
+  ]).exec((err, user) => {
+    if (err) return res.json({ success: false, error: err });
+    if (user.length > 0) {
+      let orgs = user[0].orgs.map(item => item.DEPART_CODE);
+      orgs.push(user[0].SABUN);
+      return res.json({ success: true, orgs: orgs });
+    } else {
+      return res.json({ success: false});
+    }
   });
 });
 
