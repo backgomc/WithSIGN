@@ -83,7 +83,7 @@ const AssignTemplate = () => {
     if (res1.data.success) {
       users = res1.data.users;
       if (templateType === 'C' && user.role) {
-        users.push({_id: "requester", name:"서명요청자", DEPART_CODE: ""})
+        users.push({_id: "requester", name:"서명 참여자", DEPART_CODE: ""})
       }
       // setUsers(res1.data.users);
       setUsers(users)
@@ -107,13 +107,13 @@ const AssignTemplate = () => {
         
         tree.push(org1)
         if (templateType === 'C' && user.role) {
-          tree.push({key: 'requester', title:'서명요청자'})
+          tree.push({key: 'requester', title:'서명 참여자'})
         }
         
       })
 
       // 서명참여자 추가
-      // tree.push({key: 'requester', title:'서명요청자'})
+      // tree.push({key: 'requester', title:'서명 참여자'})
 
       setSource(tree)
       setLoading(false);

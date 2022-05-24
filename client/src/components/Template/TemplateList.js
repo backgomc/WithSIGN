@@ -469,7 +469,7 @@ const TemplateList = () => {
         dispatch(resetSignee());
         dispatch(setTemplateInfo(item));
         if(item.hasRequester) {
-          dispatch(setTemplateSignees([...item.signees, {key:'requester',name:'서명요청자',order:0}]));
+          dispatch(setTemplateSignees([...item.signees, {key:'requester',name:'서명 참여자',order:0}]));
         } else {
           dispatch(setTemplateSignees(item.signees));
         }
