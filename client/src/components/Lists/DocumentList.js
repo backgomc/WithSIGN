@@ -1,7 +1,8 @@
 import React, { useEffect, useState, useRef } from 'react';
 import useDidMountEffect from '../Common/useDidMountEffect';
 import axios from 'axios';
-import { Table, Input, Space, Button, Checkbox, Badge, Tooltip, Select, Divider, Typography, Modal, message, TreeSelect, Switch, Radio } from "antd";
+import { v4 as uuidv4 } from 'uuid';
+import { Table, Input, Space, Button, Checkbox, Badge, Tooltip, Select, Typography, Modal, message, TreeSelect, Switch, Radio, Empty } from "antd";
 import Highlighter from 'react-highlight-words';
 import {
   SearchOutlined,
@@ -10,11 +11,10 @@ import {
   FilePdfOutlined,
   DownloadOutlined,
   CheckCircleTwoTone,
+  FolderOpenFilled,
   FolderOpenOutlined,
   FolderOpenTwoTone,
   FolderAddTwoTone,
-  FolderTwoTone,
-  FolderOutlined,
   DeleteTwoTone,
   SettingOutlined,
   TeamOutlined,
@@ -38,6 +38,15 @@ import { useIntl } from "react-intl";
 import { setSendType } from '../Assign/AssignSlice';
 import banner from '../../assets/images/sub_top2.png';
 import banner_small from '../../assets/images/sub_top2_2.png';
+import styled from 'styled-components';
+
+const CardTitle = styled.div`
+  text-overflow: ellipsis;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+`;
 
 moment.locale("ko");
 const { Option } = Select;
@@ -78,6 +87,7 @@ const DocumentList = ({location}) => {
   const [hasSelected, setHasSelected] = useState(selectedRowKeys.length > 0);
   const [includeBulk, setIncludeBulk] = useState(false);
   const [responsive, setResponsive] = useState(false);
+  const [tableState, setTableState] = useState({});
 
   const searchInput = useRef<Input>(null)
 
@@ -162,26 +172,43 @@ const DocumentList = ({location}) => {
 
   // 폴더 이동
   const moveFolder = () => {
-    setLoadingFolder(true);
-    console.log(selectedRowKeys);
+    if (moveFolderId === '') {
+      message.info({content: '폴더를 선택하세요.', style: {marginTop: '70vh'}});
+      return false;
+    }
+
+    let pairId = selectedRowKeys.map(item => {
+      let folders = data.find(doc => doc._id === item).folders;
+      let folderMe = folders.length > 0 ? folders.find(e => e.user._id === _id) : null;
+      let folderId = folderMe ? folderMe._id : '';
+      return {docId: item, folderId: folderId};
+    });
+    
+    setLoading(true);
     let params = {
-      _id: moveFolderId,
       user: _id,
+      sourceId: pairId, // 배열 변경 - [{docId: '', folderId: ''}]
+      targetId: moveFolderId,
       docIds: selectedRowKeys
     }
-    axios.post('/api/folder/moveFolder', params).then(response => {
+    axios.post('/api/folder/moveDocInFolder', params).then(response => {
       console.log(response.data);
       if (response.data.success) {
-        fetchFolders({
-          user: _id
+        fetch({
+          user: _id,
+          sortField: tableState.sorter?tableState.sorter.field:'',
+          sortOrder: tableState.sorter?tableState.sorter.order:'',
+          pagination,
+          ...tableState.filters,
+          includeBulk: includeBulk,
         });
-        setSelectFolderId('');
-        selectFolder('');
+        setSelectedRowKeys([]);
+        setHasSelected(false);
       } else {
         message.success({content: '권한이 없습니다.', style: {marginTop: '70vh'}});
       }
       setMoveModal(false);
-      setLoadingFolder(false);
+      setLoading(false);
     });
   }
 
@@ -222,7 +249,7 @@ const DocumentList = ({location}) => {
     setSelectFolderId(key);
     if (key) {
       let folderInfo = folderList.find(item => item._id === key);
-      let targetInfo = folderInfo.sharedTarget.filter(item => item.editable && myOrgs.find(e => e === item.target)); // 권한 & 공유자
+      let targetInfo = folderInfo.sharedTarget.filter(item => item.editable && myOrgs & myOrgs.find(e => e === item.target)); // 권한 & 공유자
       if (folderInfo.user === _id || targetInfo.length > 0) {
         setDisableLink(false);
         console.log(folderInfo.sharedTarget.map(item => item.target));
@@ -254,12 +281,14 @@ const DocumentList = ({location}) => {
 
     // 문서 목록 조회
     fetch({
-      user: _id,
+      sortField: tableState.sorter.field,
+      sortOrder: tableState.sorter.order,
       pagination,
-      folderId: key,
-      status:location.state.status
+      ...tableState.filters,
+      user: _id,
+      folderId: key
     });
-  }; 
+  };
 
   // 폴더 추가 InputText State
   const onChangeFolderName = event => {
@@ -283,11 +312,6 @@ const DocumentList = ({location}) => {
     setManageModal(true);
   };
 
-  // 폴더 이동 Modal Show
-  const onClickMove = event => {
-    setMoveModal(true);
-  };
-
   // 공유 수정 Modal Show
   const onClickShare = event => {
     setShareModal(true);
@@ -296,11 +320,6 @@ const DocumentList = ({location}) => {
   // 폴더 수정 Modal Close
   const handleCancelManageModal = () => {
     setManageModal(false);
-  };
-
-  // 폴더 이동 Modal Close
-  const handleCancelMoveModal = () => {
-    setMoveModal(false);
   };
 
   // 공유 수정 Modal Close
@@ -312,15 +331,15 @@ const DocumentList = ({location}) => {
     console.log("handleTableChange called")
     // console.log("status:"+status)
     console.log("filters.status:"+filters.status)
+    setTableState({filters: filters, sorter: sorter});
     setStatus(filters.status)
-
+    
     fetch({
       sortField: sorter.field,
       sortOrder: sorter.order,
       pagination,
       ...filters,
       user: _id,
-      folderId: selectFolderId,
       includeBulk: includeBulk
       // status:status  //필터에 포함되어 있음 
     });
@@ -436,9 +455,7 @@ const DocumentList = ({location}) => {
     axios.post('/api/folder/listFolder', params).then(response => {
       console.log(response.data.folders);
       if (response.data.success && response.data.folders.length > 0) {
-        setFolderList([{'_id': '', 'folderName': '전체 폴더', 'user': _id}, ...response.data.folders]);
-      } else {
-        setFolderList([{'_id': '', 'folderName': '전체 폴더', 'user': _id}]);
+        setFolderList(response.data.folders);
       }
     });
   };
@@ -752,28 +769,6 @@ const DocumentList = ({location}) => {
     //     : ''
     // },
     // 폴더관리 부분
-    // {
-    //   title: '위치',
-    //   dataIndex: 'folders',
-    //   responsive: ['xl'],
-    //   render: (text) => {
-    //     return (
-    //       selectFolderId === '' ?
-    //         text.length > 0 ?
-    //           text.length > 1 ?
-    //             <Tooltip placement="top" title={text.map((e, i) => e.folderName + (i===text.length-1?'':', '))} ><Space><FolderTwoTone />{text[0]['folderName'] + ' 외 '+ (text.length - 1)}</Space></Tooltip>
-    //             :
-    //             <Space><FolderTwoTone />{text[0]['folderName']}</Space>
-    //           :
-    //           ''
-    //         :
-    //         <Space>
-    //           {folderList.find(folder => folder._id === selectFolderId).user === _id ? <FolderTwoTone /> : <FolderOutlined />}
-    //           {folderList.find(folder => folder._id === selectFolderId).folderName}
-    //         </Space>
-    //     );
-    //   }
-    // },
     {
       title: responsive ? '활동' : '최근 활동',
       dataIndex: 'recentTime',
@@ -785,6 +780,31 @@ const DocumentList = ({location}) => {
           // return <Moment format='YYYY/MM/DD HH:mm'>{row["requestedTime"]}</Moment>
           return (<font color='#787878'>{moment(row["recentTime"]).fromNow()}</font>)
       } 
+    },
+    {
+      title: '개인 폴더 위치',
+      dataIndex: 'folders',
+      responsive: ['xl'],
+      render: (obj) => {
+        let f = obj.find(e => e.user._id === _id);
+        return (f ?
+          <Space>
+            <FolderOpenTwoTone />
+            <Typography.Link
+              onClick={(e)=>{
+                console.log(obj);
+                e.stopPropagation();
+                let f = obj.find(e => e.user._id === _id);
+                console.log(f);
+                navigate('/inFolder', {state: {folderInfo: f}});
+              }}
+            >{f.folderName}</Typography.Link>
+            {f.shared ? <TeamOutlined /> : ''}
+          </Space>
+          :
+          ''
+        )
+      }
     },
     {
       title: '',
@@ -899,8 +919,7 @@ const DocumentList = ({location}) => {
           case DOCUMENT_SIGNED:
             return (
               <div>
-              <Tooltip placement="top" title={'문서 보기'}>
-              <Button
+              <Tooltip placement="top" title={'문서 보기'}><Button
                 // loading={isUploading(row)}
                 key="1"
                 icon={<FileOutlined />}
@@ -915,8 +934,8 @@ const DocumentList = ({location}) => {
                 navigate(`/viewDocument`);
               }}></Button></Tooltip>&nbsp;&nbsp;
               {/* <a href={row["docRef"]} download={row["docTitle"]+'.pdf'}> */}
-              <Badge count={row['downloads'].find(e => e === _id)?<CheckCircleTwoTone/>:0}>
-                <Tooltip placement="top" title={'다운로드'}>
+              <Tooltip placement="top" title={'다운로드'}>
+                <Badge count={row['downloads'].find(e => e === _id)?<CheckCircleTwoTone/>:0}>
                 <Button key="2" href={'/api/storage/documents/'+row["_id"]} download={row["docTitle"]+'.pdf'} icon={<DownloadOutlined />} loading={loadingDownload[row["_id"]]}  onClick={(e) => {
                 // <Button key="2" href={row["docRef"]} download={row["docTitle"]+'.pdf'} icon={<DownloadOutlined />} loading={loadingDownload[row["_id"]]}  onClick={(e) => {
                   row['downloads'].push(_id);
@@ -927,8 +946,8 @@ const DocumentList = ({location}) => {
                   }, 3000);
                 }}>
                 </Button>
-                </Tooltip>
-              </Badge>
+                </Badge>
+              </Tooltip>
              {/* </a> */}
               </div>
             )
@@ -998,13 +1017,14 @@ const DocumentList = ({location}) => {
     });
 
     // 폴더관리 부분
-    // fetchFolders({
-    //   user: _id
-    // });
+    fetchFolders({
+      user: _id,
+      includeOption: true
+    });
 
-    // fetchMyOrgs({
-    //   user: _id
-    // });
+    fetchMyOrgs({
+      user: _id
+    });
 
     // fetchTreeSelect({
     //   OFFICE_CODE: '7831'
@@ -1024,7 +1044,6 @@ const DocumentList = ({location}) => {
 
     fetch({
       user: _id,
-      folderId: selectFolderId,
       pagination,
       status:location.state.status,
       includeBulk: includeBulk,
@@ -1063,8 +1082,8 @@ const DocumentList = ({location}) => {
             //     setIncludeBulk(!includeBulk);
             //   }}
             // />,    
-            <Checkbox checked={includeBulk} onChange={(e) => {setIncludeBulk(e.target.checked)}}>대량 전송 포함</Checkbox>,
-            <Button icon={<FileAddOutlined />} type="primary" onClick={() => {
+            <Checkbox key={uuidv4()} checked={includeBulk} onChange={(e) => {setIncludeBulk(e.target.checked)}}>대량 전송 포함</Checkbox>,
+            <Button key={uuidv4()} icon={<FileAddOutlined />} type="primary" onClick={() => {
               dispatch(setSendType('G'));
               navigate('/uploadDocument');
               }}>
@@ -1082,8 +1101,10 @@ const DocumentList = ({location}) => {
         footer={[
         ]}
     >
-      <br></br>
-      {/* 추후 논의 */}
+      <Space style={{margin: '15px 0px'}}>
+        {`선택한 문서 (${selectedRowKeys.length})`}
+        <Typography.Link disabled={!hasSelected} onClick={()=>{setMoveFolderId('');setMoveModal(true);}}><FolderOpenOutlined /> 폴더로 이동</Typography.Link>
+      </Space>
       {/* {hasSelected ? 
         (<Space style={{margin: '15px 0px'}}>
           {`선택한 문서 (${selectedRowKeys.length})`}<Typography.Link onClick={onClickMove}><FolderTwoTone /> 폴더로 이동</Typography.Link>
@@ -1133,7 +1154,7 @@ const DocumentList = ({location}) => {
         dataSource={data}
         pagination={pagination}
         loading={loading}
-        // rowSelection={rowSelection}
+        rowSelection={rowSelection}
         // expandable={expandableData}
         defaultExpandedRowKeys={[location.state.docId]}
         expandedRowRender={expandable ? row => <DocumentExpander item={row} /> : null}
@@ -1166,11 +1187,11 @@ const DocumentList = ({location}) => {
     </Modal>
     <Modal
       visible={moveModal}
-      width={300}
+      width={360}
       title="폴더 선택"
-      onCancel={handleCancelMoveModal}
+      onCancel={()=>{setMoveModal(false)}}
       footer={[
-        <Button type="primary" onClick={moveFolder}>
+        <Button key={uuidv4()} type="primary" onClick={moveFolder}>
           이동
         </Button>
       ]}
@@ -1178,13 +1199,22 @@ const DocumentList = ({location}) => {
     >
       <Radio.Group onChange={onChangeMoveFolder} value={moveFolderId} buttonStyle="solid" style={{textAlign: 'left'}}>
         <Space direction="vertical">
-          {folderList.filter(e => e._id!=='').map(folder => (
-            <Radio.Button style={{width:'100%'}} value={folder._id} disabled={(folder.user===_id || folder.sharedTarget.find(item => item.editable && myOrgs.find(e => e === item.target)))?false:true}>
-              <Space size="small">{folder.user === _id ? <FolderTwoTone /> : <FolderOutlined />}{folder.folderName}{folder.shared?<TeamOutlined/>:''}</Space>
-            </Radio.Button>
-          ))}
+          {folderList && folderList.length > 0 ?
+            folderList && folderList.filter(e => e._id!=='').map(folder => (
+              <Radio.Button key={uuidv4()} style={{width:'100%'}} value={folder._id} disabled={(folder.user._id===_id || folder.sharedTarget.find(item => item.editable && myOrgs && myOrgs.find(e => e === item.target)))?false:true}>
+                <Tooltip placement="top" title={(folder.user._id===_id || folder.sharedTarget.find(item => item.editable && myOrgs && myOrgs.find(e => e === item.target)))?'':'권한이 없습니다.'}>
+                  <Space size="small">{folder.user._id === _id ? <FolderOpenTwoTone /> : <FolderOpenFilled />}<CardTitle>{folder.folderName}</CardTitle>{folder.shared?<TeamOutlined/>:''}</Space>
+                </Tooltip>
+              </Radio.Button>
+            ))
+          :
+          <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={<span>폴더가 없습니다.</span>} style={{margin: '0'}}/>
+          }
         </Space>
       </Radio.Group>
+      <Typography.Paragraph level={5} style={{marginTop: '1.5rem'}}>
+        <Space><FolderOpenTwoTone />개인 폴더<br/><FolderOpenFilled />공유 받은 폴더<br/><TeamOutlined />공유 표시</Space>
+      </Typography.Paragraph>
     </Modal>
     <Modal
       visible={shareModal}

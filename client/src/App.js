@@ -39,7 +39,8 @@ import InitPassword from './components/Login/InitPassword';
 import ResetPassword from './components/Login/ResetPassword';
 import Register from './components/Register/Register';
 import Setting from './components/Setting/Setting';
-import MyFolder from './components/MyFolder/MyFolder';
+import InFolder from './components/MyFolder/FolderDetail';
+import MyFolder from './components/MyFolder/FolderList';
 import MySign from './components/MySign/MySign';
 import Audit from './components/Audit/Audit';
 import Terms from './components/Login/Terms';
@@ -213,7 +214,8 @@ const App = () => {
       <PrepareTemplate path="/prepareTemplate" />
       <BulkList path="/bulkList" />
       <BulkDetail path="/bulkDetail" />
-      <MyFolder path="myFolder" />
+      <InFolder path="/inFolder" />
+      <MyFolder path="/myFolder" />
       <MySign path="mySign" />
       <Sign path="/signDocument" />
       <View path="/viewDocument" />
