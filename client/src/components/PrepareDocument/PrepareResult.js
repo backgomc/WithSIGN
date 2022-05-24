@@ -43,7 +43,7 @@ const PrepareResult = ({location}) => {
         setData(document);
         setLoading(false);
 
-        if (document.users.some(e => e === _id)) { // 본인이 서명 대상인 경우
+        if ((document.orderType === 'A' && document.users.some(e => e === _id)) || (document.orderType === 'S' && document.usersTodo.some(e => e === _id))) { // 본인이 서명 대상인 경우
           console.log("내가 포함됨")
           confirmToSign(document);
         }
@@ -129,7 +129,7 @@ const PrepareResult = ({location}) => {
           title={title}
           subTitle={subTitle}
           extra={[
-            data?.users.some(e => e === _id) ?
+            ((data?.orderType === 'A' && data?.users.some(e => e === _id)) || (data?.orderType === 'S' && data?.usersTodo.some(e => e === _id))) ?
             <Button type="primary" onClick={() => {moveToSign()}}>
               서명 하기
             </Button> : '',
