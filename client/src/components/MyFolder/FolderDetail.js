@@ -9,7 +9,7 @@ import axios from 'axios';
 import Moment from 'react-moment';
 import 'moment/locale/ko';
 import { DOCUMENT_SIGNED } from '../../common/Constants';
-import { Tooltip, Modal, Input, Space, Button, message, Typography, Table, Radio, Badge, Tabs, List, TreeSelect, Switch, Empty } from 'antd';
+import { Tooltip, Modal, Input, Space, Button, message, Typography, Table, Radio, Badge, Tabs, List, TreeSelect, Switch, Empty, Select, Divider } from 'antd';
 import { SearchOutlined, TeamOutlined, FileOutlined, ArrowLeftOutlined, AppstoreOutlined , EllipsisOutlined, UnorderedListOutlined , DownloadOutlined, CheckCircleTwoTone, FolderOpenFilled, FolderOpenTwoTone, SwapOutlined, DeleteOutlined, FolderOpenOutlined } from '@ant-design/icons';
 import { PageContainer } from '@ant-design/pro-layout';
 import ProCard from '@ant-design/pro-card';
@@ -45,6 +45,7 @@ const FolderDetail = ({location}) => {
   const user = useSelector(selectUser);
   const { _id } = user;
   const dispatch = useDispatch();
+  const backUrl = location.state.backUrl;
   const folderInfo = location.state.folderInfo;
   const folderId = folderInfo._id;
   const [docs, setDocs] = useState([]);
@@ -153,6 +154,15 @@ const FolderDetail = ({location}) => {
     });
   }
 
+  // 폴더 선택
+  const selectFolder = (key) => {
+    navigate('/inFolder', {state: {folderInfo: folderList.find(e => e._id === key), backUrl: backUrl}});
+    fetchDocs({
+      user: _id,
+      _id: key
+    });
+  };
+
   const columns = [
     {
       title: '문서명',
@@ -182,6 +192,7 @@ const FolderDetail = ({location}) => {
       dataIndex: 'requestedTime',
       sorter: true,
       key: 'requestedTime',
+      width: '180px',
       sorter: (a, b) => a.requestedTime.localeCompare(b.requestedTime),
       render: (text, row) => {
         return <Moment format="YYYY/MM/DD HH:mm">{row['requestedTime']}</Moment>
@@ -192,6 +203,7 @@ const FolderDetail = ({location}) => {
       dataIndex: 'recentTime',
       sorter: true,
       key: 'recentTime',
+      width: '180px',
       sorter: (a, b) => a.recentTime.localeCompare(b.recentTime),
       render: (text, row) => {
         return <Moment format="YYYY/MM/DD HH:mm">{row['recentTime']}</Moment>
@@ -200,6 +212,7 @@ const FolderDetail = ({location}) => {
     {
       title: '',
       dataIndex: '',
+      width: '100px',
       render: (text, row) => {
         return (
           <Space>
@@ -319,7 +332,8 @@ const FolderDetail = ({location}) => {
   // 공유 Modal Show
   const onClickShare = () => {
     // 코드 기반 DISP 조립
-    let targetTreeValue = folderInfo.sharedTarget.map(element => {
+    let f = folderList.find(item => item._id === folderId);
+    let targetTreeValue = f.sharedTarget.map(element => {
       let disp = '';
       let data = orgs.find(e => e.DEPART_CODE === element.target);
       if (data) {
@@ -333,7 +347,7 @@ const FolderDetail = ({location}) => {
     setTreeValue(targetTreeValue);      // setTreeValue(['A11000|경영전략부', 'P2000002|이원삼 대표이사']);
 
     // 권한 표시
-    setEditable(folderInfo.sharedTarget.find(e => e.editable)?true:false);
+    setEditable(f.sharedTarget.find(e => e.editable)?true:false);
     
     setShareModal(true);
   };
@@ -344,18 +358,14 @@ const FolderDetail = ({location}) => {
     let params = {
       _id: folderId,
       user: _id,
+      includeOption: true,
       editable: editable,
       targets: treeValue
     }
     axios.post('/api/folder/shareFolder', params).then(response => {
       console.log(response.data);
       if (response.data.success) {
-        fetchDocs({
-          user: _id,
-          _id: folderId
-        });
-        setSelectedRowKeys([]);
-        setHasSelected(false);
+        fetchFolders(params);
       } else {
         message.success({content: '권한이 없습니다.', style: {marginTop: '70vh'}});
       }
@@ -559,15 +569,22 @@ const FolderDetail = ({location}) => {
           content={
             <Space>
               {`선택한 문서 (${selectedRowKeys.length})`}
-              <Typography.Link disabled={!hasSelected} onClick={()=>{setMoveFolderId('');setMoveModal(true);}}><FolderOpenOutlined /> 폴더로 이동</Typography.Link>
-              <Typography.Link disabled={!hasSelected} onClick={()=>{setDeleteModal(true);}} type="danger"><DeleteOutlined /> 폴더에서 삭제</Typography.Link>
+              <Typography.Link disabled={!hasSelected} onClick={()=>{setMoveFolderId('');setMoveModal(true);}}><FolderOpenOutlined /> 이동</Typography.Link>
+              <Typography.Link disabled={!hasSelected} onClick={()=>{setDeleteModal(true);}} type="danger"><DeleteOutlined /> 삭제</Typography.Link>
             </Space>
           }
           footer={[
           ]}
       >
-        <Tabs style={{marginTop: '1rem'}} defaultActiveKey="1" tabBarExtraContent={{left: <Button type="text" key={uuidv4()} icon={<ArrowLeftOutlined />} onClick={() => {window.history.back();}}> 뒤로</Button>}}>
-          <Tabs.TabPane key="1" tab={ <span><AppstoreOutlined /> 아이콘</span> } >
+        <Tabs style={{marginTop: '1rem'}} defaultActiveKey="1" tabBarExtraContent={{
+          left:   <Button type="text" key={uuidv4()} icon={<ArrowLeftOutlined />} onClick={() => {navigate(backUrl?backUrl:'/myFolder');}}> 뒤로</Button>,
+          right:  <Select style={{ width: 200 }} value={folderId} onChange={selectFolder} >
+                    {folderList.map(folder => (
+                      <Select.Option key={folder._id}><Space size="small">{folder.user._id === _id ? <FolderOpenTwoTone /> : <FolderOpenFilled />}{folder.folderName}{folder.shared?<TeamOutlined/>:''}</Space></Select.Option>
+                    ))}
+                  </Select>
+        }}>
+          <Tabs.TabPane key="2" tab={ <span><AppstoreOutlined /> 아이콘</span> } >
             <RcResizeObserver
               key="resize-observer"
               onResize={(offset) => {
@@ -629,7 +646,7 @@ const FolderDetail = ({location}) => {
               />
             </RcResizeObserver>
           </Tabs.TabPane>
-          <Tabs.TabPane key="2" tab={ <span><UnorderedListOutlined /> 리스트</span> } >
+          <Tabs.TabPane key="1" tab={ <span><UnorderedListOutlined /> 리스트</span> } >
             <Table
               rowKey={ item => { return item._id } }
               columns={columns}
@@ -687,7 +704,7 @@ const FolderDetail = ({location}) => {
         onCancel={()=>{setDeleteModal(false)}}
         footer={<Button key={uuidv4()} type="primary" danger onClick={removeDocInFolder}>삭제</Button>}
       >
-        <p><Space><FolderOpenTwoTone />{folderInfo.folderName}</Space> 폴더에서 선택한 문서 {selectedRowKeys.length} 개를 삭제하시겠습니까?</p>
+        <p><Space><FolderOpenTwoTone />{folderInfo.folderName}</Space> 폴더에서 선택한 문서 {selectedRowKeys.length} 건을 삭제하시겠습니까?</p>
       </Modal>
       <Modal
         visible={shareModal}

@@ -8,7 +8,7 @@ export const infoSlice = createSlice({
     docsSigned: [],
     uploading: false,
     history: null,
-    includeOption: false
+    includeOption: true
   },
   reducers: {
     setUser: (state, action) => {

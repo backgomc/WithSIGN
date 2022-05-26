@@ -7,8 +7,8 @@ import { v4 as uuidv4 } from 'uuid';
 import axios from 'axios';
 import moment from 'moment';
 import 'moment/locale/ko';
-import { Tooltip, Modal, Input, Space, Button, List, TreeSelect, message, Switch, Checkbox, Typography } from 'antd';
-import { SettingOutlined, TeamOutlined, FolderOpenTwoTone, DatabaseOutlined } from '@ant-design/icons';
+import { Tooltip, Modal, Input, Space, Button, List, TreeSelect, message, Switch, Checkbox, Typography, Badge } from 'antd';
+import { SettingOutlined, TeamOutlined, FolderOpenTwoTone, WarningFilled } from '@ant-design/icons';
 import { PageContainer } from '@ant-design/pro-layout';
 import RcResizeObserver from 'rc-resize-observer';
 import ProCard from '@ant-design/pro-card';
@@ -136,7 +136,7 @@ const FolderList = () => {
 
   // 공유 설정
   const updateShare = () => {
-    console.log(treeValue);
+    setLoading(true);
     let params = {
       _id: selectFolderId,
       user: _id,
@@ -152,6 +152,7 @@ const FolderList = () => {
         message.success({content: '권한이 없습니다.', style: {marginTop: '70vh'}});
       }
       setShareModal(false);
+      setLoading(false);
     });
   }
 
@@ -362,7 +363,7 @@ const FolderList = () => {
     }
 
     return (
-      <>
+      <Badge count={item.docs?item.docs.length:0} style={{ backgroundColor: '#519be3' }}>
         <div style={{
           backgroundImage: 'url('+bgImg+')',
           backgroundRepeat: 'no-repeat',
@@ -377,7 +378,7 @@ const FolderList = () => {
           {bIcon}
         </div>
         <div style={{fontSize: '1rem', fontWeight: 'bold', marginBottom: '0.3rem'}}><CardTitle>{item.folderName}</CardTitle></div>
-      </>
+      </Badge>
     )
   }
 
@@ -455,7 +456,8 @@ const FolderList = () => {
           </Button>]
         }
       >
-        <Input size="large" allowClear prefix={<FolderOpenTwoTone />} value={folderName} onChange={onChangeFolderName} placeholder="폴더명을 입력하세요." ref={refFolderName}/>
+        <Input size="large" allowClear prefix={<FolderOpenTwoTone />} value={folderName} onChange={onChangeFolderName} placeholder="폴더명을 입력하세요." ref={refFolderName} />
+        {selectFolderId ? <Space style={{padding: '13px 0px 0px 13px'}}><WarningFilled style={{color: 'orange'}} /><Typography.Text type="warning">폴더 삭제 시 문서는 [내 문서함]에서 확인할 수 있습니다.</Typography.Text></Space> : <></>}
       </Modal>
       <Modal
         visible={shareModal}

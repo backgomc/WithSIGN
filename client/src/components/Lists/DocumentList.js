@@ -782,9 +782,10 @@ const DocumentList = ({location}) => {
       } 
     },
     {
-      title: '개인 폴더 위치',
+      title: '폴더',
       dataIndex: 'folders',
       responsive: ['xl'],
+      width: '180px',
       render: (obj) => {
         let f = obj.find(e => e.user._id === _id);
         return (f ?
@@ -796,7 +797,7 @@ const DocumentList = ({location}) => {
                 e.stopPropagation();
                 let f = obj.find(e => e.user._id === _id);
                 console.log(f);
-                navigate('/inFolder', {state: {folderInfo: f}});
+                navigate('/inFolder', {state: {folderInfo: f, backUrl: '/documentList'}});
               }}
             >{f.folderName}</Typography.Link>
             {f.shared ? <TeamOutlined /> : ''}

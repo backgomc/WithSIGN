@@ -480,25 +480,6 @@ const DocumentExpander = (props) => {
                 }
             </Timeline>
       </ProDescriptions.Item>
-      {item.attachFiles?.length > 0 ?       
-        <ProDescriptions.Item span={2} label={<b>첨부 파일</b>}>
-            <List
-            size="small"
-            split={false}
-            dataSource={item.attachFiles}
-            // header={`첨부파일 ${item.attachFiles.length}`}
-            // bordered
-            itemLayout="horizontal"
-            renderItem={item =>
-                <List.Item>
-                <List.Item.Meta
-                    avatar={<PaperClipOutlined />}
-                    description={ <a href={item.path} download={item.originalname} style={{color:'gray'}}>{item.originalname}</a> }
-                />
-                </List.Item>
-            }
-            />
-      </ProDescriptions.Item> : <></>}
       {item.folders.length > 0 && item.folders.find(folder => folder.shared) ?
         <ProDescriptions.Item span={2} label={<b>공유 현황</b>}>
             {item.folders.map(folder => {
@@ -509,7 +490,7 @@ const DocumentExpander = (props) => {
                             {folder.user._id === _id ? <FolderOpenTwoTone /> : <FolderOpenFilled />}
                             <Typography.Link
                                 onClick={()=>{
-                                    navigate('/inFolder', {state: {folderInfo: folder}});
+                                    navigate('/inFolder', {state: {folderInfo: folder, backUrl: '/documentList'}});
                                 }}
                             >{folder.folderName}</Typography.Link>
                             <TeamOutlined /><RightOutlined /><FileOutlined />{docTitle}
@@ -518,6 +499,23 @@ const DocumentExpander = (props) => {
                 ) : '')
             })} 
         </ProDescriptions.Item> : <></>}
+      {item.attachFiles?.length > 0 ?       
+        <ProDescriptions.Item span={2} label={<b>첨부 파일</b>}>
+            <List
+            size="small"
+            split={false}
+            dataSource={item.attachFiles}
+            // header={`첨부파일 ${item.attachFiles.length}`}
+            // bordered
+            itemLayout="horizontal"
+            renderItem={item =>
+                <List.Item.Meta
+                    avatar={<PaperClipOutlined />}
+                    description={ <a href={item.path} download={item.originalname} style={{color:'gray'}}>{item.originalname}</a> }
+                />
+            }
+            />
+      </ProDescriptions.Item> : <></>}
     </ProDescriptions>
 </Container>
 
