@@ -2,8 +2,8 @@ import React, { useRef, useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import axios from 'axios';
 import { navigate } from '@reach/router';
-import { Badge, Button, Row, Col, List, Card, Checkbox, Tooltip, Tag } from 'antd';
-import { PlusOutlined, ArrowLeftOutlined, SendOutlined } from '@ant-design/icons';
+import { Badge, Button, Row, Col, List, Card, Checkbox, Tooltip, Tag, Space } from 'antd';
+import Icon, { PlusOutlined, ArrowLeftOutlined, SendOutlined } from '@ant-design/icons';
 import { selectSignees, selectObservers, selectTemplateId, selectTemplateRef, selectTemplateFileName, resetAssignAll } from './AssignTemplateSlice';
 import { selectUser } from '../../app/infoSlice';
 import WebViewer from '@pdftron/webviewer';
@@ -15,6 +15,9 @@ import ProCard from '@ant-design/pro-card';
 import 'antd/dist/antd.css';
 import '@ant-design/pro-card/dist/card.css';
 import { LICENSE_KEY } from '../../config/Config';
+import { ReactComponent as IconSign} from '../../assets/images/sign.svg';
+import { ReactComponent as IconText} from '../../assets/images/text.svg';
+import { ReactComponent as IconCheckbox} from '../../assets/images/checkbox.svg';
 
 const { detect } = require('detect-browser');
 const browser = detect();
@@ -36,7 +39,7 @@ const PrepareTemplate = () => {
   const preObserver = useSelector(selectObservers);
   const assignees = useSelector(selectSignees);
   const box = assignees.map(user => {
-    return { key:user.key, sign:0, text:0, observer:(preObserver.filter(v => v === user.key).length > 0)?1:0};
+    return { key:user.key, sign:0, text:0, checkbox:0, observer:(preObserver.filter(v => v === user.key).length > 0)?1:0};
   });
   const [boxData, setBoxData] = useState(box);
   const [disableNext, setDisableNext] = useState(true);
@@ -157,6 +160,8 @@ const PrepareTemplate = () => {
                   member.sign = member.sign + 1;
                 } else if (name.includes('TEXT')) {
                   member.text = member.text + 1;
+                } else if (name.includes('CHECKBOX')) {
+                  member.checkbox = member.checkbox + 1;
                 }
                 let newBoxData = boxData.slice();
                 newBoxData[boxData.filter(e => e.key === user).index] = member;
@@ -205,6 +210,8 @@ const PrepareTemplate = () => {
             member.sign = member.sign + 1;
           } else if (name.includes('TEXT')) {
             member.text = member.text + 1;
+          } else if (name.includes('CHECKBOX')) {
+            member.checkbox = member.checkbox + 1
           }
 
           const newBoxData = boxData.slice();
@@ -233,6 +240,8 @@ const PrepareTemplate = () => {
               member.sign = member.sign - 1;
             } else if (name.includes('TEXT')) {
               member.text = member.text - 1;
+            } else if (name.includes('CHECKBOX')) {
+              member.checkbox = member.checkbox - 1
             }
   
             const newBoxData = boxData.slice();
@@ -325,6 +334,9 @@ const PrepareTemplate = () => {
         textAnnot.Height = 60.0 / zoom;
       } else if (type == 'TEXT') {
         textAnnot.Width = 200.0 / zoom;
+        textAnnot.Height = 30.0 / zoom;
+      } else if (type == 'CHECKBOX') {
+        textAnnot.Width = 30.0 / zoom;
         textAnnot.Height = 30.0 / zoom;
       } else {
         textAnnot.Width = 250.0 / zoom;
@@ -516,17 +528,27 @@ const PrepareTemplate = () => {
                         >수신자 지정</Checkbox>
                       </Tooltip>
                     }>
+                      <p>
                       <Tooltip placement="right" title={'참여자가 사인을 입력할 위치에 넣어주세요.'}>
                         <Badge count={boxData.filter(e => e.key === item.key)[0].sign}>
-                          <Button style={{width:'190px', textAlign:'left'}} disabled={observers.filter(v => v === item.key).length > 0} icon={<PlusOutlined />} onClick={e => { addField('SIGN', {}, item); }}>{formatMessage({id: 'input.sign'})}</Button>
+                          <Button style={{width:'190px', textAlign:'left'}} disabled={observers.filter(v => v === item.key).length > 0} icon={<Icon component={IconSign} style={{ fontSize: '120%'}} />} onClick={e => { addField('SIGN', {}, item); }}>{formatMessage({id: 'input.sign'})}</Button>
                         </Badge>
                       </Tooltip>
-                      <p></p>
+                      </p>
+                      <p>
                       <Tooltip placement="right" title={(browser && browser.name.includes('chrom') && parseInt(browser.version) < 87) ? '사용중인 브라우저의 버전이 낮습니다.(버전 87 이상 지원)' : '참여자가 텍스트를 입력할 위치에 넣어주세요.'}>
                         <Badge count={boxData.filter(e => e.key === item.key)[0].text}>
-                          <Button style={{width:'190px', textAlign:'left'}} disabled={observers.filter(v => v === item.key).length > 0 || (browser && browser.name.includes('chrom') && parseInt(browser.version) < 87)} icon={<PlusOutlined />} onClick={e => { addField('TEXT', {}, item); }}>{formatMessage({id: 'input.text'})}</Button>
+                          <Button style={{width:'91px', textAlign:'left'}} disabled={observers.filter(v => v === item.key).length > 0 || (browser && browser.name.includes('chrom') && parseInt(browser.version) < 87)} icon={<Icon component={IconText} style={{ fontSize: '120%'}} />} onClick={e => { addField('TEXT', {}, item); }}>{formatMessage({id: 'input.text'})}</Button>
                         </Badge>
                       </Tooltip>
+                      &nbsp;&nbsp;&nbsp;
+                      <Tooltip placement="right" title={(browser && browser.name.includes('chrom') && parseInt(browser.version) < 87) ? '사용중인 브라우저의 버전이 낮습니다.(버전 87 이상 지원)' : '참여자가 텍스트를 입력할 위치에 넣어주세요.'}>
+                        <Badge count={boxData.filter(e => e.key === item.key)[0].checkbox}>
+                          <Button style={{width:'90px', textAlign:'left'}} disabled={observers.filter(v => v === item.key).length > 0 || (browser && browser.name.includes('chrom') && parseInt(browser.version) < 87)} icon={<Icon component={IconCheckbox} style={{ fontSize: '120%'}} />} onClick={e => { addField('CHECKBOX', {}, item); }}>{formatMessage({id: 'input.checkbox'})}</Button>
+                        </Badge>
+                      </Tooltip>
+                      </p>
+
                     </Card>
                   </List.Item>
                 }

@@ -21,12 +21,13 @@ import { ReactComponent as DOC_ICON} from '../../assets/images/word-icon.svg';
 import { ReactComponent as PPT_ICON} from '../../assets/images/ppt-icon.svg';
 import { ReactComponent as XLS_ICON} from '../../assets/images/excel-icon.svg';
 import * as common from "../../util/common";
+import { setTemplateType } from '../Assign/AssignSlice';
 
 const { confirm } = Modal;
 
 const UploadTemplate = ({location}) => {
 
-  const templateType = location.state.templateType
+  const templateType = location.state.templateType  // C: 회사, M: 개인
 
   const dispatch = useDispatch();
   const { formatMessage } = useIntl();
@@ -216,6 +217,7 @@ const UploadTemplate = ({location}) => {
         dispatch(resetSignee());
         dispatch(resetObservers());
         dispatch(setTemplateInfo(templateInfo));
+        dispatch(setTemplateType(templateInfo.type))
         navigate('/assignTemplate');
       },
       onCancel() {
@@ -246,7 +248,7 @@ const UploadTemplate = ({location}) => {
       loading={loading}
       ghost
       header={{
-        title: '템플릿 등록',
+        title: templateType === 'M' ? '템플릿 등록(개인)' : '템플릿 등록(회사)',
         ghost: false,
         breadcrumb: {
           routes: [

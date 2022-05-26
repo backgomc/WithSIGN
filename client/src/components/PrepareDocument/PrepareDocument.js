@@ -521,11 +521,11 @@ const PrepareDocument = () => {
 
       // if(box.sign === 0 && box.text === 0 && observers.filter(v => v == box.key).count == 0) {
       if (sendType === 'B') {
-        if(box.sign === 0 && box.text === 0) { 
+        if(box.sign === 0 && box.text === 0 && box.checkbox === 0) { 
           check = true
         }
       } else {
-        if(box.sign === 0 && box.text === 0 && box.observer === 0) { 
+        if(box.sign === 0 && box.text === 0 && box.observer === 0 && box.checkbox === 0) { 
           check = true
         }
       }
@@ -1159,13 +1159,13 @@ const PrepareDocument = () => {
                       <p></p>
                     <Tooltip placement="right" title={(browser && browser.name.includes('chrom') && parseInt(browser.version) < 87) ? '사용중인 브라우저의 버전이 낮습니다.(버전 87 이상 지원)' : '참여자가 텍스트를 입력할 위치에 넣어주세요.'}>
                       <Badge count={boxData.filter(e => e.key === item.key)[0].text}>
-                        <Button style={{width:'190px', textAlign:'left'}} disabled={observers.filter(v => v === item.key).length > 0 || (browser && browser.name.includes('chrom') && parseInt(browser.version) < 87)} icon={<Icon component={IconText} style={{ fontSize: '120%'}} />} onClick={e => { addField('TEXT', {}, item); }}>{formatMessage({id: 'input.text'})}</Button>
+                        <Button style={{width:'91px', textAlign:'left'}} disabled={observers.filter(v => v === item.key).length > 0 || (browser && browser.name.includes('chrom') && parseInt(browser.version) < 87)} icon={<Icon component={IconText} style={{ fontSize: '120%'}} />} onClick={e => { addField('TEXT', {}, item); }}>{formatMessage({id: 'input.text'})}</Button>
                       </Badge>
                     </Tooltip>
-                    <p></p>
+                    &nbsp;&nbsp;&nbsp;
                     <Tooltip placement="right" title={(browser && browser.name.includes('chrom') && parseInt(browser.version) < 87) ? '사용중인 브라우저의 버전이 낮습니다.(버전 87 이상 지원)' : '참여자가 체크박스를 입력할 위치에 넣어주세요.'}>
                       <Badge count={boxData.filter(e => e.key === item.key)[0].checkbox}>
-                        <Button style={{width:'190px', textAlign:'left'}} disabled={observers.filter(v => v === item.key).length > 0 || (browser && browser.name.includes('chrom') && parseInt(browser.version) < 87)} icon={<Icon component={IconCheckbox} style={{ fontSize: '120%'}} />} onClick={e => { addField('CHECKBOX', {}, item); }}>{formatMessage({id: 'input.checkbox'})}</Button>
+                        <Button style={{width:'90px', textAlign:'left'}} disabled={observers.filter(v => v === item.key).length > 0 || (browser && browser.name.includes('chrom') && parseInt(browser.version) < 87)} icon={<Icon component={IconCheckbox} style={{ fontSize: '120%'}} />} onClick={e => { addField('CHECKBOX', {}, item); }}>{formatMessage({id: 'input.checkbox'})}</Button>
                       </Badge>
                     </Tooltip>
                       {/* {boxData.filter(e => e.key === item.key)[0].text} */}

@@ -125,6 +125,8 @@ const AssignTemplate = () => {
   };
 
   const handlePrepare = () => {
+
+    //TODO: requester 혼자있을때 반영
     if (assignees.length > 0) {
 
       /*********************** S. 순차 서명 관련 전처리  ******************/
@@ -322,17 +324,22 @@ const sortView = (
         // 참여자 설정되어 있을 경우 유저 상태 체크 필요 
         axios.post('/api/users/check', {assignees: assigneesExceptRequester}).then(response => {
           let assigneesCheck  = response.data.assignees;
-          dispatch(setSignees(assigneesCheck));
           
           var targets = [];
           assigneesCheck.forEach(element => {
             targets.push(element.key);
           });
-
-          if (assignees.some(el => el.key === 'requester')) targets.push('requester')
+          
+          if (assignees.some(el => el.key === 'requester')) {
+            targets.push('requester'); 
+            dispatch(setSignees([...assigneesCheck, {key:'requester',name:'서명 참여자',order:0}]));
+          } else {
+            dispatch(setSignees(assigneesCheck));
+          }
+          
           setTarget(targets);
           
-          if (assigneesCheck.length > 0) {// && !(assigneesCheck.length === 1 && assigneesCheck[0].key === _id)) { // 참여자에 본인만 있을 경우 제한
+          if (targets.length > 0) {// && !(assigneesCheck.length === 1 && assigneesCheck[0].key === _id)) { // 참여자에 본인만 있을 경우 제한
             setDisableNext(false);
           } else {
             setDisableNext(true);

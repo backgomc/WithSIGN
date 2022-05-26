@@ -473,6 +473,7 @@ const TemplateList = () => {
         } else {
           dispatch(setTemplateSignees(item.signees));
         }
+        
         // dispatch(setTemplateSignees(item.signees));
         dispatch(setTemplateObservers(item.observers));
         dispatch(setTemplateType(item.type));
@@ -575,8 +576,12 @@ const TemplateList = () => {
   const actionItems = (item) => {
     if (item.type && item.type == 'C') { 
       return (
+        item.user._id == _id ? 
         [btnReqeust(item),
-        <Button type="text" icon={<FileOutlined />} onClick={e => { navigate('/previewPDF', {state: {docRef:item.docRef, docTitle:item.docTitle}}) }}>문서보기</Button>]
+        <Button type="text" icon={<FileOutlined />} onClick={e => { navigate('/previewPDF', {state: {docRef:item.docRef, docTitle:item.docTitle}}) }}>문서보기</Button>,
+        <Button type="text" danger icon={<DeleteOutlined />} onClick={e => { deleteTemplateSingle(item._id) }}>삭제</Button>] :
+        [btnReqeust(item),
+          <Button type="text" icon={<FileOutlined />} onClick={e => { navigate('/previewPDF', {state: {docRef:item.docRef, docTitle:item.docTitle}}) }}>문서보기</Button>]
       )
     } else {
       return (

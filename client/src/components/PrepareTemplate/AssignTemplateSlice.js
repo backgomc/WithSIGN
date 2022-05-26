@@ -27,7 +27,7 @@ export const AssignTemplateSlice = createSlice({
     },
     setTemplateInfo: (state, action) => {
       state.templateId = action.payload._id;
-      if (action.payload.signees && action.payload.signees.length > 0) {
+      if ((action.payload.signees && action.payload.signees.length > 0) || action.payload.hasRequester) {
         state.templateRef = action.payload.customRef;
       } else {
         state.templateRef = action.payload.docRef;
