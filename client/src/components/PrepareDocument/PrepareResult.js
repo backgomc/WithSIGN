@@ -71,12 +71,12 @@ const PrepareResult = ({location}) => {
         const docType = document.docType
         const docUser = document.user
         const observers = document.observers
-
         const orderType = document.orderType;
         const usersTodo = document.usersTodo;
         const usersOrder = document.usersOrder;
+        const attachFiles = document.attachFiles;
     
-        dispatch(setDocToSign({ docRef, docId, docType, docUser, observers, orderType, usersTodo, usersOrder }));
+        dispatch(setDocToSign({ docRef, docId, docType, docUser, observers, orderType, usersTodo, usersOrder, attachFiles }));
 
         navigate(`/signDocument`);
       },
@@ -95,8 +95,9 @@ const PrepareResult = ({location}) => {
     const orderType = data.orderType;
     const usersTodo = data.usersTodo;
     const usersOrder = data.usersOrder;
+    const attachFiles = data.attachFiles;
 
-    dispatch(setDocToSign({ docRef, docId, docType, docUser, observers, orderType, usersTodo, usersOrder }));
+    dispatch(setDocToSign({ docRef, docId, docType, docUser, observers, orderType, usersTodo, usersOrder, attachFiles }));
     navigate(`/signDocument`);
   }
 

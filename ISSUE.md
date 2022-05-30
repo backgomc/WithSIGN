@@ -10,3 +10,5 @@ bcrypt_lib.node is not a valid Win32 application
 pdf 가 한장인 경우 PDF뷰어 높이가 여백이 많이 생기는 문제 발생 
 * [4]  엣지 예전버전에서 <></> <Space></Space>에 값이 없는 경우 출력이 안됨 (DocumentExpander)
 > Space 에 옵션을 일단 줘 봄
+* [5] ie 에서 SSO 페이지 오류 
+> NH_SSO.js 에 console.log 가 ie 에서 안먹힘, Mozilla 로 통과시 ie 도 통과되므로 태블릿 체크는 다른 방법으로 해야함

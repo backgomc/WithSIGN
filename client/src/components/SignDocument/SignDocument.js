@@ -5,7 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import axios from 'axios';
 import { navigate } from '@reach/router';
 // import { Box, Column, Heading, Row, Stack, Button } from 'gestalt';
-import { Input, Row, Col, Modal, Checkbox, Button } from 'antd';
+import { Input, Row, Col, Modal, Checkbox, Button, List } from 'antd';
 import { selectDocToSign } from './SignDocumentSlice';
 import { selectUser } from '../../app/infoSlice';
 import { mergeAnnotations } from '../MergeAnnotations/MergeAnnotations';
@@ -16,9 +16,11 @@ import { useIntl } from "react-intl";
 // import RcResizeObserver from 'rc-resize-observer';
 import { PageContainer } from '@ant-design/pro-layout';
 import ProCard, { CheckCard } from '@ant-design/pro-card';
+import {
+  PaperClipOutlined
+} from '@ant-design/icons';
 import 'antd/dist/antd.css';
 import '@ant-design/pro-card/dist/card.css';
-// import { ExclamationCircleOutlined } from '@ant-design/icons';
 import { LICENSE_KEY } from '../../config/Config';
 // import Item from 'antd/lib/list/Item';
 
@@ -49,7 +51,7 @@ const SignDocument = () => {
   // const uploading = useSelector(selectUploading);
   const doc = useSelector(selectDocToSign);
   const user = useSelector(selectUser);
-  const { docRef, docId, docType, docUser, observers, orderType, usersTodo, usersOrder } = doc;
+  const { docRef, docId, docType, docUser, observers, orderType, usersTodo, usersOrder, attachFiles } = doc;
   const { _id } = user;
 
   const [annotsToDelete, setAnnotsToDelete] = useState([]);
@@ -508,6 +510,23 @@ const SignDocument = () => {
     navigate('/');
   }
 
+  const listAttachFiles = (
+    <List
+    size="small"
+    split={false}
+    dataSource={attachFiles}
+    // header={`첨부파일 ${item.attachFiles.length}`}
+    // bordered
+    itemLayout="horizontal"
+    renderItem={item =>
+        <List.Item.Meta
+            avatar={<PaperClipOutlined />}
+            description={ <a href={item.path} download={item.originalname} style={{color:'gray'}}>{item.originalname}</a> }
+        />
+    }
+    />
+  )
+
   return (
     <div>
     <PageContainer  
@@ -528,7 +547,7 @@ const SignDocument = () => {
           </Button>,
         ],
       }}
-      // content= {}
+      content= {attachFiles?.length > 0 && listAttachFiles}
       footer={[
       ]}
       loading={loading}

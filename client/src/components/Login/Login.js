@@ -144,6 +144,8 @@ function Login() {
             </Form>
         </div>
         <div className={styles['footer']}>
+        {/* © CopyRight 2021. NONGHYUP ALL Rights Reserved. */}
+        {/* 임시NH */}
           © 2021 NH INFORMATION SYSTEM CO.,LTD. ALL RIGHT RESERVED
         </div>
       </>

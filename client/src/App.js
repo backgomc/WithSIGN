@@ -195,7 +195,9 @@ const App = () => {
             { key: '이용약관', title: '이용약관', href: 'terms' },
             { key: '개인정보처리방침', title: '개인정보처리방침', href: 'policy' },
           ]}
+          // 임시NH
           copyright="2021 NH INFORMATION SYSTEM CO.,LTD. ALL RIGHT RESERVED"
+          // copyright="CopyRight 2021. NONGHYUP ALL Rights Reserved."
         />
       )}     
   >

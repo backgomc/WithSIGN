@@ -17,6 +17,7 @@ import {
   FolderAddTwoTone,
   DeleteTwoTone,
   SettingOutlined,
+  PaperClipOutlined,
   TeamOutlined,
   FormOutlined
 } from '@ant-design/icons';
@@ -624,7 +625,7 @@ const DocumentList = ({location}) => {
       key: 'docTitle',
       ...getColumnSearchProps('docTitle'),
       expandable: true,
-      render: (text,row) =>  <div style={{ wordWrap: 'break-word', wordBreak: 'break-word' }}><FileOutlined /> {text}</div>, // 여러 필드 동시 표시에 사용
+      render: (text,row) =>  <div style={{ wordWrap: 'break-word', wordBreak: 'break-word' }}><FileOutlined /> {text} {row['attachFiles']?.length > 0 && <PaperClipOutlined /> }</div>, // 여러 필드 동시 표시에 사용
       // render: (text,row) =>  <Typography.Paragraph editable style={{ wordWrap: 'break-word', wordBreak: 'break-word' }}><FileOutlined /> {text}</Typography.Paragraph>, // 여러 필드 동시 표시에 사용
     },
     // {
@@ -775,7 +776,7 @@ const DocumentList = ({location}) => {
       responsive: ["sm"],
       sorter: true,
       key: 'recentTime',
-      width: responsive ? '90px' : '100px',
+      width: responsive ? '90px' : '105px',
       render: (text, row) => {
           // return <Moment format='YYYY/MM/DD HH:mm'>{row["requestedTime"]}</Moment>
           return (<font color='#787878'>{moment(row["recentTime"]).fromNow()}</font>)
@@ -866,7 +867,8 @@ const DocumentList = ({location}) => {
                 const orderType = row["orderType"];
                 const usersTodo = row["usersTodo"];
                 const usersOrder = row["usersOrder"];
-                dispatch(setDocToSign({ docRef, docId, docType, docUser, observers, orderType, usersTodo, usersOrder }));
+                const attachFiles = row["attachFiles"];
+                dispatch(setDocToSign({ docRef, docId, docType, docUser, observers, orderType, usersTodo, usersOrder, attachFiles }));
                 navigate(`/signDocument`);
               }}>
                 {/* {(row["observers"] && row["observers"].includes(_id) ? '수신' : '서명')} */}
@@ -964,7 +966,8 @@ const DocumentList = ({location}) => {
                 const orderType = row["orderType"];
                 const usersTodo = row["usersTodo"];
                 const usersOrder = row["usersOrder"];
-                dispatch(setDocToSign({ docRef, docId, docType, docUser, observers, orderType, usersTodo, usersOrder }));
+                const attachFiles = row["attachFiles"];
+                dispatch(setDocToSign({ docRef, docId, docType, docUser, observers, orderType, usersTodo, usersOrder, attachFiles }));
                 navigate(`/signDocument`);
               }}>
 

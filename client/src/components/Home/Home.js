@@ -846,7 +846,8 @@ const Home = () => {
             const orderType = item.orderType;
             const usersTodo = item.usersTodo;
             const usersOrder = item.usersOrder;
-            dispatch(setDocToSign({ docRef, docId, docType, docUser, observers, orderType, usersTodo, usersOrder }));
+            const attachFiles = item.attachFiles;
+            dispatch(setDocToSign({ docRef, docId, docType, docUser, observers, orderType, usersTodo, usersOrder, attachFiles }));
           }}>
             <Badge.Ribbon color={'#54c6e8'} text={(item.observers && item.observers.includes(_id)) ? '수신' : '서명'}>
             <ProCard 

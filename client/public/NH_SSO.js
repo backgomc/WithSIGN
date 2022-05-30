@@ -1,7 +1,8 @@
-console.log(navigator.userAgent)
-if (navigator.userAgent.indexOf('Chrome') > -1 || navigator.userAgent.indexOf('Mozilla') > -1) {
+//TODO: 태블릿 지원을 위해 구분 필요: Mozilla 는 ie11 도 포함되므로 다른 방법 필요함 
+if (navigator.userAgent.indexOf('Chrome') > -1) {
+// if (navigator.userAgent.indexOf('Chrome') > -1 || navigator.userAgent.indexOf('Mozilla') > -1) {
     // Chromium 오픈소스 프로젝트 기반으로 제작된 브라우저
-} else {
+} else {   
     // 그 외
     try {
         document.write('<OBJECT ID="NEXESS_API" CLASSID="CLSID:D4F62B67-8BA3-4A8D-94F6-777A015DB612" width=0 height=0></OBJECT>');
