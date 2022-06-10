@@ -12,7 +12,7 @@ import { navigate } from '@reach/router';
 //   Button,
 //   SelectList,
 // } from 'gestalt';
-import { Upload, message, Badge, Button, Row, Col, List, Card, Checkbox, Tooltip, Tag } from 'antd';
+import { Upload, message, Badge, Button, Row, Col, List, Card, Checkbox, Tooltip, Tag, Divider } from 'antd';
 import Icon, { InboxOutlined, HighlightOutlined, PlusOutlined, ArrowLeftOutlined, SendOutlined } from '@ant-design/icons';
 import { selectDocumentTempPath, 
          resetAssignAll,
@@ -32,6 +32,8 @@ import { selectDocumentTempPath,
          selectOrderType,
          selectAttachFiles,
          resetAttachFiles } from '../Assign/AssignSlice';
+
+import { selectDirectTempPath, selectDirectTitle } from '../SignDirect/DirectSlice';
 import { selectUser } from '../../app/infoSlice';
 import WebViewer from '@pdftron/webviewer';
 // import 'gestalt/dist/gestalt.css';
@@ -81,6 +83,10 @@ const PrepareDocument = () => {
   const template = useSelector(selectTemplate);
   const templateTitle = useSelector(selectTemplateTitle);
   const sendType = useSelector(selectSendType);
+
+  // const directTitle = useSelector(selectDirectTitle);
+  // const directTempPath = useSelector(selectDirectTempPath);
+
   // const orderType = useSelector(selectOrderType);
   const documentTempPath = useSelector(selectDocumentTempPath);
   const preObserver = useSelector(selectObservers);
@@ -89,9 +95,9 @@ const PrepareDocument = () => {
     return { value: user.key, label: user.name };
   });
   const box = assignees.map(user => {
-    return { key:user.key, sign:0, text:0, checkbox:0, observer:(preObserver.filter(v => v === user.key).length > 0)?1:0};
+    return { key:user.key, sign:0, text:0, checkbox:0, auto_name:0, auto_jobtitle:0, auto_office:0, auto_depart:0, auto_sabun:0, auto_date:0, observer:(preObserver.filter(v => v === user.key).length > 0)?1:0};
   });
-  const box_bulk = [{key:'bulk', sign:0, text:0, checkbox:0}]
+  const box_bulk = [{key:'bulk', sign:0, text:0, checkbox:0, auto_name:0, auto_jobtitle:0, auto_office:0, auto_depart:0, auto_sabun:0, auto_date:0}]
 
   const [boxData, setBoxData] = useState((sendType === 'B') ? box_bulk:box);
 
@@ -174,9 +180,11 @@ const PrepareDocument = () => {
     //     return { [user.key]: {sign:0, text:0} };
     // }))
 
-    setObservers(preObserver.filter((value) => {
-      return assignees.some(v => value == v.key);
-    }));
+    if (sendType !== 'B') {
+      setObservers(preObserver.filter((value) => {
+        return assignees.some(v => value == v.key);
+      }));
+    }
 
     WebViewer(
       {
@@ -251,8 +259,7 @@ const PrepareDocument = () => {
       } else if (documentType === 'TEMPLATE_CUSTOM') {
         // /storage/... (O) storage/...(X)
         instance.loadDocument('/'+template.customRef);
-      } else if (documentType === 'PC') {
-        // instance.loadDocument(documentFile);
+      } else if (documentType === 'PC' || documentType === 'DIRECT') {
         instance.loadDocument('/'+documentTempPath);
       }
 
@@ -330,14 +337,14 @@ const PrepareDocument = () => {
 
             let member = boxData.filter(e => e.key === user)[0];
 
-            // user 가 requester 이면 현재 본인으로 매핑해준다.
+            // user 가 requester 이면 현재 본인으로 매핑해준다. => 대량발송만 매핑하도록 변경, 일반발송은 신청서 방식으로 대체
             if (user === 'requester') {
               if (sendType === 'B') {
                 member = boxData.filter(e => e.key === 'bulk')?.[0];
-                annot.setContents(type);
+                if (!type.includes("AUTO")) annot.setContents(type);
               } else {
-                member = boxData.filter(e => e.key === _id)?.[0];
-                annot.setContents(myname+(type==='SIGN'?'\n'+type:' '+type));
+                // member = boxData.filter(e => e.key === _id)?.[0];
+                // if (!type.includes("AUTO")) annot.setContents(myname+(type==='SIGN'?'\n'+type:' '+type));
               }
             }
             console.log(member);
@@ -353,13 +360,25 @@ const PrepareDocument = () => {
                   member.text = member.text + 1;
                 } else if (name.includes('CHECKBOX')) {
                   member.checkbox = member.checkbox + 1;
+                } else if (name.includes('AUTONAME')) {
+                  member.auto_name = member.auto_name + 1;
+                } else if (name.includes('AUTOJOBTITLE')) {
+                  member.auto_jobtitle = member.auto_jobtitle + 1;
+                } else if (name.includes('AUTOOFFICE')) {
+                  member.auto_office = member.auto_office + 1;
+                } else if (name.includes('AUTODEPART')) {
+                  member.auto_depart = member.auto_depart + 1;
+                } else if (name.includes('AUTOSABUN')) {
+                  member.auto_sabun = member.auto_sabun + 1;
+                } else if (name.includes('AUTODATE')) {
+                  member.auto_date = member.auto_date + 1;
                 }
                 let newBoxData = boxData.slice();
                 newBoxData[boxData.filter(e => e.key === user).index] = member;
                 setBoxData(newBoxData);
   
                 // annotation 구분값 복원
-                annot.FontSize = '' + 18.0 / docViewer.getZoom() + 'px';
+                // annot.FontSize = '' + 18.0 / docViewer.getZoom() + 'px';
                 annot.custom = {
                   type,
                   name : `${member.key}_${type}_`
@@ -407,6 +426,18 @@ const PrepareDocument = () => {
             member.text = member.text + 1
           } else if (name.includes('CHECKBOX')) {
             member.checkbox = member.checkbox + 1
+          } else if (name.includes('AUTONAME')) {
+            member.auto_name = member.auto_name + 1
+          } else if (name.includes('AUTOJOBTITLE')) {
+            member.auto_jobtitle = member.auto_jobtitle + 1
+          } else if (name.includes('AUTOOFFICE')) {
+            member.auto_office = member.auto_office + 1
+          } else if (name.includes('AUTODEPART')) {
+            member.auto_depart = member.auto_depart + 1
+          } else if (name.includes('AUTOSABUN')) {
+            member.auto_sabun = member.auto_sabun + 1
+          } else if (name.includes('AUTODATE')) {
+            member.auto_date = member.auto_date + 1
           }
 
           const newBoxData = boxData.slice()
@@ -455,6 +486,18 @@ const PrepareDocument = () => {
               member.text = member.text - 1
             } else if (name.includes('CHECKBOX')) {
               member.checkbox = member.checkbox - 1
+            } else if (name.includes('AUTONAME')) {
+              member.auto_name = member.auto_name - 1
+            } else if (name.includes('AUTOJOBTITLE')) {
+              member.auto_jobtitle = member.auto_jobtitle - 1
+            } else if (name.includes('AUTOOFFICE')) {
+              member.auto_office = member.auto_office - 1
+            } else if (name.includes('AUTODEPART')) {
+              member.auto_depart = member.auto_depart - 1
+            } else if (name.includes('AUTOSABUN')) {
+              member.auto_sabun = member.auto_sabun - 1
+            } else if (name.includes('AUTODATE')) {
+              member.auto_date = member.auto_date - 1
             }
   
             const newBoxData = boxData.slice()
@@ -566,6 +609,15 @@ const PrepareDocument = () => {
               },
             );
             inputAnnot = new Annotations.TextWidgetAnnotation(field);
+
+            // 폰트 설정
+            const fontOptions = {
+              name: annot.Font,
+              size: parseInt(annot.FontSize.replace('pt', '').replace('px', ''))
+            }
+            const font = new Annotations.Font(fontOptions)
+            inputAnnot.set({'font': font})
+
           } else if (annot.custom.type === 'SIGN') {
             console.log("annot.custom.name:"+annot.custom.name)
             field = new Annotations.Forms.Field(
@@ -632,6 +684,49 @@ const PrepareDocument = () => {
             );
   
             inputAnnot = new Annotations.DatePickerWidgetAnnotation(field);
+
+
+          } else if (annot.custom.type === 'CHECKBOX') {
+            console.log("annot.custom.name:"+annot.custom.name)
+            field = new Annotations.Forms.Field(
+              annot.custom.name + Date.now() + index,
+              {
+                type: 'Btn',
+                value: annot.custom.value,
+              },
+            );
+            inputAnnot = new Annotations.CheckButtonWidgetAnnotation(field);
+
+          } else if (annot.custom.type === 'AUTONAME' ||
+                    annot.custom.type === 'AUTOJOBTITLE' ||
+                    annot.custom.type === 'AUTOOFFICE' ||
+                    annot.custom.type === 'AUTODEPART' ||
+                    annot.custom.type === 'AUTOSABUN' ||
+                    annot.custom.type === 'AUTODATE') {
+            console.log("auto annot.custom.name:"+annot.custom.name)
+            field = new Annotations.Forms.Field(
+              // annot.getContents() + Date.now() + index,
+              annot.custom.name + Date.now() + index,
+              {
+                type: 'Tx',
+                value: annot.custom.value,
+              },
+            );
+
+            inputAnnot = new Annotations.TextWidgetAnnotation(field);
+
+            // 폰트 설정
+            console.log('FONTSIZE', annot.FontSize)
+            console.log("REPLACED", parseInt(annot.FontSize.replace('pt', '').replace('px', '')))
+            console.log('FONT', annot.Font)
+            const fontOptions = {
+              name: annot.Font,
+              size: parseInt(annot.FontSize.replace('pt', '').replace('px', ''))
+            }
+
+            const font = new Annotations.Font(fontOptions)
+            inputAnnot.set({'font': font})
+
           } else {
             // exit early for other annotations
             annotManager.deleteAnnotation(annot, false, true); // prevent duplicates when importing xfdf
@@ -723,21 +818,18 @@ const PrepareDocument = () => {
       if (type == 'SIGN') {
         textAnnot.Width = 90.0 / zoom;
         textAnnot.Height = 60.0 / zoom;
-
-        // console.log('ADD SIGN')
-        // console.log('member.key:'+member.key)
-
-        // const asisInputValue = inputValue.get(member.key)
-        // const updateNum = asisInputValue.sign + 1 
-        // updateInputValue(member.key, {sign:updateNum, text:asisInputValue.text})
-
-
       } else if (type == 'TEXT') {
-        textAnnot.Width = 200.0 / zoom;
-        textAnnot.Height = 30.0 / zoom;
+        textAnnot.Width = 120.0 / zoom;
+        textAnnot.Height = 25.0 / zoom;
       } else if (type == 'CHECKBOX') {
-        textAnnot.Width = 30.0 / zoom;
-        textAnnot.Height = 30.0 / zoom;
+        textAnnot.Width = 25.0 / zoom;
+        textAnnot.Height = 25.0 / zoom;
+      } else if (type.includes('AUTONAME') || type.includes('AUTOJOBTITLE') || type.includes('AUTOSABUN')) {
+        textAnnot.Width = 80.0 / zoom;
+        textAnnot.Height = 25.0 / zoom;
+      } else if (type.includes('AUTODATE') || type.includes('AUTOOFFICE') || type.includes('AUTODEPART')) {
+        textAnnot.Width = 130.0 / zoom;
+        textAnnot.Height = 25.0 / zoom;
       } else {
         textAnnot.Width = 250.0 / zoom;
         textAnnot.Height = 30.0 / zoom;
@@ -758,17 +850,28 @@ const PrepareDocument = () => {
     };
 
     // set the type of annot
-    // textAnnot.setContents(textAnnot.custom.name);
-    // textAnnot.setContents(assignee.label+"_"+type);
-    // textAnnot.setContents(member.name+"_"+type);
-    textAnnot.setContents((sendType === 'B') ? type : member.name+(type==='SIGN'?'\n'+type:' '+type));
-    textAnnot.FontSize = '' + 18.0 / zoom + 'px';
-    textAnnot.FillColor = new Annotations.Color(211, 211, 211, 0.5);
-    textAnnot.TextColor = new Annotations.Color(0, 165, 228);
-    textAnnot.StrokeThickness = 1;
-    textAnnot.StrokeColor = new Annotations.Color(0, 165, 228);
-    textAnnot.TextAlign = 'center';
 
+    if (type.includes("AUTO")) {
+      textAnnot.setContents(member.name);
+      textAnnot.FillColor = new Annotations.Color(211, 211, 211, 0.5);
+      textAnnot.TextColor = new Annotations.Color(73, 73, 73);
+      textAnnot.StrokeColor = new Annotations.Color(73, 73, 73);
+      textAnnot.TextAlign = 'left'; //텍스트는 좌측정렬
+    } else {
+      textAnnot.setContents((sendType === 'B') ? type : member.name+(type==='SIGN'?'\n'+type:' '+type));
+      textAnnot.FillColor = new Annotations.Color(211, 211, 211, 0.5);
+      textAnnot.TextColor = new Annotations.Color(0, 165, 228);
+      textAnnot.StrokeColor = new Annotations.Color(0, 165, 228);
+      if (type === 'SIGN') {
+        textAnnot.TextAlign = 'center';
+      } else {
+        textAnnot.TextAlign = 'left'; //텍스트는 좌측정렬
+      }
+    }
+
+    // textAnnot.FontSize = '' + 18.0 / zoom + 'px';
+    textAnnot.FontSize = '' + 12.0 + 'px';
+    textAnnot.StrokeThickness = 1;
     textAnnot.Author = annotManager.getCurrentUser();
 
     annotManager.deselectAllAnnotations();
@@ -1009,10 +1112,10 @@ const PrepareDocument = () => {
     }
 
     //4. 임시파일삭제
-    if (documentType == 'PC') {
+    if (documentType === 'PC' || documentType === 'DIRECT') {
       await axios.post(`/api/storage/deleteFile`, {target: documentTempPath})
-    } 
-
+    }
+    
     dispatch(resetAssignAll());
     setLoading(false);
 
@@ -1223,32 +1326,58 @@ const PrepareDocument = () => {
 
             {/* 대량 발송 */}
             </div>) : (<div>
-
               <Card size="small" type="inner" title="서명 참여자" style={{ width: '220px' }}>
-                    <p>
                     <Tooltip block placement="right" title={'참여자가 사인을 입력할 위치에 넣어주세요.'}>
                       <Badge count={boxData.filter(e => e.key === 'bulk')[0] ? boxData.filter(e => e.key === 'bulk')[0].sign : 0}>
                         <Button style={{width:'190px', textAlign:'left'}} icon={<Icon component={IconSign} style={{ fontSize: '120%'}} />} onClick={e => { addField('SIGN', {}); }}>{formatMessage({id: 'input.sign'})}</Button>
                       </Badge>
                     </Tooltip>
-                    </p>
-                    <p>
+                    <p></p>
                     <Tooltip placement="right" title={'참여자가 텍스트를 입력할 위치에 넣어주세요.'}>
                       <Badge count={boxData.filter(e => e.key === 'bulk')[0] ? boxData.filter(e => e.key === 'bulk')[0].text : 0}>
-                        <Button style={{width:'190px', textAlign:'left'}} icon={<Icon component={IconText} style={{ fontSize: '120%'}} />} onClick={e => { addField('TEXT', {}); }}>{formatMessage({id: 'input.text'})}</Button>
+                        <Button style={{width:'91px', textAlign:'left'}} icon={<Icon component={IconText} style={{ fontSize: '120%'}} />} onClick={e => { addField('TEXT', {}); }}>{formatMessage({id: 'input.text'})}</Button>
                       </Badge>
                     </Tooltip>
-                    </p>
-                    <p>
+                    &nbsp;&nbsp;&nbsp;
                     <Tooltip placement="right" title={'참여자가 체크박스를 입력할 위치에 넣어주세요.'}>
                       <Badge count={boxData.filter(e => e.key === 'bulk')[0] ? boxData.filter(e => e.key === 'bulk')[0].checkbox : 0}>
-                        <Button style={{width:'190px', textAlign:'left'}} icon={<Icon component={IconCheckbox} style={{ fontSize: '120%'}} />} onClick={e => { addField('CHECKBOX', {}); }}>{formatMessage({id: 'input.checkbox'})}</Button>
+                        <Button style={{width:'90px', textAlign:'left'}} icon={<Icon component={IconCheckbox} style={{ fontSize: '120%'}} />} onClick={e => { addField('CHECKBOX', {}); }}>{formatMessage({id: 'input.checkbox'})}</Button>
                       </Badge>
                     </Tooltip>
-                    </p>
-              </Card>
 
-            </div>)}  
+                    <div>
+                      <Divider plain>자동 입력</Divider>
+                      <p>
+                      <Badge count={boxData.filter(e => e.key === 'bulk')[0]?.auto_name}>
+                        <Button style={{width:'90px', textAlign:'left'}} icon={<Icon component={IconText} style={{ fontSize: '120%'}} />} onClick={e => { addField('AUTONAME', {}, {key: 'requester', type: 'AUTONAME', name: "이름"}); }}>{formatMessage({id: 'name'})}</Button>
+                      </Badge>
+                      &nbsp;&nbsp;&nbsp;
+                      <Badge count={boxData.filter(e => e.key === 'bulk')[0]?.auto_jobtitle}>
+                        <Button style={{width:'90px', textAlign:'left'}} icon={<Icon component={IconText} style={{ fontSize: '120%'}} />} onClick={e => { addField('AUTOJOBTITLE', {}, {key: 'requester', type: 'AUTOJOBTITLE', name: "직급"}); }}>{formatMessage({id: 'jobtitle'})}</Button>
+                      </Badge>
+                      </p>
+                      <p>
+                      <Badge count={boxData.filter(e => e.key === 'bulk')[0]?.auto_office}>
+                        <Button style={{width:'90px', textAlign:'left'}} icon={<Icon component={IconText} style={{ fontSize: '120%'}} />} onClick={e => { addField('AUTOOFFICE', {}, {key: 'requester', type: 'AUTOOFFICE', name: "회사명"}); }}>{formatMessage({id: 'office'})}</Button>
+                      </Badge>
+                      &nbsp;&nbsp;&nbsp;
+                      <Badge count={boxData.filter(e => e.key === 'bulk')[0]?.auto_depart}>
+                        <Button style={{width:'90px', textAlign:'left'}} icon={<Icon component={IconText} style={{ fontSize: '120%'}} />} onClick={e => { addField('AUTODEPART', {}, {key: 'requester', type: 'AUTODEPART', name: "부서명"}); }}>{formatMessage({id: 'depart'})}</Button>
+                      </Badge>
+                      </p>
+                      <p>
+                      <Badge count={boxData.filter(e => e.key === 'bulk')[0]?.auto_sabun}>
+                        <Button style={{width:'90px', textAlign:'left'}} icon={<Icon component={IconText} style={{ fontSize: '120%'}} />} onClick={e => { addField('AUTOSABUN', {}, {key: 'requester', type: 'AUTOSABUN', name: "사번"}); }}>{formatMessage({id: 'sabun'})}</Button>
+                      </Badge>
+                      &nbsp;&nbsp;&nbsp;
+                      <Badge count={boxData.filter(e => e.key === 'bulk')[0]?.auto_date}>
+                        <Button style={{width:'90px', textAlign:'left'}} icon={<Icon component={IconText} style={{ fontSize: '120%'}} />} onClick={e => { addField('AUTODATE', {}, {key: 'requester', type: 'AUTODEPART', name: "날짜"}); }}>{formatMessage({id: 'date'})}</Button>
+                      </Badge>
+                      </p>
+                    </div>
+              </Card>
+            </div>
+            )}  
             {/* 유저별로 카드 띄우기 */}
             {/* <List
               rowKey="id"

@@ -94,11 +94,22 @@ router.post('/login', (req, res) => {
           return res.json({ success: false, user: user._id, message: "약관 동의가 필요합니다." })
   
         //비밀번호 까지 맞다면 토큰을 생성하기.
-        user.generateToken((err, user) => {
+        user.generateToken(async (err, user) => {
           if (err) return res.status(400).send(err);
   
           // 패스워드 빼고 리턴 
           user.password = ""
+
+          // 조직 정보 셋팅
+          let OFFICE_NAME = '';
+          let DEPART_NAME = '';        
+          const orgInfo = await Org.findOne({ DEPART_CODE: user?.DEPART_CODE });
+          if(orgInfo) {
+            OFFICE_NAME = orgInfo.OFFICE_NAME;
+            DEPART_NAME = orgInfo.DEPART_NAME;
+          }
+          user.OFFICE_NAME = OFFICE_NAME;
+          user.DEPART_NAME = DEPART_NAME;
 
           // 토큰을 저장한다.  어디에 ?  쿠키 , 로컬스토리지 
           res.cookie("x_auth", user.token)
@@ -112,7 +123,7 @@ router.post('/login', (req, res) => {
   
 // role 1 어드민    role 2 특정 부서 어드민 
 // role 0 -> 일반유저   role 0이 아니면  관리자 
-router.get('/auth', auth, (req, res) => {
+router.get('/auth', auth, async (req, res) => {
   //여기 까지 미들웨어를 통과해 왔다는 얘기는  Authentication 이 True 라는 말.
 
   // const user = req.user
@@ -122,6 +133,15 @@ router.get('/auth', auth, (req, res) => {
 
   // console.log("email crypto: "+hexCrypto(req.user.email))
 
+  let OFFICE_NAME = '';
+  let DEPART_NAME = '';
+
+  const orgInfo = await Org.findOne({ DEPART_CODE: req.user.DEPART_CODE });
+  if(orgInfo) {
+    OFFICE_NAME = orgInfo.OFFICE_NAME;
+    DEPART_NAME = orgInfo.DEPART_NAME;
+  }
+  
   res.status(200).json({
     _id: req.user._id,
     isAdmin: req.user.role === 0 ? false : true,
@@ -135,6 +155,9 @@ router.get('/auth', auth, (req, res) => {
     JOB_TITLE: req.user.JOB_TITLE,
     DEPART_CODE: req.user.DEPART_CODE,
     OFFICE_CODE: req.user.OFFICE_CODE,
+    OFFICE_NAME: OFFICE_NAME,
+    DEPART_NAME: DEPART_NAME,
+    SABUN: req.user.SABUN,
     thumbnail: req.user.thumbnail
   })
 })

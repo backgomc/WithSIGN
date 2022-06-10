@@ -176,9 +176,14 @@ router.post('/updateTemplate', (req, res) => {
   // 경로 치환
   var ref = req.body.customRef.replace(/(\\)/g,'/');
 
+  var directRef = '';
+  if (req.body.directRef) {
+    directRef = req.body.directRef.replace(/(\\)/g,'/');
+  }
+
   Template.updateOne(
     { '_id': req.body._id, 'user': req.body.user },
-    { 'customRef': ref, 'users': req.body.users, 'observers': req.body.observers, 'orderType': req.body.orderType, 'usersOrder': req.body.usersOrder, 'usersTodo': req.body.usersTodo, 'signees': req.body.signees, 'hasRequester': req.body.hasRequester },
+    { 'customRef': ref, 'directRef': directRef, 'users': req.body.users, 'observers': req.body.observers, 'orderType': req.body.orderType, 'usersOrder': req.body.usersOrder, 'usersTodo': req.body.usersTodo, 'signees': req.body.signees, 'hasRequester': req.body.hasRequester },
     (err) => {
       if (err) return res.json({ success: false, message: err });
       return res.json({ success: true});

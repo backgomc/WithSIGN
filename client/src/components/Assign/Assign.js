@@ -5,7 +5,7 @@ import { useIntl } from "react-intl";
 import { navigate, Link } from '@reach/router';
 import { Transfer, Tree, Input, Button, Card, Avatar, message, Row, Col, Tag } from 'antd';
 import { selectUser } from '../../app/infoSlice';
-import { addSignee, setSignees, resetSignee, selectAssignees, selectSendType } from './AssignSlice';
+import { addSignee, setSignees, resetSignee, selectAssignees, selectSendType, selectDocumentType } from './AssignSlice';
 import StepWrite from '../Step/StepWrite'
 import TreeTransfer from '../TreeTransfer/TreeTransfer';
 import { PageContainer } from '@ant-design/pro-layout';
@@ -46,6 +46,7 @@ const Assign = () => {
   const { formatMessage } = useIntl();
   const user = useSelector(selectUser);
   const sendType = useSelector(selectSendType);
+  const documentType = useSelector(selectDocumentType);
   const { _id } = user;
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -111,95 +112,6 @@ const Assign = () => {
       })
 
       setSource(tree)
-
-      // const level1 = orgs.filter(e => e.PARENT_NODE_ID === "")
-      // level1.forEach(function(org){
-      //   const level2 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE)
-      //   const org1 = {key: org.DEPART_CODE, title:org.DEPART_NAME, children:[], disableCheckbox: false, selectable: true}
-      //   // const org1 = {key: org.DEPART_CODE, title:org.DEPART_NAME, children:[], disableCheckbox: true, selectable: false}
-      //   insertUser(org1, users, org.DEPART_CODE)
-
-      //   level2.forEach(function(org){
-      //     const org2 = {key: org.DEPART_CODE, title:org.DEPART_NAME, children:[], disableCheckbox: false, selectable: true}
-      //     insertUser(org2, users, org.DEPART_CODE)
-
-      //     const level3 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE)
-      //     level3.forEach(function(org){
-      //       const org3 = {key: org.DEPART_CODE, title:org.DEPART_NAME, children:[], disableCheckbox: false, selectable: true}
-      //       insertUser(org3, users, org.DEPART_CODE)
-
-      //       const level4 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE)
-      //       level4.forEach(function(org){
-      //         const org4 = {key: org.DEPART_CODE, title:org.DEPART_NAME, children:[], disableCheckbox: false, selectable: true}
-      //         insertUser(org4, users, org.DEPART_CODE)
-              
-      //         const level5 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE)
-      //         level5.forEach(function(org){
-      //           const org5 = {key: org.DEPART_CODE, title:org.DEPART_NAME, children:[], disableCheckbox: false, selectable: true}
-      //           insertUser(org5, users, org.DEPART_CODE)
-
-      //           const level6 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE)
-      //           level6.forEach(function(org){
-      //             const org6 = {key: org.DEPART_CODE, title:org.DEPART_NAME, children:[], disableCheckbox: false, selectable: true}
-      //             insertUser(org6, users, org.DEPART_CODE)
-                 
-      //             const level7 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE)
-      //             level7.forEach(function(org){
-      //               const org7 = {key: org.DEPART_CODE, title:org.DEPART_NAME, children:[], disableCheckbox: false, selectable: true}
-      //               insertUser(org7, users, org.DEPART_CODE)
-
-      //               const level8 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE)
-      //               level8.forEach(function(org){
-      //                 const org8 = {key: org.DEPART_CODE, title:org.DEPART_NAME, children:[], disableCheckbox: false, selectable: true}
-      //                 insertUser(org8, users, org.DEPART_CODE)
-
-      //                 const level9 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE)
-      //                 level9.forEach(function(org){
-      //                   const org9 = {key: org.DEPART_CODE, title:org.DEPART_NAME, children:[], disableCheckbox: false, selectable: true}
-      //                   insertUser(org9, users, org.DEPART_CODE)
-
-      //                   const level10 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE)
-      //                   level10.forEach(function(org){
-      //                     const org10 = {key: org.DEPART_CODE, title:org.DEPART_NAME, children:[], disableCheckbox: false, selectable: true}
-      //                     insertUser(org10, users, org.DEPART_CODE)
-      //                     org9.children.push(org10)
-      //                   })
-
-      //                   org8.children.push(org9)
-      //                 })
-
-      //                 org7.children.push(org8)
-      //               })
-
-      //               org6.children.push(org7)
-      //             })
-
-
-      //             org5.children.push(org6)
-      //           })
-
-      //           org4.children.push(org5)
-      //         })
-
-      //         // insertUser(org4, users, org.DEPART_CODE)
-      //         org3.children.push(org4)
-              
-      //       })
-
-      //       // insertUser(org3, users, org.DEPART_CODE)
-      //       org2.children.push(org3)
-      //     })
-          
-      //     // insertUser(org2, users, org.DEPART_CODE)
-      //     org1.children.push(org2)
-      //   })
-      //   // insertUser(org1, users, org.DEPART_CODE)
-      //   tree.push(org1)
-      // })
-      
-      // setSource(tree)
-
-      // setData(tree)
       setLoading(false);
 
     } else {
@@ -211,39 +123,42 @@ const Assign = () => {
   const handlePrepare = () => {
     if (assignees.length > 0) {
 
-      /*********************** S. 순차 서명 관련 전처리  ******************/
-      // 유효성 체크 
-      var validation = true;
-      Object.entries(columns).map(([columnId, column], index) => {
-        if (index > 0) {
-          console.log(columns[columnId-1].items.length)
-          if(columns[columnId].items.length != 0 && columns[columnId-1].items.length == 0) {
-            validation = false;
-            message.warning(columnId + '단계에 1명 이상 등록이 필요합니다.');
-            return; 
+      if (sendType !== 'B') {
+        /*********************** S. 순차 서명 관련 전처리  ******************/
+
+        // 유효성 체크 
+        var validation = true;
+        Object.entries(columns).map(([columnId, column], index) => {
+          if (index > 0) {
+            console.log(columns[columnId-1].items.length)
+            if(columns[columnId].items.length != 0 && columns[columnId-1].items.length == 0) {
+              validation = false;
+              message.warning(columnId + '단계에 1명 이상 등록이 필요합니다.');
+              return; 
+            }
           }
-        }
-      });
-      if (!validation) return;
+        });
+        if (!validation) return;
 
-      // 데이터 갱신
-      dispatch(resetSignee());
-      Object.entries(columns).map(([columnId, column], index) => {
-        console.log('columnId:', columnId)
-        console.log('column:', column)
-        console.log('index:', index)
+        // 데이터 갱신
+        dispatch(resetSignee());
+        Object.entries(columns).map(([columnId, column], index) => {
+          console.log('columnId:', columnId)
+          console.log('column:', column)
+          console.log('index:', index)
 
-        column.items.map((item, subIndex) => {
-          const key = item.id
-          const name = item.name
-          const JOB_TITLE = item.JOB_TITLE
-          const DEPART_NAME = item.DEPART_NAME
-          const order = columnId
+          column.items.map((item, subIndex) => {
+            const key = item.id
+            const name = item.name
+            const JOB_TITLE = item.JOB_TITLE
+            const DEPART_NAME = item.DEPART_NAME
+            const order = columnId
 
-          dispatch(addSignee({ key, name, JOB_TITLE, DEPART_NAME, order }));
-        })
-      });
-      /*********************** E. 순차 서명 관련 전처리  ******************/
+            dispatch(addSignee({ key, name, JOB_TITLE, DEPART_NAME, order }));
+          })
+        });
+        /*********************** E. 순차 서명 관련 전처리  ******************/
+      }
 
       navigate(`/prepareDocument`);
       // 임시 
@@ -578,7 +493,7 @@ const sortView = (
             ],
           },
           extra: [
-            <Button key="3" icon={<ArrowLeftOutlined />} onClick={() => {navigate(`/uploadDocument`);}}></Button>,
+            <Button key="3" icon={<ArrowLeftOutlined />} onClick={() => {documentType === 'DIRECT' ? navigate(`/templateList`) : navigate(`/uploadDocument`)}}></Button>,
             <Button key="2" icon={<ArrowRightOutlined />} type="primary" onClick={() => handlePrepare()} disabled={disableNext}>
               {formatMessage({id: 'Next'})}
             </Button>,

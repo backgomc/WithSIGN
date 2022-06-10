@@ -2,7 +2,7 @@ import React, { useRef, useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import axios from 'axios';
 import { navigate } from '@reach/router';
-import { Badge, Button, Row, Col, List, Card, Checkbox, Tooltip, Tag, Space } from 'antd';
+import { Badge, Button, Row, Col, List, Card, Checkbox, Tooltip, Tag, Space, Divider } from 'antd';
 import Icon, { PlusOutlined, ArrowLeftOutlined, SendOutlined } from '@ant-design/icons';
 import { selectSignees, selectObservers, selectTemplateId, selectTemplateRef, selectTemplateFileName, resetAssignAll } from './AssignTemplateSlice';
 import { selectUser } from '../../app/infoSlice';
@@ -39,7 +39,7 @@ const PrepareTemplate = () => {
   const preObserver = useSelector(selectObservers);
   const assignees = useSelector(selectSignees);
   const box = assignees.map(user => {
-    return { key:user.key, sign:0, text:0, checkbox:0, observer:(preObserver.filter(v => v === user.key).length > 0)?1:0};
+    return { key:user.key, sign:0, text:0, checkbox:0, auto_name:0, auto_jobtitle:0, auto_office:0, auto_depart:0, auto_sabun:0, auto_date:0, observer:(preObserver.filter(v => v === user.key).length > 0)?1:0};
   });
   const [boxData, setBoxData] = useState(box);
   const [disableNext, setDisableNext] = useState(true);
@@ -162,13 +162,27 @@ const PrepareTemplate = () => {
                   member.text = member.text + 1;
                 } else if (name.includes('CHECKBOX')) {
                   member.checkbox = member.checkbox + 1;
+                } else if (name.includes('AUTONAME')) {
+                  member.auto_name = member.auto_name + 1;
+                } else if (name.includes('AUTOJOBTITLE')) {
+                  member.auto_jobtitle = member.auto_jobtitle + 1;
+                } else if (name.includes('AUTOOFFICE')) {
+                  member.auto_office = member.auto_office + 1;
+                } else if (name.includes('AUTODEPART')) {
+                  member.auto_depart = member.auto_depart + 1;
+                } else if (name.includes('AUTOSABUN')) {
+                  member.auto_sabun = member.auto_sabun + 1;
+                } else if (name.includes('AUTODATE')) {
+                  member.auto_date = member.auto_date + 1;
                 }
                 let newBoxData = boxData.slice();
                 newBoxData[boxData.filter(e => e.key === user).index] = member;
                 setBoxData(newBoxData);
     
-                // annotation 구분값 복원
-                annot.FontSize = '' + 18.0 / docViewer.getZoom() + 'px';
+                // TODO annotation 구분값 복원
+                console.log('TMTM', annot.FontSize)
+                // annot.FontSize = '' + 12 + 'pt';
+                // annot.FontSize = '' + 18.0 / docViewer.getZoom() + 'px';
                 annot.custom = {
                   type,
                   name : `${member.key}_${type}_`
@@ -182,7 +196,7 @@ const PrepareTemplate = () => {
           }
         });
         
-        // TODO : 자유 텍스트 상단 짤리는 문제 ...
+        // 자유 텍스트 상단 짤리는 문제 ...
         console.log(annotations[0].Subject, annotations[0].ToolName, annotations[0].TextAlign);
         if (annotations[0].ToolName && annotations[0].ToolName.startsWith('AnnotationCreateFreeText') && action === 'add') {
           // annotations[0].TextAlign = 'center';
@@ -212,6 +226,18 @@ const PrepareTemplate = () => {
             member.text = member.text + 1;
           } else if (name.includes('CHECKBOX')) {
             member.checkbox = member.checkbox + 1
+          } else if (name.includes('AUTONAME')) {
+            member.auto_name = member.auto_name + 1
+          } else if (name.includes('AUTOJOBTITLE')) {
+            member.auto_jobtitle = member.auto_jobtitle + 1
+          } else if (name.includes('AUTOOFFICE')) {
+            member.auto_office = member.auto_office + 1
+          } else if (name.includes('AUTODEPART')) {
+            member.auto_depart = member.auto_depart + 1
+          } else if (name.includes('AUTOSABUN')) {
+            member.auto_sabun = member.auto_sabun + 1
+          } else if (name.includes('AUTODATE')) {
+            member.auto_date = member.auto_date + 1
           }
 
           const newBoxData = boxData.slice();
@@ -242,6 +268,18 @@ const PrepareTemplate = () => {
               member.text = member.text - 1;
             } else if (name.includes('CHECKBOX')) {
               member.checkbox = member.checkbox - 1
+            } else if (name.includes('AUTONAME')) {
+              member.auto_name = member.auto_name - 1
+            } else if (name.includes('AUTOJOBTITLE')) {
+              member.auto_jobtitle = member.auto_jobtitle - 1
+            } else if (name.includes('AUTOOFFICE')) {
+              member.auto_office = member.auto_office - 1
+            } else if (name.includes('AUTODEPART')) {
+              member.auto_depart = member.auto_depart - 1
+            } else if (name.includes('AUTOSABUN')) {
+              member.auto_sabun = member.auto_sabun - 1
+            } else if (name.includes('AUTODATE')) {
+              member.auto_date = member.auto_date - 1
             }
   
             const newBoxData = boxData.slice();
@@ -304,6 +342,175 @@ const PrepareTemplate = () => {
     await uploadForSigning();
   };
 
+  const applyFieldsDirect = async () => {
+
+    console.log('applyFieldsDirect called');
+    // setLoading(true);
+
+    const { Annotations, docViewer } = instance;
+    const annotManager = docViewer.getAnnotationManager();
+    const fieldManager = annotManager.getFieldManager();
+    const annotationsList = annotManager.getAnnotationsList();
+    const annotsToDelete = [];
+    const annotsToDraw = [];
+
+    await Promise.all(
+      annotationsList.map(async (annot, index) => {
+        let inputAnnot;
+        let field;
+
+        if (typeof annot.custom !== 'undefined') {
+          // create a form field based on the type of annotation
+          if (annot.custom.type === 'TEXT') {
+            console.log("annot.custom.name:"+annot.custom.name)
+            field = new Annotations.Forms.Field(
+              // annot.getContents() + Date.now() + index,
+              annot.custom.name + Date.now() + index,
+              {
+                type: 'Tx',
+                value: annot.custom.value,
+              },
+            );
+            inputAnnot = new Annotations.TextWidgetAnnotation(field);
+
+            // 폰트 설정
+            const fontOptions = {
+              name: annot.Font,
+              size: parseInt(annot.FontSize.replace('pt', '').replace('px', ''))
+            }
+            const font = new Annotations.Font(fontOptions)
+            inputAnnot.set({'font': font})
+
+          } else if (annot.custom.type === 'SIGN') {
+            console.log("annot.custom.name:"+annot.custom.name)
+            field = new Annotations.Forms.Field(
+              // annot.getContents() + Date.now() + index,
+              annot.custom.name + Date.now() + index,
+              {
+                type: 'Sig',
+              },
+            );
+            inputAnnot = new Annotations.SignatureWidgetAnnotation(field, {
+              appearance: '_DEFAULT',
+              appearances: {
+                _DEFAULT: {
+                  Normal: {
+                    data:
+                      'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAYdEVYdFNvZnR3YXJlAHBhaW50Lm5ldCA0LjEuMWMqnEsAAAANSURBVBhXY/j//z8DAAj8Av6IXwbgAAAAAElFTkSuQmCC',
+                    offset: {
+                      x: 100,
+                      y: 100,
+                    },
+                  },
+                },
+              },
+            });
+
+          } else if (annot.custom.type === 'CHECKBOX') {
+              console.log("annot.custom.name:"+annot.custom.name)
+              field = new Annotations.Forms.Field(
+                annot.custom.name + Date.now() + index,
+                {
+                  type: 'Btn',
+                  value: annot.custom.value,
+                },
+              );
+              inputAnnot = new Annotations.CheckButtonWidgetAnnotation(field);
+
+          } else if (annot.custom.type === 'AUTONAME' ||
+                     annot.custom.type === 'AUTOJOBTITLE' ||
+                     annot.custom.type === 'AUTOOFFICE' ||
+                     annot.custom.type === 'AUTODEPART' ||
+                     annot.custom.type === 'AUTOSABUN' ||
+                     annot.custom.type === 'AUTODATE') {
+            console.log("auto annot.custom.name:"+annot.custom.name)
+            field = new Annotations.Forms.Field(
+              // annot.getContents() + Date.now() + index,
+              annot.custom.name + Date.now() + index,
+              {
+                type: 'Tx',
+                value: annot.custom.value,
+              },
+            );
+
+            inputAnnot = new Annotations.TextWidgetAnnotation(field);
+
+            // 폰트 설정
+            console.log('FONTSIZE', annot.FontSize)
+            console.log("REPLACED", parseInt(annot.FontSize.replace('pt', '').replace('px', '')))
+            console.log('FONT', annot.Font)
+            const fontOptions = {
+              name: annot.Font,
+              size: parseInt(annot.FontSize.replace('pt', '').replace('px', ''))
+            }
+            // const fontOptions = {
+            //   name: 'Times',
+            //   size: 12
+            // }
+
+            const font = new Annotations.Font(fontOptions)
+            inputAnnot.set({'font': font})
+            
+          } else {
+            // exit early for other annotations
+            annotManager.deleteAnnotation(annot, false, true); // prevent duplicates when importing xfdf
+            return;
+          }
+        } else {
+          // exit early for other annotations
+          return;
+        }
+
+        // set position
+        inputAnnot.PageNumber = annot.getPageNumber();
+        inputAnnot.X = annot.getX();
+        inputAnnot.Y = annot.getY();
+        inputAnnot.rotation = annot.Rotation;
+        if (annot.Rotation === 0 || annot.Rotation === 180) {
+          inputAnnot.Width = annot.getWidth();
+          inputAnnot.Height = annot.getHeight();
+        } else {
+          inputAnnot.Width = annot.getHeight();
+          inputAnnot.Height = annot.getWidth();
+        }
+
+        
+        // delete original annotation
+        annotsToDelete.push(annot);
+
+        // customize styles of the form field
+        Annotations.WidgetAnnotation.getCustomStyles = function (widget) {
+          if (widget instanceof Annotations.SignatureWidgetAnnotation) {
+            return {
+              border: '1px solid #a5c7ff',
+            };
+          }
+
+          if (widget instanceof Annotations.CheckButtonWidgetAnnotation) {
+            return {
+              border: '1px solid #a5c7ff',
+            };
+          }
+
+        };
+        Annotations.WidgetAnnotation.getCustomStyles(inputAnnot);
+
+        // draw the annotation the viewer
+        annotManager.addAnnotation(inputAnnot);
+        fieldManager.addField(field);
+        annotsToDraw.push(inputAnnot);
+      }),
+    );
+
+    // delete old annotations
+    annotManager.deleteAnnotations(annotsToDelete, null, true);
+
+    // refresh viewer
+    await annotManager.drawAnnotationsFromList(annotsToDraw);
+
+  };
+  
+
   const addField = (type, point = {}, member = {}, name = '', value = '', flag = {}) => {
 
     console.log('called addField');
@@ -333,11 +540,17 @@ const PrepareTemplate = () => {
         textAnnot.Width = 90.0 / zoom;
         textAnnot.Height = 60.0 / zoom;
       } else if (type == 'TEXT') {
-        textAnnot.Width = 200.0 / zoom;
-        textAnnot.Height = 30.0 / zoom;
+        textAnnot.Width = 120.0 / zoom;
+        textAnnot.Height = 25.0 / zoom;
       } else if (type == 'CHECKBOX') {
-        textAnnot.Width = 30.0 / zoom;
-        textAnnot.Height = 30.0 / zoom;
+        textAnnot.Width = 25.0 / zoom;
+        textAnnot.Height = 25.0 / zoom;
+      } else if (type.includes('AUTONAME') || type.includes('AUTOJOBTITLE') || type.includes('AUTOSABUN')) {
+        textAnnot.Width = 80.0 / zoom;
+        textAnnot.Height = 25.0 / zoom;
+      } else if (type.includes('AUTODATE') || type.includes('AUTOOFFICE') || type.includes('AUTODEPART')) {
+        textAnnot.Width = 130.0 / zoom;
+        textAnnot.Height = 25.0 / zoom;
       } else {
         textAnnot.Width = 250.0 / zoom;
         textAnnot.Height = 30.0 / zoom;
@@ -355,13 +568,28 @@ const PrepareTemplate = () => {
     };
 
     // set the type of annot
-    textAnnot.setContents(member.name+(type==='SIGN'?'\n'+type:' '+type));
-    textAnnot.FontSize = '' + 18.0 / zoom + 'px';
-    textAnnot.FillColor = new Annotations.Color(211, 211, 211, 0.5);
-    textAnnot.TextColor = new Annotations.Color(0, 165, 228);
+    if (type.includes("AUTO")) {
+      textAnnot.setContents(member.name);
+      textAnnot.FillColor = new Annotations.Color(211, 211, 211, 0.5);
+      textAnnot.TextColor = new Annotations.Color(73, 73, 73);
+      textAnnot.StrokeColor = new Annotations.Color(73, 73, 73);
+      textAnnot.TextAlign = 'left'; //텍스트는 좌측정렬
+    } else {
+      textAnnot.setContents(member.name+(type==='SIGN'?'\n'+type:' '+type));
+      textAnnot.FillColor = new Annotations.Color(211, 211, 211, 0.5);
+      textAnnot.TextColor = new Annotations.Color(0, 165, 228);
+      textAnnot.StrokeColor = new Annotations.Color(0, 165, 228);
+      if (type === 'SIGN') {
+        textAnnot.TextAlign = 'center';
+      } else {
+        textAnnot.TextAlign = 'left'; //텍스트는 좌측정렬
+      }
+    }
+    
+    // textAnnot.FontSize = '' + 18.0 / zoom + 'px';
+    textAnnot.FontSize = '' + 12.0 + 'px';
+
     textAnnot.StrokeThickness = 1;
-    textAnnot.StrokeColor = new Annotations.Color(0, 165, 228);
-    textAnnot.TextAlign = 'center';
     textAnnot.Author = annotManager.getCurrentUser();
 
     annotManager.deselectAllAnnotations();
@@ -382,17 +610,19 @@ const PrepareTemplate = () => {
 
     const path = 'templates/';
     const { docViewer, annotManager } = instance;
-    const doc = docViewer.getDocument();
-    const xfdfString = await annotManager.exportAnnotations({ widgets: true, fields: true });
-    const data = await doc.getFileData({ xfdfString });
-    const arr = new Uint8Array(data);
-    const blob = new Blob([arr], { type: 'application/pdf' });
+    let doc = docViewer.getDocument();
+    let xfdfString = await annotManager.exportAnnotations({ widgets: true, fields: true });
+    let data = await doc.getFileData({ xfdfString });
+    let arr = new Uint8Array(data);
+    let blob = new Blob([arr], { type: 'application/pdf' });
     const assigneesExceptRequester = assignees.filter(el => el.key !== 'requester')
     const users = assigneesExceptRequester.map(assignee => {
       return assignee.key;
     });
     
-    setLoading(true);
+    // ISSUE 로딩바가 켜지면 웹뷰어가 사라져서 아래 진행이 안되므로 레이어 위에 로딩바형태로 변경 필요할듯 
+    // TODO 로딩바 바뀌기
+    // setLoading(true);
     
     // 1. SAVE FILE
     let formData = new FormData();
@@ -406,6 +636,29 @@ const PrepareTemplate = () => {
     if (res.data.success) {
       customRef = res.data.file.path;
     }
+
+
+    // 1-2 신청서 양식 생성
+    await applyFieldsDirect();
+    console.log("AFTER applyFieldsDirect");
+    doc = docViewer.getDocument();
+    xfdfString = await annotManager.exportAnnotations({ widgets: true, fields: true });
+    data = await doc.getFileData({ xfdfString });
+    arr = new Uint8Array(data);
+    blob = new Blob([arr], { type: 'application/pdf' });
+
+    setLoading(true);
+
+    let formData2 = new FormData();
+    formData2.append('path', path);
+    formData2.append('file', blob, templateFileName.replace('CUSTOM', 'DIRECT'));
+    let res2 = await axios.post('/api/storage/upload', formData2);
+
+    var directRef = '';
+    if (res2.data.success) {
+      directRef = res2.data.file.path;
+    }
+
 
     // 2. UPDATE DOCUMENT
     var usersOrder = [];
@@ -427,6 +680,7 @@ const PrepareTemplate = () => {
       _id: templateId,
       user: _id,
       customRef: customRef,
+      directRef: directRef,
       users: users,
       observers: observers,
       orderType: orderType, //SUNCHA: 순차 기능 활성화 
@@ -440,9 +694,44 @@ const PrepareTemplate = () => {
     console.log(res);
 
     dispatch(resetAssignAll());
+
+
+    setLoading(false);
+    navigate('/templateList'); 
+  };
+
+  const uploadForDirect = async () => {
+
+    const path = 'templates/';
+    const { docViewer, annotManager } = instance;
+    const doc = docViewer.getDocument();
+    const xfdfString = await annotManager.exportAnnotations({ widgets: true, fields: true });
+    const data = await doc.getFileData({ xfdfString });
+    const arr = new Uint8Array(data);
+    const blob = new Blob([arr], { type: 'application/pdf' });
+    const assigneesExceptRequester = assignees.filter(el => el.key !== 'requester')
+    const users = assigneesExceptRequester.map(assignee => {
+      return assignee.key;
+    });
+    
+    setLoading(true);
+    
+    // 1. SAVE FILE
+    let formData = new FormData();
+    formData.append('path', path);
+    formData.append('file', blob, templateFileName.replace('CUSTOM', 'DIRECT'));
+    let res = await axios.post('/api/storage/upload', formData);
+    console.log(res);
+
+    // 업로드 후 파일 경로 가져오기  
+    var customRef = '';
+    if (res.data.success) {
+      customRef = res.data.file.path;
+    }
+
+    var directRef = '';
     setLoading(false);
 
-    navigate('/templateList'); 
   };
 
   const dragOver = e => {
@@ -471,8 +760,8 @@ const PrepareTemplate = () => {
             routes: [],
           },
           extra: [
-            <Button key="3" icon={<ArrowLeftOutlined />} onClick={() => {navigate('/assignTemplate');}}></Button>,
-            <Button key="2" icon={<SendOutlined />} type="primary" onClick={applyFields} disabled={disableNext} loading={loading}>{formatMessage({id: 'Save'})}</Button>
+            <Button key="2" icon={<ArrowLeftOutlined />} onClick={() => {navigate('/assignTemplate');}}></Button>,
+            <Button key="1" icon={<SendOutlined />} type="primary" onClick={applyFields} disabled={disableNext} loading={loading}>{formatMessage({id: 'Save'})}</Button>
           ]
         }}
         content= { <ProCard style={{ background: '#ffffff'}} layout="center"><StepWrite current={2} /></ProCard> }
@@ -549,11 +838,84 @@ const PrepareTemplate = () => {
                       </Tooltip>
                       </p>
 
+                      {/*  자동 입력값 셋팅 */}
+                      {item.key === 'requester' && 
+                        <div>
+                        <Divider plain>자동 입력</Divider>
+                        <p>
+                        <Badge count={boxData.filter(e => e.key === 'requester')[0].auto_name}>
+                          <Button style={{width:'90px', textAlign:'left'}} icon={<Icon component={IconText} style={{ fontSize: '120%'}} />} onClick={e => { addField('AUTONAME', {}, {key: 'requester', type: 'AUTONAME', name: "이름"}); }}>{formatMessage({id: 'name'})}</Button>
+                        </Badge>
+                        &nbsp;&nbsp;&nbsp;
+                        <Badge count={boxData.filter(e => e.key === 'requester')[0].auto_jobtitle}>
+                          <Button style={{width:'90px', textAlign:'left'}} icon={<Icon component={IconText} style={{ fontSize: '120%'}} />} onClick={e => { addField('AUTOJOBTITLE', {}, {key: 'requester', type: 'AUTOJOBTITLE', name: "직급"}); }}>{formatMessage({id: 'jobtitle'})}</Button>
+                        </Badge>
+                        </p>
+                        <p>
+                        <Badge count={boxData.filter(e => e.key === 'requester')[0].auto_office}>
+                          <Button style={{width:'90px', textAlign:'left'}} icon={<Icon component={IconText} style={{ fontSize: '120%'}} />} onClick={e => { addField('AUTOOFFICE', {}, {key: 'requester', type: 'AUTOOFFICE', name: "회사명"}); }}>{formatMessage({id: 'office'})}</Button>
+                        </Badge>
+                        &nbsp;&nbsp;&nbsp;
+                        <Badge count={boxData.filter(e => e.key === 'requester')[0].auto_depart}>
+                          <Button style={{width:'90px', textAlign:'left'}} icon={<Icon component={IconText} style={{ fontSize: '120%'}} />} onClick={e => { addField('AUTODEPART', {}, {key: 'requester', type: 'AUTODEPART', name: "부서명"}); }}>{formatMessage({id: 'depart'})}</Button>
+                        </Badge>
+                        </p>
+                        <p>
+                        <Badge count={boxData.filter(e => e.key === 'requester')[0].auto_sabun}>
+                          <Button style={{width:'90px', textAlign:'left'}} icon={<Icon component={IconText} style={{ fontSize: '120%'}} />} onClick={e => { addField('AUTOSABUN', {}, {key: 'requester', type: 'AUTOSABUN', name: "사번"}); }}>{formatMessage({id: 'sabun'})}</Button>
+                        </Badge>
+                        &nbsp;&nbsp;&nbsp;
+                        <Tooltip placement="right" title={'예) 2022년 06월 10일'}>
+                          <Badge count={boxData.filter(e => e.key === 'requester')[0].auto_date}>
+                            <Button style={{width:'90px', textAlign:'left'}} icon={<Icon component={IconText} style={{ fontSize: '120%'}} />} onClick={e => { addField('AUTODATE', {}, {key: 'requester', type: 'AUTODEPART', name: "날짜"}); }}>{formatMessage({id: 'date'})}</Button>
+                          </Badge>
+                        </Tooltip>
+                        </p></div>}
+
+
+
                     </Card>
                   </List.Item>
                 }
               />
             </div>
+            
+            {/*  자동 입력값 셋팅 */}
+            {/* {boxData.filter(e => e.key === 'requester').length > 0 && 
+            <div>
+            <Card size="small" type="inner" title="자동 입력" style={{ width: '240px' }}>
+              <p>
+              <Badge count={boxData.filter(e => e.key === 'requester')[0].auto_name}>
+                <Button style={{width:'90px', textAlign:'left'}} icon={<Icon component={IconText} style={{ fontSize: '120%'}} />} onClick={e => { addField('AUTONAME', {}, {key: 'requester', type: 'AUTONAME', name: "이름"}); }}>{formatMessage({id: 'name'})}</Button>
+              </Badge>
+              &nbsp;&nbsp;&nbsp;
+              <Badge count={boxData.filter(e => e.key === 'requester')[0].auto_jobtitle}>
+                <Button style={{width:'90px', textAlign:'left'}} icon={<Icon component={IconText} style={{ fontSize: '120%'}} />} onClick={e => { addField('AUTOJOBTITLE', {}, {key: 'requester', type: 'AUTOJOBTITLE', name: "직급"}); }}>{formatMessage({id: 'jobtitle'})}</Button>
+              </Badge>
+              </p>
+              <p>
+              <Badge count={boxData.filter(e => e.key === 'requester')[0].auto_office}>
+                <Button style={{width:'90px', textAlign:'left'}} icon={<Icon component={IconText} style={{ fontSize: '120%'}} />} onClick={e => { addField('AUTOOFFICE', {}, {key: 'requester', type: 'AUTOOFFICE', name: "회사명"}); }}>{formatMessage({id: 'office'})}</Button>
+              </Badge>
+              &nbsp;&nbsp;&nbsp;
+              <Badge count={boxData.filter(e => e.key === 'requester')[0].auto_depart}>
+                <Button style={{width:'90px', textAlign:'left'}} icon={<Icon component={IconText} style={{ fontSize: '120%'}} />} onClick={e => { addField('AUTODEPART', {}, {key: 'requester', type: 'AUTODEPART', name: "부서명"}); }}>{formatMessage({id: 'depart'})}</Button>
+              </Badge>
+              </p>
+              <p>
+              <Badge count={boxData.filter(e => e.key === 'requester')[0].auto_sabun}>
+                <Button style={{width:'90px', textAlign:'left'}} icon={<Icon component={IconText} style={{ fontSize: '120%'}} />} onClick={e => { addField('AUTOSABUN', {}, {key: 'requester', type: 'AUTOSABUN', name: "사번"}); }}>{formatMessage({id: 'sabun'})}</Button>
+              </Badge>
+              &nbsp;&nbsp;&nbsp;
+              <Badge count={boxData.filter(e => e.key === 'requester')[0].auto_date}>
+                <Button style={{width:'90px', textAlign:'left'}} icon={<Icon component={IconText} style={{ fontSize: '120%'}} />} onClick={e => { addField('AUTODATE', {}, {key: 'requester', type: 'AUTODEPART', name: "날짜"}); }}>{formatMessage({id: 'date'})}</Button>
+              </Badge>
+              </p>
+            </Card>
+            </div>} */}
+
+
+
           </Col>
           <Col xl={20} lg={20} md={20} sm={24} xs={24}>
             <div className="webviewer" ref={viewer}></div>

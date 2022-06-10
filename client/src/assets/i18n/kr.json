@@ -82,5 +82,11 @@
 	"Opinion": "문의/개선",
 	"Manual": "서비스 소개",
 	"Modify": "수정",
-	"folder.management": "폴더 관리"
+	"folder.management": "폴더 관리",
+	"name": "이름",
+	"jobtitle": "직급",
+	"office": "회사명",
+	"depart": "부서명",
+	"sabun": "사번",
+	"date": "날짜"
 }

@@ -14,6 +14,7 @@ import moment from 'moment';
 import 'moment/locale/ko';
 // import { DocumentType, DocumentTypeText, DOCUMENT_SIGNED, DOCUMENT_TOSIGN, DOCUMENT_SIGNING, DOCUMENT_CANCELED } from './DocumentType';
 import TemplateExpander from "./TemplateExpander";
+import { setDirectTitle, setDirect } from '../SignDirect/DirectSlice';
 import { setHasRequester, setTemplate, setDocumentType, setTemplateTitle, setTemplateType, setSendType, resetAssignAll, setSignees, setObservers } from '../Assign/AssignSlice';
 import { PageContainer } from '@ant-design/pro-layout';
 import RcResizeObserver from 'rc-resize-observer';
@@ -61,7 +62,7 @@ const TemplateList = () => {
   const dispatch = useDispatch();
   const user = useSelector(selectUser);
 
-  const { _id } = user;
+  const { _id, name } = user;
   const [searchText, setSearchText] = useState('');
   const [searchedColumn, setSearchedColumn] = useState('');
 
@@ -231,62 +232,83 @@ const TemplateList = () => {
   }
 
   const signTemplate = async (item, sendType) => {
-    console.log(item._id);
-    dispatch(resetAssignAll());
-    dispatch(setDocumentType('TEMPLATE'));
-    dispatch(setSendType(sendType)); //G:일반 B:대량
 
-    if (item.type && item.type == 'C') {  //C:회사 M:멤버 
+    
+    if (sendType === 'D') { //바로 신청하기
+
+      // dispatch(setDirectTitle(`${item.docTitle}_${name}_${moment().format('YYYYMMDD')}`));
+      dispatch(setDirect(item));
+
+      dispatch(resetAssignAll());
+      dispatch(setSignees(item.signees));
       dispatch(setTemplateType('C'));
+      dispatch(setSendType('G'));
+      dispatch(setDocumentType('DIRECT'));
+      dispatch(setTemplateTitle(`${item.docTitle}_${name}_${moment().format('YYYYMMDD')}`));
+
+      navigate('/signDirect');
+
     } else {
-      dispatch(setTemplateType('M'));
-    }
-
-    if (sendType === 'G' && item.hasRequester || (item.signees && item.signees.length > 0)) {
-      // 미리 등록한 참여자 설정값으로 서명 요청
-      dispatch(setDocumentType('TEMPLATE_CUSTOM'));
-      
-      // dispatch(setSignees(item.signees));
-      if (item.hasRequester) {
-
-        // 본인이 포함된 경우가 아니면 => 본인 추가 
-        // 본인이 포함되 있으면 => 정렬순서에 order가 0인게 있는지 체크해서 없으면 정렬 순서 한칸 내림
-        let newSignees;
-        if (item.signees.some(el => el.key === _id)) {
-          if (item.signees.some(el => el.order !== 0)) {
-            newSignees = [...item.signees].map(el => {
-              el.order = el.order - 1;
-              return el;
-            })
-          }
-        } else {
-          const res = await axios.post('/api/users/orgInfo', {DEPART_CODE: user.DEPART_CODE})
-          newSignees = [...item.signees, {_id: '', key: _id, name: user.name, JOB_TITLE: user.JOB_TITLE, DEPART_CODE: user.DEPART_CODE, DEPART_NAME: res?.data?.org?.DEPART_NAME, order: 0}]          
-        }
-
-        dispatch(setSignees(newSignees));
-        dispatch(setHasRequester(true));
+      // console.log(item._id);
+      dispatch(resetAssignAll());
+      dispatch(setDocumentType('TEMPLATE'));
+      dispatch(setSendType(sendType)); //G:일반 B:대량 D:바로신청
+  
+      if (item.type && item.type == 'C') {  //C:회사 M:멤버 
+        dispatch(setTemplateType('C'));
       } else {
+        dispatch(setTemplateType('M'));
+      }
+  
+      if (sendType === 'G' && item.hasRequester || (item.signees && item.signees.length > 0)) {
+        // 미리 등록한 참여자 설정값으로 서명 요청
+        dispatch(setDocumentType('TEMPLATE_CUSTOM'));
+        
         dispatch(setSignees(item.signees));
         dispatch(setHasRequester(false));
+        // if (item.hasRequester) {
+  
+        //   // 본인이 포함된 경우가 아니면 => 본인 추가 
+        //   // 본인이 포함되 있으면 => 정렬순서에 order가 0인게 있는지 체크해서 없으면 정렬 순서 한칸 내림
+        //   let newSignees;
+        //   if (item.signees.some(el => el.key === _id)) {
+        //     if (item.signees.some(el => el.order !== 0)) {
+        //       newSignees = [...item.signees].map(el => {
+        //         el.order = el.order - 1;
+        //         return el;
+        //       })
+        //     }
+        //   } else {
+        //     const res = await axios.post('/api/users/orgInfo', {DEPART_CODE: user.DEPART_CODE})
+        //     newSignees = [...item.signees, {_id: '', key: _id, name: user.name, JOB_TITLE: user.JOB_TITLE, DEPART_CODE: user.DEPART_CODE, DEPART_NAME: res?.data?.org?.DEPART_NAME, order: 0}]          
+        //   }
+  
+        //   dispatch(setSignees(newSignees));
+        //   dispatch(setHasRequester(true));
+        // } else {
+        //   dispatch(setSignees(item.signees));
+        //   dispatch(setHasRequester(false));
+        // }
+  
+        dispatch(setObservers(item.observers));
+      
+        // 대량전송도 템플릿 이용시 컴포넌트 적용
+      } else if (sendType === 'B' && item.hasRequester || (item.signees && item.signees.length > 0)) {
+        dispatch(setDocumentType('TEMPLATE_CUSTOM'));
+        if (item.hasRequester) {
+          dispatch(setHasRequester(true));
+        } else {
+          dispatch(setHasRequester(false));
+        }
       }
+      
+      dispatch(setTemplateTitle(`${item.docTitle}_${moment().format('YYYYMMDD')}`));
+      dispatch(setTemplate(item));
+  
+      navigate('/assign');
 
-      dispatch(setObservers(item.observers));
-    
-      // 대량전송도 템플릿 이용시 컴포넌트 적용
-    } else if (sendType === 'B' && item.hasRequester || (item.signees && item.signees.length > 0)) {
-      dispatch(setDocumentType('TEMPLATE_CUSTOM'));
-      if (item.hasRequester) {
-        dispatch(setHasRequester(true));
-      } else {
-        dispatch(setHasRequester(false));
-      }
     }
     
-    dispatch(setTemplateTitle(`${item.docTitle}_${moment().format('YYYYMMDD')}`));
-    dispatch(setTemplate(item));
-
-    navigate('/assign');
   }
 
   const getColumnSearchProps = dataIndex => ({
@@ -553,6 +575,8 @@ const TemplateList = () => {
     //   chk = true;
     // }
     return (
+      item.type && item.type == 'C' ? 
+      <Button type="text" icon={<FormOutlined />} onClick={e => { signTemplate(item, 'D') }}>신청하기</Button> :
       <Popover
           content={
             <div>
@@ -563,6 +587,10 @@ const TemplateList = () => {
             <Tooltip placement="bottom" title={'한 문서를 여러 명에게 보내 개별 문서에 각각 서명 받을 필요가 있을 경우 (개별 동의서, 보안서약서 등)'}>
               <Button onClick={e => { signTemplate(item, 'B') }}>대량 요청</Button>
             </Tooltip>
+            &nbsp;&nbsp;
+            <Tooltip placement="bottom" title={'바로 담당자에게 작성하여 제출하는 경우'}>
+             <Button onClick={e => { signTemplate(item, 'D') }}>신청하기</Button>
+           </Tooltip>
             </div>
           }
           title="요청 유형 선택"
@@ -571,6 +599,32 @@ const TemplateList = () => {
         >
           <Button type="text" icon={<FormOutlined />}>서명요청</Button>
       </Popover>
+
+      // <Popover
+      //     content={
+      //       <div>
+      //       <Tooltip placement="bottom" title={'하나의 문서에 여러 참여자의 서명을 받는 경우'}>
+      //         <Button onClick={e => { signTemplate(item, 'G') }}>일반 요청</Button>
+      //       </Tooltip>
+      //       &nbsp;&nbsp;
+      //       <Tooltip placement="bottom" title={'한 문서를 여러 명에게 보내 개별 문서에 각각 서명 받을 필요가 있을 경우 (개별 동의서, 보안서약서 등)'}>
+      //         <Button onClick={e => { signTemplate(item, 'B') }}>대량 요청</Button>
+      //       </Tooltip>
+
+      //       {item.type && item.type == 'C' && 
+            
+      //       <Tooltip placement="bottom" title={'바로 담당자에게 작성하여 제출하는 경우'}>
+      //         &nbsp;&nbsp;
+      //         <Button onClick={e => { signTemplate(item, 'D') }}>신청하기</Button>
+      //       </Tooltip>}
+      //       </div>
+      //     }
+      //     title="요청 유형 선택"
+      //     trigger="click"
+      //     placement="bottomLeft"
+      //   >
+      //     <Button type="text" icon={<FormOutlined />}>서명요청</Button>
+      // </Popover>
     )
   }
   const actionItems = (item) => {

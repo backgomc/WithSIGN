@@ -28,6 +28,7 @@ import Customer from './components/Customer/Customer';
 import FAQList from './components/Board/FAQList';
 import Sign from './components/Sign';
 import View from './components/View';
+import SignDirect from './components/SignDirect/SignDirect';
 import Welcome from './components/Welcome';
 import Home from './components/Home/Home';
 // import Footer from './components/Footer/Footer';
@@ -239,6 +240,7 @@ const App = () => {
       <Manual path="/manual" />
       <ManualModify path="/manualModify" />
       <PrepareResult path="/prepareResult" />
+      <SignDirect path="/signDirect" />
     </Router>
     <OnRouteChange action={() => { window.scrollTo(0, 0) }} />
   </ProLayout>

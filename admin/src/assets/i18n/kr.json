@@ -84,5 +84,6 @@
 	"board.manage": "게시판 관리",
 	"board.insert": "게시글 등록",
 	"board.update": "게시글 수정",
-	"system.manage": "시스템 관리"
+	"system.manage": "시스템 관리",
+	"name": "이름"
 }

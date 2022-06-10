@@ -82,5 +82,11 @@
 	"Opinion": "Opinion",
 	"Manual": "Manual",
 	"Modify": "Modify",
-	"folder.management": "Folder Management"
+	"folder.management": "Folder Management",
+	"name": "name",
+	"jobtitle": "jobtitle",
+	"office": "office",
+	"depart": "depart",
+	"sabun": "sabun",
+	"date": "date"
 }

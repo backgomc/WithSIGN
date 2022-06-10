@@ -22,7 +22,9 @@ import {
 import 'antd/dist/antd.css';
 import '@ant-design/pro-card/dist/card.css';
 import { LICENSE_KEY } from '../../config/Config';
-// import Item from 'antd/lib/list/Item';
+import moment from 'moment';
+import 'moment/locale/ko';
+
 
 const { confirm } = Modal;
 const { TextArea } = Input;
@@ -52,7 +54,7 @@ const SignDocument = () => {
   const doc = useSelector(selectDocToSign);
   const user = useSelector(selectUser);
   const { docRef, docId, docType, docUser, observers, orderType, usersTodo, usersOrder, attachFiles } = doc;
-  const { _id } = user;
+  const { _id, name, JOB_TITLE, SABUN, OFFICE_NAME, DEPART_NAME } = user;
 
   const [annotsToDelete, setAnnotsToDelete] = useState([]);
   
@@ -159,6 +161,34 @@ const SignDocument = () => {
       docViewer.on('documentLoaded', () => {
         console.log('documentLoaded called');
         setPageCount(docViewer.getPageCount());
+
+        // 밸류 자동 셋팅
+        docViewer.getAnnotationsLoadedPromise().then(() => {
+          // iterate over fields
+          const fieldManager = annotManager.getFieldManager();
+          fieldManager.forEachField(field => {
+            console.log(field.getValue());
+            console.log('fieldName', field.ad);
+
+            if (field.ad?.startsWith(_id) || field.ad?.startsWith('bulk')) { 
+              if (field.ad?.includes('AUTONAME')) {
+                field.setValue(name);
+              } else if (field.ad?.includes('AUTOJOBTITLE')) {
+                field.setValue(JOB_TITLE);
+              } else if (field.ad?.includes('AUTOSABUN')) {
+                field.setValue(SABUN);
+              } else if (field.ad?.includes('AUTODATE')) {
+                field.setValue(moment().format('YYYY년 MM월 DD일'));
+              } else if (field.ad?.includes('AUTOOFFICE')) {
+                field.setValue(OFFICE_NAME);
+              } else if (field.ad?.includes('AUTODEPART')) {
+                field.setValue(DEPART_NAME);
+              }
+            }
+            
+          });
+        });
+
       });
 
       const normalStyles = (widget) => {

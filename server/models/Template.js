@@ -52,6 +52,9 @@ const templateSchema = mongoose.Schema({
     customRef: {
         type: String
     },
+    directRef: {
+        type: String
+    },
     hasRequester: {
         type: Boolean, default: false 
     },

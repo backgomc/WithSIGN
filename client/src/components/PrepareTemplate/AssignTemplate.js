@@ -82,9 +82,9 @@ const AssignTemplate = () => {
     const res1 = await axios.post('/api/users/list', {OFFICE_CODE: '7831'});
     if (res1.data.success) {
       users = res1.data.users;
-      if (templateType === 'C' && user.role) {
+      // if (templateType === 'C' && user.role) {
         users.push({_id: "requester", name:"서명 참여자", DEPART_CODE: ""})
-      }
+      // }
       // setUsers(res1.data.users);
       setUsers(users)
     }
@@ -106,9 +106,9 @@ const AssignTemplate = () => {
         }
         
         tree.push(org1)
-        if (templateType === 'C' && user.role) {
+        // if (templateType === 'C' && user.role) {
           tree.push({key: 'requester', title:'서명 참여자'})
-        }
+        // }
         
       })
 
@@ -499,6 +499,8 @@ const sortView = (
                   loading={loading}
                   ref={treeRef}
                 />
+                <br></br>
+                ※ <b>서명 참여자</b>: 참여자가 불특정한 경우 사용 (대량발송, 신청서 양식)
               </ProCard>
             </ProCard>
           </Col>

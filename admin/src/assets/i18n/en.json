@@ -84,5 +84,6 @@
 	"board.manage": "Board",
 	"board.insert": "Board",
 	"board.update": "Board",
-	"system.manage": "System"
+	"system.manage": "System",
+	"name": "이름"
 }

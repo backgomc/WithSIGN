@@ -53,6 +53,13 @@ const userSchema = mongoose.Schema({
     OFFICE_CODE: {
         type: String
     },
+    DEPART_NAME: {
+        type: String,
+        alias: 'CODE_BUSEO'
+    },
+    OFFICE_NAME: {
+        type: String
+    },
     JOB_CODE: {
         type: String,
         alias: 'CODE_JIKMYUNG'

@@ -104,6 +104,7 @@ export const AssignSlice = createSlice({
       state.orderType = null;
       state.attachFiles = [];
       state.hasRequester = null;
+      state.observers = [];
     },
   },
 });
