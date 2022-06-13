@@ -179,9 +179,14 @@ const PrepareTemplate = () => {
                 newBoxData[boxData.filter(e => e.key === user).index] = member;
                 setBoxData(newBoxData);
     
-                // TODO annotation 구분값 복원
-                console.log('TMTM', annot.FontSize)
-                // annot.FontSize = '' + 12 + 'pt';
+                // TODO annotation 구분값 복원                
+                console.log('FONT RELOAD 1', annot.getCustomData('fontSize'))
+                console.log('FONT RELOAD 2', annot.FontSize)
+
+                if (annot.getCustomData('fontSize')) {
+                  annot.FontSize = annot.getCustomData('fontSize');
+                } 
+
                 // annot.FontSize = '' + 18.0 / docViewer.getZoom() + 'px';
                 annot.custom = {
                   type,
@@ -335,6 +340,7 @@ const PrepareTemplate = () => {
         if (annot.custom) {
           console.log(annot.custom);
           annot.setCustomData('id', annot.custom.name + 'CUSTOM');  // 템플릿 항목 설정 표시
+          annot.setCustomData('fontSize', annot.FontSize);  // 폰트사이즈 저장
         }
       })
     );
@@ -436,18 +442,10 @@ const PrepareTemplate = () => {
             inputAnnot = new Annotations.TextWidgetAnnotation(field);
 
             // 폰트 설정
-            console.log('FONTSIZE', annot.FontSize)
-            console.log("REPLACED", parseInt(annot.FontSize.replace('pt', '').replace('px', '')))
-            console.log('FONT', annot.Font)
             const fontOptions = {
               name: annot.Font,
               size: parseInt(annot.FontSize.replace('pt', '').replace('px', ''))
             }
-            // const fontOptions = {
-            //   name: 'Times',
-            //   size: 12
-            // }
-
             const font = new Annotations.Font(fontOptions)
             inputAnnot.set({'font': font})
             
@@ -546,10 +544,10 @@ const PrepareTemplate = () => {
         textAnnot.Width = 25.0 / zoom;
         textAnnot.Height = 25.0 / zoom;
       } else if (type.includes('AUTONAME') || type.includes('AUTOJOBTITLE') || type.includes('AUTOSABUN')) {
-        textAnnot.Width = 80.0 / zoom;
+        textAnnot.Width = 90.0 / zoom;
         textAnnot.Height = 25.0 / zoom;
       } else if (type.includes('AUTODATE') || type.includes('AUTOOFFICE') || type.includes('AUTODEPART')) {
-        textAnnot.Width = 130.0 / zoom;
+        textAnnot.Width = 140.0 / zoom;
         textAnnot.Height = 25.0 / zoom;
       } else {
         textAnnot.Width = 250.0 / zoom;
@@ -587,7 +585,7 @@ const PrepareTemplate = () => {
     }
     
     // textAnnot.FontSize = '' + 18.0 / zoom + 'px';
-    textAnnot.FontSize = '' + 12.0 + 'px';
+    textAnnot.FontSize = '' + 13.0 + 'px';
 
     textAnnot.StrokeThickness = 1;
     textAnnot.Author = annotManager.getCurrentUser();

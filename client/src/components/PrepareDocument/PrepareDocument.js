@@ -716,14 +716,10 @@ const PrepareDocument = () => {
             inputAnnot = new Annotations.TextWidgetAnnotation(field);
 
             // 폰트 설정
-            console.log('FONTSIZE', annot.FontSize)
-            console.log("REPLACED", parseInt(annot.FontSize.replace('pt', '').replace('px', '')))
-            console.log('FONT', annot.Font)
             const fontOptions = {
               name: annot.Font,
               size: parseInt(annot.FontSize.replace('pt', '').replace('px', ''))
             }
-
             const font = new Annotations.Font(fontOptions)
             inputAnnot.set({'font': font})
 
@@ -825,10 +821,10 @@ const PrepareDocument = () => {
         textAnnot.Width = 25.0 / zoom;
         textAnnot.Height = 25.0 / zoom;
       } else if (type.includes('AUTONAME') || type.includes('AUTOJOBTITLE') || type.includes('AUTOSABUN')) {
-        textAnnot.Width = 80.0 / zoom;
+        textAnnot.Width = 90.0 / zoom;
         textAnnot.Height = 25.0 / zoom;
       } else if (type.includes('AUTODATE') || type.includes('AUTOOFFICE') || type.includes('AUTODEPART')) {
-        textAnnot.Width = 130.0 / zoom;
+        textAnnot.Width = 140.0 / zoom;
         textAnnot.Height = 25.0 / zoom;
       } else {
         textAnnot.Width = 250.0 / zoom;
@@ -870,7 +866,7 @@ const PrepareDocument = () => {
     }
 
     // textAnnot.FontSize = '' + 18.0 / zoom + 'px';
-    textAnnot.FontSize = '' + 12.0 + 'px';
+    textAnnot.FontSize = '' + 13.0 + 'px';
     textAnnot.StrokeThickness = 1;
     textAnnot.Author = annotManager.getCurrentUser();
 
