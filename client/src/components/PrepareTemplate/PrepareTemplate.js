@@ -179,10 +179,6 @@ const PrepareTemplate = () => {
                 newBoxData[boxData.filter(e => e.key === user).index] = member;
                 setBoxData(newBoxData);
     
-                // TODO annotation 구분값 복원                
-                console.log('FONT RELOAD 1', annot.getCustomData('fontSize'))
-                console.log('FONT RELOAD 2', annot.FontSize)
-
                 if (annot.getCustomData('fontSize')) {
                   annot.FontSize = annot.getCustomData('fontSize');
                 } 

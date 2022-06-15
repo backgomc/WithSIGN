@@ -350,6 +350,21 @@ const sortView = (
       // 참여자 설정되어 있을 경우 유저 상태 체크 필요 
       axios.post('/api/users/check', {assignees: assignees}).then(response => {
         let assigneesCheck  = response.data.assignees;
+
+        //TODO: 1단계에 사람이 없는데 다음단계에 사람이 있는 경우 단계를 내려준다.
+        // 0:
+        // DEPART_NAME: "신기술연구팀"
+        // JOB_TITLE: "차장"
+        // key: "6156a3c9c7f00c0d4ace4744"
+        // name: "박세현"
+        // order: "1"
+        // _id: "62a69aa9fd2670049e6ca2c8"
+        if (assigneesCheck.length > 0 && assigneesCheck.filter(el => el.order === "0").length === 0) {
+          assigneesCheck.forEach(el => {
+            el.order = el.order - 1;
+          })
+        }
+
         dispatch(setSignees(assigneesCheck));
 
         var targets = []

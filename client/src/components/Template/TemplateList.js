@@ -245,6 +245,7 @@ const TemplateList = () => {
       dispatch(setSendType('G'));
       dispatch(setDocumentType('DIRECT'));
       dispatch(setTemplateTitle(`${item.docTitle}_${name}_${moment().format('YYYYMMDD')}`));
+      dispatch(setObservers(item.observers));
 
       navigate('/signDirect');
 
@@ -576,7 +577,7 @@ const TemplateList = () => {
     // }
     return (
       item.type && item.type == 'C' ? 
-      <Button type="text" icon={<FormOutlined />} onClick={e => { signTemplate(item, 'D') }}>신청하기</Button> :
+      <Button type="text" icon={<FormOutlined />} onClick={e => { signTemplate(item, 'D') }}>제출하기</Button> :
       <Popover
           content={
             <div>
@@ -587,10 +588,11 @@ const TemplateList = () => {
             <Tooltip placement="bottom" title={'한 문서를 여러 명에게 보내 개별 문서에 각각 서명 받을 필요가 있을 경우 (개별 동의서, 보안서약서 등)'}>
               <Button onClick={e => { signTemplate(item, 'B') }}>대량 요청</Button>
             </Tooltip>
-            &nbsp;&nbsp;
+            {item.hasRequester &&
             <Tooltip placement="bottom" title={'바로 담당자에게 작성하여 제출하는 경우'}>
-             <Button onClick={e => { signTemplate(item, 'D') }}>신청하기</Button>
-           </Tooltip>
+              &nbsp;&nbsp;
+             <Button onClick={e => { signTemplate(item, 'D') }}>제출하기</Button>
+           </Tooltip>}
             </div>
           }
           title="요청 유형 선택"

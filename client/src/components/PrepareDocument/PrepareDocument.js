@@ -376,6 +376,10 @@ const PrepareDocument = () => {
                 let newBoxData = boxData.slice();
                 newBoxData[boxData.filter(e => e.key === user).index] = member;
                 setBoxData(newBoxData);
+
+                if (annot.getCustomData('fontSize')) {
+                  annot.FontSize = annot.getCustomData('fontSize');
+                } 
   
                 // annotation 구분값 복원
                 // annot.FontSize = '' + 18.0 / docViewer.getZoom() + 'px';
