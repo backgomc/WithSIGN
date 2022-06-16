@@ -788,24 +788,19 @@ const DocumentList = ({location}) => {
       responsive: ['xl'],
       width: '180px',
       render: (obj) => {
-        let f = obj.find(e => e.user._id === _id);
-        return (f ?
+        let result = obj.filter(elem => elem.user._id === _id || elem.sharedTarget.find(item => item.editable && myOrgs && myOrgs.find(e => e === item.target)));
+        return result.map(item => (
           <Space>
-            <FolderOpenTwoTone />
+            {item.user._id === _id ? <FolderOpenTwoTone /> : <FolderOpenFilled />}
             <Typography.Link
-              onClick={(e)=>{
-                console.log(obj);
-                e.stopPropagation();
-                let f = obj.find(e => e.user._id === _id);
-                console.log(f);
-                navigate('/inFolder', {state: {folderInfo: f, backUrl: '/documentList'}});
+              onClick={(event)=>{
+                event.stopPropagation();
+                navigate('/inFolder', {state: {folderInfo: item, backUrl: '/documentList'}});
               }}
-            >{f.folderName}</Typography.Link>
-            {f.shared ? <TeamOutlined /> : ''}
+            >{item.folderName}</Typography.Link>
+            {item.shared ? <TeamOutlined /> : ''}
           </Space>
-          :
-          ''
-        )
+        ));
       }
     },
     {
@@ -844,8 +839,9 @@ const DocumentList = ({location}) => {
                 const docRef = row["docRef"]
                 const docType = row["docType"]
                 const docTitle = row["docTitle"]
+                const downloads = row["downloads"]
                 const status = DOCUMENT_SIGNED
-                dispatch(setDocToView({ docRef, docId, docType, docTitle, status }));
+                dispatch(setDocToView({ docRef, docId, docType, docTitle, status, downloads }));
                 navigate(`/viewDocument`);
               }}></Button></Tooltip>
               {/* <a href={row["docRef"]} download={row["docTitle"]+'.pdf'}> 
@@ -1107,7 +1103,7 @@ const DocumentList = ({location}) => {
     >
       <Space style={{margin: '15px 0px'}}>
         {`선택한 문서 (${selectedRowKeys.length})`}
-        <Typography.Link disabled={!hasSelected} onClick={()=>{setMoveFolderId('');setMoveModal(true);}}><FolderOpenOutlined /> 폴더로 이동</Typography.Link>
+        <Typography.Link disabled={!hasSelected} onClick={()=>{setMoveFolderId('');setMoveModal(true);}}><FolderOpenOutlined /> 이동</Typography.Link>
       </Space>
       {/* {hasSelected ? 
         (<Space style={{margin: '15px 0px'}}>
