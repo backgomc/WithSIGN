@@ -5,7 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import axios from 'axios';
 import { navigate } from '@reach/router';
 // import { Box, Column, Heading, Row, Stack, Button } from 'gestalt';
-import { Input, Row, Col, Modal, Checkbox, Button, List, Typography } from 'antd';
+import { Input, Row, Col, Modal, Spin, Button, List, Typography } from 'antd';
 import { selectUser } from '../../app/infoSlice';
 import { mergeDirect } from './MergeDirect';
 import WebViewer from '@pdftron/webviewer';
@@ -39,6 +39,7 @@ const SignDirect = () => {
   const [annotManager, setAnnotatManager] = useState(null);
   const [annotPosition, setAnnotPosition] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [spinning, setSpinning] = useState(false);
   const [responsive, setResponsive] = useState(false);
   const [disableNext, setDisableNext] = useState(true);
   const [disableCancel, setDisableCancel] = useState(true);
@@ -320,12 +321,16 @@ const SignDirect = () => {
     //3. 임시 경로 redux 저장 setDirectTempPath (O)   
     //4. 사람 선택 화면으로 이동 
 
+    setSpinning(true)
+
     const xfdf = await annotManager.exportAnnotations({ widgets: true, fields: true });
     // const xfdf = await annotManager.exportAnnotations({ widgets: true, fields: true,	annotList: annotManager.getAnnotationsList() });
 
     const tempPath = await mergeDirect(directRef, [xfdf]);
     console.log(tempPath)
     dispatch(setDocumentTempPath(tempPath))
+
+    setSpinning(false)
 
     navigate('/assign');
   }
@@ -360,7 +365,9 @@ const SignDirect = () => {
 
         <Row gutter={[24, 24]}>
           <Col span={24}>
+          <Spin tip="로딩중..." spinning={spinning}>
           <div className="webviewer" ref={viewer}></div>
+          </Spin>
           </Col>
         </Row>
 
@@ -374,7 +381,7 @@ const SignDirect = () => {
           footer={[
             // <Checkbox key={uuidv4()} checked={allCheck} onChange={e => {setAllCheck(e.target.checked);}} style={{float:'left'}}>전체 서명</Checkbox>,
             <Button key="back" onClick={clear}>지우기</Button>,
-            <Button key="submit" type="primary" loading={loading} onClick={handleOk}>확인</Button>
+            <Button key="submit" type="primary" loading={spinning} onClick={handleOk}>확인</Button>
           ]}
           bodyStyle={{padding: '0px 24px'}}
         >

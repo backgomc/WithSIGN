@@ -577,7 +577,7 @@ const TemplateList = () => {
     // }
     return (
       item.type && item.type == 'C' ? 
-      <Button type="text" icon={<FormOutlined />} onClick={e => { signTemplate(item, 'D') }}>제출하기</Button> :
+      <Button type="text" icon={<FormOutlined />} onClick={e => { signTemplate(item, 'D') }}>신청/제출</Button> :
       <Popover
           content={
             <div>
@@ -591,7 +591,7 @@ const TemplateList = () => {
             {item.hasRequester &&
             <Tooltip placement="bottom" title={'바로 담당자에게 작성하여 제출하는 경우'}>
               &nbsp;&nbsp;
-             <Button onClick={e => { signTemplate(item, 'D') }}>제출하기</Button>
+             <Button onClick={e => { signTemplate(item, 'D') }}>신청/제출</Button>
            </Tooltip>}
             </div>
           }

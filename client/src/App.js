@@ -124,7 +124,6 @@ const App = () => {
       height: '100vh',
     }}
     >
-
     <ProLayout
       // navTheme="light"
       title={<img src={LogoText} />}
