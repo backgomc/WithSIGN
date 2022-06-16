@@ -500,7 +500,7 @@ const sortView = (
                   ref={treeRef}
                 />
                 <br></br>
-                ※ <b>서명 참여자</b>: 참여자가 불특정한 경우 사용 (대량발송, 신청서 양식)
+                ※ <b>서명 참여자</b>: {templateType === 'C' ? '신청서 템플릿 생성시 사용' : '대량발송 템플릿 생성시 사용'}
               </ProCard>
             </ProCard>
           </Col>

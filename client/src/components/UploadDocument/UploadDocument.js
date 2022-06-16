@@ -452,11 +452,11 @@ const UploadDocument = () => {
               {fileAttachment}
           </ProCard.TabPane>
 
-          <ProCard.TabPane key="tab3" tab="회사 템플릿">
+          {/* <ProCard.TabPane key="tab3" tab="회사 템플릿">
               <SelectTemplate type='C' ref={templateRef_C} templateChanged={templateChanged} templateTitleChanged={templateTitleChanged} />
               <br></br>
               {fileAttachment}
-          </ProCard.TabPane>
+          </ProCard.TabPane> */}
 
 
         </ProCard>
