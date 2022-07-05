@@ -28,7 +28,7 @@
     "mmmagic": "^0.5.3",
     "mongoose": "^5.8.9",
     "morgan": "^1.10.0",
-    "multer": "^1.4.4-lts.1",
+    "multer": "^1.4.4",
     "node-cron": "^3.0.0",
     "node-gyp": "^8.3.0",
     "request-ip": "^2.1.3",
