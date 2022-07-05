@@ -5,7 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import axios from 'axios';
 import { navigate } from '@reach/router';
 // import { Box, Column, Heading, Row, Stack, Button } from 'gestalt';
-import { Input, Row, Col, Modal, Spin, Button, List, Typography } from 'antd';
+import { Input, Row, Col, Modal, Spin, Button, Upload, message, Typography } from 'antd';
 import { selectUser } from '../../app/infoSlice';
 import { mergeDirect } from './MergeDirect';
 import WebViewer from '@pdftron/webviewer';
@@ -23,9 +23,10 @@ import 'antd/dist/antd.css';
 import '@ant-design/pro-card/dist/card.css';
 import { LICENSE_KEY } from '../../config/Config';
 import { selectDirect, setDirectTempPath } from './DirectSlice';
-import { setDocumentTempPath, selectTemplateTitle, setTemplateTitle } from '../Assign/AssignSlice';
+import { setDocumentTempPath, selectTemplateTitle, setTemplateTitle, setAttachFiles, selectAttachFiles } from '../Assign/AssignSlice';
 import moment from 'moment';
 import 'moment/locale/ko';
+import ProForm, { ProFormUploadButton } from '@ant-design/pro-form';
 // import Item from 'antd/lib/list/Item';
 
 const { confirm } = Modal;
@@ -51,6 +52,7 @@ const SignDirect = () => {
   const [allCheck, setAllCheck] = useState(false);
   const [pageCount, setPageCount] = useState(0);
   const [textSign, setTextSign] = useState(formatMessage({id: 'sign.complete'}))
+  const [fileList, setFileList] = useState(useSelector(selectAttachFiles)); // 첨부 파일 (max:3개)
 
   const dispatch = useDispatch();
   // const uploading = useSelector(selectUploading);
@@ -340,6 +342,78 @@ const SignDirect = () => {
     dispatch(setTemplateTitle(text));
   }
 
+  const propsAttach = {
+    onRemove: file => {
+      console.log('onRemove called', file)
+
+      const index = fileList.indexOf(file);
+      const newFileList = fileList.slice();
+      newFileList.splice(index, 1);
+      setFileList(newFileList)
+
+      // 첨부파일 셋팅
+      dispatch(setAttachFiles(newFileList));
+    },
+    beforeUpload: file => {
+
+      console.log('beforeUpload called', file)
+
+      if(fileList.length > 2) {
+        message.error('첨부파일 개수는 3개까지 가능합니다!');
+        return Upload.LIST_IGNORE;
+      }
+
+      const isLt2M = file.size / 1024 / 1024 < 10;
+      if (!isLt2M) {
+        message.error('File must smaller than 10MB!');
+        return Upload.LIST_IGNORE;
+      }
+      
+      file.url = URL.createObjectURL(file)  // 업로드 전에 preview 를 위해 추가
+      setFileList([...fileList, file])
+
+      // 첨부파일 셋팅
+      dispatch(setAttachFiles([...fileList, file]));
+
+      return false;
+    },
+    fileList,
+    onPreview: async file => {
+      console.log('aa', file)
+      // let src = file.url;
+      let src = URL.createObjectURL(file)
+      console.log('src', src)
+      if (!src) {
+        src = await new Promise(resolve => {
+          const reader = new FileReader();
+          reader.readAsDataURL(file.originFileObj);
+          reader.onload = () => resolve(reader.result);
+        });
+      }
+      const image = new Image();
+      image.src = src;
+      const imgWindow = window.open(src);
+      imgWindow.document.write(image.outerHTML);
+    },
+  };
+
+  const fileAttachment = (
+    <ProFormUploadButton
+      name="attachFile"
+      label="첨부파일"
+      title="가져오기"
+      tooltip="해당 문서에 파일을 첨부하는 경우 사용"
+      max={3}
+      fieldProps={{
+        name: 'file',
+        // listType: 'picture-card',
+        ...propsAttach
+      }}
+      // action="/upload.do"
+      extra="최대 파일수 3개, 최대 용량 10MB"
+    />
+  )
+
   return (
     <div>
     <PageContainer  
@@ -357,7 +431,7 @@ const SignDirect = () => {
           </Button>,
         ],
       }}
-      // content=''
+      content={fileAttachment}
       footer={[
       ]}
       loading={loading}
