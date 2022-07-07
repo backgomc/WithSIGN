@@ -183,9 +183,21 @@ router.post('/sso', (req, res) => {
   User.findOne({ uid: uid }, (err, user) => {
     if (user) {
       if (!user.terms || !user.privacy) return res.json({ success: false, user: user._id, message: "약관 동의가 필요합니다." });
-      user.generateToken((err, user) => {
+      user.generateToken(async (err, user) => {
         if (err) return res.status(400).send(err);
         user.password = ""
+
+        // 조직 정보 셋팅
+        let OFFICE_NAME = '';
+        let DEPART_NAME = '';        
+        const orgInfo = await Org.findOne({ DEPART_CODE: user?.DEPART_CODE });
+        if(orgInfo) {
+          OFFICE_NAME = orgInfo.OFFICE_NAME;
+          DEPART_NAME = orgInfo.DEPART_NAME;
+        }
+        user.OFFICE_NAME = OFFICE_NAME;
+        user.DEPART_NAME = DEPART_NAME;
+
         res.cookie("x_auth", user.token)
           .status(200)
           .json({ success: true, isAuth: true, user: user })
