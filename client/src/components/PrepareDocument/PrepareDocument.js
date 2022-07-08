@@ -325,10 +325,11 @@ const PrepareDocument = () => {
         let firstChk = false;
 
         annotations.forEach(async function(annot) {
+          console.log('annot', annot.fieldName);
           console.log(annot.getCustomData('id'));
           // 템플릿 항목 설정 체크
-          if (annot.getCustomData('id') && annot.getCustomData('id').endsWith('CUSTOM')) {
-            let name = annot.getCustomData('id'); // sample: 6156a3c9c7f00c0d4ace4744_SIGN_CUSTOM
+          if ((annot.getCustomData('id') && annot.getCustomData('id').endsWith('CUSTOM'))) {
+            let name = annot.getCustomData('id'); // sample: 6156a3c9c7f00c0d4ace4744_SIGN_CUSTOM, 6156a3c9c7f00c0d4ace4744_SIGN_16570691999435
             let user = name.split('_')[0];
             let type = name.split('_')[1];
             
@@ -338,7 +339,7 @@ const PrepareDocument = () => {
             let member = boxData.filter(e => e.key === user)[0];
 
             // user 가 requester 이면 현재 본인으로 매핑해준다. => 대량발송만 매핑하도록 변경, 일반발송은 신청서 방식으로 대체
-            if (user === 'requester') {
+            if (user === 'requester1') {
               if (sendType === 'B') {
                 member = boxData.filter(e => e.key === 'bulk')?.[0];
                 if (!type.includes("AUTO")) annot.setContents(type);
@@ -1349,29 +1350,29 @@ const PrepareDocument = () => {
                       <Divider plain>자동 입력</Divider>
                       <p>
                       <Badge count={boxData.filter(e => e.key === 'bulk')[0]?.auto_name}>
-                        <Button style={{width:'90px', textAlign:'left'}} icon={<Icon component={IconText} style={{ fontSize: '120%'}} />} onClick={e => { addField('AUTONAME', {}, {key: 'requester', type: 'AUTONAME', name: "이름"}); }}>{formatMessage({id: 'name'})}</Button>
+                        <Button style={{width:'90px', textAlign:'left'}} icon={<Icon component={IconText} style={{ fontSize: '120%'}} />} onClick={e => { addField('AUTONAME', {}, {key: 'requester1', type: 'AUTONAME', name: "이름"}); }}>{formatMessage({id: 'name'})}</Button>
                       </Badge>
                       &nbsp;&nbsp;&nbsp;
                       <Badge count={boxData.filter(e => e.key === 'bulk')[0]?.auto_jobtitle}>
-                        <Button style={{width:'90px', textAlign:'left'}} icon={<Icon component={IconText} style={{ fontSize: '120%'}} />} onClick={e => { addField('AUTOJOBTITLE', {}, {key: 'requester', type: 'AUTOJOBTITLE', name: "직급"}); }}>{formatMessage({id: 'jobtitle'})}</Button>
+                        <Button style={{width:'90px', textAlign:'left'}} icon={<Icon component={IconText} style={{ fontSize: '120%'}} />} onClick={e => { addField('AUTOJOBTITLE', {}, {key: 'requester1', type: 'AUTOJOBTITLE', name: "직급"}); }}>{formatMessage({id: 'jobtitle'})}</Button>
                       </Badge>
                       </p>
                       <p>
                       <Badge count={boxData.filter(e => e.key === 'bulk')[0]?.auto_office}>
-                        <Button style={{width:'90px', textAlign:'left'}} icon={<Icon component={IconText} style={{ fontSize: '120%'}} />} onClick={e => { addField('AUTOOFFICE', {}, {key: 'requester', type: 'AUTOOFFICE', name: "회사명"}); }}>{formatMessage({id: 'office'})}</Button>
+                        <Button style={{width:'90px', textAlign:'left'}} icon={<Icon component={IconText} style={{ fontSize: '120%'}} />} onClick={e => { addField('AUTOOFFICE', {}, {key: 'requester1', type: 'AUTOOFFICE', name: "회사명"}); }}>{formatMessage({id: 'office'})}</Button>
                       </Badge>
                       &nbsp;&nbsp;&nbsp;
                       <Badge count={boxData.filter(e => e.key === 'bulk')[0]?.auto_depart}>
-                        <Button style={{width:'90px', textAlign:'left'}} icon={<Icon component={IconText} style={{ fontSize: '120%'}} />} onClick={e => { addField('AUTODEPART', {}, {key: 'requester', type: 'AUTODEPART', name: "부서명"}); }}>{formatMessage({id: 'depart'})}</Button>
+                        <Button style={{width:'90px', textAlign:'left'}} icon={<Icon component={IconText} style={{ fontSize: '120%'}} />} onClick={e => { addField('AUTODEPART', {}, {key: 'requester1', type: 'AUTODEPART', name: "부서명"}); }}>{formatMessage({id: 'depart'})}</Button>
                       </Badge>
                       </p>
                       <p>
                       <Badge count={boxData.filter(e => e.key === 'bulk')[0]?.auto_sabun}>
-                        <Button style={{width:'90px', textAlign:'left'}} icon={<Icon component={IconText} style={{ fontSize: '120%'}} />} onClick={e => { addField('AUTOSABUN', {}, {key: 'requester', type: 'AUTOSABUN', name: "사번"}); }}>{formatMessage({id: 'sabun'})}</Button>
+                        <Button style={{width:'90px', textAlign:'left'}} icon={<Icon component={IconText} style={{ fontSize: '120%'}} />} onClick={e => { addField('AUTOSABUN', {}, {key: 'requester1', type: 'AUTOSABUN', name: "사번"}); }}>{formatMessage({id: 'sabun'})}</Button>
                       </Badge>
                       &nbsp;&nbsp;&nbsp;
                       <Badge count={boxData.filter(e => e.key === 'bulk')[0]?.auto_date}>
-                        <Button style={{width:'90px', textAlign:'left'}} icon={<Icon component={IconText} style={{ fontSize: '120%'}} />} onClick={e => { addField('AUTODATE', {}, {key: 'requester', type: 'AUTODEPART', name: "날짜"}); }}>{formatMessage({id: 'date'})}</Button>
+                        <Button style={{width:'90px', textAlign:'left'}} icon={<Icon component={IconText} style={{ fontSize: '120%'}} />} onClick={e => { addField('AUTODATE', {}, {key: 'requester1', type: 'AUTODEPART', name: "날짜"}); }}>{formatMessage({id: 'date'})}</Button>
                       </Badge>
                       </p>
                     </div>

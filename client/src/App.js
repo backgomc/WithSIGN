@@ -62,6 +62,7 @@ import LogoText from './assets/images/logo_withsign2.png'
 import Manual from './components/Customer/Manual';
 import ManualModify from './components/Customer/ManualModify';
 import PrepareResult from './components/PrepareDocument/PrepareResult';
+import UserSelector from './components/Common/UserSelector';
 import { FileAddOutlined } from '@ant-design/icons';
 
 const App = () => {
@@ -240,6 +241,7 @@ const App = () => {
       <ManualModify path="/manualModify" />
       <PrepareResult path="/prepareResult" />
       <SignDirect path="/signDirect" />
+      <UserSelector path="/userSelector" />
     </Router>
     <OnRouteChange action={() => { window.scrollTo(0, 0) }} />
   </ProLayout>

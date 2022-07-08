@@ -139,6 +139,7 @@ const PrepareTemplate = () => {
         let firstChk = false;
 
         annotations.forEach(function(annot) {
+          console.log('annot', annot);
           console.log(annot.getCustomData('id'));
           // 템플릿 항목 설정 체크
           if (annot.getCustomData('id') && annot.getCustomData('id').endsWith('CUSTOM')) {
@@ -606,10 +607,11 @@ const PrepareTemplate = () => {
     const { docViewer, annotManager } = instance;
     let doc = docViewer.getDocument();
     let xfdfString = await annotManager.exportAnnotations({ widgets: true, fields: true });
+    let xfdfStringCopy = xfdfString
     let data = await doc.getFileData({ xfdfString });
     let arr = new Uint8Array(data);
     let blob = new Blob([arr], { type: 'application/pdf' });
-    const assigneesExceptRequester = assignees.filter(el => el.key !== 'requester')
+    const assigneesExceptRequester = assignees.filter(el => !el.key.includes('requester'))
     const users = assigneesExceptRequester.map(assignee => {
       return assignee.key;
     });
@@ -636,8 +638,28 @@ const PrepareTemplate = () => {
     await applyFieldsDirect();
     console.log("AFTER applyFieldsDirect");
     doc = docViewer.getDocument();
+
+    // TODO requester1은 파일에 reqeuset2,3 는 DB에 별도로 저장해 둔다.
+    // let annotList = await annotManager.getAnnotationsList().filter(annot => annot.fieldName.startsWith('requester1'))
+    // annotList.forEach(el => {
+    //   console.log('A1', el.fieldName)
+    // })
+
+    // xfdfString = await annotManager.exportAnnotations({ widgets: true, fields: true, annotList: annotList });
+    // console.log('xfdfString', xfdfString)
+
+    // let annotList2 = await annotManager.getAnnotationsList().filter(annot => !annot.fieldName.startsWith('requester1'))
+    // let xfdfString2 = await annotManager.exportAnnotations({ widgets: true, fields: true, annotList: annotList2 });
+    // console.log('xfdfString2', xfdfString2)
+
+    // annotList2.forEach(el => {
+    //   console.log('A2', el.fieldName)
+    // })
+
+
     xfdfString = await annotManager.exportAnnotations({ widgets: true, fields: true });
     data = await doc.getFileData({ xfdfString });
+    // data = await doc.getFileData({ });  // DB 에 저장 후 불러오는 방식으로 변경 중 : 파일에는 값 저장하지 않음 
     arr = new Uint8Array(data);
     blob = new Blob([arr], { type: 'application/pdf' });
 
@@ -681,7 +703,9 @@ const PrepareTemplate = () => {
       usersOrder: usersOrder,
       usersTodo: usersTodo,
       signees: assigneesExceptRequester,
-      hasRequester: assignees.some(v => v.key === 'requester')
+      hasRequester: assignees.some(v => v.key === 'requester1'),
+      requesters: assignees.filter(el => el.key.includes('requester')),
+      xfdfIn: xfdfString
     }
     
     res = await axios.post('/api/template/updateTemplate', body);
@@ -703,7 +727,7 @@ const PrepareTemplate = () => {
     const data = await doc.getFileData({ xfdfString });
     const arr = new Uint8Array(data);
     const blob = new Blob([arr], { type: 'application/pdf' });
-    const assigneesExceptRequester = assignees.filter(el => el.key !== 'requester')
+    const assigneesExceptRequester = assignees.filter(el => !el.key.includes('requester'))
     const users = assigneesExceptRequester.map(assignee => {
       return assignee.key;
     });
@@ -808,6 +832,7 @@ const PrepareTemplate = () => {
                           }
                         }}
                         checked={observers.filter(v => v === item.key).length > 0}
+                        disabled={item.key === 'requester1' ? true : false}
                         >수신자 지정</Checkbox>
                       </Tooltip>
                     }>
@@ -833,35 +858,35 @@ const PrepareTemplate = () => {
                       </p>
 
                       {/*  자동 입력값 셋팅 */}
-                      {item.key === 'requester' && 
+                      {item.key === 'requester1' && 
                         <div>
                         <Divider plain>자동 입력</Divider>
                         <p>
-                        <Badge count={boxData.filter(e => e.key === 'requester')[0].auto_name}>
-                          <Button style={{width:'90px', textAlign:'left'}} icon={<Icon component={IconText} style={{ fontSize: '120%'}} />} onClick={e => { addField('AUTONAME', {}, {key: 'requester', type: 'AUTONAME', name: "이름"}); }}>{formatMessage({id: 'name'})}</Button>
+                        <Badge count={boxData.filter(e => e.key === 'requester1')[0].auto_name}>
+                          <Button style={{width:'90px', textAlign:'left'}} icon={<Icon component={IconText} style={{ fontSize: '120%'}} />} onClick={e => { addField('AUTONAME', {}, {key: 'requester1', type: 'AUTONAME', name: "이름"}); }}>{formatMessage({id: 'name'})}</Button>
                         </Badge>
                         &nbsp;&nbsp;&nbsp;
-                        <Badge count={boxData.filter(e => e.key === 'requester')[0].auto_jobtitle}>
-                          <Button style={{width:'90px', textAlign:'left'}} icon={<Icon component={IconText} style={{ fontSize: '120%'}} />} onClick={e => { addField('AUTOJOBTITLE', {}, {key: 'requester', type: 'AUTOJOBTITLE', name: "직급"}); }}>{formatMessage({id: 'jobtitle'})}</Button>
+                        <Badge count={boxData.filter(e => e.key === 'requester1')[0].auto_jobtitle}>
+                          <Button style={{width:'90px', textAlign:'left'}} icon={<Icon component={IconText} style={{ fontSize: '120%'}} />} onClick={e => { addField('AUTOJOBTITLE', {}, {key: 'requester1', type: 'AUTOJOBTITLE', name: "직급"}); }}>{formatMessage({id: 'jobtitle'})}</Button>
                         </Badge>
                         </p>
                         <p>
-                        <Badge count={boxData.filter(e => e.key === 'requester')[0].auto_office}>
-                          <Button style={{width:'90px', textAlign:'left'}} icon={<Icon component={IconText} style={{ fontSize: '120%'}} />} onClick={e => { addField('AUTOOFFICE', {}, {key: 'requester', type: 'AUTOOFFICE', name: "회사명"}); }}>{formatMessage({id: 'office'})}</Button>
+                        <Badge count={boxData.filter(e => e.key === 'requester1')[0].auto_office}>
+                          <Button style={{width:'90px', textAlign:'left'}} icon={<Icon component={IconText} style={{ fontSize: '120%'}} />} onClick={e => { addField('AUTOOFFICE', {}, {key: 'requester1', type: 'AUTOOFFICE', name: "회사명"}); }}>{formatMessage({id: 'office'})}</Button>
                         </Badge>
                         &nbsp;&nbsp;&nbsp;
-                        <Badge count={boxData.filter(e => e.key === 'requester')[0].auto_depart}>
-                          <Button style={{width:'90px', textAlign:'left'}} icon={<Icon component={IconText} style={{ fontSize: '120%'}} />} onClick={e => { addField('AUTODEPART', {}, {key: 'requester', type: 'AUTODEPART', name: "부서명"}); }}>{formatMessage({id: 'depart'})}</Button>
+                        <Badge count={boxData.filter(e => e.key === 'requester1')[0].auto_depart}>
+                          <Button style={{width:'90px', textAlign:'left'}} icon={<Icon component={IconText} style={{ fontSize: '120%'}} />} onClick={e => { addField('AUTODEPART', {}, {key: 'requester1', type: 'AUTODEPART', name: "부서명"}); }}>{formatMessage({id: 'depart'})}</Button>
                         </Badge>
                         </p>
                         <p>
-                        <Badge count={boxData.filter(e => e.key === 'requester')[0].auto_sabun}>
-                          <Button style={{width:'90px', textAlign:'left'}} icon={<Icon component={IconText} style={{ fontSize: '120%'}} />} onClick={e => { addField('AUTOSABUN', {}, {key: 'requester', type: 'AUTOSABUN', name: "사번"}); }}>{formatMessage({id: 'sabun'})}</Button>
+                        <Badge count={boxData.filter(e => e.key === 'requester1')[0].auto_sabun}>
+                          <Button style={{width:'90px', textAlign:'left'}} icon={<Icon component={IconText} style={{ fontSize: '120%'}} />} onClick={e => { addField('AUTOSABUN', {}, {key: 'requester1', type: 'AUTOSABUN', name: "사번"}); }}>{formatMessage({id: 'sabun'})}</Button>
                         </Badge>
                         &nbsp;&nbsp;&nbsp;
                         <Tooltip placement="right" title={'예) 2022년 06월 10일'}>
-                          <Badge count={boxData.filter(e => e.key === 'requester')[0].auto_date}>
-                            <Button style={{width:'90px', textAlign:'left'}} icon={<Icon component={IconText} style={{ fontSize: '120%'}} />} onClick={e => { addField('AUTODATE', {}, {key: 'requester', type: 'AUTODEPART', name: "날짜"}); }}>{formatMessage({id: 'date'})}</Button>
+                          <Badge count={boxData.filter(e => e.key === 'requester1')[0].auto_date}>
+                            <Button style={{width:'90px', textAlign:'left'}} icon={<Icon component={IconText} style={{ fontSize: '120%'}} />} onClick={e => { addField('AUTODATE', {}, {key: 'requester1', type: 'AUTODEPART', name: "날짜"}); }}>{formatMessage({id: 'date'})}</Button>
                           </Badge>
                         </Tooltip>
                         </p></div>}

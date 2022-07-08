@@ -82,9 +82,13 @@ const AssignTemplate = () => {
     const res1 = await axios.post('/api/users/list', {OFFICE_CODE: '7831'});
     if (res1.data.success) {
       users = res1.data.users;
-      // if (templateType === 'C' && user.role) {
-        users.push({_id: "requester", name:"서명 참여자", DEPART_CODE: ""})
-      // }
+      if (templateType === 'C') {
+        users.push({_id: "requester1", name:"서명 신청자", DEPART_CODE: ""})
+        users.push({_id: "requester2", name:"서명 참여자1", DEPART_CODE: ""})
+        users.push({_id: "requester3", name:"서명 참여자2", DEPART_CODE: ""})
+      } else {
+        users.push({_id: "requester1", name:"서명 참여자", DEPART_CODE: ""})
+      }
       // setUsers(res1.data.users);
       setUsers(users)
     }
@@ -106,9 +110,13 @@ const AssignTemplate = () => {
         }
         
         tree.push(org1)
-        // if (templateType === 'C' && user.role) {
-          tree.push({key: 'requester', title:'서명 참여자'})
-        // }
+        if (templateType === 'C') {
+          tree.push({key: 'requester1', title:'서명 신청자'})
+          tree.push({key: 'requester2', title:'서명 참여자1'})
+          tree.push({key: 'requester3', title:'서명 참여자2'})
+        } else {
+          tree.push({key: 'requester1', title:'서명 참여자'})
+        }
         
       })
 
@@ -126,7 +134,13 @@ const AssignTemplate = () => {
 
   const handlePrepare = () => {
 
-    //TODO: requester 혼자있을때 반영
+    //requester1이 혼자있을때 두명 이상 필요
+    // console.log('assignees', assignees);
+    if (templateType === 'C' && assignees.length === 1 && assignees[0]?.key === 'requester1') {
+      message.warning('2명 이상 등록이 필요합니다.');
+      return;
+    }
+
     if (assignees.length > 0) {
 
       /*********************** S. 순차 서명 관련 전처리  ******************/
@@ -307,6 +321,77 @@ const sortView = (
 )
 /*********************************************** E. 순차 서명 기능 **********************************************/
 
+
+  const initUser = async () => {
+    // 서명 참여자 셋팅
+    if (assignees) {
+
+      const assigneesExceptRequester = assignees.filter(el => !el.key.includes('requester'))
+      const assigneesRequester = assignees.filter(el => el.key.includes('requester'))
+
+      var targets = [];
+      let assigneesCheck = [];
+      if (assigneesExceptRequester) {
+
+        let res = await axios.post('/api/users/check', {assignees: assigneesExceptRequester});
+        assigneesCheck = res.data.assignees;
+
+        assigneesCheck.forEach(element => {
+          targets.push(element.key);
+        });
+      }
+
+      assigneesRequester.forEach(element => {
+        targets.push(element.key);
+      });
+
+      dispatch(setSignees([...assigneesCheck, ...assigneesRequester]));
+      setTarget(targets);
+
+      if (targets.length > 0) {// && !(assigneesCheck.length === 1 && assigneesCheck[0].key === _id)) { // 참여자에 본인만 있을 경우 제한
+        setDisableNext(false);
+      } else {
+        setDisableNext(true);
+      }
+
+      // 순차서명 지정란 셋팅
+      var newColumns = {};
+      for (let i=0; i<10; i++) {
+
+        var newItems = [];
+
+        // 일반참여자 추가
+        const assigneesFiltered = assigneesCheck.filter(e => e.order == i);
+        assigneesFiltered.map(element => {
+          const newItem = {id:element.key, name:element.name, JOB_TITLE:element.JOB_TITLE, DEPART_NAME:element.DEPART_NAME };
+          newItems.push(newItem);
+        });
+
+        // 서명참여자 추가
+        const assigneesRequesterFiltered = assigneesRequester.filter(e => e.order == i);
+        assigneesRequesterFiltered.map(element => {
+          const newItem = {id:element.key, name:element.name, JOB_TITLE:element.JOB_TITLE, DEPART_NAME:element.DEPART_NAME };
+          newItems.push(newItem);
+        });
+
+        if (newItems.length > 0 || assigneesCheck.filter(e => e.order > i).length > 0) {
+          newColumns[i] = {name: (i + 1) + ' 단계', items:newItems}
+        }
+      }
+      
+      console.log('newColumns', newColumns);
+      if (Object.keys(newColumns).length > 0) {
+        setColumns(newColumns);
+      } else {
+        setColumns(columnsDefault);
+      }
+
+    } else {
+      setColumns(columnsDefault);
+    }
+
+  }
+
   useEffect(() => {
     console.log('useEffect called');
     
@@ -314,78 +399,142 @@ const sortView = (
       OFFICE_CODE: '7831'
     });
 
+    initUser();
     // 순차 서명 유저 셋팅
-    var newColumns = {};
+    // var newColumns = {};
 
-    if (assignees) {
+    // if (assignees) {
 
-      const assigneesExceptRequester = assignees.filter(el => el.key !== 'requester')
-      if (assigneesExceptRequester) {
-        // 참여자 설정되어 있을 경우 유저 상태 체크 필요 
-        axios.post('/api/users/check', {assignees: assigneesExceptRequester}).then(response => {
-          let assigneesCheck  = response.data.assignees;
+    //   const assigneesExceptRequester = assignees.filter(el => !el.key.includes('requester'))
+    //   const assigneesRequester = assignees.filter(el => el.key.includes('requester'))
+    //   if (assigneesExceptRequester) {
+    //     // 참여자 설정되어 있을 경우 유저 상태 체크 필요 
+    //     axios.post('/api/users/check', {assignees: assigneesExceptRequester}).then(response => {
+    //       let assigneesCheck  = response.data.assignees;
           
-          var targets = [];
-          assigneesCheck.forEach(element => {
-            targets.push(element.key);
-          });
+    //       var targets = [];
+    //       assigneesCheck.forEach(element => {
+    //         targets.push(element.key);
+    //       });
+
+    //       assigneesRequester.forEach(element => {
+    //         targets.push(element.key);
+    //       });
           
-          if (assignees.some(el => el.key === 'requester')) {
-            targets.push('requester'); 
-            dispatch(setSignees([...assigneesCheck, {key:'requester',name:'서명 참여자',order:0}]));
-          } else {
-            dispatch(setSignees(assigneesCheck));
-          }
+    //       // let signees = assigneesCheck;
           
-          setTarget(targets);
+    //       // if (assignees.some(el => el.key === 'requester1')) {
+    //       //   targets.push('requester1'); 
+    //       //   signees = [...assigneesCheck, {key:'requester1',name:'서명 참여자1',order:0}];
+    //       // }
+
+    //       // if (assignees.some(el => el.key === 'requester2')) {
+    //       //   targets.push('requester1'); 
+    //       //   signees = [...assigneesCheck, {key:'requester2',name:'서명 참여자2',order:1}];
+    //       // }
+
+    //       // if (assignees.some(el => el.key === 'requester3')) {
+    //       //   targets.push('requester3'); 
+    //       //   signees = [...assigneesCheck, {key:'requester3',name:'서명 참여자3',order:2}];
+    //       // }
+
+    //       dispatch(setSignees([...assigneesCheck, ...assigneesRequester]));
+
+    //       // if (assignees.some(el => el.key === 'requester')) {
+    //       //   targets.push('requester'); 
+    //       //   dispatch(setSignees([...assigneesCheck, {key:'requester',name:'서명 참여자1',order:0}]));
+    //       // } else {
+    //       //   dispatch(setSignees(assigneesCheck));
+    //       // }
           
-          if (targets.length > 0) {// && !(assigneesCheck.length === 1 && assigneesCheck[0].key === _id)) { // 참여자에 본인만 있을 경우 제한
-            setDisableNext(false);
-          } else {
-            setDisableNext(true);
-          }
-
-          for (let i=0; i<10; i++) {
-            const assigneesFiltered = assigneesCheck.filter(e => e.order == i);
-            var newItems = [];
-
-            if (i==0 && assignees.filter(el => el.key === 'requester')?.length > 0) {
-              const element = assignees.filter(el => el.key === 'requester')[0]
-              const newItem = {id:element.key, name:element.name, JOB_TITLE:element.JOB_TITLE, DEPART_NAME:element.DEPART_NAME };
-              newItems.push(newItem);
-            }
-            assigneesFiltered.map(element => {
-              const newItem = {id:element.key, name:element.name, JOB_TITLE:element.JOB_TITLE, DEPART_NAME:element.DEPART_NAME };
-              newItems.push(newItem);
-            });
-            if (newItems.length > 0 || assigneesCheck.filter(e => e.order > i).length > 0) {
-              newColumns[i] = {name: (i + 1) + ' 단계', items:newItems}
-            }
-          }
+    //       setTarget(targets);
           
-          console.log('newColumns', newColumns);
-          if (Object.keys(newColumns).length > 0) {
-            setColumns(newColumns);
-          } else {
-            setColumns(columnsDefault);
-          }
-        });
-      } else {  // requester만 있는 경우
+    //       if (targets.length > 0) {// && !(assigneesCheck.length === 1 && assigneesCheck[0].key === _id)) { // 참여자에 본인만 있을 경우 제한
+    //         setDisableNext(false);
+    //       } else {
+    //         setDisableNext(true);
+    //       }
 
-        var targets = [];
-        if (assignees.some(el => el.key === 'requester')) targets.push('requester')
-        setTarget(targets);
+    //       for (let i=0; i<10; i++) {
 
-        var newItems = [];
-        const element = assignees.filter(el => el.key === 'requester')[0]
-        const newItem = {id:element.key, name:element.name, JOB_TITLE:element.JOB_TITLE, DEPART_NAME:element.DEPART_NAME };
-        newItems.push(newItem);
-        newColumns[0] = {name: 1 + ' 단계', items:newItems}
-      }
+    //         var newItems = [];
 
-    } else {
-      setColumns(columnsDefault);
-    }
+    //         // 일반참여자 추가
+    //         const assigneesFiltered = assigneesCheck.filter(e => e.order == i);
+    //         assigneesFiltered.map(element => {
+    //           const newItem = {id:element.key, name:element.name, JOB_TITLE:element.JOB_TITLE, DEPART_NAME:element.DEPART_NAME };
+    //           newItems.push(newItem);
+    //         });
+
+    //         // 서명참여자 추가
+    //         const assigneesRequesterFiltered = assigneesRequester.filter(e => e.order == i);
+    //         assigneesRequesterFiltered.map(element => {
+    //           const newItem = {id:element.key, name:element.name, JOB_TITLE:element.JOB_TITLE, DEPART_NAME:element.DEPART_NAME };
+    //           newItems.push(newItem);
+    //         });
+
+    //         if (newItems.length > 0 || assigneesCheck.filter(e => e.order > i).length > 0) {
+    //           newColumns[i] = {name: (i + 1) + ' 단계', items:newItems}
+    //         }
+    //       }
+          
+    //       console.log('newColumns', newColumns);
+    //       if (Object.keys(newColumns).length > 0) {
+    //         setColumns(newColumns);
+    //       } else {
+    //         setColumns(columnsDefault);
+    //       }
+    //     });
+    //   } else {  // requester만 있는 경우
+
+    //     var targets = [];
+    //     if (assignees.some(el => el.key === 'requester1')) targets.push('requester1')
+    //     if (assignees.some(el => el.key === 'requester2')) targets.push('requester2')
+    //     if (assignees.some(el => el.key === 'requester3')) targets.push('requester3')
+    //     setTarget(targets);
+
+
+    //     for (let i=0; i<3; i++) {
+    //       var newItems = [];
+
+    //       if (i==0 && assignees.filter(el => el.key === 'requester1')?.length > 0) {
+    //         const element = assignees.filter(el => el.key === 'requester1')[0]
+    //         const newItem = {id:element.key, name:element.name, JOB_TITLE:element.JOB_TITLE, DEPART_NAME:element.DEPART_NAME };
+    //         newItems.push(newItem);
+    //       }
+
+    //       if (i==1 && assignees.filter(el => el.key === 'requester2')?.length > 0) {
+    //         const element = assignees.filter(el => el.key === 'requester2')[0]
+    //         const newItem = {id:element.key, name:element.name, JOB_TITLE:element.JOB_TITLE, DEPART_NAME:element.DEPART_NAME };
+    //         newItems.push(newItem);
+    //       }
+
+    //       if (i==2 && assignees.filter(el => el.key === 'requester3')?.length > 0) {
+    //         const element = assignees.filter(el => el.key === 'requester3')[0]
+    //         const newItem = {id:element.key, name:element.name, JOB_TITLE:element.JOB_TITLE, DEPART_NAME:element.DEPART_NAME };
+    //         newItems.push(newItem);
+    //       }
+
+    //       // const assigneesFiltered = assigneesCheck.filter(e => e.order == i);
+    //       // assigneesFiltered.map(element => {
+    //       //   const newItem = {id:element.key, name:element.name, JOB_TITLE:element.JOB_TITLE, DEPART_NAME:element.DEPART_NAME };
+    //       //   newItems.push(newItem);
+    //       // });
+    //       if (newItems.length > 0) {
+    //         newColumns[i] = {name: (i + 1) + ' 단계', items:newItems}
+    //       }
+    //     }
+
+    //     // var newItems = [];
+    //     // const element = assignees.filter(el => el.key === 'requester1')[0]
+    //     // const newItem = {id:element.key, name:element.name, JOB_TITLE:element.JOB_TITLE, DEPART_NAME:element.DEPART_NAME };
+    //     // newItems.push(newItem);
+    //     // newColumns[0] = {name: 1 + ' 단계', items:newItems}
+    //   }
+
+    // } else {
+    //   setColumns(columnsDefault);
+    // }
   }, []);
 
   const onChange = (result, direction) => {
@@ -500,7 +649,7 @@ const sortView = (
                   ref={treeRef}
                 />
                 <br></br>
-                ※ <b>서명 참여자</b>: {templateType === 'C' ? '신청서 템플릿 생성시 사용' : '대량발송 템플릿 생성시 사용'}
+                {templateType === 'C' ? <>※ <b>서명 신청자, 참여자</b>: 신청서 템플릿 생성시 사용</> :  <>※ <b>서명 참여자</b>: 대량발송 템플릿 생성시 사용</>}
               </ProCard>
             </ProCard>
           </Col>

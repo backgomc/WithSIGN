@@ -58,6 +58,12 @@ const templateSchema = mongoose.Schema({
     hasRequester: {
         type: Boolean, default: false 
     },
+    requesters: {
+        type: Array
+    },
+    xfdfIn: {
+        type: String
+    },
 })
 
 // 경로 치환

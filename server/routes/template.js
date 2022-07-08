@@ -183,7 +183,7 @@ router.post('/updateTemplate', (req, res) => {
 
   Template.updateOne(
     { '_id': req.body._id, 'user': req.body.user },
-    { 'customRef': ref, 'directRef': directRef, 'users': req.body.users, 'observers': req.body.observers, 'orderType': req.body.orderType, 'usersOrder': req.body.usersOrder, 'usersTodo': req.body.usersTodo, 'signees': req.body.signees, 'hasRequester': req.body.hasRequester },
+    { 'customRef': ref, 'directRef': directRef, 'users': req.body.users, 'observers': req.body.observers, 'orderType': req.body.orderType, 'usersOrder': req.body.usersOrder, 'usersTodo': req.body.usersTodo, 'signees': req.body.signees, 'hasRequester': req.body.hasRequester, 'requesters': req.body.requesters, 'xfdfIn': req.body.xfdfIn },
     (err) => {
       if (err) return res.json({ success: false, message: err });
       return res.json({ success: true});

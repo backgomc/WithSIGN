@@ -747,7 +747,7 @@ const DocumentList = ({location}) => {
       render: (users, row) => {
         return (
           <React.Fragment>
-            {users.length > 1 ? <Tooltip placement="top" title={row.users.map((user, index) => ( user.name+' '+user.JOB_TITLE+ (index==users.length-1 ? '' : ', ')  ))}>{users[0].name +' '+ '외 '+ (users.length -1) + '명'}</Tooltip> : users[0].name +' '+ (users[0].JOB_TITLE?users[0].JOB_TITLE:'')}
+            {users?.length > 1 ? <Tooltip placement="top" title={row.users.map((user, index) => ( user.name+' '+user.JOB_TITLE+ (index==users.length-1 ? '' : ', ')  ))}>{users[0].name +' '+ '외 '+ (users.length -1) + '명'}</Tooltip> : users[0]?.name +' '+ (users[0]?.JOB_TITLE?users[0]?.JOB_TITLE:'')}
           {/* {
               row.users.map((user, index) => (
                 user.name
