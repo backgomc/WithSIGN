@@ -86,78 +86,8 @@ router.post('/deleteFolder', async (req, res) => {
 router.post('/selectFolder', async (req, res) => {
   if (!req.body._id || !req.body.user) return res.json({ success: false, message: 'input value not enough!' });
 
-  // ----------------- 사용자 [사번, 소속 부서 코드] 시작 -----------------
-  let user = await User.aggregate([
-    { $match: {'_id': new mongoose.Types.ObjectId(req.body.user)} },
-    { $graphLookup: {
-      'from': 'orgs',
-      'startWith': '$DEPART_CODE',
-      'connectFromField': 'PARENT_NODE_ID',
-      'connectToField': 'DEPART_CODE',
-      'as': 'orgs',
-      'maxDepth': 10,
-      'depthField': 'LEVEL'
-    } },
-  ]).exec();
+  try {
 
-  // ['P1810053', 'A00000' ,'A15000' ... ]
-  let orgs = [];
-  if (user.length > 0) {
-    orgs = user[0].orgs.map(item => item.DEPART_CODE);
-    orgs.push(user[0].SABUN);
-  }
-  // ----------------- 사용자 [사번, 소속 부서 코드] 종료 -----------------
-
-  // if (req.body._id === 'DEFAULT') {
-  //   // 기본 폴더 조회
-    
-  //   let folders = await Folder.find({ 'user': req.body.user }, {'_id': 1}).exec();
-  //   Document.find({'deleted': {$ne: true}, 'folders': {$nin: folders}, $or: [
-  //     // 요청자 본인
-  //     {'user': req.body.user},
-  //     // 참여자 본인
-  //     {$and:[{'orderType': {$ne:'S'}}, {'users': {$in:[req.body.user]}}]}, // 동차
-  //     {$and:[{'orderType':      'S' }, {'users': {$in:[req.body.user]}}  , {'signed': true}]}, // 순차이면서 전체 서명 완료
-  //     {$and:[{'orderType':      'S' }, {'users': {$in:[req.body.user]}}  , {'signedBy.user': req.body.user}]}, // 순차이면서 본인 서명 완료
-  //     {$and:[{'orderType':      'S' }, {'users': {$in:[req.body.user]}}  , {'usersTodo': {$in:[req.body.user]}}]}  // 순차이면서 본인 서명 차례
-  //   ]}, {'_id': 1, 'docTitle': 1, 'docType': 1, 'docRef': 1, 'thumbnail': 1, 'downloads': 1, 'requestedTime': 1, 'recentTime': 1, 'signed': 1})
-  //   .exec(function(err, docs) {
-  //     if (err) return res.json({ success: false, err });
-  //     return res.status(200).send({success: true, docs: docs});
-  //   });
-  // } else {
-    // 그외 폴더 조회
-    Folder.findOne({ '_id': req.body._id, $or: [{ 'user': req.body.user }, { 'sharedTarget': {$elemMatch: {'target': {$in: orgs}}} }]})
-    .populate({path: 'docs._id', select: {'docType': 1, 'docTitle': 1, 'docRef': 1, 'thumbnail': 1, 'downloads': 1, 'requestedTime': 1, 'recentTime': 1, 'signed': 1}})
-    .exec(function(err, folder) {
-      if (err) return res.json({ success: false, err });
-      let docs = [];
-      if (folder.docs && folder.docs.length > 0) {
-        docs = folder.docs.map(item => {
-          return {'_id': item._id._id,
-                  'docTitle': item.alias,
-                  'originTitle': item._id.docTitle,
-                  'docRef': item._id.docRef,
-                  'thumbnail': item._id.thumbnail,
-                  'downloads': item._id.downloads,
-                  'requestedTime': item._id.requestedTime,
-                  'recentTime': item._id.recentTime,
-                  'signed': item._id.signed}
-        });
-      }
-      return res.status(200).send({success: true, docs: docs});
-    });
-  // }
-});
-
-// 폴더 목록 (폴더 목록 조회)
-router.post('/listFolder', async (req, res) => {
-  if (!req.body.user) return res.json({ success: false, message: 'input value not enough!' });
-
-  // ['P1810053', 'A00000' ,'A15000' ... ]
-  let orgs = [];
-
-  if (req.body.includeOption) { 
     // ----------------- 사용자 [사번, 소속 부서 코드] 시작 -----------------
     let user = await User.aggregate([
       { $match: {'_id': new mongoose.Types.ObjectId(req.body.user)} },
@@ -172,20 +102,102 @@ router.post('/listFolder', async (req, res) => {
       } },
     ]).exec();
 
+    // ['P1810053', 'A00000' ,'A15000' ... ]
+    let orgs = [];
     if (user.length > 0) {
       orgs = user[0].orgs.map(item => item.DEPART_CODE);
       orgs.push(user[0].SABUN);
     }
     // ----------------- 사용자 [사번, 소속 부서 코드] 종료 -----------------
+
+    // if (req.body._id === 'DEFAULT') {
+    //   // 기본 폴더 조회
+      
+    //   let folders = await Folder.find({ 'user': req.body.user }, {'_id': 1}).exec();
+    //   Document.find({'deleted': {$ne: true}, 'folders': {$nin: folders}, $or: [
+    //     // 요청자 본인
+    //     {'user': req.body.user},
+    //     // 참여자 본인
+    //     {$and:[{'orderType': {$ne:'S'}}, {'users': {$in:[req.body.user]}}]}, // 동차
+    //     {$and:[{'orderType':      'S' }, {'users': {$in:[req.body.user]}}  , {'signed': true}]}, // 순차이면서 전체 서명 완료
+    //     {$and:[{'orderType':      'S' }, {'users': {$in:[req.body.user]}}  , {'signedBy.user': req.body.user}]}, // 순차이면서 본인 서명 완료
+    //     {$and:[{'orderType':      'S' }, {'users': {$in:[req.body.user]}}  , {'usersTodo': {$in:[req.body.user]}}]}  // 순차이면서 본인 서명 차례
+    //   ]}, {'_id': 1, 'docTitle': 1, 'docType': 1, 'docRef': 1, 'thumbnail': 1, 'downloads': 1, 'requestedTime': 1, 'recentTime': 1, 'signed': 1})
+    //   .exec(function(err, docs) {
+    //     if (err) return res.json({ success: false, err });
+    //     return res.status(200).send({success: true, docs: docs});
+    //   });
+    // } else {
+      // 그외 폴더 조회
+      Folder.findOne({ '_id': req.body._id, $or: [{ 'user': req.body.user }, { 'sharedTarget': {$elemMatch: {'target': {$in: orgs}}} }]})
+      .populate({path: 'docs._id', select: {'docType': 1, 'docTitle': 1, 'docRef': 1, 'thumbnail': 1, 'downloads': 1, 'requestedTime': 1, 'recentTime': 1, 'signed': 1}})
+      .exec(function(err, folder) {
+        if (err) return res.json({ success: false, err });
+        let docs = [];
+        if (folder.docs && folder.docs.length > 0) {
+          docs = folder.docs.map(item => {
+            return {'_id': item?._id?._id,
+                    'docTitle': item?.alias,
+                    'originTitle': item?._id?.docTitle,
+                    'docRef': item?._id?.docRef,
+                    'thumbnail': item?._id?.thumbnail,
+                    'downloads': item?._id?.downloads,
+                    'requestedTime': item?._id?.requestedTime,
+                    'recentTime': item?._id?.recentTime,
+                    'signed': item?._id?.signed}
+          });
+        }
+        return res.status(200).send({success: true, docs: docs});
+      });
+
+  } catch (error) {
+    return res.json({ success: false, error })
   }
+
   
-  Folder.find({ $or: [{ 'user': req.body.user }, { 'sharedTarget': {$elemMatch: {'target': {$in: orgs}}} }] })
-  .populate({path: 'user', select: {'_id': 1, 'name': 1, 'JOB_TITLE': 1}})
-  .sort({ 'folderName': 1 })
-  .then((folder, err) => {
-    if (err) return res.json({ success: false, err });
-    return res.status(200).send({success: true, folders: folder});
-  });
+  // }
+});
+
+// 폴더 목록 (폴더 목록 조회)
+router.post('/listFolder', async (req, res) => {
+  if (!req.body.user) return res.json({ success: false, message: 'input value not enough!' });
+
+  try {
+    // ['P1810053', 'A00000' ,'A15000' ... ]
+    let orgs = [];
+    if (req.body.includeOption) { 
+      // ----------------- 사용자 [사번, 소속 부서 코드] 시작 -----------------
+      let user = await User.aggregate([
+        { $match: {'_id': new mongoose.Types.ObjectId(req.body.user)} },
+        { $graphLookup: {
+          'from': 'orgs',
+          'startWith': '$DEPART_CODE',
+          'connectFromField': 'PARENT_NODE_ID',
+          'connectToField': 'DEPART_CODE',
+          'as': 'orgs',
+          'maxDepth': 10,
+          'depthField': 'LEVEL'
+        } },
+      ]).exec();
+
+      if (user.length > 0) {
+        orgs = user[0].orgs.map(item => item.DEPART_CODE);
+        orgs.push(user[0].SABUN);
+      }
+      // ----------------- 사용자 [사번, 소속 부서 코드] 종료 -----------------
+    }
+    
+    Folder.find({ $or: [{ 'user': req.body.user }, { 'sharedTarget': {$elemMatch: {'target': {$in: orgs}}} }] })
+    .populate({path: 'user', select: {'_id': 1, 'name': 1, 'JOB_TITLE': 1}})
+    .sort({ 'folderName': 1 })
+    .then((folder, err) => {
+      if (err) return res.json({ success: false, err });
+      return res.status(200).send({success: true, folders: folder});
+    });
+  } catch (error) {
+    return res.json({ success: false, error })
+  }
+
 });
 
 // 파일 이동 (docs 필드 변경) -> Documents Collection 의 folders Field 변경 (*주의*)

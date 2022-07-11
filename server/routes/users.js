@@ -229,25 +229,31 @@ router.post('/list', (req, res) => {
 
   var searchStr;
 
-  if (req.body.OFFICE_CODE) {
-    searchStr = { $and: [{OFFICE_CODE: req.body.OFFICE_CODE}, {use: true}] };
-  } else {
-    searchStr = { use: true };
+  try {
+
+    if (req.body.OFFICE_CODE) {
+      searchStr = { $and: [{OFFICE_CODE: req.body.OFFICE_CODE}, {use: true}] };
+    } else {
+      searchStr = { use: true };
+    }
+  
+    User
+    .find(searchStr)
+    // .sort({"name" : 0})    //0:오름차순 -1:내림차순 //{order : dir};
+    .sort({"JOB_CODE" : 0})    //0:오름차순 -1:내림차순 //{order : dir};
+    .exec(function(err, results) {
+  
+        if (err) return next(err)
+  
+        res.send({
+            success: true,
+            users: results
+        })
+    })
+    
+  } catch (error) {
+    return res.json({ success: false, error })
   }
-
-  User
-  .find(searchStr)
-  // .sort({"name" : 0})    //0:오름차순 -1:내림차순 //{order : dir};
-  .sort({"JOB_CODE" : 0})    //0:오름차순 -1:내림차순 //{order : dir};
-  .exec(function(err, results) {
-
-      if (err) return next(err)
-
-      res.send({
-          success: true,
-          users: results
-      })
-  })
 });
 
 /*

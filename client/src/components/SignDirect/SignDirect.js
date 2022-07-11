@@ -628,7 +628,7 @@ const SignDirect = () => {
         {lastUsers.map(el => {
           if (el.key.startsWith('requester')) {
             return (
-              <Step title={<Button onClick={() => {setUserModal(true); setUserKey(el.key)}}>
+              <Step title={<Button style={{borderColor:'#a5c7ff'}} onClick={() => {setUserModal(true); setUserKey(el.key)}}>
               {selectUsers.filter(e => e.key === el.key).length > 0 ? 
               selectUsers.filter(e => e.key === el.key)[0]?.value.split('|')[2] : '참여자 지정'}
             </Button>} description={observers.filter(observer => observer === el.key).length > 0 ?  <>[{parseInt(el.order)+1}] 수신</> : <>[{parseInt(el.order)+1}] 서명</>} disabled />
