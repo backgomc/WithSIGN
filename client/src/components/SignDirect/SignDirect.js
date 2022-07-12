@@ -672,7 +672,7 @@ const SignDirect = () => {
         extra: [
           <Button icon={<ArrowLeftOutlined />} onClick={() => window.history.back()}></Button>,
           <Button key="2" type="primary" loading={loading} onClick={() => completeSigning()} disabled={disableNext}>
-            {formatMessage({id: 'Next'})}
+            {formatMessage({id: 'submit'})}
           </Button>,
         ],
       }}

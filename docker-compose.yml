@@ -26,8 +26,6 @@ services:
       - ./server/storage/:/app/storage
 
   web:
-    env_file:
-      - ./docker.env
     build: # Dockerfile 빌드
       context: ./client # Dockerfile 빌드 경로
     image: nhsign-client
