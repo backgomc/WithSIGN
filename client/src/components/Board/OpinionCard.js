@@ -29,7 +29,7 @@ const OpinionCard = (props) => {
           boardType: boardType,
           pagination
         }
-        const res = await axios.post('/api/board/list', param)
+        const res = await axios.post('/api/board/listSlim', param)
         if (res.data.success) {
           const boards = res.data.boards;
           setData(boards)

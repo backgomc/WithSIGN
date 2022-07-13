@@ -87,6 +87,72 @@ router.post('/list', (req, res) => {
   })
 })
 
+// 게시글 목록 (content 제외)
+router.post('/listSlim', (req, res) => {
+
+  if (!req.body.boardType) {
+      return res.json({ success: false, message: "input value not enough!" })
+  } 
+
+  const boardType = req.body.boardType;
+  // 단어검색 
+  var searchStr;
+
+  if (req.body.title) {
+    var regex = new RegExp(req.body.title[0], "i")
+    searchStr = { $and: [{'title': regex}] };
+  } else {
+      searchStr = {};
+  }
+
+  const current = req.body.pagination.current
+  const pageSize = req.body.pagination.pageSize
+  var start = 0
+  if (current > 1) {
+    start = (current - 1) * pageSize
+  }
+
+  var order = "registeredTime" 
+  var dir = "desc"
+  if (req.body.sortField) {
+    order = req.body.sortField
+  }
+  if (req.body.sortOrder) {
+    if (req.body.sortOrder == "ascend"){
+      dir = "asc"
+    } else {
+      dir = "desc"
+    }
+  }
+
+  var recordsTotal = 0;
+
+  Board.countDocuments(searchStr).and([{"boardType": boardType}]).exec(function(err, count) {
+    recordsTotal = count;
+    console.log("recordsTotal:"+recordsTotal)
+    
+    Board
+    .find(searchStr).and([{"boardType": boardType}]).select({"boardType": 1, "title": 2, "registeredTime": 3, "updatedTime": 4, "files": 5})
+    .sort({[order] : dir})    //asc:오름차순 desc:내림차순
+    .skip(Number(start))
+    .limit(Number(pageSize))
+    .populate({
+      path: "user", 
+      select: {name: 1, JOB_TITLE: 2, thumbnail: 3}
+    })
+    .populate({
+      path: "comments.user", 
+      select: {name: 1, JOB_TITLE: 2, thumbnail: 3}
+    })
+    .exec((err, data) => {
+        // console.log(data);
+        if (err) return res.json({success: false, error: err});
+        return res.json({ success: true, boards: data, total:recordsTotal })
+    })
+
+  })
+})
+
 // 게시글 상세
 router.post('/detail', (req, res) => {
   if (!req.body.boardId) {
