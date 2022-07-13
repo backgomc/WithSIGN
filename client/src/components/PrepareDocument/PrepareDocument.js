@@ -568,12 +568,14 @@ const PrepareDocument = () => {
     //observers.filter(v => v != item.key)
 
       // if(box.sign === 0 && box.text === 0 && observers.filter(v => v == box.key).count == 0) {
+
+      // 서명 또는 수신은 필수로 들어가도록 설정
       if (sendType === 'B') {
-        if(box.sign === 0 && box.text === 0 && box.checkbox === 0) { 
+        if(box.sign === 0) { 
           check = true
         }
       } else {
-        if(box.sign === 0 && box.text === 0 && box.observer === 0 && box.checkbox === 0) { 
+        if(box.sign === 0 && box.observer === 0) { 
           check = true
         }
       }
