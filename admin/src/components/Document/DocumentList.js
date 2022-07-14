@@ -47,8 +47,8 @@ const DocumentList = () => {
         setLoading(false);
 
       } else {
-          setLoading(false);
-          console.log(response.data.error);
+        setLoading(false);
+        console.log(response.data.error);
       }
 
     });
@@ -161,6 +161,10 @@ const DocumentList = () => {
       }
     },
     {
+      title: '부서',
+      dataIndex: ['user', 'DEPART_NAME']
+    },
+    {
       title: '요청자',
       responsive: ['sm'],
       dataIndex: ['user', 'name'],
@@ -180,13 +184,13 @@ const DocumentList = () => {
       } 
     },
     {
-      title: '요청 일시',
-      dataIndex: 'requestedTime',
+      title: '최근 활동',
+      dataIndex: 'recentTime',
       responsive: ['sm'],
       sorter: true,
-      key: 'requestedTime',
+      key: 'recentTime',
       render: (text, row) => {
-          return (<font color='#787878'><Moment format='YYYY/MM/DD(ddd) HH:mm'>{row['requestedTime']}</Moment></font>)
+          return (<font color='#787878'><Moment format='YYYY/MM/DD(ddd) HH:mm'>{row['recentTime']}</Moment></font>)
       }
     },
     {
@@ -209,6 +213,12 @@ const DocumentList = () => {
           </React.Fragment>
         )
       }
+    },
+    {
+      title: '종이',
+      dataIndex: 'pageCount',
+      responsive: ['sm'],
+      key: 'pageCount'
     },
     {
       title: '관리',

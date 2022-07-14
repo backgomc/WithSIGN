@@ -388,7 +388,7 @@ router.post('/user/sync', ValidateToken, async (req, res) => {
 });
 
 // 부서 관리 > 연계 호출
-router.post('/org/lis', ValidateToken, (req, res) => {
+router.post('/org/list', ValidateToken, (req, res) => {
 });
 
 // 부서 관리 > 연계 호출
@@ -423,6 +423,10 @@ router.post('/org/sync', ValidateToken, async (req, res) => {
 ///////////////////////////////////////////////////////////////////////// 문서 관리 서비스 시작 /////////////////////////////////////////////////////////////////////////
 // 문서 관리 > 목록
 router.post('/document/list', ValidateToken, async (req, res) => {
+  
+  // 부서 정보
+  var orgList = await Org.find({}, {_id: 0, DEPART_CODE: 1, DEPART_NAME: 1});
+
   // 페이징 처리
   var current = req.body.pagination.current;
   var pageSize = req.body.pagination.pageSize;
@@ -490,16 +494,21 @@ router.post('/document/list', ValidateToken, async (req, res) => {
     .limit(Number(pageSize))
     .populate({
       path: 'user',
-      select: { name: 1, JOB_TITLE: 2, DEPART_CODE: 3 }
+      select: { name: 1, JOB_TITLE: 1, DEPART_CODE: 1 },
     })
     .populate({
       path: 'users',
-      select: { name: 1, JOB_TITLE: 2, DEPART_CODE: 3 }
+      select: { name: 1, JOB_TITLE: 1, DEPART_CODE: 1 }
     })
     .exec((err, documents) => {
       // console.log(documents);
+      var newDocs = documents.map(item => {
+        var departInfo = orgList.find(e => e.DEPART_CODE === item.user['DEPART_CODE']);
+        item.user['DEPART_NAME'] = departInfo ? departInfo.DEPART_NAME : '';
+        return item;
+      });
       if (err) return res.json({ success: false, error: err });
-      return res.json({ success: true, documents: documents, total: totalCount });
+      return res.json({ success: true, documents: newDocs, total: totalCount });
     });
 });
 
