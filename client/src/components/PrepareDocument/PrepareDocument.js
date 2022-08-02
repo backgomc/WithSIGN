@@ -126,7 +126,7 @@ const PrepareDocument = () => {
             return Upload.LIST_IGNORE;
         }
 
-        instance.loadDocument(file);
+        instance.UI.loadDocument(file);
         // setFile(file);
                 
         return false;
@@ -199,8 +199,9 @@ const PrepareDocument = () => {
       },
       viewer.current,
     ).then(async instance => {
-      const { iframeWindow, docViewer, CoreControls, Annotations } = instance;
-      
+      // const { iframeWindow, docViewer, CoreControls, Annotations } = instance;  // v6
+      const { Core, UI } = instance;
+      const { documentViewer, Annotations, Tools } = Core;
       // select only the view group
       // toolbarGroup-View, toolbarGroup-Annotate, toolbarGroup-Shapes, toolbarGroup-Insert, toolbarGroup-Measure, toolbarGroup-Edit, toolbarGroup-FillAndSign
       // instance.setToolbarGroup('toolbarGroup-FillAndSign');
@@ -223,31 +224,31 @@ const PrepareDocument = () => {
 
     
       // set the ribbons(상단 그룹) and second header
-      instance.enableElements(['ribbons']);
-      instance.disableElements(['toolbarGroup-View', 'toolbarGroup-Shapes', 'toolbarGroup-Measure', 'toolbarGroup-Edit']);
-      
+      UI.enableElements(['ribbons']);
+      UI.disableElements(['toolbarGroup-View', 'toolbarGroup-Annotate', 'toolbarGroup-Shapes', 'toolbarGroup-Insert', 'toolbarGroup-Measure', 'toolbarGroup-Edit', 'toolbarGroup-Forms', 'annotationCommentButton', 'linkButton', 'contextMenuPopup']);
+      UI.disableTools([Tools.ToolNames.FORM_FILL_CROSS, Tools.ToolNames.FORM_FILL_CHECKMARK, Tools.ToolNames.FORM_FILL_DOT]);
       // instance.disableTools([ 'AnnotationCreateSticky', 'AnnotationCreateFreeText' ]); // hides DOM element + disables shortcut
       // instance.enableFeatures([instance.Feature.Annotations]);
       // instance.enableFeatures([instance.Feature.Ribbons]);
       
-      instance.setToolbarGroup('toolbarGroup-View');
+      UI.setToolbarGroup('toolbarGroup-View');
 
       // set local font 
-      CoreControls.setCustomFontURL('/webfonts/');
+      Core.setCustomFontURL('/webfonts/');
 
       // set language
-      instance.setLanguage('ko');
+      UI.setLanguage('ko');
 
       // copy 방지 
-      instance.disableFeatures(instance.Feature.Copy);
+      UI.disableFeatures([instance.UI.Feature.Copy]);
 
       // 포커스 
-      docViewer.setToolMode(docViewer.getTool('Pan'));
+      documentViewer.setToolMode(documentViewer.getTool('Pan'));
 
   
       setInstance(instance);
 
-      const iframeDoc = iframeWindow.document.body;
+      const iframeDoc = UI.iframeWindow.document.body;
       iframeDoc.addEventListener('dragover', dragOver);
       iframeDoc.addEventListener('drop', e => {
         drop(e, instance);
@@ -255,26 +256,26 @@ const PrepareDocument = () => {
 
       if (documentType === 'TEMPLATE') {
         // /storage/... (O) storage/...(X)
-        instance.loadDocument('/'+template.docRef);
+        UI.loadDocument('/'+template.docRef);
       } else if (documentType === 'TEMPLATE_CUSTOM') {
         // /storage/... (O) storage/...(X)
-        instance.loadDocument('/'+template.customRef);
+        UI.loadDocument('/'+template.customRef);
       } else if (documentType === 'PC' || documentType === 'DIRECT') {
-        instance.loadDocument('/'+documentTempPath);
+        UI.loadDocument('/'+documentTempPath);
       }
 
-      const annotManager = docViewer.getAnnotationManager();
+      const annotationManager = documentViewer.getAnnotationManager();
 
-      docViewer.on('documentLoaded', async () => {
+      documentViewer.addEventListener('documentLoaded', async () => {
         console.log('documentLoaded called');
         
         // 디폴트 설정
         // docViewer.setToolMode(docViewer.getTool('AnnotationCreateFreeText'));
 
         // 페이지 저장
-        setPageCount(docViewer.getPageCount());
+        setPageCount(documentViewer.getPageCount());
 
-        const doc = docViewer.getDocument();
+        const doc = documentViewer.getDocument();
         // const pageIdx = 1;
 
         // doc.loadThumbnailAsync(pageIdx, (thumbnail) => {
@@ -317,11 +318,11 @@ const PrepareDocument = () => {
 
       // Annotations.WidgetAnnotation.getCustomStyles = normalStyles;
 
-      annotManager.on('annotationChanged', async (annotations, action, info) => {
+      annotationManager.addEventListener('annotationChanged', async (annotations, action, info) => {
 
         console.log('called annotationChanged:'+ action);
 
-        const { docViewer, Font } = instance; 
+        // const { documentViewer, Font } = instance;
         let firstChk = false;
 
         annotations.forEach(async function(annot) {
@@ -353,7 +354,7 @@ const PrepareDocument = () => {
             if (member) {
               if ((browser && browser.name.includes('chrom') && parseInt(browser.version) < 87) && name.includes('TEXT')) {
                 // 브라우저 버전이 87보다 낮을 경우 삭제
-                annotManager.deleteAnnotation(annot);
+                annotationManager.deleteAnnotation(annot);
               } else {
                 if (name.includes('SIGN')) {
                   member.sign = member.sign + 1;
@@ -395,7 +396,7 @@ const PrepareDocument = () => {
 
             } else {
               // boxData 와 일치하는 annotation 없을 경우 삭제
-              annotManager.deleteAnnotation(annot);
+              annotationManager.deleteAnnotation(annot);
             }
           }
         });
@@ -549,8 +550,8 @@ const PrepareDocument = () => {
         });
 
         if (signDatas.length > 0) {
-          const signatureTool = docViewer.getTool('AnnotationCreateSignature');
-          docViewer.on('documentLoaded', () => {
+          const signatureTool = documentViewer.getTool('AnnotationCreateSignature');
+          documentViewer.addEventListener('documentLoaded', () => {
             signatureTool.importSignatures(signDatas);
           });
         }
@@ -591,10 +592,11 @@ const PrepareDocument = () => {
     console.log('applyFields called');
     // setLoading(true);
 
-    const { Annotations, docViewer } = instance;
-    const annotManager = docViewer.getAnnotationManager();
-    const fieldManager = annotManager.getFieldManager();
-    const annotationsList = annotManager.getAnnotationsList();
+    const { Core } = instance;
+    const { Annotations, documentViewer } = Core;
+    const annotationManager = documentViewer.getAnnotationManager();
+    const fieldManager = annotationManager.getFieldManager();
+    const annotationsList = annotationManager.getAnnotationsList();
     const annotsToDelete = [];
     const annotsToDraw = [];
 
@@ -613,6 +615,7 @@ const PrepareDocument = () => {
               {
                 type: 'Tx',
                 value: annot.custom.value,
+                flags: [Annotations.WidgetFlags.MULTILINE, Annotations.WidgetFlags.DO_NOT_SCROLL, Annotations.WidgetFlags.DO_NOT_SPELL_CHECK]
               },
             );
             inputAnnot = new Annotations.TextWidgetAnnotation(field);
@@ -624,6 +627,15 @@ const PrepareDocument = () => {
             }
             const font = new Annotations.Font(fontOptions)
             inputAnnot.set({'font': font})
+            inputAnnot.setCustomData('font', annot.Font);
+            inputAnnot.setCustomData('fontSize', annot.FontSize);
+            inputAnnot.setCustomData('textAlign', annot.TextAlign);
+            inputAnnot.setCustomData('textVerticalAlign', annot.TextVerticalAlign);
+            if (annot.getRichTextStyle() && annot.getRichTextStyle()[0]) {
+              inputAnnot.setCustomData('fontStyle', annot.getRichTextStyle()[0]['font-style']);
+              inputAnnot.setCustomData('fontWeight', annot.getRichTextStyle()[0]['font-weight']);
+              inputAnnot.setCustomData('textDecoration', annot.getRichTextStyle()[0]['text-decoration']);
+            }
 
           } else if (annot.custom.type === 'SIGN') {
             console.log("annot.custom.name:"+annot.custom.name)
@@ -732,7 +744,7 @@ const PrepareDocument = () => {
 
           } else {
             // exit early for other annotations
-            annotManager.deleteAnnotation(annot, false, true); // prevent duplicates when importing xfdf
+            annotationManager.deleteAnnotation(annot, false, true); // prevent duplicates when importing xfdf
             return;
           }
         } else {
@@ -774,17 +786,17 @@ const PrepareDocument = () => {
         Annotations.WidgetAnnotation.getCustomStyles(inputAnnot);
 
         // draw the annotation the viewer
-        annotManager.addAnnotation(inputAnnot);
+        annotationManager.addAnnotation(inputAnnot);
         fieldManager.addField(field);
         annotsToDraw.push(inputAnnot);
       }),
     );
 
     // delete old annotations
-    annotManager.deleteAnnotations(annotsToDelete, null, true);
+    annotationManager.deleteAnnotations(annotsToDelete, null, true);
 
     // refresh viewer
-    await annotManager.drawAnnotationsFromList(annotsToDraw);
+    await annotationManager.drawAnnotationsFromList(annotsToDraw);
     await uploadForSigning();
 
     // setLoading(false);
@@ -796,23 +808,24 @@ const PrepareDocument = () => {
 
     console.log('called addField')
 
-    const { docViewer, Annotations } = instance;
-    const annotManager = docViewer.getAnnotationManager();
-    const doc = docViewer.getDocument();
-    const displayMode = docViewer.getDisplayModeManager().getDisplayMode();
+    const { Core } = instance;
+    const { documentViewer, Annotations } = Core;
+    const annotationManager = documentViewer.getAnnotationManager();
+    const doc = documentViewer.getDocument();
+    const displayMode = documentViewer.getDisplayModeManager().getDisplayMode();
     const page = displayMode.getSelectedPages(point, point);
     if (!!point.x && page.first == null) {
       return; //don't add field to an invalid page location
     }
     const page_idx =
-      page.first !== null ? page.first : docViewer.getCurrentPage();
+      page.first !== null ? page.first : documentViewer.getCurrentPage();
     const page_info = doc.getPageInfo(page_idx);
     const page_point = displayMode.windowToPage(point, page_idx);
-    const zoom = docViewer.getZoom();
+    const zoom = documentViewer.getZoomLevel();
 
     var textAnnot = new Annotations.FreeTextAnnotation();
     textAnnot.PageNumber = page_idx;
-    const rotation = docViewer.getCompleteRotation(page_idx) * 90;
+    const rotation = documentViewer.getCompleteRotation(page_idx) * 90;
     textAnnot.Rotation = rotation;
     if (rotation === 270 || rotation === 90) {
       textAnnot.Width = 50.0 / zoom;
@@ -875,12 +888,12 @@ const PrepareDocument = () => {
     // textAnnot.FontSize = '' + 18.0 / zoom + 'px';
     textAnnot.FontSize = '' + 13.0 + 'px';
     textAnnot.StrokeThickness = 1;
-    textAnnot.Author = annotManager.getCurrentUser();
+    textAnnot.Author = annotationManager.getCurrentUser();
 
-    annotManager.deselectAllAnnotations();
-    annotManager.addAnnotation(textAnnot, true);
-    annotManager.redrawAnnotation(textAnnot);
-    annotManager.selectAnnotation(textAnnot);
+    annotationManager.deselectAllAnnotations();
+    annotationManager.addAnnotation(textAnnot, true);
+    annotationManager.redrawAnnotation(textAnnot);
+    annotationManager.selectAnnotation(textAnnot);
   };
 
   const getToday = () => {
@@ -906,9 +919,10 @@ const PrepareDocument = () => {
     // 1. 파일 저장
     // 2. DB 저장
     // const docRef = storageRef.child(referenceString);
-    const { docViewer, annotManager } = instance;
-    const doc = docViewer.getDocument();
-    const xfdfString = await annotManager.exportAnnotations({ widgets: true, fields: true });
+    const { Core } = instance;
+    const { documentViewer, annotationManager } = Core;
+    const doc = documentViewer.getDocument();
+    const xfdfString = await annotationManager.exportAnnotations({ widgets: true, fields: true });
     const data = await doc.getFileData({ xfdfString });
     const arr = new Uint8Array(data);
     const blob = new Blob([arr], { type: 'application/pdf' });
@@ -1132,8 +1146,9 @@ const PrepareDocument = () => {
   };
 
   const drop = (e, instance) => {
-    const { docViewer } = instance;
-    const scrollElement = docViewer.getScrollViewElement();
+    const { Core } = instance;
+    const { documentViewer } = Core;
+    const scrollElement = documentViewer.getScrollViewElement();
     const scrollLeft = scrollElement.scrollLeft || 0;
     const scrollTop = scrollElement.scrollTop || 0;
     setDropPoint({ x: e.pageX + scrollLeft, y: e.pageY + scrollTop });
@@ -1226,9 +1241,10 @@ const PrepareDocument = () => {
                         setBoxData(newBoxData)
 
                         // annotation 삭제
-                        const { Annotations, docViewer } = instance;
-                        const annotManager = docViewer.getAnnotationManager();
-                        const annotationsList = annotManager.getAnnotationsList();
+                        const { Core } = instance;
+                        const { Annotations, documentViewer } = Core;
+                        const annotationManager = documentViewer.getAnnotationManager();
+                        const annotationsList = annotationManager.getAnnotationsList();
                         const annotsToDelete = [];
 
                         annotationsList.map(async (annot, index) => {
@@ -1238,7 +1254,7 @@ const PrepareDocument = () => {
                           }
                         })
 
-                        annotManager.deleteAnnotations(annotsToDelete, null, true);
+                        annotationManager.deleteAnnotations(annotsToDelete, null, true);
 
                       } else {
                         // observer 삭제

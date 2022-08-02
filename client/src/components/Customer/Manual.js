@@ -99,11 +99,13 @@ const Manual = () => {
       viewer.current,
     ).then(async instance => {
 
-      const { annotManager, Annotations, CoreControls } = instance;
+      // const { annotManager, Annotations, CoreControls } = instance;
+      const { Core, UI } = instance;
+      const { annotationManager, Annotations } = Core;
 
       // select only the view group
-      instance.setToolbarGroup('toolbarGroup-View');
-      CoreControls.setCustomFontURL("/webfonts/");
+      UI.setToolbarGroup('toolbarGroup-View');
+      Core.setCustomFontURL("/webfonts/");
       // instance.setToolbarGroup('toolbarGroup-Insert');
 
       setInstance(instance);
@@ -116,7 +118,7 @@ const Manual = () => {
       // DISTO
       const URL = '/' + docRef;
       console.log("URL:"+URL);      
-      instance.docViewer.loadDocument(URL);
+      UI.loadDocument(URL);
 
       const normalStyles = (widget) => {
         if (widget instanceof Annotations.TextWidgetAnnotation) {
@@ -133,7 +135,7 @@ const Manual = () => {
 
       // TODO annotation 수정 안되게 하기
 
-      annotManager.on('annotationChanged', (annotations, action, { imported }) => {
+      annotationManager.addEventListener('annotationChanged', (annotations, action, { imported }) => {
         if (imported && action === 'add') {
           annotations.forEach(function(annot) {
             if (annot instanceof Annotations.WidgetAnnotation) {

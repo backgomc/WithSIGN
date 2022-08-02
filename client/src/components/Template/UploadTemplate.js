@@ -89,12 +89,14 @@ const UploadTemplate = ({location}) => {
     .then(instance => {
       setInstance(instance)
 
-      const { docViewer, CoreControls } = instance;
-      CoreControls.setCustomFontURL("/webfonts/");
+      // const { docViewer, CoreControls } = instance;
+      const { Core, UI } = instance;
+      const { documentViewer } = Core;
+      Core.setCustomFontURL("/webfonts/");
       
-      docViewer.on('documentLoaded', () => {
+      documentViewer.addEventListener('documentLoaded', () => {
         console.log('documentLoaded called');
-        const doc = docViewer.getDocument();
+        const doc = documentViewer.getDocument();
         const pageIdx = 1;
 
         // doc.loadThumbnailAsync(pageIdx, (thumbnail) => {

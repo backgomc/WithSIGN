@@ -1,536 +1,923 @@
 (function() {
     /*
      *****************************************************************************
-    Copyright (c) Microsoft Corporation. All rights reserved.
-    Licensed under the Apache License, Version 2.0 (the "License"); you may not use
-    this file except in compliance with the License. You may obtain a copy of the
-    License at http://www.apache.org/licenses/LICENSE-2.0
+    Copyright (c) Microsoft Corporation.
+																				   
+																				 
+														 
 
-    THIS CODE IS PROVIDED ON AN *AS IS* BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-    KIND, EITHER EXPRESS OR IMPLIED, INCLUDING WITHOUT LIMITATION ANY IMPLIED
-    WARRANTIES OR CONDITIONS OF TITLE, FITNESS FOR A PARTICULAR PURPOSE,
-    MERCHANTABLITY OR NON-INFRINGEMENT.
+    Permission to use, copy, modify, and/or distribute this software for any
+    purpose with or without fee is hereby granted.
+																		
+									   
 
-    See the Apache Version 2.0 License for specific language governing permissions
-    and limitations under the License.
+    THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+    REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+    AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+    INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+    LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+    OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+    PERFORMANCE OF THIS SOFTWARE.
     *****************************************************************************/
     var $jscomp = $jscomp || {};
     $jscomp.scope = {};
-    $jscomp.arrayIteratorImpl = function(e) {
-        var n = 0;
+    $jscomp.arrayIteratorImpl = function(k) {
+        var p = 0;
         return function() {
-            return n < e.length ? {
+            return p < k.length ? {
                 done: !1,
-                value: e[n++]
+                value: k[p++]
             } : {
                 done: !0
             }
         }
     };
-    $jscomp.arrayIterator = function(e) {
+    $jscomp.arrayIterator = function(k) {
         return {
-            next: $jscomp.arrayIteratorImpl(e)
+            next: $jscomp.arrayIteratorImpl(k)
         }
     };
-    $jscomp.makeIterator = function(e) {
-        var n = "undefined" != typeof Symbol && Symbol.iterator && e[Symbol.iterator];
-        return n ? n.call(e) : $jscomp.arrayIterator(e)
-    };
-    $jscomp.getGlobal = function(e) {
-        return "undefined" != typeof window && window === e ? e : "undefined" != typeof global && null != global ? global : e
-    };
-    $jscomp.global = $jscomp.getGlobal(this);
+										
+																					  
+													   
+	  
+									 
+																															 
+	  
+											 
     $jscomp.ASSUME_ES5 = !1;
     $jscomp.ASSUME_NO_NATIVE_MAP = !1;
     $jscomp.ASSUME_NO_NATIVE_SET = !1;
     $jscomp.SIMPLE_FROUND_POLYFILL = !1;
-    $jscomp.defineProperty = $jscomp.ASSUME_ES5 || "function" == typeof Object.defineProperties ? Object.defineProperty : function(e, n, l) {
-        e != Array.prototype && e != Object.prototype && (e[n] = l.value)
+    $jscomp.ISOLATE_POLYFILLS = !1;
+    $jscomp.FORCE_POLYFILL_PROMISE = !1;
+    $jscomp.FORCE_POLYFILL_PROMISE_WHEN_NO_UNHANDLED_REJECTION = !1;
+    $jscomp.defineProperty = $jscomp.ASSUME_ES5 || "function" == typeof Object.defineProperties ? Object.defineProperty : function(k, p, q) {
+        if (k == Array.prototype || k == Object.prototype) return k;
+        k[p] = q.value;
+        return k
     };
-    $jscomp.polyfill = function(e, n, l, f) {
-        if (n) {
-            l = $jscomp.global;
-            e = e.split(".");
-            for (f = 0; f < e.length - 1; f++) {
-                var m = e[f];
-                m in l || (l[m] = {});
-                l = l[m]
-            }
-            e = e[e.length - 1];
-            f = l[e];
-            n = n(f);
-            n != f && null != n && $jscomp.defineProperty(l, e, {
+    $jscomp.getGlobal = function(k) {
+        k = ["object" == typeof globalThis && globalThis, k, "object" == typeof window && window, "object" == typeof self && self, "object" == typeof global && global];
+        for (var p = 0; p < k.length; ++p) {
+            var q = k[p];
+            if (q && q.Math == Math) return q
+        }
+        throw Error("Cannot find global object");
+    };
+    $jscomp.global = $jscomp.getGlobal(this);
+    $jscomp.IS_SYMBOL_NATIVE = "function" === typeof Symbol && "symbol" === typeof Symbol("x");
+    $jscomp.TRUST_ES6_POLYFILLS = !$jscomp.ISOLATE_POLYFILLS || $jscomp.IS_SYMBOL_NATIVE;
+    $jscomp.polyfills = {};
+    $jscomp.propertyToPolyfillSymbol = {};
+    $jscomp.POLYFILL_PREFIX = "$jscp$";
+    var $jscomp$lookupPolyfilledValue = function(k, p) {
+        var q = $jscomp.propertyToPolyfillSymbol[p];
+        if (null == q) return k[p];
+        q = k[q];
+        return void 0 !== q ? q : k[p]
+    };
+    $jscomp.polyfill = function(k, p, q, m) {
+        p && ($jscomp.ISOLATE_POLYFILLS ? $jscomp.polyfillIsolated(k, p, q, m) : $jscomp.polyfillUnisolated(k, p, q, m))
+    };
+    $jscomp.polyfillUnisolated = function(k, p, q, m) {
+        q = $jscomp.global;
+        k = k.split(".");
+        for (m = 0; m < k.length - 1; m++) {
+            var t = k[m];
+            if (!(t in q)) return;
+            q = q[t]
+        }
+        k = k[k.length - 1];
+        m = q[k];
+        p = p(m);
+        p != m && null != p && $jscomp.defineProperty(q, k, {
+            configurable: !0,
+            writable: !0,
+            value: p
+        })
+    };
+    $jscomp.polyfillIsolated = function(k, p, q, m) {
+        var t = k.split(".");
+        k = 1 === t.length;
+        m = t[0];
+        m = !k && m in $jscomp.polyfills ? $jscomp.polyfills : $jscomp.global;
+        for (var x = 0; x < t.length - 1; x++) {
+            var h = t[x];
+            if (!(h in m)) return;
+            m = m[h]
+        }
+        t = t[t.length - 1];
+        q = $jscomp.IS_SYMBOL_NATIVE && "es6" === q ? m[t] : null;
+        p = p(q);
+        null != p && (k ? $jscomp.defineProperty($jscomp.polyfills, t, {
+            configurable: !0,
+            writable: !0,
+            value: p
+        }) : p !== q && (void 0 === $jscomp.propertyToPolyfillSymbol[t] && (q = 1E9 * Math.random() >>> 0, $jscomp.propertyToPolyfillSymbol[t] = $jscomp.IS_SYMBOL_NATIVE ?
+            $jscomp.global.Symbol(t) : $jscomp.POLYFILL_PREFIX + q + "$" + t), $jscomp.defineProperty(m, $jscomp.propertyToPolyfillSymbol[t], {
+            configurable: !0,
+            writable: !0,
+            value: p
+        })))
+    };
+    $jscomp.initSymbol = function() {};
+    $jscomp.polyfill("Symbol", function(k) {
+        if (k) return k;
+        var p = function(x, h) {
+            this.$jscomp$symbol$id_ = x;
+            $jscomp.defineProperty(this, "description", {
                 configurable: !0,
                 writable: !0,
-                value: n
+                value: h
             })
+        };
+        p.prototype.toString = function() {
+            return this.$jscomp$symbol$id_
+        };
+        var q = "jscomp_symbol_" + (1E9 * Math.random() >>> 0) + "_",
+            m = 0,
+            t = function(x) {
+                if (this instanceof t) throw new TypeError("Symbol is not a constructor");
+                return new p(q + (x || "") + "_" + m++, x)
+            };
+        return t
+    }, "es6", "es3");
+    $jscomp.polyfill("Symbol.iterator", function(k) {
+            if (k) return k;
+            k = Symbol("Symbol.iterator");
+            for (var p = "Array Int8Array Uint8Array Uint8ClampedArray Int16Array Uint16Array Int32Array Uint32Array Float32Array Float64Array".split(" "), q = 0; q < p.length; q++) {
+                var m = $jscomp.global[p[q]];
+                "function" === typeof m && "function" != typeof m.prototype[k] && $jscomp.defineProperty(m.prototype, k, {
+                    configurable: !0,
+                    writable: !0,
+                    value: function() {
+                        return $jscomp.iteratorPrototype($jscomp.arrayIteratorImpl(this))
+                    }
+                })
+            }
+            return k
+        }, "es6",
+        "es3");
+    $jscomp.iteratorPrototype = function(k) {
+        k = {
+            next: k
+        };
+        k[Symbol.iterator] = function() {
+            return this
+        };
+        return k
+    };
+    $jscomp.underscoreProtoCanBeSet = function() {
+        var k = {
+                a: !0
+            },
+            p = {};
+        try {
+            return p.__proto__ = k, p.a
+        } catch (q) {}
+        return !1
+    };
+    $jscomp.setPrototypeOf = $jscomp.TRUST_ES6_POLYFILLS && "function" == typeof Object.setPrototypeOf ? Object.setPrototypeOf : $jscomp.underscoreProtoCanBeSet() ? function(k, p) {
+        k.__proto__ = p;
+        if (k.__proto__ !== p) throw new TypeError(k + " is not extensible");
+        return k
+    } : null;
+    $jscomp.makeIterator = function(k) {
+        var p = "undefined" != typeof Symbol && Symbol.iterator && k[Symbol.iterator];
+        return p ? p.call(k) : $jscomp.arrayIterator(k)
+    };
+    $jscomp.generator = {};
+    $jscomp.generator.ensureIteratorResultIsObject_ = function(k) {
+        if (!(k instanceof Object)) throw new TypeError("Iterator result " + k + " is not an object");
+    };
+    $jscomp.generator.Context = function() {
+        this.isRunning_ = !1;
+        this.yieldAllIterator_ = null;
+        this.yieldResult = void 0;
+        this.nextAddress = 1;
+        this.finallyAddress_ = this.catchAddress_ = 0;
+        this.finallyContexts_ = this.abruptCompletion_ = null
+    };
+    $jscomp.generator.Context.prototype.start_ = function() {
+        if (this.isRunning_) throw new TypeError("Generator is already running");
+        this.isRunning_ = !0
+    };
+    $jscomp.generator.Context.prototype.stop_ = function() {
+        this.isRunning_ = !1
+    };
+    $jscomp.generator.Context.prototype.jumpToErrorHandler_ = function() {
+        this.nextAddress = this.catchAddress_ || this.finallyAddress_
+    };
+    $jscomp.generator.Context.prototype.next_ = function(k) {
+        this.yieldResult = k
+    };
+    $jscomp.generator.Context.prototype.throw_ = function(k) {
+        this.abruptCompletion_ = {
+            exception: k,
+            isException: !0
+        };
+        this.jumpToErrorHandler_()
+    };
+    $jscomp.generator.Context.prototype.return = function(k) {
+        this.abruptCompletion_ = {
+            return: k
+        };
+        this.nextAddress = this.finallyAddress_
+    };
+    $jscomp.generator.Context.prototype.jumpThroughFinallyBlocks = function(k) {
+        this.abruptCompletion_ = {
+            jumpTo: k
+        };
+        this.nextAddress = this.finallyAddress_
+    };
+    $jscomp.generator.Context.prototype.yield = function(k, p) {
+        this.nextAddress = p;
+        return {
+            value: k
         }
     };
-    $jscomp.FORCE_POLYFILL_PROMISE = !1;
-    $jscomp.polyfill("Promise", function(e) {
-        function n() {
+    $jscomp.generator.Context.prototype.yieldAll = function(k, p) {
+        k = $jscomp.makeIterator(k);
+        var q = k.next();
+        $jscomp.generator.ensureIteratorResultIsObject_(q);
+        if (q.done) this.yieldResult = q.value, this.nextAddress = p;
+        else return this.yieldAllIterator_ = k, this.yield(q.value, p)
+    };
+    $jscomp.generator.Context.prototype.jumpTo = function(k) {
+        this.nextAddress = k
+    };
+    $jscomp.generator.Context.prototype.jumpToEnd = function() {
+        this.nextAddress = 0
+    };
+    $jscomp.generator.Context.prototype.setCatchFinallyBlocks = function(k, p) {
+        this.catchAddress_ = k;
+        void 0 != p && (this.finallyAddress_ = p)
+    };
+    $jscomp.generator.Context.prototype.setFinallyBlock = function(k) {
+        this.catchAddress_ = 0;
+        this.finallyAddress_ = k || 0
+    };
+    $jscomp.generator.Context.prototype.leaveTryBlock = function(k, p) {
+        this.nextAddress = k;
+        this.catchAddress_ = p || 0
+    };
+    $jscomp.generator.Context.prototype.enterCatchBlock = function(k) {
+        this.catchAddress_ = k || 0;
+        k = this.abruptCompletion_.exception;
+        this.abruptCompletion_ = null;
+        return k
+    };
+    $jscomp.generator.Context.prototype.enterFinallyBlock = function(k, p, q) {
+        q ? this.finallyContexts_[q] = this.abruptCompletion_ : this.finallyContexts_ = [this.abruptCompletion_];
+        this.catchAddress_ = k || 0;
+        this.finallyAddress_ = p || 0
+    };
+    $jscomp.generator.Context.prototype.leaveFinallyBlock = function(k, p) {
+        p = this.finallyContexts_.splice(p || 0)[0];
+        if (p = this.abruptCompletion_ = this.abruptCompletion_ || p) {
+            if (p.isException) return this.jumpToErrorHandler_();
+            void 0 != p.jumpTo && this.finallyAddress_ < p.jumpTo ? (this.nextAddress = p.jumpTo, this.abruptCompletion_ = null) : this.nextAddress = this.finallyAddress_
+        } else this.nextAddress = k
+    };
+    $jscomp.generator.Context.prototype.forIn = function(k) {
+        return new $jscomp.generator.Context.PropertyIterator(k)
+    };
+    $jscomp.generator.Context.PropertyIterator = function(k) {
+        this.object_ = k;
+        this.properties_ = [];
+        for (var p in k) this.properties_.push(p);
+        this.properties_.reverse()
+    };
+    $jscomp.generator.Context.PropertyIterator.prototype.getNext = function() {
+        for (; 0 < this.properties_.length;) {
+            var k = this.properties_.pop();
+            if (k in this.object_) return k
+        }
+        return null
+    };
+    $jscomp.generator.Engine_ = function(k) {
+        this.context_ = new $jscomp.generator.Context;
+        this.program_ = k
+    };
+    $jscomp.generator.Engine_.prototype.next_ = function(k) {
+        this.context_.start_();
+        if (this.context_.yieldAllIterator_) return this.yieldAllStep_(this.context_.yieldAllIterator_.next, k, this.context_.next_);
+        this.context_.next_(k);
+        return this.nextStep_()
+    };
+    $jscomp.generator.Engine_.prototype.return_ = function(k) {
+        this.context_.start_();
+        var p = this.context_.yieldAllIterator_;
+        if (p) return this.yieldAllStep_("return" in p ? p["return"] : function(q) {
+            return {
+                value: q,
+                done: !0
+            }
+        }, k, this.context_.return);
+        this.context_.return(k);
+        return this.nextStep_()
+    };
+    $jscomp.generator.Engine_.prototype.throw_ = function(k) {
+        this.context_.start_();
+        if (this.context_.yieldAllIterator_) return this.yieldAllStep_(this.context_.yieldAllIterator_["throw"], k, this.context_.next_);
+        this.context_.throw_(k);
+        return this.nextStep_()
+    };
+    $jscomp.generator.Engine_.prototype.yieldAllStep_ = function(k, p, q) {
+        try {
+            var m = k.call(this.context_.yieldAllIterator_, p);
+            $jscomp.generator.ensureIteratorResultIsObject_(m);
+            if (!m.done) return this.context_.stop_(), m;
+            var t = m.value
+        } catch (x) {
+            return this.context_.yieldAllIterator_ = null, this.context_.throw_(x), this.nextStep_()
+        }
+        this.context_.yieldAllIterator_ = null;
+        q.call(this.context_, t);
+        return this.nextStep_()
+    };
+    $jscomp.generator.Engine_.prototype.nextStep_ = function() {
+        for (; this.context_.nextAddress;) try {
+            var k = this.program_(this.context_);
+            if (k) return this.context_.stop_(), {
+                value: k.value,
+                done: !1
+            }
+        } catch (p) {
+            this.context_.yieldResult = void 0, this.context_.throw_(p)
+        }
+        this.context_.stop_();
+        if (this.context_.abruptCompletion_) {
+            k = this.context_.abruptCompletion_;
+            this.context_.abruptCompletion_ = null;
+            if (k.isException) throw k.exception;
+            return {
+                value: k.return,
+                done: !0
+            }
+        }
+        return {
+            value: void 0,
+            done: !0
+        }
+    };
+    $jscomp.generator.Generator_ = function(k) {
+        this.next = function(p) {
+            return k.next_(p)
+        };
+        this.throw = function(p) {
+            return k.throw_(p)
+        };
+        this.return = function(p) {
+            return k.return_(p)
+        };
+        this[Symbol.iterator] = function() {
+            return this
+        }
+    };
+    $jscomp.generator.createGenerator = function(k, p) {
+        p = new $jscomp.generator.Generator_(new $jscomp.generator.Engine_(p));
+        $jscomp.setPrototypeOf && k.prototype && $jscomp.setPrototypeOf(p, k.prototype);
+        return p
+    };
+    $jscomp.asyncExecutePromiseGenerator = function(k) {
+        function p(m) {
+            return k.next(m)
+        }
+
+        function q(m) {
+            return k.throw(m)
+        }
+        return new Promise(function(m, t) {
+            function x(h) {
+                h.done ? m(h.value) : Promise.resolve(h.value).then(p, q).then(x, t)
+            }
+            x(k.next())
+        })
+    };
+    $jscomp.asyncExecutePromiseGeneratorFunction = function(k) {
+        return $jscomp.asyncExecutePromiseGenerator(k())
+    };
+    $jscomp.asyncExecutePromiseGeneratorProgram = function(k) {
+        return $jscomp.asyncExecutePromiseGenerator(new $jscomp.generator.Generator_(new $jscomp.generator.Engine_(k)))
+    };
+    $jscomp.polyfill("Promise", function(k) {
+        function p() {
             this.batch_ = null
         }
 
-        function l(b) {
-            return b instanceof m ? b : new m(function(a, c) {
-                a(b)
+        function q(h) {
+            return h instanceof t ? h : new t(function(e, f) {
+                e(h)
             })
         }
-        if (e && !$jscomp.FORCE_POLYFILL_PROMISE) return e;
-        n.prototype.asyncExecute = function(b) {
-            null == this.batch_ && (this.batch_ = [], this.asyncExecuteBatch_());
-            this.batch_.push(b);
-            return this
-        };
-        n.prototype.asyncExecuteBatch_ = function() {
-            var b = this;
-            this.asyncExecuteFunction(function() {
-                b.executeBatch_()
-            })
-        };
-        var f = $jscomp.global.setTimeout;
-        n.prototype.asyncExecuteFunction = function(b) {
-            f(b,
-                0)
-        };
-        n.prototype.executeBatch_ = function() {
-            for (; this.batch_ && this.batch_.length;) {
-                var b = this.batch_;
+        if (k && (!($jscomp.FORCE_POLYFILL_PROMISE || $jscomp.FORCE_POLYFILL_PROMISE_WHEN_NO_UNHANDLED_REJECTION && "undefined" === typeof $jscomp.global.PromiseRejectionEvent) || !$jscomp.global.Promise || -1 === $jscomp.global.Promise.toString().indexOf("[native code]"))) return k;
+        p.prototype.asyncExecute = function(h) {
+            if (null == this.batch_) {
                 this.batch_ = [];
-                for (var a = 0; a < b.length; ++a) {
-                    var c = b[a];
-                    b[a] = null;
+					   
+		  
+													 
+                var e = this;
+                this.asyncExecuteFunction(function() {
+                    e.executeBatch_()
+                })
+            }
+            this.batch_.push(h)
+        };
+        var m = $jscomp.global.setTimeout;
+        p.prototype.asyncExecuteFunction = function(h) {
+            m(h, 0)
+				  
+        };
+        p.prototype.executeBatch_ = function() {
+            for (; this.batch_ && this.batch_.length;) {
+                var h = this.batch_;
+                this.batch_ = [];
+                for (var e = 0; e < h.length; ++e) {
+                    var f = h[e];
+                    h[e] = null;
                     try {
-                        c()
-                    } catch (k) {
-                        this.asyncThrow_(k)
+                        f()
+                    } catch (g) {
+                        this.asyncThrow_(g)
                     }
                 }
             }
             this.batch_ = null
         };
-        n.prototype.asyncThrow_ = function(b) {
+        p.prototype.asyncThrow_ = function(h) {
             this.asyncExecuteFunction(function() {
-                throw b;
+                throw h;
             })
         };
-        var m = function(b) {
+        var t = function(h) {
             this.state_ = 0;
             this.result_ = void 0;
             this.onSettledCallbacks_ = [];
-            var a = this.createResolveAndReject_();
+            this.isRejectionHandled_ = !1;
+            var e = this.createResolveAndReject_();
             try {
-                b(a.resolve, a.reject)
-            } catch (c) {
-                a.reject(c)
+                h(e.resolve, e.reject)
+            } catch (f) {
+                e.reject(f)
             }
         };
-        m.prototype.createResolveAndReject_ =
-            function() {
-                function b(k) {
-                    return function(h) {
-                        c || (c = !0, k.call(a, h))
-                    }
+        t.prototype.createResolveAndReject_ = function() {
+						
+            function h(g) {
+                return function(l) {
+                    f || (f = !0, g.call(e, l))
+					 
+				 
+							 
+						   
+						
+												
+										   
                 }
-                var a = this,
-                    c = !1;
-                return {
-                    resolve: b(this.resolveTo_),
-                    reject: b(this.reject_)
-                }
-            };
-        m.prototype.resolveTo_ = function(b) {
-            if (b === this) this.reject_(new TypeError("A Promise cannot resolve to itself"));
-            else if (b instanceof m) this.settleSameAsPromise_(b);
+            }
+            var e = this,
+                f = !1;
+            return {
+                resolve: h(this.resolveTo_),
+                reject: h(this.reject_)
+            }
+        };
+        t.prototype.resolveTo_ = function(h) {
+            if (h === this) this.reject_(new TypeError("A Promise cannot resolve to itself"));
+            else if (h instanceof t) this.settleSameAsPromise_(h);
             else {
-                a: switch (typeof b) {
+                a: switch (typeof h) {
                     case "object":
-                        var a = null != b;
+                        var e = null != h;
                         break a;
                     case "function":
-                        a = !0;
+                        e = !0;
                         break a;
                     default:
-                        a = !1
+                        e = !1
                 }
-                a ? this.resolveToNonPromiseObj_(b) : this.fulfill_(b)
+                e ? this.resolveToNonPromiseObj_(h) : this.fulfill_(h)
             }
         };
-        m.prototype.resolveToNonPromiseObj_ = function(b) {
-            var a =
-                void 0;
+        t.prototype.resolveToNonPromiseObj_ = function(h) {
+				   
+            var e = void 0;
             try {
-                a = b.then
-            } catch (c) {
-                this.reject_(c);
+                e = h.then
+            } catch (f) {
+                this.reject_(f);
                 return
             }
-            "function" == typeof a ? this.settleSameAsThenable_(a, b) : this.fulfill_(b)
+            "function" == typeof e ? this.settleSameAsThenable_(e, h) : this.fulfill_(h)
         };
-        m.prototype.reject_ = function(b) {
-            this.settle_(2, b)
+        t.prototype.reject_ = function(h) {
+            this.settle_(2, h)
         };
-        m.prototype.fulfill_ = function(b) {
-            this.settle_(1, b)
+        t.prototype.fulfill_ = function(h) {
+            this.settle_(1, h)
         };
-        m.prototype.settle_ = function(b, a) {
-            if (0 != this.state_) throw Error("Cannot settle(" + b + ", " + a + "): Promise already settled in state" + this.state_);
-            this.state_ = b;
-            this.result_ = a;
+        t.prototype.settle_ = function(h, e) {
+            if (0 != this.state_) throw Error("Cannot settle(" + h + ", " + e + "): Promise already settled in state" + this.state_);
+            this.state_ = h;
+            this.result_ = e;
+            2 === this.state_ && this.scheduleUnhandledRejectionCheck_();
             this.executeOnSettledCallbacks_()
         };
-        m.prototype.executeOnSettledCallbacks_ = function() {
+        t.prototype.scheduleUnhandledRejectionCheck_ = function() {
+            var h = this;
+            m(function() {
+                if (h.notifyUnhandledRejection_()) {
+                    var e = $jscomp.global.console;
+                    "undefined" !== typeof e && e.error(h.result_)
+                }
+            }, 1)
+        };
+        t.prototype.notifyUnhandledRejection_ = function() {
+            if (this.isRejectionHandled_) return !1;
+            var h = $jscomp.global.CustomEvent,
+                e = $jscomp.global.Event,
+                f = $jscomp.global.dispatchEvent;
+            if ("undefined" === typeof f) return !0;
+            "function" === typeof h ? h = new h("unhandledrejection", {
+                    cancelable: !0
+                }) :
+                "function" === typeof e ? h = new e("unhandledrejection", {
+                    cancelable: !0
+                }) : (h = $jscomp.global.document.createEvent("CustomEvent"), h.initCustomEvent("unhandledrejection", !1, !0, h));
+            h.promise = this;
+            h.reason = this.result_;
+            return f(h)
+        };
+        t.prototype.executeOnSettledCallbacks_ = function() {
             if (null != this.onSettledCallbacks_) {
-                for (var m =
-                        0; m < this.onSettledCallbacks_.length; ++m) b.asyncExecute(this.onSettledCallbacks_[m]);
+							
+                for (var h = 0; h < this.onSettledCallbacks_.length; ++h) x.asyncExecute(this.onSettledCallbacks_[h]);
                 this.onSettledCallbacks_ = null
             }
         };
-        var b = new n;
-        m.prototype.settleSameAsPromise_ = function(b) {
-            var a = this.createResolveAndReject_();
-            b.callWhenSettled_(a.resolve, a.reject)
+        var x = new p;
+        t.prototype.settleSameAsPromise_ = function(h) {
+            var e = this.createResolveAndReject_();
+            h.callWhenSettled_(e.resolve, e.reject)
         };
-        m.prototype.settleSameAsThenable_ = function(b, a) {
-            var c = this.createResolveAndReject_();
+        t.prototype.settleSameAsThenable_ = function(h, e) {
+            var f = this.createResolveAndReject_();
             try {
-                b.call(a, c.resolve, c.reject)
-            } catch (k) {
-                c.reject(k)
+                h.call(e, f.resolve, f.reject)
+            } catch (g) {
+                f.reject(g)
             }
         };
-        m.prototype.then = function(b, a) {
-            function c(a, c) {
-                return "function" == typeof a ? function(c) {
-                        try {
-                            k(a(c))
-                        } catch (x) {
-                            h(x)
-                        }
-                    } :
-                    c
+        t.prototype.then = function(h, e) {
+            function f(n, v) {
+                return "function" == typeof n ? function(z) {
+                    try {
+                        g(n(z))
+                    } catch (w) {
+                        l(w)
+                    }
+                } : v
+					 
             }
-            var k, h, r = new m(function(a, c) {
-                k = a;
-                h = c
+            var g, l, r = new t(function(n, v) {
+                g = n;
+                l = v
             });
-            this.callWhenSettled_(c(b, k), c(a, h));
+            this.callWhenSettled_(f(h, g), f(e, l));
             return r
         };
-        m.prototype.catch = function(b) {
-            return this.then(void 0, b)
+        t.prototype.catch = function(h) {
+            return this.then(void 0, h)
         };
-        m.prototype.callWhenSettled_ = function(m, a) {
-            function c() {
-                switch (k.state_) {
+        t.prototype.callWhenSettled_ = function(h, e) {
+            function f() {
+                switch (g.state_) {
                     case 1:
-                        m(k.result_);
+                        h(g.result_);
                         break;
                     case 2:
-                        a(k.result_);
+                        e(g.result_);
                         break;
                     default:
-                        throw Error("Unexpected state: " + k.state_);
+                        throw Error("Unexpected state: " + g.state_);
                 }
             }
-            var k = this;
-            null == this.onSettledCallbacks_ ? b.asyncExecute(c) : this.onSettledCallbacks_.push(c)
+            var g = this;
+            null == this.onSettledCallbacks_ ? x.asyncExecute(f) : this.onSettledCallbacks_.push(f);
+            this.isRejectionHandled_ = !0
         };
-        m.resolve = l;
-        m.reject = function(b) {
-            return new m(function(a, c) {
-                c(b)
+        t.resolve = q;
+        t.reject = function(h) {
+            return new t(function(e, f) {
+                f(h)
             })
         };
-        m.race = function(b) {
-            return new m(function(a,
-                c) {
-                for (var k = $jscomp.makeIterator(b), h = k.next(); !h.done; h = k.next()) l(h.value).callWhenSettled_(a, c)
+        t.race = function(h) {
+            return new t(function(e, f) {
+					
+                for (var g = $jscomp.makeIterator(h), l = g.next(); !l.done; l = g.next()) q(l.value).callWhenSettled_(e, f)
             })
         };
-        m.all = function(b) {
-            var a = $jscomp.makeIterator(b),
-                c = a.next();
-            return c.done ? l([]) : new m(function(k, b) {
-                function h(a) {
-                    return function(c) {
-                        p[a] = c;
+        t.all = function(h) {
+            var e = $jscomp.makeIterator(h),
+                f = e.next();
+            return f.done ? q([]) : new t(function(g,
+                l) {
+                function r(z) {
+                    return function(w) {
+                        n[z] = w;
                         v--;
-                        0 == v && k(p)
+                        0 == v && g(n)
                     }
                 }
-                var p = [],
+                var n = [],
                     v = 0;
-                do p.push(void 0), v++, l(c.value).callWhenSettled_(h(p.length - 1), b), c = a.next(); while (!c.done)
+                do n.push(void 0), v++, q(f.value).callWhenSettled_(r(n.length - 1), l), f = e.next(); while (!f.done)
             })
         };
-        return m
-    }, "es6", "es3");
-    $jscomp.checkStringArgs = function(e, n, l) {
-        if (null == e) throw new TypeError("The 'this' value for String.prototype." + l + " must not be null or undefined");
-        if (n instanceof RegExp) throw new TypeError("First argument to String.prototype." + l + " must not be a regular expression");
-        return e + ""
-    };
-    $jscomp.polyfill("String.prototype.endsWith", function(e) {
-        return e ? e : function(e, l) {
-            var f = $jscomp.checkStringArgs(this, e, "endsWith");
-            e += "";
-            void 0 === l && (l = f.length);
-            l = Math.max(0, Math.min(l | 0, f.length));
-            for (var m = e.length; 0 < m && 0 < l;)
-                if (f[--l] != e[--m]) return !1;
-            return 0 >= m
-        }
+        return t
+					 
+												 
+																															
+																																	  
+					 
+	  
+															   
+									   
+																 
+					
+										   
+													   
+												   
+												
+						 
+		 
     }, "es6", "es3");
     $jscomp.checkEs6ConformanceViaProxy = function() {
         try {
-            var e = {},
-                n = Object.create(new $jscomp.global.Proxy(e, {
-                    get: function(l, f, m) {
-                        return l == e && "q" == f && m == n
+            var k = {},
+                p = Object.create(new $jscomp.global.Proxy(k, {
+                    get: function(q, m, t) {
+                        return q == k && "q" == m && t == p
                     }
                 }));
-            return !0 === n.q
-        } catch (l) {
+            return !0 === p.q
+        } catch (q) {
             return !1
         }
     };
     $jscomp.USE_PROXY_FOR_ES6_CONFORMANCE_CHECKS = !1;
     $jscomp.ES6_CONFORMANCE = $jscomp.USE_PROXY_FOR_ES6_CONFORMANCE_CHECKS && $jscomp.checkEs6ConformanceViaProxy();
-    $jscomp.SYMBOL_PREFIX = "jscomp_symbol_";
-    $jscomp.initSymbol = function() {
-        $jscomp.initSymbol = function() {};
-        $jscomp.global.Symbol || ($jscomp.global.Symbol = $jscomp.Symbol)
+											 
+									 
+										   
+																		 
+	  
+								 
+				  
+							
+														  
+		 
+		
+											 
+							 
+											   
+																					  
+																							   
+							 
+						 
+							   
+																				 
+			 
+		   
+												  
+	  
+												  
+							 
+													
+																								
+													   
+	  
+											 
+									 
+			 
+				   
+		  
+														
+					   
+		  
+				
+	  
+    $jscomp.owns = function(k, p) {
+        return Object.prototype.hasOwnProperty.call(k, p)
     };
-    $jscomp.Symbol = function() {
-        var e = 0;
-        return function(n) {
-            return $jscomp.SYMBOL_PREFIX + (n || "") + e++
-        }
-    }();
-    $jscomp.initSymbolIterator = function() {
-        $jscomp.initSymbol();
-        var e = $jscomp.global.Symbol.iterator;
-        e || (e = $jscomp.global.Symbol.iterator = $jscomp.global.Symbol("iterator"));
-        "function" != typeof Array.prototype[e] && $jscomp.defineProperty(Array.prototype, e, {
-            configurable: !0,
-            writable: !0,
-            value: function() {
-                return $jscomp.iteratorPrototype($jscomp.arrayIteratorImpl(this))
-            }
-        });
-        $jscomp.initSymbolIterator = function() {}
-    };
-    $jscomp.initSymbolAsyncIterator = function() {
-        $jscomp.initSymbol();
-        var e = $jscomp.global.Symbol.asyncIterator;
-        e || (e = $jscomp.global.Symbol.asyncIterator = $jscomp.global.Symbol("asyncIterator"));
-        $jscomp.initSymbolAsyncIterator = function() {}
-    };
-    $jscomp.iteratorPrototype = function(e) {
-        $jscomp.initSymbolIterator();
-        e = {
-            next: e
-        };
-        e[$jscomp.global.Symbol.iterator] = function() {
-            return this
-        };
-        return e
-    };
-    $jscomp.owns = function(e, n) {
-        return Object.prototype.hasOwnProperty.call(e, n)
-    };
-    $jscomp.polyfill("WeakMap", function(e) {
-        function n() {
-            if (!e || !Object.seal) return !1;
+    $jscomp.polyfill("WeakMap", function(k) {
+        function p() {
+            if (!k || !Object.seal) return !1;
             try {
-                var a = Object.seal({}),
-                    k = Object.seal({}),
-                    b = new e([
-                        [a, 2],
-                        [k, 3]
+                var g = Object.seal({}),
+                    l = Object.seal({}),
+                    r = new k([
+                        [g, 2],
+                        [l, 3]
                     ]);
-                if (2 != b.get(a) || 3 != b.get(k)) return !1;
-                b.delete(a);
-                b.set(k, 4);
-                return !b.has(a) && 4 == b.get(k)
-            } catch (r) {
+                if (2 != r.get(g) || 3 != r.get(l)) return !1;
+                r.delete(g);
+                r.set(l, 4);
+                return !r.has(g) && 4 == r.get(l)
+            } catch (n) {
                 return !1
             }
         }
 
-        function l() {}
+        function q() {}
 
-        function f(a) {
-            if (!$jscomp.owns(a, b)) {
-                var c = new l;
-                $jscomp.defineProperty(a, b, {
-                    value: c
+        function m(g) {
+            var l = typeof g;
+            return "object" === l && null !== g || "function" === l
+        }
+
+        function t(g) {
+            if (!$jscomp.owns(g, h)) {
+                var l = new q;
+                $jscomp.defineProperty(g, h, {
+                    value: l
                 })
             }
         }
 
-        function m(a) {
-            var c = Object[a];
-            c && (Object[a] = function(a) {
-                if (a instanceof l) return a;
-                f(a);
-                return c(a)
-            })
+        function x(g) {
+            if (!$jscomp.ISOLATE_POLYFILLS) {
+                var l = Object[g];
+                l && (Object[g] =
+                    function(r) {
+                        if (r instanceof q) return r;
+                        Object.isExtensible(r) && t(r);
+                        return l(r)
+                    })
+            }
         }
         if ($jscomp.USE_PROXY_FOR_ES6_CONFORMANCE_CHECKS) {
-            if (e &&
-                $jscomp.ES6_CONFORMANCE) return e
-        } else if (n()) return e;
-        var b = "$jscomp_hidden_" + Math.random();
-        m("freeze");
-        m("preventExtensions");
-        m("seal");
-        var u = 0,
-            a = function(a) {
-                this.id_ = (u += Math.random() + 1).toString();
-                if (a) {
-                    a = $jscomp.makeIterator(a);
-                    for (var c; !(c = a.next()).done;) c = c.value, this.set(c[0], c[1])
+					
+            if (k && $jscomp.ES6_CONFORMANCE) return k
+        } else if (p()) return k;
+        var h = "$jscomp_hidden_" + Math.random();
+        x("freeze");
+        x("preventExtensions");
+        x("seal");
+        var e = 0,
+            f = function(g) {
+                this.id_ = (e += Math.random() + 1).toString();
+                if (g) {
+                    g = $jscomp.makeIterator(g);
+                    for (var l; !(l = g.next()).done;) l = l.value, this.set(l[0], l[1])
                 }
             };
-        a.prototype.set = function(a, k) {
-            f(a);
-            if (!$jscomp.owns(a, b)) throw Error("WeakMap key fail: " + a);
-            a[b][this.id_] = k;
+        f.prototype.set = function(g, l) {
+            if (!m(g)) throw Error("Invalid WeakMap key");
+            t(g);
+            if (!$jscomp.owns(g, h)) throw Error("WeakMap key fail: " + g);
+            g[h][this.id_] = l;
             return this
         };
-        a.prototype.get = function(a) {
-            return $jscomp.owns(a, b) ? a[b][this.id_] : void 0
+        f.prototype.get = function(g) {
+            return m(g) && $jscomp.owns(g, h) ? g[h][this.id_] : void 0
         };
-        a.prototype.has =
-            function(a) {
-                return $jscomp.owns(a, b) && $jscomp.owns(a[b], this.id_)
-            };
-        a.prototype.delete = function(a) {
-            return $jscomp.owns(a, b) && $jscomp.owns(a[b], this.id_) ? delete a[b][this.id_] : !1
+        f.prototype.has = function(g) {
+						 
+																		 
+			  
+										  
+            return m(g) && $jscomp.owns(g, h) && $jscomp.owns(g[h], this.id_)
         };
-        return a
+        f.prototype.delete = function(g) {
+            return m(g) && $jscomp.owns(g, h) && $jscomp.owns(g[h], this.id_) ? delete g[h][this.id_] : !1
+        };
+        return f
     }, "es6", "es3");
     $jscomp.MapEntry = function() {};
-    $jscomp.polyfill("Map", function(e) {
-        function n() {
-            if ($jscomp.ASSUME_NO_NATIVE_MAP || !e || "function" != typeof e || !e.prototype.entries || "function" != typeof Object.seal) return !1;
+    $jscomp.polyfill("Map", function(k) {
+        function p() {
+            if ($jscomp.ASSUME_NO_NATIVE_MAP || !k || "function" != typeof k || !k.prototype.entries || "function" != typeof Object.seal) return !1;
             try {
-                var a = Object.seal({
+                var f = Object.seal({
                         x: 4
                     }),
-                    k = new e($jscomp.makeIterator([
-                        [a, "s"]
+                    g = new k($jscomp.makeIterator([
+                        [f, "s"]
                     ]));
-                if ("s" != k.get(a) || 1 != k.size || k.get({
+                if ("s" != g.get(f) || 1 != g.size || g.get({
                         x: 4
-                    }) || k.set({
+                    }) || g.set({
                         x: 4
-                    }, "t") != k || 2 != k.size) return !1;
-                var b = k.entries(),
-                    r = b.next();
-                if (r.done || r.value[0] != a || "s" != r.value[1]) return !1;
-                r = b.next();
-                return r.done || 4 != r.value[0].x || "t" != r.value[1] || !b.next().done ? !1 : !0
-            } catch (p) {
+                    }, "t") != g || 2 != g.size) return !1;
+                var l = g.entries(),
+                    r = l.next();
+                if (r.done || r.value[0] != f || "s" != r.value[1]) return !1;
+                r = l.next();
+                return r.done || 4 != r.value[0].x || "t" != r.value[1] || !l.next().done ? !1 : !0
+            } catch (n) {
                 return !1
             }
         }
         if ($jscomp.USE_PROXY_FOR_ES6_CONFORMANCE_CHECKS) {
-            if (e && $jscomp.ES6_CONFORMANCE) return e
-        } else if (n()) return e;
-        $jscomp.initSymbolIterator();
-        var l = new WeakMap,
-            f = function(a) {
+            if (k && $jscomp.ES6_CONFORMANCE) return k
+        } else if (p()) return k;
+									 
+        var q = new WeakMap,
+            m = function(f) {
                 this.data_ = {};
-                this.head_ = u();
+                this.head_ = h();
                 this.size = 0;
-                if (a) {
-                    a = $jscomp.makeIterator(a);
-                    for (var c; !(c = a.next()).done;) c = c.value, this.set(c[0], c[1])
+                if (f) {
+                    f = $jscomp.makeIterator(f);
+                    for (var g; !(g = f.next()).done;) g = g.value, this.set(g[0], g[1])
                 }
             };
-        f.prototype.set = function(a, k) {
-            a = 0 === a ? 0 : a;
-            var c = m(this, a);
-            c.list || (c.list = this.data_[c.id] = []);
-            c.entry ? c.entry.value = k : (c.entry = {
-                next: this.head_,
-                previous: this.head_.previous,
-                head: this.head_,
-                key: a,
-                value: k
-            }, c.list.push(c.entry), this.head_.previous.next = c.entry, this.head_.previous = c.entry, this.size++);
+        m.prototype.set = function(f, g) {
+            f = 0 === f ? 0 : f;
+            var l = t(this, f);
+            l.list || (l.list = this.data_[l.id] = []);
+            l.entry ? l.entry.value = g : (l.entry = {
+                    next: this.head_,
+                    previous: this.head_.previous,
+                    head: this.head_,
+                    key: f,
+                    value: g
+                }, l.list.push(l.entry),
+                this.head_.previous.next = l.entry, this.head_.previous = l.entry, this.size++);
             return this
         };
-        f.prototype.delete = function(a) {
-            a = m(this, a);
-            return a.entry && a.list ? (a.list.splice(a.index, 1), a.list.length || delete this.data_[a.id], a.entry.previous.next = a.entry.next, a.entry.next.previous = a.entry.previous, a.entry.head = null, this.size--, !0) : !1
+        m.prototype.delete = function(f) {
+            f = t(this, f);
+            return f.entry && f.list ? (f.list.splice(f.index, 1), f.list.length || delete this.data_[f.id], f.entry.previous.next = f.entry.next, f.entry.next.previous = f.entry.previous, f.entry.head = null, this.size--, !0) : !1
         };
-        f.prototype.clear = function() {
+        m.prototype.clear = function() {
             this.data_ = {};
-            this.head_ = this.head_.previous = u();
+            this.head_ = this.head_.previous = h();
             this.size = 0
         };
-        f.prototype.has = function(a) {
-            return !!m(this, a).entry
+        m.prototype.has = function(f) {
+            return !!t(this, f).entry
         };
-        f.prototype.get = function(a) {
-            return (a = m(this, a).entry) && a.value
+        m.prototype.get = function(f) {
+            return (f =
+                t(this, f).entry) && f.value
         };
-        f.prototype.entries = function() {
-            return b(this, function(a) {
-                return [a.key, a.value]
+        m.prototype.entries = function() {
+            return x(this, function(f) {
+                return [f.key, f.value]
             })
         };
-        f.prototype.keys = function() {
-            return b(this, function(a) {
-                return a.key
+        m.prototype.keys = function() {
+            return x(this, function(f) {
+                return f.key
             })
         };
-        f.prototype.values = function() {
-            return b(this, function(a) {
-                return a.value
+        m.prototype.values = function() {
+            return x(this, function(f) {
+                return f.value
             })
         };
-        f.prototype.forEach = function(a, k) {
-            for (var c = this.entries(), b; !(b = c.next()).done;) b = b.value, a.call(k, b[1], b[0], this)
+        m.prototype.forEach = function(f, g) {
+            for (var l = this.entries(), r; !(r = l.next()).done;) r = r.value, f.call(g, r[1], r[0], this)
         };
-        f.prototype[Symbol.iterator] = f.prototype.entries;
-        var m = function(c, k) {
-                var b = k && typeof k;
-                "object" ==
-                b || "function" == b ? l.has(k) ? b = l.get(k) : (b = "" + ++a, l.set(k, b)) : b = "p_" + k;
-                var r = c.data_[b];
-                if (r && $jscomp.owns(c.data_, b))
-                    for (c = 0; c < r.length; c++) {
-                        var p = r[c];
-                        if (k !== k && p.key !== p.key || k === p.key) return {
-                            id: b,
+        m.prototype[Symbol.iterator] = m.prototype.entries;
+        var t = function(f, g) {
+                var l = g && typeof g;
+                "object" == l || "function" == l ? q.has(g) ? l = q.get(g) :
+                    (l = "" + ++e, q.set(g, l)) : l = "p_" + g;
+                var r = f.data_[l];
+                if (r && $jscomp.owns(f.data_, l))
+                    for (f = 0; f < r.length; f++) {
+                        var n = r[f];
+                        if (g !== g && n.key !== n.key || g === n.key) return {
+                            id: l,
                             list: r,
-                            index: c,
-                            entry: p
+                            index: f,
+                            entry: n
                         }
                     }
                 return {
-                    id: b,
+                    id: l,
                     list: r,
                     index: -1,
                     entry: void 0
                 }
             },
-            b = function(a, b) {
-                var c = a.head_;
+            x = function(f, g) {
+                var l = f.head_;
                 return $jscomp.iteratorPrototype(function() {
-                    if (c) {
-                        for (; c.head != a.head_;) c = c.previous;
-                        for (; c.next != c.head;) return c = c.next, {
+                    if (l) {
+                        for (; l.head != f.head_;) l = l.previous;
+                        for (; l.next != l.head;) return l = l.next, {
                             done: !1,
-                            value: b(c)
+                            value: g(l)
                         };
-                        c = null
+                        l = null
                     }
                     return {
                         done: !0,
@@ -538,21 +925,37 @@
                     }
                 })
             },
-            u = function() {
-                var a = {};
-                return a.previous =
-                    a.next = a.head = a
+            h = function() {
+                var f = {};
+                return f.previous = f.next = f.head = f
+									   
             },
-            a = 0;
-        return f
+            e = 0;
+        return m
     }, "es6", "es3");
-    $jscomp.findInternal = function(e, n, l) {
-        e instanceof String && (e = String(e));
-        for (var f = e.length, m = 0; m < f; m++) {
-            var b = e[m];
-            if (n.call(l, b, m, e)) return {
-                i: m,
-                v: b
+    $jscomp.checkStringArgs = function(k, p, q) {
+        if (null == k) throw new TypeError("The 'this' value for String.prototype." + q + " must not be null or undefined");
+        if (p instanceof RegExp) throw new TypeError("First argument to String.prototype." + q + " must not be a regular expression");
+        return k + ""
+    };
+    $jscomp.polyfill("String.prototype.endsWith", function(k) {
+        return k ? k : function(p, q) {
+            var m = $jscomp.checkStringArgs(this, p, "endsWith");
+            p += "";
+            void 0 === q && (q = m.length);
+            q = Math.max(0, Math.min(q | 0, m.length));
+            for (var t = p.length; 0 < t && 0 < q;)
+                if (m[--q] != p[--t]) return !1;
+            return 0 >= t
+        }
+    }, "es6", "es3");
+    $jscomp.findInternal = function(k, p, q) {
+        k instanceof String && (k = String(k));
+        for (var m = k.length, t = 0; t < m; t++) {
+            var x = k[t];
+            if (p.call(q, x, t, k)) return {
+                i: t,
+                v: x
             }
         }
         return {
@@ -560,4662 +963,6702 @@
             v: void 0
         }
     };
-    $jscomp.polyfill("Array.prototype.find", function(e) {
-        return e ? e : function(e, l) {
-            return $jscomp.findInternal(this, e, l).v
+    $jscomp.polyfill("Array.prototype.find", function(k) {
+        return k ? k : function(p, q) {
+            return $jscomp.findInternal(this, p, q).v
         }
     }, "es6", "es3");
-    $jscomp.underscoreProtoCanBeSet = function() {
-        var e = {
-                a: !0
-            },
-            n = {};
-        try {
-            return n.__proto__ = e, n.a
-        } catch (l) {}
-        return !1
-    };
-    $jscomp.setPrototypeOf = "function" == typeof Object.setPrototypeOf ? Object.setPrototypeOf : $jscomp.underscoreProtoCanBeSet() ? function(e, n) {
-        e.__proto__ = n;
-        if (e.__proto__ !== n) throw new TypeError(e + " is not extensible");
-        return e
-    } : null;
-    $jscomp.polyfill("Object.setPrototypeOf", function(e) {
-        return e || $jscomp.setPrototypeOf
-    }, "es6", "es5");
-    $jscomp.assign = "function" == typeof Object.assign ? Object.assign : function(e, n) {
-        for (var l = 1; l < arguments.length; l++) {
-            var f = arguments[l];
-            if (f)
-                for (var m in f) $jscomp.owns(f, m) && (e[m] = f[m])
+												  
+				 
+					 
+			  
+				   
+			 
+									   
+					  
+				 
+	  
+																																					  
+						
+																			 
+				
+			 
+														   
+										  
+					 
+    $jscomp.assign = $jscomp.TRUST_ES6_POLYFILLS && "function" == typeof Object.assign ? Object.assign : function(k, p) {
+        for (var q = 1; q < arguments.length; q++) {
+            var m = arguments[q];
+            if (m)
+                for (var t in m) $jscomp.owns(m, t) && (k[t] = m[t])
         }
-        return e
+        return k
     };
-    $jscomp.polyfill("Object.assign", function(e) {
-        return e || $jscomp.assign
+    $jscomp.polyfill("Set", function(k) {
+        function p() {
+            if ($jscomp.ASSUME_NO_NATIVE_SET || !k || "function" != typeof k || !k.prototype.entries || "function" != typeof Object.seal) return !1;
+            try {
+                var m = Object.seal({
+                        x: 4
+                    }),
+                    t = new k($jscomp.makeIterator([m]));
+                if (!t.has(m) || 1 != t.size || t.add(m) != t || 1 != t.size || t.add({
+                        x: 4
+                    }) != t || 2 != t.size) return !1;
+                var x = t.entries(),
+                    h = x.next();
+                if (h.done || h.value[0] != m || h.value[1] != m) return !1;
+                h = x.next();
+                return h.done || h.value[0] == m || 4 != h.value[0].x || h.value[1] != h.value[0] ? !1 : x.next().done
+            } catch (e) {
+                return !1
+            }
+        }
+        if ($jscomp.USE_PROXY_FOR_ES6_CONFORMANCE_CHECKS) {
+            if (k && $jscomp.ES6_CONFORMANCE) return k
+        } else if (p()) return k;
+        var q = function(m) {
+            this.map_ = new Map;
+            if (m) {
+                m = $jscomp.makeIterator(m);
+                for (var t; !(t = m.next()).done;) this.add(t.value)
+            }
+            this.size = this.map_.size
+        };
+        q.prototype.add = function(m) {
+            m = 0 === m ? 0 : m;
+            this.map_.set(m, m);
+            this.size = this.map_.size;
+            return this
+        };
+        q.prototype.delete = function(m) {
+            m = this.map_.delete(m);
+            this.size = this.map_.size;
+            return m
+        };
+        q.prototype.clear = function() {
+            this.map_.clear();
+            this.size = 0
+        };
+        q.prototype.has =
+            function(m) {
+                return this.map_.has(m)
+            };
+        q.prototype.entries = function() {
+            return this.map_.entries()
+        };
+        q.prototype.values = function() {
+            return this.map_.values()
+        };
+        q.prototype.keys = q.prototype.values;
+        q.prototype[Symbol.iterator] = q.prototype.values;
+        q.prototype.forEach = function(m, t) {
+            var x = this;
+            this.map_.forEach(function(h) {
+                return m.call(t, h, h, x)
+            })
+        };
+        return q
     }, "es6", "es3");
-    $jscomp.iteratorFromArray = function(e, n) {
-        $jscomp.initSymbolIterator();
-        e instanceof String && (e += "");
-        var l = 0,
-            f = {
+    $jscomp.iteratorFromArray = function(k, p) {
+									 
+        k instanceof String && (k += "");
+        var q = 0,
+            m = !1,
+            t = {
                 next: function() {
-                    if (l < e.length) {
-                        var m = l++;
+                    if (!m && q < k.length) {
+                        var x = q++;
                         return {
-                            value: n(m, e[m]),
+                            value: p(x, k[x]),
                             done: !1
                         }
                     }
-                    f.next = function() {
-                        return {
-                            done: !0,
-                            value: void 0
-                        }
-                    };
-                    return f.next()
+                    m = !0;
+                    return {
+                        done: !0,
+                        value: void 0
+                    }
+					  
+								   
                 }
             };
-        f[Symbol.iterator] = function() {
-            return f
+        t[Symbol.iterator] = function() {
+            return t
         };
-        return f
+        return t
     };
-    $jscomp.polyfill("Array.prototype.keys", function(e) {
-        return e ? e : function() {
-            return $jscomp.iteratorFromArray(this, function(e) {
-                return e
+    $jscomp.polyfill("Array.prototype.keys", function(k) {
+        return k ? k : function() {
+            return $jscomp.iteratorFromArray(this, function(p) {
+                return p
             })
         }
     }, "es6", "es3");
-    (function(e) {
-        function n(f) {
-            if (l[f]) return l[f].exports;
-            var m = l[f] = {
-                i: f,
+    (function(k) {
+        function p(m) {
+            if (q[m]) return q[m].exports;
+            var t = q[m] = {
+                i: m,
                 l: !1,
                 exports: {}
             };
-            e[f].call(m.exports, m, m.exports, n);
-            m.l = !0;
-            return m.exports
+            k[m].call(t.exports, t, t.exports, p);
+            t.l = !0;
+            return t.exports
         }
-        var l = {};
-        n.m = e;
-        n.c = l;
-        n.d = function(f, m, b) {
-            n.o(f, m) || Object.defineProperty(f, m, {
+        var q = {};
+        p.m = k;
+        p.c = q;
+        p.d = function(m, t, x) {
+            p.o(m, t) || Object.defineProperty(m, t, {
                 enumerable: !0,
-                get: b
+                get: x
             })
         };
-        n.r = function(f) {
-            "undefined" !== typeof Symbol && Symbol.toStringTag && Object.defineProperty(f, Symbol.toStringTag, {
+        p.r = function(m) {
+            "undefined" !== typeof Symbol && Symbol.toStringTag && Object.defineProperty(m, Symbol.toStringTag, {
                 value: "Module"
             });
-            Object.defineProperty(f, "__esModule", {
+            Object.defineProperty(m, "__esModule", {
                 value: !0
             })
         };
-        n.t = function(f, m) {
-            m & 1 && (f = n(f));
-            if (m & 8 || m & 4 && "object" === typeof f && f && f.__esModule) return f;
-            var b = Object.create(null);
-            n.r(b);
-            Object.defineProperty(b, "default", {
+        p.t = function(m, t) {
+            t & 1 && (m = p(m));
+            if (t & 8 || t & 4 && "object" === typeof m && m && m.__esModule) return m;
+            var x = Object.create(null);
+            p.r(x);
+            Object.defineProperty(x, "default", {
                 enumerable: !0,
-                value: f
+                value: m
             });
-            if (m & 2 && "string" != typeof f)
-                for (var e in f) n.d(b, e, function(a) {
-                    return f[a]
-                }.bind(null, e));
-            return b
+            if (t & 2 && "string" != typeof m)
+                for (var h in m) p.d(x, h, function(e) {
+                    return m[e]
+                }.bind(null, h));
+            return x
         };
-        n.n = function(e) {
-            var m = e && e.__esModule ? function() {
-                return e["default"]
+        p.n = function(m) {
+            var t = m && m.__esModule ? function() {
+                return m["default"]
             } : function() {
-                return e
+                return m
             };
-            n.d(m, "a", m);
-            return m
+            p.d(t, "a", t);
+            return t
         };
-        n.o = function(e, m) {
-            return Object.prototype.hasOwnProperty.call(e, m)
+        p.o = function(m, t) {
+            return Object.prototype.hasOwnProperty.call(m, t)
         };
-        n.p = "/core/pdf/";
-        return n(n.s = 17)
-    })([function(e, n, l) {
-            l.d(n, "c", function() {
-                return c
-            });
-            l.d(n, "a", function() {
-                return k
-            });
-            l.d(n, "b", function() {
-                return h
-            });
-            l.d(n, "d", function() {
-                return r
-            });
-            var f = l(8),
-                m = console.log,
-                b = console.warn,
-                u = console.error,
-                a = function(a) {
-                    void 0 === a && (a = !0);
-                    a ? (console.log = function() {}, console.warn = function() {}, console.error = function() {}) : (console.log = m, console.warn = b, console.error = u)
-                },
-                c = function() {
-                    var c = Object(f.a)(location.search);
-                    a("1" === c.disableLogs)
-                },
-                k = function(c) {
-                    c.on("disableLogs", function(c) {
-                        a(c.disabled)
-                    })
-                },
-                h = function(a, c) {
-                    return function() {}
-                },
-                r = function(a, c) {
-                    c ? console.warn(a + ": " + c) : console.warn(a)
-                }
-        }, function(e, n, l) {
-            l.d(n,
-                "c",
-                function() {
-                    return b
-                });
-            l.d(n, "d", function() {
-                return m
-            });
-            l.d(n, "b", function() {
-                return u
-            });
-            l.d(n, "a", function() {
-                return a
-            });
-            var f = l(3),
-                m = function(a, b) {
-                    Object(f.a)("disableLogs") || (b ? console.warn(a + ": " + b) : console.warn(a))
-                },
-                b = function(a, b) {
-                    Object(f.a)("disableLogs") || (b ? console.log(a + ": " + b) : console.log(a))
-                },
-                u = function(a) {
-                    if (!Object(f.a)("disableLogs")) throw console.error(a), Error(a);
-                },
-                a = function(a, b) {}
-        }, function(e, n, l) {
-            l.d(n, "a", function() {
-                return y
-            });
-            l.d(n, "b", function() {
-                return w
-            });
-            l.d(n, "c", function() {
-                return A
-            });
-            var f = l(11),
-                m = l(1),
-                b = l(16),
-                u = l(4),
-                a = "undefined" === typeof window ? self : window,
-                c = a.importScripts,
-                k = function(d) {
-                    if ("string" === typeof d) {
-                        for (var g = new Uint8Array(d.length), a = d.length, q = 0; q < a; q++) g[q] = d.charCodeAt(q);
-                        return g
-                    }
-                    return d
-                },
-                h = function(d) {
-                    if ("string" !== typeof d) {
-                        for (var g = "", a = 0, q = d.length, c; a < q;) c = d.subarray(a, a + 1024), a += 1024, g += String.fromCharCode.apply(null, c);
-                        return g
-                    }
-                    return d
-                },
-                r = !1,
-                p = function(d, g) {
-                    r || (c(a.basePath + "decode.min.js"), r = !0);
-                    d = self.BrotliDecode(k(d));
-                    return g ? d : h(d)
-                },
-                v = function(d,
-                    g) {
-                    return Object(f.a)(void 0, void 0, Promise, function() {
-                        var a;
-                        return Object(f.b)(this, function(q) {
-                            switch (q.label) {
-                                case 0:
-                                    return r ? [3, 2] : [4, Object(u.b)(self.CoreControls.getWorkerPath() + "external/decode.min.js", "Failed to download decode.min.js", window)];
-                                case 1:
-                                    q.sent(), r = !0, q.label = 2;
-                                case 2:
-                                    return a = self.BrotliDecode(k(d)), [2, g ? a : h(a)]
-                            }
-                        })
-                    })
-                };
-            (function() {
-                function d() {
-                    this.remainingDataArrays = []
-                }
-                d.prototype.processRaw = function(d) {
-                    return d
-                };
-                d.prototype.processBrotli = function(d) {
-                    this.remainingDataArrays.push(d);
-                    return null
-                };
-                d.prototype.GetNextChunk = function(d) {
-                    this.decodeFunction || (this.decodeFunction = 0 === d[0] && 97 === d[1] && 115 === d[2] && 109 === d[3] ? this.processRaw : this.processBrotli);
-                    return this.decodeFunction(d)
-                };
-                d.prototype.End = function() {
-                    if (this.remainingDataArrays.length) {
-                        for (var d = this.arrays, g = 0, a = 0; a < d.length; ++a) g += d[a].length;
-                        g = new Uint8Array(g);
-                        var q = 0;
-                        for (a = 0; a < d.length; ++a) {
-                            var c = d[a];
-                            g.set(c, q);
-                            q += c.length
-                        }
-                        return p(g, !0)
-                    }
-                    return null
-                };
-                return d
-            })();
-            var z = !1,
-                x = function(d, g) {
-                    z || (c(a.basePath + "rawinflate.js",
-                        a.basePath + "pako_inflate.min.js"), z = !0);
-                    var q = 10;
-                    if ("string" === typeof d) {
-                        if (d.charCodeAt(3) & 8) {
-                            for (; 0 !== d.charCodeAt(q); ++q);
-                            ++q
-                        }
-                    } else if (d[3] & 8) {
-                        for (; 0 !== d[q]; ++q);
-                        ++q
-                    }
-                    if (g) return d = k(d), d = d.subarray(q, d.length - 8), a.pako.inflate(d, {
-                        windowBits: -15
-                    });
-                    d = h(d);
-                    d = d.substring(q, d.length - 8);
-                    return b.a.inflate(d)
-                },
-                t = function(d, g) {
-                    return g ? d : h(d)
-                },
-                B = function(d) {
-                    var g = !d.shouldOutputArray,
-                        a = new XMLHttpRequest;
-                    a.open("GET", d.url, d.isAsync);
-                    var q = g && a.overrideMimeType;
-                    a.responseType = q ? "text" : "arraybuffer";
-                    q &&
-                        a.overrideMimeType("text/plain; charset=x-user-defined");
-                    a.send();
-                    var w = function() {
-                        var w = Date.now();
-                        var b = q ? a.responseText : new Uint8Array(a.response);
-                        Object(m.a)("worker", "Result length is " + b.length);
-                        b.length < d.compressedMaximum ? (b = d.decompressFunction(b, d.shouldOutputArray), Object(m.d)("There may be some degradation of performance. Your server has not been configured to serve .gz. and .br. files with the expected Content-Encoding. See http://www.pdftron.com/kb_content_encoding for instructions on how to resolve this."),
-                            c && Object(m.a)("worker", "Decompressed length is " + b.length)) : g && (b = h(b));
-                        c && Object(m.a)("worker", d.url + " Decompression took " + (Date.now() - w));
-                        return b
-                    };
-                    if (d.isAsync) var b = new Promise(function(g, q) {
-                        a.onload = function() {
-                            200 === this.status || 0 === this.status ? g(w()) : q("Download Failed " + d.url)
-                        };
-                        a.onerror = function() {
-                            q("Network error occurred " + d.url)
-                        }
-                    });
-                    else {
-                        if (200 === a.status || 0 === a.status) return w();
-                        throw Error("Failed to load " + d.url);
-                    }
-                    return b
-                },
-                y = function(d) {
-                    var g = d.lastIndexOf("/"); - 1 === g && (g = 0);
-                    var a =
-                        d.slice(g).replace(".", ".br.");
-                    c || (a.endsWith(".js.mem") ? a = a.replace(".js.mem", ".mem") : a.endsWith(".js") && (a = a.concat(".mem")));
-                    return d.slice(0, g) + a
-                },
-                C = function(d, g) {
-                    var a = d.lastIndexOf("/"); - 1 === a && (a = 0);
-                    var q = d.slice(a).replace(".", ".gz.");
-                    g.url = d.slice(0, a) + q;
-                    g.decompressFunction = x;
-                    return B(g)
-                },
-                L = function(d, g) {
-                    g.url = y(d);
-                    g.decompressFunction = c ? p : v;
-                    return B(g)
-                },
-                d = function(d, g) {
-                    d.endsWith(".js.mem") ? d = d.slice(0, -4) : d.endsWith(".mem") && (d = d.slice(0, -4) + ".js.mem");
-                    g.url = d;
-                    g.decompressFunction = t;
-                    return B(g)
-                },
-                g = function(d, g, a, q) {
-                    return d.catch(function(d) {
-                        Object(m.d)(d);
-                        return q(g, a)
-                    })
-                },
-                q = function(d, a, q) {
-                    var c;
-                    if (q.isAsync) {
-                        var w = a[0](d, q);
-                        for (c = 1; c < a.length; ++c) w = g(w, d, q, a[c]);
-                        return w
-                    }
-                    for (c = 0; c < a.length; ++c) try {
-                        return a[c](d, q)
-                    } catch (K) {
-                        Object(m.d)(K.message)
-                    }
-                    throw Error("");
-                },
-                A = function(g, a, c, w) {
-                    return q(g, [C, L, d], {
-                        compressedMaximum: a,
-                        isAsync: c,
-                        shouldOutputArray: w
-                    })
-                },
-                w = function(g, a, c, w) {
-                    return q(g, [L, C, d], {
-                        compressedMaximum: a,
-                        isAsync: c,
-                        shouldOutputArray: w
-                    })
-                }
-        }, function(e, n, l) {
-            l.d(n, "a", function() {
-                return b
-            });
-            l.d(n, "b", function() {
-                return u
-            });
-            var f = {},
-                m = {
-                    flattenedResources: !1,
-                    CANVAS_CACHE_SIZE: void 0,
-                    maxPagesBefore: void 0,
-                    maxPagesAhead: void 0,
-                    disableLogs: !1,
-                    _trnDebugMode: !1,
-                    _logFiltersEnabled: null
-                },
-                b = function(a) {
-                    return m[a]
-                },
-                u = function(a, c) {
-                    var b;
-                    m[a] = c;
-                    null === (b = f[a]) || void 0 === b ? void 0 : b.forEach(function(a) {
-                        a(c)
-                    })
-                }
-        }, function(e, n, l) {
-            function f(a, c, k) {
-                function h(v) {
-                    p = p || Date.now();
-                    return v ? (Object(b.a)("load", "Try instantiateStreaming"), fetch(Object(u.a)(a)).then(function(a) {
-                        return WebAssembly.instantiateStreaming(a,
-                            c)
-                    }).catch(function(c) {
-                        Object(b.a)("load", "instantiateStreaming Failed " + a + " message " + c.message);
-                        return h(!1)
-                    })) : Object(u.b)(a, k, !0, !0).then(function(a) {
-                        r = Date.now();
-                        Object(b.a)("load", "Request took " + (r - p) + " ms");
-                        return WebAssembly.instantiate(a, c)
-                    })
-                }
-                var r, p;
-                return h(!!WebAssembly.instantiateStreaming).then(function(a) {
-                    Object(b.a)("load", "WASM compilation took " + (Date.now() - (r || p)) + " ms");
-                    return a
+        p.p = "/core/pdf/";
+        return p(p.s = 22)
+    })([function(k, p, q) {
+        q.d(p, "d", function() {
+            return h
+        });
+        q.d(p, "e", function() {
+            return t
+        });
+        q.d(p, "c", function() {
+            return e
+        });
+        q.d(p, "a", function() {
+            return f
+        });
+        q.d(p, "b", function() {
+            return x
+        });
+        var m = q(3),
+            t = function(g, l) {
+                Object(m.a)("disableLogs") || (l ? console.warn(g + ": " + l) : console.warn(g))
+            },
+            x = function(g, l, r, n) {
+                void 0 === n && (n = !1);
+                var v = r.pop();
+                r = r.length ? r.join(", ") + " and " + v : v;
+                n ? t("'" + l + "' will be deprecated in version " + g + ". Please use " + r + " instead.") : t("'" + l + "' is deprecated since version " + g + ". Please use " + r + " instead.")
+            },
+            h = function(g, l) {
+                Object(m.a)("disableLogs") || (l ? console.log(g + ": " + l) : console.log(g))
+            },
+            e = function(g) {
+                if (!Object(m.a)("disableLogs")) throw console.error(g),
+                    Error(g);
+            },
+            f = function(g, l) {}
+    }, function(k, p, q) {
+        q.d(p, "c", function() {
+            return f
+        });
+        q.d(p, "a", function() {
+            return g
+        });
+        q.d(p, "b", function() {
+            return l
+        });
+        q.d(p, "d", function() {
+            return r
+        });
+        var m = q(17),
+            t = console.log,
+            x = console.warn,
+            h = console.error,
+            e = function(n) {
+                void 0 === n && (n = !0);
+                n ? (console.log = function() {}, console.warn = function() {}, console.error = function() {}) : (console.log = t, console.warn = x, console.error = h)
+            },
+            f = function() {
+                var n = Object(m.a)(location.search);
+                e("1" === n.disableLogs)
+            },
+            g = function(n) {
+                n.on("disableLogs", function(v) {
+                    e(v.disabled)
                 })
+            },
+            l = function(n, v) {
+                return function() {}
+            },
+            r = function(n, v) {
+                v ? console.warn(n + ": " + v) : console.warn(n)
             }
-
-            function m(a, c, k) {
-                return new Promise(function(h) {
-                    if (!a) return h();
-                    var r = k.document.createElement("script");
-                    r.type = "text/javascript";
-                    r.onload = function() {
-                        h()
-                    };
-                    r.onerror = function() {
-                        c && Object(b.d)(c);
-                        h()
-                    };
-                    r.src = a;
-                    k.document.getElementsByTagName("head")[0].appendChild(r)
-                })
-            }
-            l.d(n, "a", function() {
-                return f
-            });
-            l.d(n, "b", function() {
-                return m
-            });
-            var b = l(1),
-                u = l(2)
-        }, function(e, n, l) {
-            l.d(n, "c", function() {
-                return u
-            });
-            l.d(n, "b", function() {
-                return a
-            });
-            l.d(n, "a", function() {
-                return c
-            });
-            var f = "undefined" === typeof window ? self : window;
+    }, function(k, p, q) {
+        q.d(p, "g", function() {
+            return h
+        });
+        q.d(p, "c", function() {
+            return e
+        });
+        q.d(p, "h", function() {
+            return l
+        });
+        q.d(p, "d", function() {
+            return r
+        });
+        q.d(p, "f", function() {
+            return t
+        });
+        q.d(p, "b", function() {
+            return x
+        });
+        q.d(p, "i", function() {
+            return n
+        });
+        q.d(p, "j", function() {
+            return w
+        });
+        q.d(p, "e", function() {
+            return C
+        });
+        q.d(p, "a", function() {
+            return E
+        });
+        q(0);
+        var m = "undefined" === typeof window ? self : window;
+        k = function() {
+            var B =
+                navigator.userAgent.toLowerCase();
+            return (B = /(msie) ([\w.]+)/.exec(B) || /(trident)(?:.*? rv:([\w.]+)|)/.exec(B)) ? parseInt(B[2], 10) : B
+        }();
+        var t = function() {
+                var B = m.navigator.userAgent.match(/OPR/),
+                    D = m.navigator.userAgent.match(/Maxthon/),
+                    I = m.navigator.userAgent.match(/Edge/);
+                return m.navigator.userAgent.match(/Chrome\/(.*?) /) && !B && !D && !I
+            }(),
+            x = function() {
+                if (!t) return null;
+                var B = m.navigator.userAgent.match(/Chrome\/([0-9]+)\./);
+                return B ? parseInt(B[1], 10) : B
+            }(),
+            h = !!navigator.userAgent.match(/Edge/i) || navigator.userAgent.match(/Edg\/(.*?)/) &&
+            m.navigator.userAgent.match(/Chrome\/(.*?) /),
             e = function() {
-                var a = navigator.userAgent.toLowerCase();
-                return (a = /(msie) ([\w.]+)/.exec(a) || /(trident)(?:.*? rv:([\w.]+)|)/.exec(a)) ?
-                    parseInt(a[2], 10) : a
+                if (!h) return null;
+                var B = m.navigator.userAgent.match(/Edg\/([0-9]+)\./);
+                return B ? parseInt(B[1], 10) : B
             }();
-            (function() {
-                var a = f.navigator.userAgent.match(/OPR/),
-                    c = f.navigator.userAgent.match(/Maxthon/),
-                    b = f.navigator.userAgent.match(/Edge/);
-                return f.navigator.userAgent.match(/Chrome\/(.*?) /) && !a && !c && !b
-            })();
-            navigator.userAgent.match(/Edge/i);
-            n = /iPad|iPhone|iPod/.test(f.navigator.platform) || "MacIntel" === navigator.platform && 1 < navigator.maxTouchPoints;
-            (function() {
-                var a = f.navigator.userAgent.match(/.*\/([0-9\.]+)\s(Safari|Mobile).*/i);
-                return a ? parseFloat(a[1]) : a
-            })();
-            var m = /^((?!chrome|android).)*safari/i.test(f.navigator.userAgent) ||
-                /^((?!chrome|android).)*$/.test(f.navigator.userAgent) && n;
-            f.navigator.userAgent.match(/Firefox/);
-            e || /Android|webOS|Touch|IEMobile|Silk/i.test(navigator.userAgent);
-            navigator.userAgent.match(/(iPad|iPhone|iPod)/i);
-            f.navigator.userAgent.indexOf("Android");
-            var b = /Mac OS X 10_13_6.*\(KHTML, like Gecko\)$/.test(f.navigator.userAgent),
-                u = function() {
-                    return m || b
-                },
-                a = !(!self.WebAssembly || !self.WebAssembly.validate),
-                c = -1 < f.navigator.userAgent.indexOf("Edge/16") || -1 < f.navigator.userAgent.indexOf("MSAppHost")
-        },
-        function(e, n, l) {
-            function f(a) {
-                "@babel/helpers - typeof";
-                f = "function" === typeof Symbol && "symbol" === typeof Symbol.iterator ? function(a) {
-                    return typeof a
-                } : function(a) {
-                    return a && "function" === typeof Symbol && a.constructor === Symbol && a !== Symbol.prototype ? "symbol" : typeof a
-                };
-                return f(a)
-            }
-            var m, b, u;
-            ! function(a) {
-                "object" === f(n) && "undefined" !== typeof e ? e.exports = a() : !(b = [], m = a, u = "function" === typeof m ? m.apply(n, b) : m, void 0 !== u && (e.exports = u))
-            }(function() {
-                return function r(c, b, h) {
-                    function k(p, t) {
-                        if (!b[p]) {
-                            if (!c[p]) {
-                                if (v) return v(p,
-                                    !0);
-                                t = Error("Cannot find module '".concat(p, "'"));
-                                throw t.code = "MODULE_NOT_FOUND", t;
-                            }
-                            t = b[p] = {
-                                exports: {}
-                            };
-                            c[p][0].call(t.exports, function(b) {
-                                return k(c[p][1][b] || b)
-                            }, t, t.exports, r, c, b, h)
-                        }
-                        return b[p].exports
-                    }
-                    for (var v = !1, z = 0; z < h.length; z++) k(h[z]);
-                    return k
-                }({
-                    1: [function(c, b, h) {
-                        var k = {}.hasOwnProperty,
-                            p = function(c, b) {
-                                function p() {
-                                    this.constructor = c
-                                }
-                                for (var t in b) k.call(b, t) && (c[t] = b[t]);
-                                p.prototype = b.prototype;
-                                c.prototype = new p;
-                                c.__super__ = b.prototype;
-                                return c
-                            };
-                        h = c("./PriorityQueue/AbstractPriorityQueue");
-                        c = c("./PriorityQueue/ArrayStrategy");
-                        h = function(c) {
-                            function b(c) {
-                                c || (c = {});
-                                c.strategy || (c.strategy = BinaryHeapStrategy);
-                                c.comparator || (c.comparator = function(c, b) {
-                                    return (c || 0) - (b || 0)
-                                });
-                                b.__super__.constructor.call(this, c)
-                            }
-                            p(b, c);
-                            return b
-                        }(h);
-                        h.ArrayStrategy = c;
-                        b.exports = h
-                    }, {
-                        "./PriorityQueue/AbstractPriorityQueue": 2,
-                        "./PriorityQueue/ArrayStrategy": 3
-                    }],
-                    2: [function(c, b, h) {
-                        b.exports = function() {
-                            function c(c) {
-                                if (null == (null != c ? c.strategy : void 0)) throw "Must pass options.strategy, a strategy";
-                                if (null == (null !=
-                                        c ? c.comparator : void 0)) throw "Must pass options.comparator, a comparator";
-                                this.priv = new c.strategy(c);
-                                this.length = 0
-                            }
-                            c.prototype.queue = function(c) {
-                                this.length++;
-                                this.priv.queue(c)
-                            };
-                            c.prototype.dequeue = function(c) {
-                                if (!this.length) throw "Empty queue";
-                                this.length--;
-                                return this.priv.dequeue()
-                            };
-                            c.prototype.peek = function(c) {
-                                if (!this.length) throw "Empty queue";
-                                return this.priv.peek()
-                            };
-                            c.prototype.remove = function(c) {
-                                this.priv.remove(c) && --this.length
-                            };
-                            c.prototype.find = function(c) {
-                                return 0 <= this.priv.find(c)
-                            };
-                            c.prototype.removeAllMatching = function(c, b) {
-                                c = this.priv.removeAllMatching(c, b);
-                                this.length -= c
-                            };
-                            return c
-                        }()
-                    }, {}],
-                    3: [function(c, b, h) {
-                        var k = function(c, b, k) {
-                            var h;
-                            var t = 0;
-                            for (h = c.length; t < h;) {
-                                var p = t + h >>> 1;
-                                0 <= k(c[p], b) ? t = p + 1 : h = p
-                            }
-                            return t
-                        };
-                        b.exports = function() {
-                            function c(c) {
-                                var b;
-                                this.options = c;
-                                this.comparator = this.options.comparator;
-                                this.data = (null != (b = this.options.initialValues) ? b.slice(0) : void 0) || [];
-                                this.data.sort(this.comparator).reverse()
-                            }
-                            c.prototype.queue = function(c) {
-                                var b = k(this.data, c, this.comparator);
-                                this.data.splice(b, 0, c)
-                            };
-                            c.prototype.dequeue = function() {
-                                return this.data.pop()
-                            };
-                            c.prototype.peek = function() {
-                                return this.data[this.data.length - 1]
-                            };
-                            c.prototype.find = function(c) {
-                                var b = k(this.data, c, this.comparator) - 1;
-                                return 0 <= b && !this.comparator(this.data[b], c) ? b : -1
-                            };
-                            c.prototype.remove = function(c) {
-                                c = this.find(c);
-                                return 0 <= c ? (this.data.splice(c, 1), !0) : !1
-                            };
-                            c.prototype.removeAllMatching = function(c, b) {
-                                for (var k = 0, t = this.data.length - 1; 0 <= t; --t)
-                                    if (c(this.data[t])) {
-                                        var h = this.data.splice(t, 1)[0];
-                                        b && b(h);
-                                        ++k
-                                    } return k
-                            };
-                            return c
-                        }()
-                    }, {}]
-                }, {}, [1])(1)
-            })
-        },
-        function(e, n, l) {
-            (function(e) {
-                function m(a, c) {
-                    this._id = a;
-                    this._clearFn = c
-                }
-                var b = "undefined" !== typeof e && e || "undefined" !== typeof self && self || window,
-                    f = Function.prototype.apply;
-                n.setTimeout = function() {
-                    return new m(f.call(setTimeout, b, arguments), clearTimeout)
-                };
-                n.setInterval = function() {
-                    return new m(f.call(setInterval, b, arguments), clearInterval)
-                };
-                n.clearTimeout = n.clearInterval = function(a) {
-                    a && a.close()
-                };
-                m.prototype.unref = m.prototype.ref = function() {};
-                m.prototype.close = function() {
-                    this._clearFn.call(b,
-                        this._id)
-                };
-                n.enroll = function(a, c) {
-                    clearTimeout(a._idleTimeoutId);
-                    a._idleTimeout = c
-                };
-                n.unenroll = function(a) {
-                    clearTimeout(a._idleTimeoutId);
-                    a._idleTimeout = -1
-                };
-                n._unrefActive = n.active = function(a) {
-                    clearTimeout(a._idleTimeoutId);
-                    var c = a._idleTimeout;
-                    0 <= c && (a._idleTimeoutId = setTimeout(function() {
-                        a._onTimeout && a._onTimeout()
-                    }, c))
-                };
-                l(21);
-                n.setImmediate = "undefined" !== typeof self && self.setImmediate || "undefined" !== typeof e && e.setImmediate || this && this.setImmediate;
-                n.clearImmediate = "undefined" !== typeof self && self.clearImmediate ||
-                    "undefined" !== typeof e && e.clearImmediate || this && this.clearImmediate
-            }).call(this, l(9))
-        },
-        function(e, n, l) {
-            n.a = function(e) {
-                var m = {};
-                decodeURIComponent(e.slice(1)).split("&").forEach(function(b) {
-                    b = b.split("=", 2);
-                    m[b[0]] = b[1]
-                });
-                return m
-            }
-        },
-        function(e, n) {
-            n = function() {
-                return this
-            }();
-            try {
-                n = n || (new Function("return this"))()
-            } catch (l) {
-                "object" === typeof window && (n = window)
-            }
-            e.exports = n
-        },
-        function(e, n, l) {
-            l.d(n, "b", function() {
-                return u
-            });
-            l.d(n, "a", function() {
-                return c
-            });
-            var f = l(2),
-                m = l(4),
-                b = l(5),
-                u = function() {
-                    return b.b &&
-                        !b.a && !Object(b.c)()
-                },
-                a = function() {
-                    function a(a) {
-                        var c = this;
-                        this.promise = a.then(function(a) {
-                            c.response = a;
-                            c.status = 200
-                        })
-                    }
-                    a.prototype.addEventListener = function(a, c) {
-                        this.promise.then(c)
-                    };
-                    return a
-                }(),
-                c = function(c, b, e) {
-                    if (u() && !e) self.Module.instantiateWasm = function(a, k) {
-                        return Object(m.a)(c + "Wasm.wasm", a, b["Wasm.wasm"]).then(function(a) {
-                            k(a.instance)
-                        })
-                    }, e = Object(f.b)(c + "Wasm.js.mem", b["Wasm.js.mem"], !1, !1);
-                    else {
-                        e = Object(f.b)((self.Module.asmjsPrefix ? self.Module.asmjsPrefix : "") + c + ".js.mem", b[".js.mem"],
-                            !1);
-                        var k = Object(f.c)((self.Module.memoryInitializerPrefixURL ? self.Module.memoryInitializerPrefixURL : "") + c + ".mem", b[".mem"], !0, !0);
-                        self.Module.memoryInitializerRequest = new a(k)
-                    }
-                    e = e.replaceAll(
-                        'url=Module.UTF8ToString($0);',
-                        'url=Module.UTF8ToString($0);'+
-                        'console.log(\'BF=\'+url);'+
-                        'if(url&&url.indexOf(\'https:/\')>=0){url=url.replace(\'https:/\',\'/\');console.log(\'AF=\'+url);}'
-                    );
-                    e = e.replaceAll(
-                        'var url="https://proxy.pdftron.com?url="+encodeURIComponent(Module.UTF8ToString($1));',
-                        'var url=Module.UTF8ToString($1);'+
-                        'console.log(\'BF=\'+url);'+
-                        'if(url&&url.indexOf(\'https:\')>=0){url=url.replace(\'https:\',\'\');console.log(\'AF=\'+url);}'+
-                        'if(url&&url.indexOf(\'http://\')>=0){url=url.replace(\'http://\',\'\');console.log(\'AF=\'+url);}'
-                    );
-                    e = new Blob([e], {
-                        type: "application/javascript"
-                    });
-                    importScripts(URL.createObjectURL(e))
-                }
-        },
-        function(e, n, l) {
-            function f(b, e, a, c) {
-                return new(a || (a = Promise))(function(k, h) {
-                    function m(a) {
-                        try {
-                            v(c.next(a))
-                        } catch (x) {
-                            h(x)
-                        }
-                    }
-
-                    function p(a) {
-                        try {
-                            v(c["throw"](a))
-                        } catch (x) {
-                            h(x)
-                        }
-                    }
-
-                    function v(c) {
-                        c.done ? k(c.value) : (new a(function(a) {
-                            a(c.value)
-                        })).then(m,
-                            p)
-                    }
-                    v((c = c.apply(b, e || [])).next())
+        p = /iPad|iPhone|iPod/.test(m.navigator.platform) || "MacIntel" === navigator.platform && 1 < navigator.maxTouchPoints;
+        var f = function() {
+                var B = m.navigator.userAgent.match(/.*\/([0-9\.]+)\s(Safari|Mobile).*/i);
+                return B ? parseFloat(B[1]) : B
+            }(),
+            g = /^((?!chrome|android).)*safari/i.test(m.navigator.userAgent) || /^((?!chrome|android).)*$/.test(m.navigator.userAgent) &&
+            p,
+            l = m.navigator.userAgent.match(/Firefox/),
+            r = function() {
+                if (!l) return null;
+                var B = m.navigator.userAgent.match(/Firefox\/([0-9]+)\./);
+                return B ? parseInt(B[1], 10) : B
+            }(),
+            n = !(k || !/Android|webOS|Touch|IEMobile|Silk/i.test(navigator.userAgent) && !p);
+        navigator.userAgent.match(/(iPad|iPhone|iPod)/i);
+        m.navigator.userAgent.indexOf("Android");
+        var v = /Mac OS X 10_13_6.*\(KHTML, like Gecko\)$/.test(m.navigator.userAgent),
+            z = m.navigator.userAgent.match(/(iPad|iPhone).+\sOS\s((\d+)(_\d)*)/i) ? 14 <= parseInt(m.navigator.userAgent.match(/(iPad|iPhone).+\sOS\s((\d+)(_\d)*)/i)[3],
+                10) : !1,
+            w = function() {
+                return !z && (g && 14 > f || v)
+            },
+            C = !(!self.WebAssembly || !self.WebAssembly.validate),
+            E = -1 < m.navigator.userAgent.indexOf("Edge/16") || -1 < m.navigator.userAgent.indexOf("MSAppHost")
+    }, function(k, p, q) {
+        q.d(p, "a", function() {
+            return x
+        });
+        q.d(p, "b", function() {
+            return h
+        });
+        var m = {},
+            t = {
+                flattenedResources: !1,
+                CANVAS_CACHE_SIZE: void 0,
+                maxPagesBefore: void 0,
+                maxPagesAhead: void 0,
+                disableLogs: !1,
+                wvsQueryParameters: {},
+                _trnDebugMode: !1,
+                _logFiltersEnabled: null
+            },
+            x = function(e) {
+                return t[e]
+            },
+            h = function(e, f) {
+                var g;
+                t[e] =
+                    f;
+                null === (g = m[e]) || void 0 === g ? void 0 : g.forEach(function(l) {
+                    l(f)
                 })
             }
-
-            function m(b, e) {
-                function a(a) {
-                    return function(b) {
-                        return c([a, b])
-                    }
-                }
-
-                function c(a) {
-                    if (h) throw new TypeError("Generator is already executing.");
-                    for (; k;) try {
-                        if (h = 1, m && (p = a[0] & 2 ? m["return"] : a[0] ? m["throw"] || ((p = m["return"]) && p.call(m), 0) : m.next) && !(p = p.call(m, a[1])).done) return p;
-                        if (m = 0, p) a = [a[0] & 2, p.value];
-                        switch (a[0]) {
+    }, function(k, p, q) {
+        q.d(p, "a", function() {
+            return C
+        });
+        q.d(p, "b", function() {
+            return b
+        });
+        q.d(p, "c", function() {
+            return a
+        });
+        var m = q(14),
+            t = q(0),
+            x = q(9),
+            h = q(5),
+            e = "undefined" === typeof window ? self : window,
+            f = e.importScripts,
+            g = !1,
+            l = function(d, c) {
+                g || (f(e.basePath + "decode.min.js"), g = !0);
+                d = self.BrotliDecode(Object(h.b)(d));
+                return c ? d : Object(h.a)(d)
+            },
+            r = function(d, c) {
+                return Object(m.a)(void 0, void 0, Promise, function() {
+                    var u;
+                    return Object(m.b)(this, function(A) {
+                        switch (A.label) {
                             case 0:
+                                return g ? [3, 2] : [4, Object(x.a)(self.Core.getWorkerPath() + "external/decode.min.js", "Failed to download decode.min.js", window)];
                             case 1:
-                                p = a;
-                                break;
-                            case 4:
-                                return k.label++, {
-                                    value: a[1],
-                                    done: !1
-                                };
-                            case 5:
-                                k.label++;
-                                m = a[1];
-                                a = [0];
-                                continue;
-                            case 7:
-                                a = k.ops.pop();
-                                k.trys.pop();
-                                continue;
-                            default:
-                                if (!(p = k.trys, p = 0 < p.length && p[p.length - 1]) && (6 === a[0] || 2 === a[0])) {
-                                    k = 0;
-                                    continue
-                                }
-                                if (3 === a[0] && (!p || a[1] > p[0] && a[1] < p[3])) k.label = a[1];
-                                else if (6 === a[0] && k.label < p[1]) k.label = p[1], p = a;
-                                else if (p && k.label < p[2]) k.label = p[2], k.ops.push(a);
-                                else {
-                                    p[2] && k.ops.pop();
-                                    k.trys.pop();
-                                    continue
-                                }
+                                A.sent(), g = !0, A.label = 2;
+                            case 2:
+                                return u = self.BrotliDecode(Object(h.b)(d)), [2, c ? u : Object(h.a)(u)]
                         }
-                        a = e.call(b, k)
-                    } catch (x) {
-                        a = [6, x], m = 0
-                    } finally {
-                        h = p = 0
+                    })
+                })
+            };
+        (function() {
+				  
+									
+																	
+				 
+            function d() {
+                this.remainingDataArrays = []
+            }
+            d.prototype.processRaw = function(c) {
+                return c
+            };
+            d.prototype.processBrotli = function(c) {
+                this.remainingDataArrays.push(c);
+                return null
+            };
+            d.prototype.GetNextChunk = function(c) {
+                this.decodeFunction || (this.decodeFunction = 0 === c[0] && 97 ===
+                    c[1] && 115 === c[2] && 109 === c[3] ? this.processRaw : this.processBrotli);
+                return this.decodeFunction(c)
+            };
+						 
+									
+																									
+				  
+									
+																								  
+				  
+								 
+																					  
+				  
+									 
+							  
+									
+						
+			   
+									
+						
+			   
+            d.prototype.End = function() {
+                if (this.remainingDataArrays.length) {
+                    for (var c = this.arrays, u = 0, A = 0; A < c.length; ++A) u += c[A].length;
+                    u = new Uint8Array(u);
+                    var G = 0;
+						  
+						 
+																  
+									
+								 
+												
+																													   
+								
+					 
+							
+				  
+								 
+												
+                    for (A = 0; A < c.length; ++A) {
+                        var y = c[A];
+                        u.set(y, G);
+                        G += y.length
                     }
-                    if (a[0] & 5) throw a[1];
-                    return {
-                        value: a[0] ? a[1] : void 0,
-                        done: !0
+                    return l(u, !0)
+				  
+					   
+									
+																   
+												
+									   
+				  
+							   
+						
+																			
+							  
+															  
+											  
+									   
+																																												   
+									   
+																  
+									   
+																						 
+							 
+						  
+					  
+				  
+						 
+							  
+												 
+                }
+                return null
+            };
+            return d
+        })();
+        var n = !1,
+            v = function(d) {
+                n || (f(e.basePath + "pako_inflate.min.js"), n = !0);
+                var c = 10;
+                if ("string" === typeof d) {
+                    if (d.charCodeAt(3) & 8) {
+                        for (; 0 !== d.charCodeAt(c); ++c);
+                        ++c
+				  
+											  
+														  
+																									
+											  
+								  
+														
+										 
+										
+										 
+						 
+									   
+                    }
+                } else if (d[3] &
+                    8) {
+                    for (; 0 !== d[c]; ++c);
+                    ++c
+                }
+                d = Object(h.b)(d);
+                d = d.subarray(c, d.length - 8);
+                return e.pako.inflate(d, {
+                    windowBits: -15
+                })
+            },
+            z = function(d, c) {
+                return c ? d : Object(h.a)(d)
+            },
+            w = function(d) {
+                var c = !d.shouldOutputArray,
+                    u = new XMLHttpRequest;
+                u.open("GET", d.url, d.isAsync);
+                var A = c && u.overrideMimeType;
+                u.responseType = A ? "text" : "arraybuffer";
+                A && u.overrideMimeType("text/plain; charset=x-user-defined");
+                u.send();
+                var G = function() {
+                    var H = Date.now();
+                    var J = A ? u.responseText : new Uint8Array(u.response);
+                    Object(t.a)("worker", "Result length is " +
+                        J.length);
+                    J.length < d.compressedMaximum ? (J = d.decompressFunction(J, d.shouldOutputArray), Object(t.e)("There may be some degradation of performance. Your server has not been configured to serve .gz. and .br. files with the expected Content-Encoding. See http://www.pdftron.com/kb_content_encoding for instructions on how to resolve this."), f && Object(t.a)("worker", "Decompressed length is " + J.length)) : c && (J = Object(h.a)(J));
+                    f && Object(t.a)("worker", d.url + " Decompression took " + (Date.now() - H));
+                    return J
+                };
+                if (d.isAsync) var y =
+				 
+					   
+									
+														 
+																	 
+							   
+												
+												  
+															   
+							   
+						 
+										  
+												
+						   
+					 
+																								
+									   
+					   
+							 
+													 
+										 
+				  
+									
+									   
+				  
+								 
+												 
+											   
+													
+													
+																
+						
+																				 
+							 
+										
+										   
+																				
+																			  
+																																																																																									  
+																												
+																									  
+								
+					  
+                    new Promise(function(H, J) {
+                        u.onload = function() {
+                            200 === this.status || 0 === this.status ? H(G()) : J("Download Failed " + d.url)
+                        };
+                        u.onerror = function() {
+                            J("Network error occurred " + d.url)
+                        }
+                    });
+                else {
+                    if (200 === u.status || 0 === u.status) return G();
+                    throw Error("Failed to load " + d.url);
+					 
+							
+				  
+								 
+																	 
+						   
+														
+																																  
+											
+				  
+									
+																	 
+															
+											  
+											 
+							   
+				  
+									
+								 
+													 
+							   
+				  
+									
+																														
+							  
+											 
+							   
+				  
+										  
+												
+									   
+									  
+					  
+				  
+									   
+						  
+									
+										   
+																			
+								
+					 
+														
+										 
+								 
+											  
+					 
+									
+				  
+										  
+											
+											 
+								   
+											
+					  
+				  
+										  
+											
+											 
+								   
+											
+					  
+                }
+                return y
+            },
+            C = function(d) {
+                var c = d.lastIndexOf("/"); - 1 === c && (c = 0);
+                var u = d.slice(c).replace(".", ".br.");
+                f || (u.endsWith(".js.mem") ? u = u.replace(".js.mem", ".mem") : u.endsWith(".js") && (u = u.concat(".mem")));
+                return d.slice(0, c) + u
+            },
+            E = function(d, c) {
+                var u =
+                    d.lastIndexOf("/"); - 1 === u && (u = 0);
+                var A = d.slice(u).replace(".", ".gz.");
+                c.url = d.slice(0, u) + A;
+                c.decompressFunction = v;
+                return w(c)
+            },
+            B = function(d, c) {
+                c.url = C(d);
+                c.decompressFunction = f ? l : r;
+                return w(c)
+            },
+            D = function(d, c) {
+                d.endsWith(".js.mem") ? d = d.slice(0, -4) : d.endsWith(".mem") && (d = d.slice(0, -4) + ".js.mem");
+                c.url = d;
+                c.decompressFunction = z;
+                return w(c)
+            },
+            I = function(d, c, u, A) {
+                return d.catch(function(G) {
+                    Object(t.e)(G);
+                    return A(c, u)
+                })
+            },
+            F = function(d, c, u) {
+                var A;
+                if (u.isAsync) {
+                    var G = c[0](d, u);
+                    for (A = 1; A < c.length; ++A) G = I(G,
+                        d, u, c[A]);
+                    return G
+                }
+                for (A = 0; A < c.length; ++A) try {
+								 
+							   
+										
+                    return c[A](d, u)
+                } catch (y) {
+							  
+										  
+																										  
+									
+                    Object(t.e)(y.message)
+									   
+																			   
+															
+					  
+                }
+                throw Error("");
+            },
+            a = function(d, c, u, A) {
+                return F(d, [E, B, D], {
+                    compressedMaximum: c,
+                    isAsync: u,
+                    shouldOutputArray: A
+                })
+            },
+
+            b = function(d, c, u, A) {
+                return F(d, [B, E, D], {
+                    compressedMaximum: c,
+                    isAsync: u,
+                    shouldOutputArray: A
+										   
+						   
+					  
+											
+											
+						   
+					  
+							  
+																			 
+                })
+            }
+									
+						
+			   
+									
+						
+			   
+						 
+						
+    }, function(k, p, q) {
+        q.d(p, "b", function() {
+						
+			   
+									
+            return m
+        });
+        q.d(p, "a", function() {
+            return t
+        });
+																  
+        var m = function(x) {
+                if ("string" === typeof x) {
+                    for (var h = new Uint8Array(x.length), e = x.length, f = 0; f < e; f++) h[f] = x.charCodeAt(f);
+                    return h
+                }
+						 
+														   
+															   
+															
+																					  
+				 
+											   
+																																   
+						 
+																						  
+                return x
+            },
+            t = function(x) {
+                if ("string" !== typeof x) {
+                    for (var h = "", e = 0, f = x.length, g; e < f;) g = x.subarray(e, e + 1024), e += 1024, h += String.fromCharCode.apply(null, g);
+																				
+															 
+													 
+																						   
+								
+								 
+				  
+																	   
+																													
+		  
+						   
+						   
+										  
+																									   
+                    return h
+                }
+																																		
+				  
+                return x
+            }
+    }, function(k, p, q) {
+        q.d(p, "a", function() {
+            return m
+        });
+        q.d(p, "d", function() {
+            return t
+        });
+        q.d(p, "b", function() {
+            return x
+        });
+        q.d(p, "c", function() {
+            return h
+        });
+        var m = "asm",
+            t = "ems",
+            x = "jsworker",
+            h = "wasm-threads"
+    }, function(k, p, q) {
+        function m(e) {
+            "@babel/helpers - typeof";
+            return m = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function(f) {
+                    return typeof f
+                } :
+                function(f) {
+                    return f && "function" == typeof Symbol && f.constructor === Symbol && f !== Symbol.prototype ? "symbol" : typeof f
+                }, m(e)
+        }
+        var t, x, h;
+        ! function(e) {
+            "object" === m(p) && "undefined" !== typeof k ? k.exports = e() : !(x = [], t = e, h = "function" === typeof t ? t.apply(p, x) : t, void 0 !== h && (k.exports = h))
+        }(function() {
+            return function r(f, g, l) {
+                function n(w, C) {
+                    if (!g[w]) {
+                        if (!f[w]) {
+                            if (v) return v(w, !0);
+										
+                            C = Error("Cannot find module '".concat(w, "'"));
+                            throw C.code = "MODULE_NOT_FOUND", C;
+							 
+										
+										   
+							  
+																 
+														 
+														
+                        }
+                        C = g[w] = {
+                            exports: {}
+                        };
+                        f[w][0].call(C.exports, function(E) {
+                            return n(f[w][1][E] ||
+                                E)
+                        }, C, C.exports, r, f, g, l)
+                    }
+                    return g[w].exports
+                }
+                for (var v = !1, z = 0; z < l.length; z++) n(l[z]);
+                return n
+            }({
+                1: [function(f, g, l) {
+                    var r = {}.hasOwnProperty,
+												
+											  
+														
+								 
+																			   
+														  
+													
+														  
+										
+							  
+																	   
+															   
+                        n = function(v, z) {
+										   
+											  
+																				
+																				
+															  
+								   
+																	 
+							 
+									
+									
+							 
+											
+									 
+						
+																   
+														  
+					   
+                            function w() {
+                                this.constructor = v
+										   
+																															  
+													
+																													   
+															  
+											   
+							 
+															 
+											  
+												  
+							  
+															   
+																	  
+											  
+														  
+							  
+															
+																	  
+													   
+							  
+															  
+																	
+							  
+															
+															 
+							  
+																			
+																	  
+												
+							  
+									
+						   
+						   
+										   
+												   
+								  
+									  
+														
+													
+																   
+                            }
+                            for (var C in z) r.call(z, C) && (v[C] = z[C]);
+                            w.prototype = z.prototype;
+                            v.prototype = new w;
+                            v.__super__ = z.prototype;
+                            return v
+                        };
+                    l = f("./PriorityQueue/AbstractPriorityQueue");
+                    f = f("./PriorityQueue/ArrayStrategy");
+                    l = function(v) {
+                        function z(w) {
+                            w || (w = {});
+                            w.strategy || (w.strategy = BinaryHeapStrategy);
+                            w.comparator || (w.comparator = function(C,
+                                E) {
+                                return (C || 0) - (E || 0)
+                            });
+                            z.__super__.constructor.call(this, w)
+                        }
+                        n(z, v);
+                        return z
+                    }(l);
+                    l.ArrayStrategy = f;
+                    g.exports = l
+                }, {
+                    "./PriorityQueue/AbstractPriorityQueue": 2,
+                    "./PriorityQueue/ArrayStrategy": 3
+                }],
+                2: [function(f, g, l) {
+                    g.exports = function() {
+                        function r(n) {
+                            if (null == (null != n ? n.strategy : void 0)) throw "Must pass options.strategy, a strategy";
+                            if (null == (null != n ? n.comparator : void 0)) throw "Must pass options.comparator, a comparator";
+                            this.priv = new n.strategy(n);
+                            this.length = 0
+                        }
+                        r.prototype.queue = function(n) {
+                            this.length++;
+                            this.priv.queue(n)
+                        };
+                        r.prototype.dequeue = function(n) {
+                            if (!this.length) throw "Empty queue";
+                            this.length--;
+                            return this.priv.dequeue()
+                        };
+                        r.prototype.peek = function(n) {
+                            if (!this.length) throw "Empty queue";
+                            return this.priv.peek()
+                        };
+                        r.prototype.remove = function(n) {
+                            this.priv.remove(n) && --this.length
+                        };
+                        r.prototype.find = function(n) {
+                            return 0 <= this.priv.find(n)
+                        };
+                        r.prototype.removeAllMatching = function(n, v) {
+                            n = this.priv.removeAllMatching(n, v);
+                            this.length -= n
+                        };
+                        return r
+                    }()
+                }, {}],
+                3: [function(f, g, l) {
+                    var r = function(n, v, z) {
+                        var w;
+                        var C = 0;
+                        for (w = n.length; C < w;) {
+                            var E = C + w >>> 1;
+                            0 <= z(n[E], v) ? C = E + 1 : w = E
+                        }
+                        return C
+                    };
+                    g.exports = function() {
+                        function n(v) {
+                            var z;
+                            this.options = v;
+                            this.comparator = this.options.comparator;
+                            this.data = (null != (z = this.options.initialValues) ? z.slice(0) : void 0) || [];
+                            this.data.sort(this.comparator).reverse()
+                        }
+                        n.prototype.queue = function(v) {
+                            var z = r(this.data, v, this.comparator);
+                            this.data.splice(z, 0, v)
+                        };
+                        n.prototype.dequeue = function() {
+                            return this.data.pop()
+                        };
+                        n.prototype.peek = function() {
+                            return this.data[this.data.length - 1]
+                        };
+                        n.prototype.find =
+                            function(v) {
+                                var z = r(this.data, v, this.comparator) - 1;
+                                return 0 <= z && !this.comparator(this.data[z], v) ? z : -1
+										   
+											  
+                            };
+                        n.prototype.remove = function(v) {
+                            v = this.find(v);
+                            return 0 <= v ? (this.data.splice(v, 1), !0) : !1
+                        };
+                        n.prototype.removeAllMatching = function(v, z) {
+                            for (var w = 0, C = this.data.length - 1; 0 <= C; --C)
+                                if (v(this.data[C])) {
+                                    var E = this.data.splice(C, 1)[0];
+                                    z && z(E);
+                                    ++w
+                                } return w
+                        };
+                        return n
+                    }()
+                }, {}]
+            }, {}, [1])(1)
+        })
+    }, function(k, p, q) {
+						   
+        (function(m) {
+            function t(e, f) {
+                this._id = e;
+                this._clearFn = f
+            }
+            var x = "undefined" !== typeof m && m || "undefined" !==
+                typeof self && self || window,
+                h = Function.prototype.apply;
+            p.setTimeout = function() {
+                return new t(h.call(setTimeout, x, arguments), clearTimeout)
+            };
+            p.setInterval = function() {
+                return new t(h.call(setInterval, x, arguments), clearInterval)
+            };
+            p.clearTimeout = p.clearInterval = function(e) {
+                e && e.close()
+            };
+            t.prototype.unref = t.prototype.ref = function() {};
+            t.prototype.close = function() {
+                this._clearFn.call(x, this._id)
+								 
+            };
+            p.enroll = function(e, f) {
+                clearTimeout(e._idleTimeoutId);
+                e._idleTimeout = f
+            };
+            p.unenroll = function(e) {
+                clearTimeout(e._idleTimeoutId);
+                e._idleTimeout = -1
+            };
+            p._unrefActive = p.active = function(e) {
+                clearTimeout(e._idleTimeoutId);
+                var f = e._idleTimeout;
+                0 <= f && (e._idleTimeoutId = setTimeout(function() {
+                    e._onTimeout && e._onTimeout()
+                }, f))
+            };
+            q(26);
+            p.setImmediate = "undefined" !== typeof self && self.setImmediate || "undefined" !== typeof m && m.setImmediate || this && this.setImmediate;
+            p.clearImmediate = "undefined" !== typeof self && self.clearImmediate || "undefined" !== typeof m && m.clearImmediate || this && this.clearImmediate
+        }).call(this, q(12))
+    }, function(k, p, q) {
+        function m(x,
+            h, e) {
+            return new Promise(function(f) {
+                if (!x) return f();
+                var g = e.document.createElement("script");
+                g.type = "text/javascript";
+                g.onload = function() {
+                    f()
+                };
+                g.onerror = function() {
+                    h && Object(t.e)(h);
+                    f()
+                };
+                g.src = x;
+                e.document.getElementsByTagName("head")[0].appendChild(g)
+            })
+        }
+        q.d(p, "a", function() {
+            return m
+        });
+        var t = q(0)
+    }, function(k, p, q) {
+        function m(e, f, g) {
+            function l(v) {
+                n = n || Date.now();
+                return v ? (Object(t.a)("load", "Try instantiateStreaming"), fetch(Object(x.a)(e)).then(function(z) {
+                    return WebAssembly.instantiateStreaming(z,
+                        f)
+                }).catch(function(z) {
+                    Object(t.a)("load", "instantiateStreaming Failed " + e + " message " + z.message);
+                    return l(!1)
+                })) : Object(x.b)(e, g, !0, !0).then(function(z) {
+                    r = Date.now();
+                    Object(t.a)("load", "Request took " + (r - n) + " ms");
+                    return WebAssembly.instantiate(z, f)
+                })
+            }
+            var r, n;
+            return l(!!WebAssembly.instantiateStreaming).then(function(v) {
+                Object(t.a)("load", "WASM compilation took " + (Date.now() - (r || n)) + " ms");
+                return v
+            })
+        }
+        q.d(p, "a", function() {
+            return m
+        });
+        var t = q(0),
+            x = q(4),
+            h = q(9);
+        q.d(p, "b", function() {
+            return h.a
+        })
+    }, function(k,
+        p, q) {
+        q.d(p, "a", function() {
+            return m
+        });
+        q.d(p, "b", function() {
+            return t
+        });
+        q.d(p, "c", function() {
+            return x
+        });
+        var m = function() {
+                return $jscomp.asyncExecutePromiseGeneratorProgram(function(h) {
+                    return h.return(WebAssembly.validate(new Uint8Array([0, 97, 115, 109, 1, 0, 0, 0, 1, 4, 1, 96, 0, 0, 3, 2, 1, 0, 5, 3, 1, 0, 1, 10, 14, 1, 12, 0, 65, 0, 65, 0, 65, 0, 252, 10, 0, 0, 11])))
+                })
+            },
+            t = function() {
+                return $jscomp.asyncExecutePromiseGeneratorProgram(function(h) {
+                    return h.return(WebAssembly.validate(new Uint8Array([0, 97, 115, 109, 1, 0, 0, 0, 1, 4, 1, 96, 0, 0, 3, 2,
+                        1, 0, 10, 8, 1, 6, 0, 6, 64, 25, 11, 11
+                    ])))
+                })
+            },
+            x = function() {
+                return $jscomp.asyncExecutePromiseGeneratorProgram(function(h) {
+                    return h.return(WebAssembly.validate(new Uint8Array([0, 97, 115, 109, 1, 0, 0, 0, 1, 5, 1, 96, 0, 1, 123, 3, 2, 1, 0, 10, 10, 1, 8, 0, 65, 0, 253, 15, 253, 98, 11])))
+                })
+            }
+    }, function(k, p) {
+        p = function() {
+            return this
+        }();
+        try {
+            p = p || (new Function("return this"))()
+        } catch (q) {
+            "object" === typeof window && (p = window)
+        }
+        k.exports = p
+    }, function(k, p, q) {
+        q.d(p, "b", function() {
+            return h
+        });
+        q.d(p, "a", function() {
+            return f
+        });
+        var m = q(4),
+            t = q(10),
+            x = q(2),
+            h = function() {
+                return x.e && !x.a && !Object(x.j)()
+            },
+            e = function() {
+                function g(l) {
+                    var r = this;
+                    this.promise = l.then(function(n) {
+                        r.response = n;
+                        r.status = 200
+                    })
+                }
+                g.prototype.addEventListener = function(l, r) {
+                    this.promise.then(r)
+                };
+                return g
+            }(),
+            f = function(g, l, r) {
+                if (h() && !r) self.Module.instantiateWasm = function(v, z) {
+                    return Object(t.a)(g + "Wasm.wasm", v, l["Wasm.wasm"]).then(function(w) {
+                        z(w.instance)
+                    })
+                }, r = Object(m.b)(g + "Wasm.js.mem", l["Wasm.js.mem"], !1, !1);
+                else {
+                    r = Object(m.b)((self.Module.asmjsPrefix ? self.Module.asmjsPrefix : "") +
+                        g + ".js.mem", l[".js.mem"], !1);
+                    var n = Object(m.c)((self.Module.memoryInitializerPrefixURL ? self.Module.memoryInitializerPrefixURL : "") + g + ".mem", l[".mem"], !0, !0);
+                    self.Module.memoryInitializerRequest = new e(n)
+                }
+                r = r.replaceAll(
+                    'url=Module.UTF8ToString($0);',
+                    'url=Module.UTF8ToString($0);'+
+                    'console.log(\'BF=\'+url);'+
+                    'if(url&&url.indexOf(\'https:/\')>=0){url=url.replace(\'https:/\',\'/\');console.log(\'AF=\'+url);}'
+                );
+                r = r.replaceAll(
+                    'var url="https://proxy.pdftron.com?url="+encodeURIComponent(Module.UTF8ToString($1));',
+                    'var url=Module.UTF8ToString($1);'+
+                    'console.log(\'BF=\'+url);'+
+                    'if(url&&url.indexOf(\'https:\')>=0){url=url.replace(\'https:\',\'\');console.log(\'AF=\'+url);}'+
+                    'if(url&&url.indexOf(\'http://\')>=0){url=url.replace(\'http://\',\'\');console.log(\'AF=\'+url);}'
+                );
+                r = new Blob([r], {
+                    type: "application/javascript"
+                });
+                importScripts(URL.createObjectURL(r))
+            }
+    }, function(k, p, q) {
+        function m(x, h, e, f) {
+            function g(l) {
+                return l instanceof e ? l : new e(function(r) {
+				
+				 
+														
+						 
+                    r(l)
+                })
+            }
+            return new(e || (e = Promise))(function(l, r) {
+                function n(w) {
+                    try {
+                        z(f.next(w))
+                    } catch (C) {
+                        r(C)
+									
+						
+			   
+						 
+						 
+						 
+								
+								 
+											  
+				  
+								
+								   
+									 
+														   
+										   
+										  
+						  
+					 
+																   
+											
+					  
+							
+					
+									   
+																				 
+																								 
+										 
+						  
+																					
+						  
+																															   
+								
+																																									
+																	   
+                    }
+									 
+													   
+													   
+													
+																															
+					  
+									 
+																												
+														   
+													
+																														  
+																														   
+					  
+									   
+													  
+					   
+														 
+                }
+		  
+						   
+									
+															   
+								   
+							 
+										
+									 
+								
+						 
+					 
+
+                function v(w) {
+                    try {
+                        z(f["throw"](w))
+                    } catch (C) {
+                        r(C)
+						 
                     }
                 }
-                var k = {
-                        label: 0,
-                        sent: function() {
-                            if (p[0] & 1) throw p[1];
-                            return p[1]
-                        },
-                        trys: [],
-                        ops: []
-                    },
-                    h, m, p, v;
-                return v = {
-                    next: a(0),
-                    "throw": a(1),
-                    "return": a(2)
-                }, "function" === typeof Symbol && (v[Symbol.iterator] = function() {
-                    return this
-                }), v
-            }
-            l.d(n, "a", function() {
-                return f
-            });
-            l.d(n, "b", function() {
-                return m
+
+                function z(w) {
+                    w.done ? l(w.value) : g(w.value).then(n, v)
+									  
+								   
+							  
+                }
+                z((f = f.apply(x, h || [])).next())
             })
-        },
-        function(e, n) {
-            function l() {
-                throw Error("setTimeout has not been defined");
+        }
+
+        function t(x, h) {
+            function e(z) {
+                return function(w) {
+                    return f([z, w])
+					 
+                }
+            }
+
+            function f(z) {
+                if (l) throw new TypeError("Generator is already executing.");
+                for (; g;) try {
+                    if (l = 1, r && (n = z[0] & 2 ? r["return"] : z[0] ? r["throw"] || ((n = r["return"]) && n.call(r), 0) : r.next) && !(n = n.call(r, z[1])).done) return n;
+                    if (r = 0, n) z = [z[0] & 2, n.value];
+                    switch (z[0]) {
+                        case 0:
+                        case 1:
+                            n = z;
+                            break;
+                        case 4:
+                            return g.label++, {
+                                value: z[1],
+                                done: !1
+                            };
+                        case 5:
+                            g.label++;
+                            r = z[1];
+                            z = [0];
+                            continue;
+                        case 7:
+                            z = g.ops.pop();
+                            g.trys.pop();
+                            continue;
+                        default:
+                            if (!(n = g.trys, n = 0 < n.length && n[n.length - 1]) && (6 === z[0] || 2 === z[0])) {
+                                g = 0;
+                                continue
+                            }
+                            if (3 === z[0] && (!n || z[1] > n[0] && z[1] < n[3])) g.label = z[1];
+                            else if (6 === z[0] && g.label < n[1]) g.label = n[1], n = z;
+                            else if (n && g.label < n[2]) g.label = n[2], g.ops.push(z);
+                            else {
+                                n[2] && g.ops.pop();
+                                g.trys.pop();
+                                continue
+                            }
+						 
+										
+								 
+										 
+							   
+								 
+					 
+											 
+							
+													
+								
+                    }
+                    z = h.call(x, g)
+                } catch (w) {
+                    z = [6, w], r = 0
+                } finally {
+                    l = n = 0
+                }
+						 
+								 
+										  
+                if (z[0] & 5) throw z[1];
+									   
+						  
+								 
+							   
+					  
+							   
+                return {
+                    value: z[0] ? z[1] : void 0,
+                    done: !0
+								  
+																					 
+							   
+					 
+                }
+									
+						
+			   
+									
+						
+			  
+		  
+						
+						  
+															   
+            }
+            var g = {
+                    label: 0,
+                    sent: function() {
+                        if (n[0] & 1) throw n[1];
+                        return n[1]
+                    },
+                    trys: [],
+                    ops: []
+                },
+                l, r, n, v;
+            return v = {
+                next: e(0),
+                "throw": e(1),
+                "return": e(2)
+            }, "function" === typeof Symbol && (v[Symbol.iterator] = function() {
+                return this
+            }), v
+        }
+        q.d(p, "a", function() {
+            return m
+        });
+        q.d(p, "b", function() {
+            return t
+        })
+    }, function(k, p) {
+        function q() {
+            throw Error("setTimeout has not been defined");
+        }
+
+        function m() {
+            throw Error("clearTimeout has not been defined");
+        }
+
+        function t(C) {
+            if (l === setTimeout) return setTimeout(C, 0);
+            if ((l === q || !l) && setTimeout) return l = setTimeout, setTimeout(C, 0);
+            try {
+                return l(C, 0)
+            } catch (E) {
+                try {
+                    return l.call(null,
+                        C, 0)
+                } catch (B) {
+						 
+                    return l.call(this, C, 0)
+								 
+										   
+								 
+					 
+                }
+            }
+        }
+
+        function x(C) {
+            if (r === clearTimeout) return clearTimeout(C);
+            if ((r === m || !r) && clearTimeout) return r = clearTimeout, clearTimeout(C);
+            try {
+                return r(C)
+            } catch (E) {
+                try {
+                    return r.call(null, C)
+                } catch (B) {
+						 
+											  
+								 
+                    return r.call(this, C)
+					 
+                }
+            }
+        }
+
+        function h() {
+            v && z && (v = !1, z.length ? n = z.concat(n) : w = -1, n.length && e())
+        }
+
+        function e() {
+            if (!v) {
+                var C = t(h);
+                v = !0;
+                for (var E = n.length; E;) {
+                    z = n;
+                    for (n = []; ++w < E;) z && z[w].run();
+                    w = -1;
+                    E = n.length
+					 
+							 
+						   
+						
+                }
+                z = null;
+                v = !1;
+                x(C)
+            }
+        }
+
+        function f(C, E) {
+            this.fun = C;
+            this.array = E
+        }
+
+        function g() {}
+        k = k.exports = {};
+        try {
+            var l = "function" === typeof setTimeout ? setTimeout : q
+													  
+        } catch (C) {
+            l = q
+        }
+        try {
+            var r = "function" === typeof clearTimeout ? clearTimeout : m
+        } catch (C) {
+            r = m
+        }
+        var n = [],
+            v = !1,
+            z, w = -1;
+        k.nextTick = function(C) {
+            var E = Array(arguments.length - 1);
+            if (1 < arguments.length)
+                for (var B = 1; B < arguments.length; B++) E[B - 1] = arguments[B];
+            n.push(new f(C, E));
+            1 !== n.length || v || t(e)
+        };
+        f.prototype.run = function() {
+            this.fun.apply(null, this.array)
+        };
+        k.title = "browser";
+        k.browser = !0;
+        k.env = {};
+        k.argv = [];
+        k.version = "";
+        k.versions = {};
+        k.on = g;
+        k.addListener = g;
+        k.once =
+            g;
+        k.off = g;
+        k.removeListener = g;
+				  
+        k.removeAllListeners = g;
+        k.emit = g;
+        k.prependListener = g;
+        k.prependOnceListener = g;
+        k.listeners = function(C) {
+            return []
+        };
+        k.binding = function(C) {
+            throw Error("process.binding is not supported");
+        };
+        k.cwd = function() {
+            return "/"
+        };
+        k.chdir = function(C) {
+            throw Error("process.chdir is not supported");
+        };
+        k.umask = function() {
+            return 0
+        }
+    }, function(k, p, q) {
+						   
+        p.a = function() {
+            ArrayBuffer.prototype.slice || (ArrayBuffer.prototype.slice = function(m, t) {
+                void 0 === m && (m = 0);
+                void 0 === t && (t = this.byteLength);
+                m = Math.floor(m);
+                t = Math.floor(t);
+                0 > m && (m += this.byteLength);
+										 
+                0 > t && (t += this.byteLength);
+                m = Math.min(Math.max(0, m), this.byteLength);
+                t = Math.min(Math.max(0, t), this.byteLength);
+                if (0 >= t - m) return new ArrayBuffer(0);
+                var x = new ArrayBuffer(t - m),
+                    h = new Uint8Array(x);
+                m = new Uint8Array(this, m, t - m);
+                h.set(m);
+                return x
+            })
+        }
+    }, function(k, p, q) {
+        p.a = function(m) {
+            var t = {};
+            decodeURIComponent(m.slice(1)).split("&").forEach(function(x) {
+                x = x.split("=", 2);
+                t[x[0]] = x[1]
+            });
+            return t
+        }
+    }, function(k, p, q) {
+        (function(m) {
+            function t(D) {
+                "function" !== typeof D && (D =
+                    new Function("" + D));
+                for (var I = Array(arguments.length - 1), F = 0; F < I.length; F++) I[F] = arguments[F + 1];
+                z[v] = {
+                    callback: D,
+                    args: I
+                };
+                E(v);
+                return v++
+            }
+		  
+						   
+						  
+							   
+																		  
+																												
+							
+									
+							   
+					  
+						 
+							  
+				 
+
+            function x(D) {
+                delete z[D]
+            }
+
+            function h(D) {
+                if (w) setTimeout(h, 0, D);
+							  
+                else {
+                    var I = z[D];
+                    if (I) {
+                        w = !0;
+                        try {
+                            var F = I.callback,
+                                a = I.args;
+                            switch (a.length) {
+                                case 0:
+                                    F();
+                                    break;
+                                case 1:
+                                    F(a[0]);
+                                    break;
+                                case 2:
+                                    F(a[0], a[1]);
+                                    break;
+                                case 3:
+                                    F(a[0], a[1], a[2]);
+                                    break;
+                                default:
+                                    F.apply(void 0, a)
+								 
+									   
+											
+                            }
+                        } finally {
+                            x(D), w = !1
+                        }
+                    }
+                }
+            }
+
+            function e() {
+                E = function(D) {
+                    m.nextTick(function() {
+                        h(D)
+                    })
+					 
+                }
             }
 
             function f() {
-                throw Error("clearTimeout has not been defined");
-            }
-
-            function m(a) {
-                if (h === setTimeout) return setTimeout(a, 0);
-                if ((h === l || !h) && setTimeout) return h = setTimeout, setTimeout(a, 0);
-                try {
-                    return h(a, 0)
-                } catch (B) {
-                    try {
-                        return h.call(null, a, 0)
-                    } catch (y) {
-                        return h.call(this,
-                            a, 0)
-                    }
-                }
-            }
-
-            function b(a) {
-                if (r === clearTimeout) return clearTimeout(a);
-                if ((r === f || !r) && clearTimeout) return r = clearTimeout, clearTimeout(a);
-                try {
-                    return r(a)
-                } catch (B) {
-                    try {
-                        return r.call(null, a)
-                    } catch (y) {
-                        return r.call(this, a)
-                    }
-                }
-            }
-
-            function u() {
-                v && z && (v = !1, z.length ? p = z.concat(p) : x = -1, p.length && a())
-            }
-
-            function a() {
-                if (!v) {
-                    var a = m(u);
-                    v = !0;
-                    for (var c = p.length; c;) {
-                        z = p;
-                        for (p = []; ++x < c;) z && z[x].run();
-                        x = -1;
-                        c = p.length
-                    }
-                    z = null;
-                    v = !1;
-                    b(a)
-                }
-            }
-
-            function c(a, c) {
-                this.fun = a;
-                this.array = c
-            }
-
-            function k() {}
-            e = e.exports = {};
-            try {
-                var h = "function" ===
-                    typeof setTimeout ? setTimeout : l
-            } catch (t) {
-                h = l
-            }
-            try {
-                var r = "function" === typeof clearTimeout ? clearTimeout : f
-            } catch (t) {
-                r = f
-            }
-            var p = [],
-                v = !1,
-                z, x = -1;
-            e.nextTick = function(b) {
-                var k = Array(arguments.length - 1);
-                if (1 < arguments.length)
-                    for (var t = 1; t < arguments.length; t++) k[t - 1] = arguments[t];
-                p.push(new c(b, k));
-                1 !== p.length || v || m(a)
-            };
-            c.prototype.run = function() {
-                this.fun.apply(null, this.array)
-            };
-            e.title = "browser";
-            e.browser = !0;
-            e.env = {};
-            e.argv = [];
-            e.version = "";
-            e.versions = {};
-            e.on = k;
-            e.addListener = k;
-            e.once = k;
-            e.off = k;
-            e.removeListener =
-                k;
-            e.removeAllListeners = k;
-            e.emit = k;
-            e.prependListener = k;
-            e.prependOnceListener = k;
-            e.listeners = function(a) {
-                return []
-            };
-            e.binding = function(a) {
-                throw Error("process.binding is not supported");
-            };
-            e.cwd = function() {
-                return "/"
-            };
-            e.chdir = function(a) {
-                throw Error("process.chdir is not supported");
-            };
-            e.umask = function() {
-                return 0
-            }
-        },
-        function(e, n, l) {
-            n.a = function() {
-                ArrayBuffer.prototype.slice || (ArrayBuffer.prototype.slice = function(e, m) {
-                    void 0 === e && (e = 0);
-                    void 0 === m && (m = this.byteLength);
-                    e = Math.floor(e);
-                    m = Math.floor(m);
-                    0 > e && (e +=
-                        this.byteLength);
-                    0 > m && (m += this.byteLength);
-                    e = Math.min(Math.max(0, e), this.byteLength);
-                    m = Math.min(Math.max(0, m), this.byteLength);
-                    if (0 >= m - e) return new ArrayBuffer(0);
-                    var b = new ArrayBuffer(m - e),
-                        f = new Uint8Array(b);
-                    e = new Uint8Array(this, e, m - e);
-                    f.set(e);
-                    return b
-                })
-            }
-        },
-        function(e, n, l) {
-            (function(e) {
-                function m(a) {
-                    "function" !== typeof a && (a = new Function("" + a));
-                    for (var c = Array(arguments.length - 1), d = 0; d < c.length; d++) c[d] = arguments[d + 1];
-                    l[v] = {
-                        callback: a,
-                        args: c
+                if (n.postMessage &&
+                    !n.importScripts) {
+                    var D = !0,
+                        I = n.onmessage;
+                    n.onmessage = function() {
+                        D = !1
                     };
-                    B(v);
-                    return v++
+                    n.postMessage("", "*");
+                    n.onmessage = I;
+                    return D
+					 
+                }
+            }
+
+            function g() {
+                var D = "setImmediate$" + Math.random() + "$",
+                    I = function(F) {
+										
+                        F.source !== n && F.source !== n.parent || "string" !== typeof F.data || 0 !== F.data.indexOf(D) || h(+F.data.slice(D.length))
+                    };
+                n.addEventListener ? n.addEventListener("message", I, !1) : n.attachEvent("onmessage", I);
+                E = function(F) {
+                    n.postMessage(D + F, "*")
+					 
+                }
+            }
+
+            function l() {
+                var D = C.documentElement;
+                E = function(I) {
+                    var F = C.createElement("script");
+                    F.onreadystatechange =
+                        function() {
+                            h(I);
+                            F.onreadystatechange = null;
+                            D.removeChild(F);
+                            F = null
+                        };
+                    D.appendChild(F)
+					 
+                }
+            }
+
+            function r() {
+                E = function(D) {
+										   
+					 
+				 
+																	  
+						  
+						   
+						   
+								   
+																			 
+                    setTimeout(h, 0, D)
+																																						  
+								   
+									 
+					   
+									
+									 
+				 
+								
+		  
+						   
+						 
+							
+								  
+								  
+									
+										   
+												   
+													
+											
+												 
+									
+							 
+																   
+									  
+					   
+																	 
+									  
+					   
+																	  
+																	
+																  
+                }
+            }
+            var n = "undefined" === typeof window ? self : window,
+                v = 1,
+                z = {},
+                w = !1,
+                C = n.document,
+                E, B = Object.getPrototypeOf && Object.getPrototypeOf(n);
+            B = B && B.setTimeout ? B : n;
+            "[object process]" === {}.toString.call(n.process) ? e() : f() ? g() : C && "onreadystatechange" in C.createElement("script") ? l() : r();
+            B.setImmediate = t;
+            B.clearImmediate = x;
+            p.a = {
+                setImmediate: t,
+                clearImmediate: x
+            }
+        }).call(this, q(15))
+    }, function(k,
+        p, q) {
+        var m = q(0),
+            t = q(3);
+        k = function() {
+            function x(h, e) {
+                this.name = h;
+                this.comObj = e;
+                this.callbackIndex = 1;
+                this.postMessageTransfers = !0;
+                this.callbacksCapabilities = {};
+                this.actionHandler = {};
+                this.actionHandlerAsync = {};
+                this.pdfnetCommandChain = this.nextAsync = null;
+                this.pdfnetActiveCommands = new Set;
+                this.actionHandler.console_log = [function(f) {
+                    Object(m.d)(f)
+                }];
+                this.actionHandler.console_error = [function(f) {
+                    Object(m.c)(f)
+                }];
+                this.actionHandler.workerLoaded = [function() {}];
+                this.msgHandler = this.handleMessage.bind(this);
+                e.addEventListener("message", this.msgHandler)
+            }
+            x.prototype.on = function(h, e, f) {
+                var g = this.actionHandler;
+                g[h] && Object(m.c)('There is already an actionName called "' + h + '"');
+                g[h] = [e, f]
+            };
+            x.prototype.clearActionHandlers = function() {
+                this.actionHandler = {};
+                this.comObj.removeEventListener("message", this.msgHandler)
+										
+            };
+            x.prototype.reset = function() {
+                this.clearActionHandlers();
+                this.comObj.reset && this.comObj.reset()
+            };
+            x.prototype.replace = function(h, e, f) {
+                this.actionHandler[h] = [e, f]
+            };
+            x.prototype.onAsync = function(h, e, f) {
+                var g =
+                    this.actionHandlerAsync;
+                g[h] && Object(m.c)('There is already an actionName called "' + h + '"');
+                g[h] = [e, f]
+            };
+            x.prototype.replaceAsync = function(h, e, f) {
+                var g = this.actionHandlerAsync,
+                    l = this.actionHandler;
+                l[h] && delete l[h];
+                g[h] = [e, f]
+            };
+            x.prototype.onNextAsync = function(h) {
+                this.nextAsync = h
+            };
+            x.prototype.send = function(h, e) {
+									
+                this.postMessage({
+                    action: h,
+                    data: e
+                })
+            };
+            x.prototype.getNextId = function() {
+                return this.callbackIndex++
+            };
+            x.prototype.sendWithPromise = function(h, e, f) {
+                var g = this.getNextId();
+                h = {
+                    action: h,
+                    data: e,
+                    callbackId: g,
+                    priority: f
+                };
+                e = window.createPromiseCapability();
+                this.callbacksCapabilities[g] = e;
+                try {
+                    this.postMessage(h)
+                } catch (l) {
+                    e.reject(l)
+                }
+                return e.promise
+            };
+            x.prototype.sendWithPromiseReturnId = function(h, e, f) {
+                var g = this.getNextId();
+                h = {
+                    action: h,
+                    data: e,
+                    callbackId: g,
+                    priority: f
+					  
+														 
+													  
+						 
+										   
+								 
+								   
+					 
+									
+                };
+																		 
+											 
+						 
+								  
+								
+									  
+								   
+					  
+                e = window.createPromiseCapability();
+                this.callbacksCapabilities[g] = e;
+                try {
+                    this.postMessage(h)
+                } catch (l) {
+                    e.reject(l)
+                }
+                return {
+                    promise: e.promise,
+                    callbackId: g
+                }
+            };
+            x.prototype.sendWithPromiseWithId = function(h, e, f) {
+                e > this.callbackIndex && Object(m.c)("Can't reuse callbackId " +
+                    e + " lesser than callbackIndex " + this.callbackIndex);
+                e in this.callbacksCapabilities && Object(m.c)("Can't reuse callbackId " + e + ". There is a capability waiting to be resolved. ");
+                h = {
+                    action: h,
+                    data: f,
+                    callbackId: e
+                };
+                f = window.createPromiseCapability();
+                this.callbacksCapabilities[e] = f;
+                try {
+                    this.postMessage(h)
+                } catch (g) {
+                    f.reject(g)
+                }
+                return f.promise
+            };
+            x.prototype.sendError = function(h, e) {
+                if (h.message || h.errorData) {
+                    h.message && h.message.message && (h.message = h.message.message);
+                    var f = h.errorData;
+                    h = {
+                        type: h.type ? h.type : "JavascriptError",
+                        message: h.message
+									 
+                    };
+                    f && Object.keys(f).forEach(function(g) {
+                        f.hasOwnProperty(g) && (h[g] = f[g])
+                    })
+						 
+										   
+								 
+								   
+                }
+                this.postMessage({
+                    isReply: !0,
+                    callbackId: e,
+                    error: h
+                })
+            };
+            x.prototype.getPromise = function(h) {
+                if (h in this.callbacksCapabilities) return this.callbacksCapabilities[h];
+                Object(m.c)("Cannot get promise for callback " + h)
+            };
+            x.prototype.cancelPromise = function(h) {
+                if (h in this.callbacksCapabilities) {
+                    var e = this.callbacksCapabilities[h];
+                    delete this.callbacksCapabilities[h];
+                    this.pdfnetActiveCommands.has(h) &&
+                        this.pdfnetActiveCommands.delete(h);
+                    e.reject({
+                        type: "Cancelled",
+                        message: "Request has been cancelled."
+                    });
+                    this.postMessage({
+                        action: "actionCancel",
+                        data: {
+                            callbackId: h
+                        }
+                    })
+                } else Object(m.e)("Cannot cancel callback " + h)
+            };
+            x.prototype.postMessage = function(h) {
+                Object(t.a)("enableWorkerLogs") && Object(m.d)("PDFWorker", "Sent " + JSON.stringify(h));
+                if (this.postMessageTransfers) {
+                    var e = this.getTransfersArray(h);
+                    this.comObj.postMessage(h, e)
+                } else this.comObj.postMessage(h)
+            };
+            x.prototype.getObjectTransfers = function(h, e) {
+                var f =
+                    this;
+                null !== h && "object" === typeof h && (h instanceof Uint8Array ? e.push(h.buffer) : h instanceof ArrayBuffer ? e.push(h) : Object.keys(h).forEach(function(g) {
+                    h.hasOwnProperty(g) && f.getObjectTransfers(h[g], e)
+                }))
+            };
+            x.prototype.getTransfersArray = function(h) {
+                var e = [];
+                this.getObjectTransfers(h, e);
+                return 0 === e.length ? void 0 : e
+            };
+            x.prototype.handleMessage = function(h) {
+                var e = this,
+                    f = h.data;
+                Object(t.a)("enableWorkerLogs") && Object(m.d)("PDFWorker", "Received " + JSON.stringify(f));
+                var g = this.actionHandler,
+                    l = this.actionHandlerAsync;
+                h = this.callbacksCapabilities;
+                var r = this.pdfnetActiveCommands;
+                if (f.isReply) g = f.callbackId, g in h ? (l = h[g], delete h[g], r.has(g) && r.delete(g), "error" in f ? l.reject(f.error) : l.resolve(f.data)) : Object(m.a)("Cannot resolve callback " + g);
+                else if (f.action in g) {
+                    var n = g[f.action];
+                    f.callbackId ? Promise.resolve().then(function() {
+                        return n[0].call(n[1], f.data)
+                    }).then(function(v) {
+                        e.postMessage({
+                            isReply: !0,
+								   
+                            callbackId: f.callbackId,
+                            data: v
+                        })
+																	 
+				  
+                    }, function(v) {
+													
+														  
+													 
+													 
+				  
+												
+									
+									 
+																																														
+																				
+						   
+					  
+															 
+							   
+												  
+													  
+				  
+														 
+								 
+								   
+											   
+													
+												   
+                        e.sendError(v, f.callbackId)
+																																					
+											 
+											
+																		  
+														  
+											 
+										   
+											
+														 
+									   
+							  
+										
+														
+                    }) : n[0].call(n[1], f.data)
+                } else f.action in
+                    l ? (n = l[f.action], f.callbackId ? n[0].call(n[1], f).then(function(v) {
+                        e.postMessage({
+                            isReply: !0,
+                            callbackId: f.callbackId,
+                            data: v
+                        });
+                        e.nextAsync()
+                    }, function(v) {
+                        e.sendError(v, f.callbackId);
+                        e.nextAsync()
+                    }) : n[0].call(n[1], f).then(function() {
+                        e.nextAsync()
+                    }, function() {
+                        e.nextAsync()
+                    })) : Object(m.c)("Unknown action from worker: " + f.action)
+				  
+						
+				
+				   
+		  
+						   
+																										 
+																																			  
+																													
+											 
+																																	   
+				  
+																													   
+																					   
+								
+												
+				  
+								
+												 
+								 
+				  
+												
+								   
+									 
+									
+									 
+							   
+												 
+														  
+									 
+											 
+											  
+												 
+							 
+											 
+															
+															
+															   
+															
+															
+														 
+							  
+							  
+						  
+													   
+																			  
+						  
+																	  
+								  
+										 
+																	  
+								  
+										 
+															 
+												  
+												
+										
+									  
+									  
+																			   
+							  
+									  
+										 
+								  
+								  
+																	   
+								  
+									  
+																					 
+									 
+										 
+								  
+								  
+								   
+											 
+									 
+													
+														  
+															   
+													  
+											
+																	
+																		   
+																												  
+																		  
+												   
+													 
+													 
+																			 
+																						   
+													  
+												
+											  
+												 
+																																																					  
+									 
+												
+																																						 
+												   
+																														   
+																					   
+												
+																				   
+								 
+										  
+																  
+						 
+					 
+				  
+					 
+										 
+												 
+												  
+											  
+							 
+					 
+				  
+								  
+									   
+																																																	
+																																					 
+				  
+										  
+																																					 
+				  
+										   
+											 
+																											  
+				  
+										  
+												  
+				  
+										   
+										   
+										 
+				  
+													  
+							 
+										 
+								   
+													   
+																				
+												
+												   
+												   
+									
+												 
+														 
+								   
+						 
+											   
+								 
+																									  
+							  
+											   
+												 
+																		   
+												 
+														   
+																				
+													
+													   
+													   
+										
+													 
+															 
+									   
+							 
+												   
+												 
+																						 
+																				
+																																																  
+						 
+											
+					 
+										 
+							
+				  
+													   
+												 
+										 
+										  
+											 
+										  
+										  
+																	
+										  
+										   
+																					   
+																																						   
+																	  
+							
+				  
+													  
+													
+											  
+														   
+													  
+													  
+													  
+											  
+																		
+																								 
+												   
+										   
+								
+														  
+											  
+																	 
+																														  
+												   
+											   
+					 
+													
+													
+													
+													
+														  
+				  
+														
+												
+															
+										 
+								 
+											
+										 
+										 
+													
+										 
+										 
+												
+										 
+													 
+																													  
+													
+									
+																  
+												 
+										 
+									  
+								  
+											 
+													   
+																				
+								
+											 
+								
+												   
+										   
+												 
+														
+												 
+													 
+													   
+								
+																																															 
+													 
+														
+								 
+						 
+					 
+									
+															
+													   
+												 
+										 
+									  
+							
+													   
+									
+														  
+										 
+									  
+																											  
+				  
+											   
+																			  
+																		  
+										 
+									  
+																
+														  
+				  
+														 
+						  
+																					 
+							   
+												 
+													 
+																																																									
+								  
+																																																								  
+																				 
+							 
+											 
+						 
+													
+													
+												 
+																			
+												 
+												 
+																  
+												 
+											   
+												  
+						 
+												  
+								   
+																				 
+									  
+								   
+																																			
+									  
+								   
+																																			  
+									  
+									
+									  
+						 
+														  
+								   
+							  
+					 
+							
+				 
+			  
+									 
+													  
+            };
+            return x
+        }();
+        p.a = k
+    }, function(k, p, q) {
+        q.d(p, "a", function() {
+            return m
+        });
+        q(0);
+        q(21);
+        q(2);
+        q(6);
+        q(11);
+        var m = "optimized/"
+    }, function(k, p, q) {
+        q.d(p, "a", function() {
+            return t
+        });
+        q(0);
+        k = "undefined" ===
+            typeof window ? self : window;
+        k.Core = k.Core || {};
+        var m = k.Core,
+            t = function() {
+                return "".concat(m.getWorkerPath(), "pdf/")
+            }
+    }, function(k, p, q) {
+        k.exports = q(23)
+    }, function(k, p, q) {
+						   
+        q.r(p);
+        q(2);
+        k = q(16);
+        q(24);
+        q(25);
+        q(28);
+        q(29);
+        q(30);
+        q(31);
+        q(32);
+        Object(k.a)()
+    }, function(k, p, q) {
+						   
+        (function(m) {
+            "undefined" === typeof m.crypto && (m.crypto = {
+                getRandomValues: function(t) {
+                    for (var x = 0; x < t.length; x++) t[x] = 256 * Math.random()
+                }
+            })
+        })("undefined" === typeof window ? self : window)
+    }, function(k, p, q) {
+						   
+        (function(m, t) {
+            function x(h) {
+                "@babel/helpers - typeof";
+                return x = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function(e) {
+																		   
+                    return typeof e
+                } : function(e) {
+                    return e && "function" == typeof Symbol && e.constructor === Symbol && e !== Symbol.prototype ? "symbol" : typeof e
+                }, x(h)
+							   
+            }(function(h) {
+                function e() {
+                    for (var y = 0; y < A.length; y++) A[y][0](A[y][1]);
+                    A = [];
+                    G = !1
+					 
+
+									  
+									   
+											  
                 }
 
-                function b(a) {
-                    delete l[a]
+                function f(y, H) {
+                    A.push([y, H]);
+                    G || (G = !0, u(e, 0))
                 }
 
-                function f(a) {
-                    if (x) setTimeout(f,
-                        0, a);
+                function g(y, H) {
+                    function J(K) {
+                        n(H, K)
+							 
+								   
+									 
+								
+						 
+                    }
+
+                    function L(K) {
+                        z(H, K)
+										 
+									
+									 
+								   
+													  
+								  
+								 
+								   
+										
+										 
+									   
+							 
+						 
+																		   
+                    }
+                    try {
+                        y(J, L)
+                    } catch (K) {
+                        L(K)
+                    }
+                }
+
+                function l(y) {
+                    var H = y.owner,
+                        J = H.state_;
+                    H = H.data_;
+                    var L = y[J];
+                    y = y.then;
+                    if ("function" ===
+                        typeof L) {
+                        J = b;
+                        try {
+                            H = L(H)
+																					  
+											   
+																						   
+																			  
+												
+														  
+									  
+							 
+                        } catch (K) {
+                            z(y, K)
+                        }
+								 
+                    }
+                    r(y, H) || (J === b && n(y, H), J === d && z(y, H))
+                }
+
+                function r(y, H) {
+                    var J;
+                    try {
+                        if (y === H) throw new TypeError("A promises callback cannot return that same promise.");
+                        if (H && ("function" === typeof H || "object" === x(H))) {
+                            var L = H.then;
+                            if ("function" === typeof L) return L.call(H, function(K) {
+                                J || (J = !0, H !== K ? n(y, K) : v(y, K))
+                            }, function(K) {
+                                J || (J = !0, z(y, K))
+                            }), !0
+                        }
+                    } catch (K) {
+                        return J || z(y, K), !0
+                    }
+                    return !1
+                }
+
+                function n(y, H) {
+                    y !== H && r(y, H) || v(y, H)
+                }
+
+                function v(y, H) {
+                    y.state_ === F && (y.state_ = a, y.data_ = H, f(C,
+                        y))
+                }
+
+                function z(y, H) {
+                    y.state_ === F && (y.state_ = a, y.data_ = H, f(E, y))
+										 
+															  
+                }
+
+                function w(y) {
+                    var H = y.then_;
+                    y.then_ = void 0;
+                    for (y = 0; y < H.length; y++) l(H[y])
+                }
+
+                function C(y) {
+                    y.state_ = b;
+                    w(y)
+                }
+
+                function E(y) {
+                    y.state_ = d;
+                    w(y)
+                }
+
+                function B(y) {
+                    if ("function" !== typeof y) throw new TypeError("Promise constructor takes a function argument");
+                    if (!(this instanceof B)) throw new TypeError("Failed to construct 'Promise': Please use the 'new' operator, this object constructor cannot be called as a function.");
+                    this.then_ = [];
+                    g(y, this)
+                }
+                h.createPromiseCapability =
+                    function() {
+                        var y = {};
+													  
+											  
+											
+							   
+									  
+								
+					  
+									  
+																											 
+								  
+                        y.promise = new B(function(H, J) {
+                            y.resolve = H;
+                            y.reject = J
+                        });
+							
+																																												 
+										
+											  
+									  
+									 
+										
+									   
+										  
+																	  
+							   
+						  
+								   
+									   
+								  
+									
+									  
+											  
+								 
+											
+															  
+											 
+										   
+							  
+																								  
+										 
+						  
+											  
+													 
+						 
+					  
+										 
+																																					
+														
+										   
+									
+													
+											 
+											   
+								 
+							 
+																 
+																													  
+									 
+						  
+					  
+										  
+																																					 
+                        return y
+																																 
+						  
+					  
+											 
+																											
+								
+						  
+                    };
+                var D = h.Promise,
+                    I = D && "resolve" in D && "reject" in D && "all" in D && "race" in D && function() {
+                        var y;
+                        new D(function(H) {
+                            y = H
+                        });
+                        return "function" === typeof y
+                    }();
+                "undefined" !== typeof exports && exports ? (exports.Promise = I ? D : B, exports.Polyfill = B) : "function" === typeof define && q(27) ? define(function() {
+                    return I ? D : B
+                }) : I || (h.Promise = B);
+                var F = "pending",
+                    a = "sealed",
+                    b = "fulfilled",
+                    d = "rejected",
+                    c = function() {},
+                    u = "undefined" !== typeof t ? t : setTimeout,
+                    A = [],
+                    G;
+                B.prototype = {
+                    constructor: B,
+                    state_: F,
+                    then_: null,
+                    data_: void 0,
+                    then: function(y, H) {
+                        y = {
+                            owner: this,
+                            then: new this.constructor(c),
+                            fulfilled: y,
+                            rejected: H
+                        };
+                        this.state_ === b || this.state_ === d ? f(l, y) : this.then_.push(y);
+                        return y.then
+                    },
+                    "catch": function(y) {
+                        return this.then(null, y)
+                    }
+                };
+                B.all = function(y) {
+                    if ("[object Array]" !== Object.prototype.toString.call(y)) throw new TypeError("You must pass an array to Promise.all().");
+                    return new this(function(H, J) {
+                        function L(P) {
+                            N++;
+                            return function(Q) {
+                                K[P] = Q;
+                                --N || H(K)
+                            }
+                        }
+                        for (var K = [], N = 0, O = 0, M; O < y.length; O++)(M = y[O]) && "function" === typeof M.then ? M.then(L(O), J) : K[O] = M;
+                        N || H(K)
+                    })
+                };
+                B.race = function(y) {
+                    if ("[object Array]" !== Object.prototype.toString.call(y)) throw new TypeError("You must pass an array to Promise.race().");
+                    return new this(function(H, J) {
+                        for (var L = 0, K; L < y.length; L++)(K = y[L]) && "function" === typeof K.then ? K.then(H, J) : H(K)
+                    })
+                };
+                B.resolve = function(y) {
+                    return y && "object" === x(y) && y.constructor === this ? y : new this(function(H) {
+                        H(y)
+                    })
+                };
+                B.reject = function(y) {
+                    return new this(function(H,
+                        J) {
+                        J(y)
+                    })
+                }
+            })("undefined" !== typeof window ? window : "undefined" !== typeof m ? m : "undefined" !== typeof self ? self : void 0)
+        }).call(this, q(12), q(8).setImmediate)
+    }, function(k, p, q) {
+        (function(m, t) {
+            (function(x, h) {
+                function e(F) {
+                    delete C[F]
+                }
+
+                function f(F) {
+                    if (E) setTimeout(f, 0, F);
                     else {
-                        var c = l[a];
-                        if (c) {
-                            x = !0;
+                        var a = C[F];
+                        if (a) {
+                            E = !0;
                             try {
-                                var d = c.callback,
-                                    g = c.args;
-                                switch (g.length) {
+                                var b = a.callback,
+                                    d = a.args;
+                                switch (d.length) {
                                     case 0:
-                                        d();
+                                        b();
                                         break;
                                     case 1:
-                                        d(g[0]);
+                                        b(d[0]);
                                         break;
                                     case 2:
-                                        d(g[0], g[1]);
+                                        b(d[0], d[1]);
                                         break;
                                     case 3:
-                                        d(g[0], g[1], g[2]);
+                                        b(d[0], d[1], d[2]);
                                         break;
                                     default:
-                                        d.apply(void 0, g)
+                                        b.apply(h, d)
+									 
+										   
+												
                                 }
                             } finally {
-                                b(a), x = !1
+                                e(F), E = !1
                             }
                         }
                     }
                 }
 
-                function a() {
-                    B = function(a) {
-                        e.nextTick(function() {
-                            f(a)
+                function g() {
+                    D = function(F) {
+                        t.nextTick(function() {
+                            f(F)
                         })
+						 
                     }
                 }
 
-                function c() {
-                    if (p.postMessage && !p.importScripts) {
-                        var a = !0,
-                            c = p.onmessage;
-                        p.onmessage = function() {
-                            a = !1
+                function l() {
+                    if (x.postMessage && !x.importScripts) {
+											   
+                        var F = !0,
+                            a = x.onmessage;
+                        x.onmessage = function() {
+                            F = !1
                         };
-                        p.postMessage("", "*");
-                        p.onmessage = c;
-                        return a
-                    }
-                }
-
-                function k() {
-                    var a = "setImmediate$" + Math.random() + "$",
-                        c = function(d) {
-                            d.source ===
-                                p && "string" === typeof d.data && 0 === d.data.indexOf(a) && f(+d.data.slice(a.length))
-                        };
-                    p.addEventListener ? p.addEventListener("message", c, !1) : p.attachEvent("onmessage", c);
-                    B = function(d) {
-                        p.postMessage(a + d, "*")
-                    }
-                }
-
-                function h() {
-                    var a = t.documentElement;
-                    B = function(c) {
-                        var d = t.createElement("script");
-                        d.onreadystatechange = function() {
-                            f(c);
-                            d.onreadystatechange = null;
-                            a.removeChild(d);
-                            d = null
-                        };
-                        a.appendChild(d)
+                        x.postMessage("", "*");
+                        x.onmessage = a;
+                        return F
+						 
                     }
                 }
 
                 function r() {
-                    B = function(a) {
-                        setTimeout(f, 0, a)
-                    }
-                }
-                var p = "undefined" === typeof window ? self : window,
-                    v = 1,
-                    l = {},
-                    x = !1,
-                    t = p.document,
-                    B, y = Object.getPrototypeOf && Object.getPrototypeOf(p);
-                y = y && y.setTimeout ? y : p;
-                "[object process]" === {}.toString.call(p.process) ? a() : c() ? k() : t && "onreadystatechange" in t.createElement("script") ? h() : r();
-                y.setImmediate = m;
-                y.clearImmediate = b;
-                n.a = {
-                    setImmediate: m,
-                    clearImmediate: b
-                }
-            }).call(this, l(12))
-        },
-        function(e, n, l) {
-            var f = l(1);
-            e = function() {
-                function e(b, e) {
-                    this.name = b;
-                    this.comObj = e;
-                    this.callbackIndex = 1;
-                    this.postMessageTransfers = !0;
-                    this.callbacksCapabilities = {};
-                    this.actionHandler = {};
-                    this.actionHandlerAsync = {};
-                    this.nextAsync =
-                        null;
-                    this.actionHandler.console_log = [function(a) {
-                        Object(f.c)(a)
-                    }];
-                    this.actionHandler.console_error = [function(a) {
-                        Object(f.b)(a)
-                    }];
-                    this.actionHandler.workerLoaded = [function() {}];
-                    this.msgHandler = this.handleMessage.bind(this);
-                    e.addEventListener("message", this.msgHandler)
-                }
-                e.prototype.on = function(b, e, a) {
-                    var c = this.actionHandler;
-                    c[b] && Object(f.b)('There is already an actionName called "' + b + '"');
-                    c[b] = [e, a]
-                };
-                e.prototype.clearActionHandlers = function() {
-                    this.actionHandler = {};
-                    this.comObj.removeEventListener("message",
-                        this.msgHandler)
-                };
-                e.prototype.reset = function() {
-                    this.clearActionHandlers();
-                    this.comObj.reset && this.comObj.reset()
-                };
-                e.prototype.replace = function(b, e, a) {
-                    this.actionHandler[b] = [e, a]
-                };
-                e.prototype.onAsync = function(b, e, a) {
-                    var c = this.actionHandlerAsync;
-                    c[b] && Object(f.b)('There is already an actionName called "' + b + '"');
-                    c[b] = [e, a]
-                };
-                e.prototype.replaceAsync = function(b, e, a) {
-                    var c = this.actionHandlerAsync,
-                        k = this.actionHandler;
-                    k[b] && delete k[b];
-                    c[b] = [e, a]
-                };
-                e.prototype.onNextAsync = function(b) {
-                    this.nextAsync = b
-                };
-                e.prototype.send =
-                    function(b, e) {
-                        this.postMessage({
-                            action: b,
-                            data: e
-                        })
-                    };
-                e.prototype.getNextId = function() {
-                    return this.callbackIndex++
-                };
-                e.prototype.sendWithPromise = function(b, e, a) {
-                    var c = this.getNextId();
-                    b = {
-                        action: b,
-                        data: e,
-                        callbackId: c,
-                        priority: a
-                    };
-                    e = window.createPromiseCapability();
-                    this.callbacksCapabilities[c] = e;
-                    try {
-                        this.postMessage(b)
-                    } catch (k) {
-                        e.reject(k)
-                    }
-                    return e.promise
-                };
-                e.prototype.sendWithPromiseReturnId = function(b, e, a) {
-                    var c = this.getNextId();
-                    b = {
-                        action: b,
-                        data: e,
-                        callbackId: c,
-                        priority: a
-                    };
-                    e = window.createPromiseCapability();
-                    this.callbacksCapabilities[c] = e;
-                    try {
-                        this.postMessage(b)
-                    } catch (k) {
-                        e.reject(k)
-                    }
-                    return {
-                        promise: e.promise,
-                        callbackId: c
-                    }
-                };
-                e.prototype.sendWithPromiseWithId = function(b, e, a) {
-                    e > this.callbackIndex && Object(f.b)("Can't reuse callbackId " + e + " lesser than callbackIndex " + this.callbackIndex);
-                    e in this.callbacksCapabilities && Object(f.b)("Can't reuse callbackId " + e + ". There is a capability waiting to be resolved. ");
-                    b = {
-                        action: b,
-                        data: a,
-                        callbackId: e
-                    };
-                    a = window.createPromiseCapability();
-                    this.callbacksCapabilities[e] =
-                        a;
-                    try {
-                        this.postMessage(b)
-                    } catch (c) {
-                        a.reject(c)
-                    }
-                    return a.promise
-                };
-                e.prototype.sendError = function(b, e) {
-                    if (b.message || b.errorData) {
-                        b.message && b.message.message && (b.message = b.message.message);
-                        var a = b.errorData;
-                        b = {
-                            type: b.type ? b.type : "JavascriptError",
-                            message: b.message
+                    var F = "setImmediate$" + Math.random() + "$",
+                        a = function(b) {
+                            b.source === x && "string" === typeof b.data && 0 === b.data.indexOf(F) && f(+b.data.slice(F.length))
                         };
-                        a && Object.keys(a).forEach(function(c) {
-                            a.hasOwnProperty(c) && (b[c] = a[c])
-                        })
+                    x.addEventListener ? x.addEventListener("message", a, !1) : x.attachEvent("onmessage", a);
+                    D = function(b) {
+                        x.postMessage(F + b, "*")
+						 
                     }
-                    this.postMessage({
-                        isReply: !0,
-                        callbackId: e,
-                        error: b
-                    })
-                };
-                e.prototype.getPromise = function(b) {
-                    if (b in this.callbacksCapabilities) return this.callbacksCapabilities[b];
-                    Object(f.b)("Cannot get promise for callback " +
-                        b)
-                };
-                e.prototype.cancelPromise = function(b) {
-                    if (b in this.callbacksCapabilities) {
-                        var e = this.callbacksCapabilities[b];
-                        delete this.callbacksCapabilities[b];
-                        e.reject({
-                            type: "Cancelled",
-                            message: "Request has been cancelled."
-                        });
-                        this.postMessage({
-                            action: "actionCancel",
-                            data: {
-                                callbackId: b
-                            }
-                        })
-                    } else Object(f.d)("Cannot cancel callback " + b)
-                };
-                e.prototype.postMessage = function(b) {
-                    if (this.postMessageTransfers) {
-                        var e = this.getTransfersArray(b);
-                        this.comObj.postMessage(b, e)
-                    } else this.comObj.postMessage(b)
-                };
-                e.prototype.getObjectTransfers =
-                    function(b, e) {
-                        var a = this;
-                        null !== b && "object" === typeof b && (b instanceof Uint8Array ? e.push(b.buffer) : b instanceof ArrayBuffer ? e.push(b) : Object.keys(b).forEach(function(c) {
-                            b.hasOwnProperty(c) && a.getObjectTransfers(b[c], e)
-                        }))
+                }
+
+                function n() {
+                    var F = new MessageChannel;
+                    F.port1.onmessage = function(a) {
+                        f(a.data)
                     };
-                e.prototype.getTransfersArray = function(b) {
-                    var e = [];
-                    this.getObjectTransfers(b, e);
-                    return 0 === e.length ? void 0 : e
-                };
-                e.prototype.handleMessage = function(b) {
-                    var e = this,
-                        a = b.data,
-                        c = this.actionHandler,
-                        k = this.actionHandlerAsync;
-                    b = this.callbacksCapabilities;
-                    if (a.isReply) c = a.callbackId, c in b ?
-                        (k = b[c], delete b[c], "error" in a ? k.reject(a.error) : k.resolve(a.data)) : Object(f.a)("Cannot resolve callback " + c);
-                    else if (a.action in c) {
-                        var h = c[a.action];
-                        a.callbackId ? Promise.resolve().then(function() {
-                            return h[0].call(h[1], a.data)
-                        }).then(function(c) {
-                            e.postMessage({
-                                isReply: !0,
-                                callbackId: a.callbackId,
-                                data: c
-                            })
-                        }, function(c) {
-                            e.sendError(c, a.callbackId)
-                        }) : h[0].call(h[1], a.data)
-                    } else a.action in k ? (h = k[a.action], a.callbackId ? h[0].call(h[1], a).then(function(c) {
-                        e.postMessage({
-                            isReply: !0,
-                            callbackId: a.callbackId,
-                            data: c
-                        });
-                        e.nextAsync()
-                    }, function(c) {
-                        e.sendError(c, a.callbackId);
-                        e.nextAsync()
-                    }) : h[0].call(h[1], a).then(function() {
-                        e.nextAsync()
-                    }, function() {
-                        e.nextAsync()
-                    })) : Object(f.b)("Unknown action from worker: " + a.action)
-                };
-                return e
-            }();
-            n.a = e
-        },
-        function(e, n, l) {
-            var f = [0, 1, 3, 7, 15, 31, 63, 127, 255, 511, 1023, 2047, 4095, 8191, 16383, 32767, 65535],
-                m = [3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 15, 17, 19, 23, 27, 31, 35, 43, 51, 59, 67, 83, 99, 115, 131, 163, 195, 227, 258, 0, 0],
-                b = [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 0, 99, 99],
-                u = [1, 2, 3, 4, 5, 7, 9, 13,
-                    17, 25, 33, 49, 65, 97, 129, 193, 257, 385, 513, 769, 1025, 1537, 2049, 3073, 4097, 6145, 8193, 12289, 16385, 24577
-                ],
-                a = [0, 0, 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13, 13],
-                c = [16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15],
-                k = function() {
-                    this.list = this.next = null
-                },
-                h = function() {
-                    this.n = this.b = this.e = 0;
-                    this.t = null
-                },
-                r = function(a, c, b, e, p, m) {
-                    this.BMAX = 16;
-                    this.N_MAX = 288;
-                    this.status = 0;
-                    this.root = null;
-                    this.m = 0;
-                    var t = Array(this.BMAX + 1),
-                        v, d, g, q = Array(this.BMAX + 1),
-                        A, w = new h,
-                        B = Array(this.BMAX);
-                    var f = Array(this.N_MAX);
-                    var x = Array(this.BMAX + 1),
-                        r, l;
-                    var y = this.root = null;
-                    for (d = 0; d < t.length; d++) t[d] = 0;
-                    for (d = 0; d < q.length; d++) q[d] = 0;
-                    for (d = 0; d < B.length; d++) B[d] = null;
-                    for (d = 0; d < f.length; d++) f[d] = 0;
-                    for (d = 0; d < x.length; d++) x[d] = 0;
-                    var n = 256 < c ? a[256] : this.BMAX;
-                    var z = a;
-                    var u = 0;
-                    d = c;
-                    do t[z[u]]++, u++; while (0 < --d);
-                    if (t[0] == c) this.root = null, this.status = this.m = 0;
-                    else {
-                        for (g = 1; g <= this.BMAX && 0 == t[g]; g++);
-                        var G = g;
-                        m < g && (m = g);
-                        for (d = this.BMAX; 0 != d && 0 == t[d]; d--);
-                        var I = d;
-                        m > d && (m = d);
-                        for (r = 1 << g; g < d; g++, r <<= 1)
-                            if (0 > (r -= t[g])) {
-                                this.status = 2;
-                                this.m =
-                                    m;
-                                return
-                            } if (0 > (r -= t[d])) this.status = 2, this.m = m;
-                        else {
-                            t[d] += r;
-                            x[1] = g = 0;
-                            z = t;
-                            u = 1;
-                            for (A = 2; 0 < --d;) x[A++] = g += z[u++];
-                            z = a;
-                            d = u = 0;
-                            do 0 != (g = z[u++]) && (f[x[g]++] = d); while (++d < c);
-                            c = x[I];
-                            x[0] = d = 0;
-                            z = f;
-                            u = 0;
-                            f = -1;
-                            var F = q[0] = 0;
-                            A = null;
-                            for (l = 0; G <= I; G++)
-                                for (a = t[G]; 0 < a--;) {
-                                    for (; G > F + q[1 + f];) {
-                                        F += q[1 + f];
-                                        f++;
-                                        l = (l = I - F) > m ? m : l;
-                                        if ((v = 1 << (g = G - F)) > a + 1)
-                                            for (v -= a + 1, A = G; ++g < l && !((v <<= 1) <= t[++A]);) v -= t[A];
-                                        F + g > n && F < n && (g = n - F);
-                                        l = 1 << g;
-                                        q[1 + f] = g;
-                                        A = Array(l);
-                                        for (v = 0; v < l; v++) A[v] = new h;
-                                        y = null == y ? this.root = new k : y.next = new k;
-                                        y.next = null;
-                                        y.list =
-                                            A;
-                                        B[f] = A;
-                                        0 < f && (x[f] = d, w.b = q[f], w.e = 16 + g, w.t = A, g = (d & (1 << F) - 1) >> F - q[f], B[f - 1][g].e = w.e, B[f - 1][g].b = w.b, B[f - 1][g].n = w.n, B[f - 1][g].t = w.t)
-                                    }
-                                    w.b = G - F;
-                                    u >= c ? w.e = 99 : z[u] < b ? (w.e = 256 > z[u] ? 16 : 15, w.n = z[u++]) : (w.e = p[z[u] - b], w.n = e[z[u++] - b]);
-                                    v = 1 << G - F;
-                                    for (g = d >> F; g < l; g += v) A[g].e = w.e, A[g].b = w.b, A[g].n = w.n, A[g].t = w.t;
-                                    for (g = 1 << G - 1; 0 != (d & g); g >>= 1) d ^= g;
-                                    for (d ^= g;
-                                        (d & (1 << F) - 1) != x[f];) F -= q[f], f--
-                                }
-                            this.m = q[1];
-                            this.status = 0 != r && 1 != I ? 1 : 0
-                        }
+                    D = function(a) {
+                        F.port2.postMessage(a)
+						 
                     }
-                },
-                p = {
-                    Stream: function(a) {
-                        this.zip_inflate_start();
-                        this.zip_inflate_data = a;
-                        this.zip_inflate_pos =
-                            0
+                }
+
+                function v() {
+                    var F = B.documentElement;
+                    D = function(a) {
+                        var b = B.createElement("script");
+                        b.onreadystatechange = function() {
+                            f(a);
+                            b.onreadystatechange = null;
+                            F.removeChild(b);
+                            b = null
+                        };
+                        F.appendChild(b)
+						 
                     }
-                };
-            p.Stream.prototype = {
-                getBytes: function(a) {
-                    for (var c, b = Array(1024), e = [], k = 0; k < a && 0 < (c = this.zip_inflate_internal(b, 0, b.length));) e[e.length] = String.fromCharCode.apply(null, b.slice(0, c)), k += c;
-                    return k ? (this.zip_inflate_data = this.zip_inflate_data.slice(this.zip_inflate_pos), this.zip_inflate_pos = 0, e.join("")) : ""
-                },
-                zip_GET_BYTE: function() {
-                    return this.zip_inflate_data.length == this.zip_inflate_pos ? -1 : this.zip_inflate_data.charCodeAt(this.zip_inflate_pos++) & 255
-                },
-                zip_NEEDBITS: function(a) {
-                    for (; this.zip_bit_len <
-                        a;) this.zip_bit_buf |= this.zip_GET_BYTE() << this.zip_bit_len, this.zip_bit_len += 8
-                },
-                zip_GETBITS: function(a) {
-                    return this.zip_bit_buf & f[a]
-                },
-                zip_DUMPBITS: function(a) {
-                    this.zip_bit_buf >>= a;
-                    this.zip_bit_len -= a
-                },
-                zip_inflate_codes: function(a, c, b) {
-                    var e, k;
-                    if (0 == b) return 0;
-                    for (k = 0;;) {
-                        this.zip_NEEDBITS(this.zip_bl);
-                        var h = this.zip_tl.list[this.zip_GETBITS(this.zip_bl)];
-                        for (e = h.e; 16 < e;) {
-                            if (99 == e) return -1;
-                            this.zip_DUMPBITS(h.b);
-                            e -= 16;
-                            this.zip_NEEDBITS(e);
-                            h = h.t[this.zip_GETBITS(e)];
-                            e = h.e
-                        }
-                        this.zip_DUMPBITS(h.b);
-                        if (16 ==
-                            e) this.zip_wp &= 32767, a[c + k++] = this.zip_slide[this.zip_wp++] = h.n;
-                        else {
-                            if (15 == e) break;
-                            this.zip_NEEDBITS(e);
-                            this.zip_copy_leng = h.n + this.zip_GETBITS(e);
-                            this.zip_DUMPBITS(e);
-                            this.zip_NEEDBITS(this.zip_bd);
-                            h = this.zip_td.list[this.zip_GETBITS(this.zip_bd)];
-                            for (e = h.e; 16 < e;) {
-                                if (99 == e) return -1;
-                                this.zip_DUMPBITS(h.b);
-                                e -= 16;
-                                this.zip_NEEDBITS(e);
-                                h = h.t[this.zip_GETBITS(e)];
-                                e = h.e
-                            }
-                            this.zip_DUMPBITS(h.b);
-                            this.zip_NEEDBITS(e);
-                            this.zip_copy_dist = this.zip_wp - h.n - this.zip_GETBITS(e);
-                            for (this.zip_DUMPBITS(e); 0 < this.zip_copy_leng &&
-                                k < b;) this.zip_copy_leng--, this.zip_copy_dist &= 32767, this.zip_wp &= 32767, a[c + k++] = this.zip_slide[this.zip_wp++] = this.zip_slide[this.zip_copy_dist++]
-                        }
-                        if (k == b) return b
+                }
+
+                function z() {
+                    D = function(F) {
+                        setTimeout(f, 0, F)
+						 
                     }
-                    this.zip_method = -1;
-                    return k
-                },
-                zip_inflate_stored: function(a, c, b) {
-                    var e = this.zip_bit_len & 7;
-                    this.zip_DUMPBITS(e);
-                    this.zip_NEEDBITS(16);
-                    e = this.zip_GETBITS(16);
-                    this.zip_DUMPBITS(16);
-                    this.zip_NEEDBITS(16);
-                    if (e != (~this.zip_bit_buf & 65535)) return -1;
-                    this.zip_DUMPBITS(16);
-                    this.zip_copy_leng = e;
-                    for (e = 0; 0 < this.zip_copy_leng && e < b;) this.zip_copy_leng--,
-                        this.zip_wp &= 32767, this.zip_NEEDBITS(8), a[c + e++] = this.zip_slide[this.zip_wp++] = this.zip_GETBITS(8), this.zip_DUMPBITS(8);
-                    0 == this.zip_copy_leng && (this.zip_method = -1);
-                    return e
-                },
-                zip_inflate_fixed: function(c, e, k) {
-                    if (null == this.zip_fixed_tl) {
-                        var h, p = Array(288);
-                        for (h = 0; 144 > h; h++) p[h] = 8;
-                        for (; 256 > h; h++) p[h] = 9;
-                        for (; 280 > h; h++) p[h] = 7;
-                        for (; 288 > h; h++) p[h] = 8;
-                        this.zip_fixed_bl = 7;
-                        h = new r(p, 288, 257, m, b, this.zip_fixed_bl);
-                        if (0 != h.status) return alert("HufBuild error: ".concat(h.status)), -1;
-                        this.zip_fixed_tl = h.root;
-                        this.zip_fixed_bl =
-                            h.m;
-                        for (h = 0; 30 > h; h++) p[h] = 5;
-                        this.zip_fixed_bd = 5;
-                        h = new r(p, 30, 0, u, a, this.zip_fixed_bd);
-                        if (1 < h.status) return this.zip_fixed_tl = null, alert("HufBuild error: ".concat(h.status)), -1;
-                        this.zip_fixed_td = h.root;
-                        this.zip_fixed_bd = h.m
-                    }
-                    this.zip_tl = this.zip_fixed_tl;
-                    this.zip_td = this.zip_fixed_td;
-                    this.zip_bl = this.zip_fixed_bl;
-                    this.zip_bd = this.zip_fixed_bd;
-                    return this.zip_inflate_codes(c, e, k)
-                },
-                zip_inflate_dynamic: function(e, k, h) {
-                    var p, f, v, l = Array(316);
-                    for (p = 0; p < l.length; p++) l[p] = 0;
-                    this.zip_NEEDBITS(5);
-                    var x = 257 +
-                        this.zip_GETBITS(5);
-                    this.zip_DUMPBITS(5);
-                    this.zip_NEEDBITS(5);
-                    var d = 1 + this.zip_GETBITS(5);
-                    this.zip_DUMPBITS(5);
-                    this.zip_NEEDBITS(4);
-                    p = 4 + this.zip_GETBITS(4);
-                    this.zip_DUMPBITS(4);
-                    if (286 < x || 30 < d) return -1;
-                    for (f = 0; f < p; f++) this.zip_NEEDBITS(3), l[c[f]] = this.zip_GETBITS(3), this.zip_DUMPBITS(3);
-                    for (; 19 > f; f++) l[c[f]] = 0;
-                    this.zip_bl = 7;
-                    f = new r(l, 19, 19, null, null, this.zip_bl);
-                    if (0 != f.status) return -1;
-                    this.zip_tl = f.root;
-                    this.zip_bl = f.m;
-                    var g = x + d;
-                    for (p = v = 0; p < g;) {
-                        this.zip_NEEDBITS(this.zip_bl);
-                        var q = this.zip_tl.list[this.zip_GETBITS(this.zip_bl)];
-                        f = q.b;
-                        this.zip_DUMPBITS(f);
-                        f = q.n;
-                        if (16 > f) l[p++] = v = f;
-                        else if (16 == f) {
-                            this.zip_NEEDBITS(2);
-                            f = 3 + this.zip_GETBITS(2);
-                            this.zip_DUMPBITS(2);
-                            if (p + f > g) return -1;
-                            for (; 0 < f--;) l[p++] = v
-                        } else {
-                            17 == f ? (this.zip_NEEDBITS(3), f = 3 + this.zip_GETBITS(3), this.zip_DUMPBITS(3)) : (this.zip_NEEDBITS(7), f = 11 + this.zip_GETBITS(7), this.zip_DUMPBITS(7));
-                            if (p + f > g) return -1;
-                            for (; 0 < f--;) l[p++] = 0;
-                            v = 0
+                }
+                if (!x.setImmediate) {
+                    var w = 1,
+                        C = {},
+                        E = !1,
+                        B = x.document,
+                        D, I = Object.getPrototypeOf && Object.getPrototypeOf(x);
+                    I = I && I.setTimeout ? I : x;
+                    "[object process]" === {}.toString.call(x.process) ? g() : l() ? r() : x.MessageChannel ? n() : B && "onreadystatechange" in
+                        B.createElement("script") ? v() : z();
+                    I.setImmediate = function(F) {
+                        "function" !== typeof F && (F = new Function("" + F));
+                        for (var a = Array(arguments.length - 1), b = 0; b < a.length; b++) a[b] = arguments[b + 1];
+                        C[w] = {
+                            callback: F,
+                            args: a
+							  
+								 
+									  
+                        };
+                        D(w);
+                        return w++
+                    };
+                    I.clearImmediate = e
+                }
+            })("undefined" === typeof self ? "undefined" === typeof m ? this : m : self)
+        }).call(this, q(12), q(15))
+    }, function(k, p) {
+						
+        k.exports = {}
+    }, function(k, p, q) {
+						   
+        (function(m) {
+            var t = function(x, h) {
+                var e = function r(l) {
+                        l = this["catch"](l);
+                        return {
+                            cancel: h,
+                            promise: l,
+                            then: f.bind(l),
+                            "catch": r.bind(l)
                         }
-                    }
-                    this.zip_bl = 9;
-                    f = new r(l, x, 257, m, b, this.zip_bl);
-                    0 == this.zip_bl && (f.status = 1);
-                    if (0 != f.status) return -1;
-                    this.zip_tl = f.root;
-                    this.zip_bl = f.m;
-                    for (p =
-                        0; p < d; p++) l[p] = l[p + x];
-                    this.zip_bd = 6;
-                    f = new r(l, d, 0, u, a, this.zip_bd);
-                    this.zip_td = f.root;
-                    this.zip_bd = f.m;
-                    return 0 == this.zip_bd && 257 < x || 0 != f.status ? -1 : this.zip_inflate_codes(e, k, h)
-                },
-                zip_inflate_start: function() {
-                    null == this.zip_slide && (this.zip_slide = Array(65536));
-                    this.zip_bit_len = this.zip_bit_buf = this.zip_wp = 0;
-                    this.zip_method = -1;
-                    this.zip_eof = !1;
-                    this.zip_copy_leng = this.zip_copy_dist = 0;
-                    this.zip_fixed_tl = this.zip_tl = null
-                },
-                zip_inflate_internal: function(a, c, b) {
-                    var e;
-                    for (e = 0; e < b && (!this.zip_eof || -1 != this.zip_method);) {
-                        if (0 <
-                            this.zip_copy_leng) {
-                            if (0 != this.zip_method)
-                                for (; 0 < this.zip_copy_leng && e < b;) this.zip_copy_leng--, this.zip_copy_dist &= 32767, this.zip_wp &= 32767, a[c + e++] = this.zip_slide[this.zip_wp++] = this.zip_slide[this.zip_copy_dist++];
-                            else {
-                                for (; 0 < this.zip_copy_leng && e < b;) this.zip_copy_leng--, this.zip_wp &= 32767, this.zip_NEEDBITS(8), a[c + e++] = this.zip_slide[this.zip_wp++] = this.zip_GETBITS(8), this.zip_DUMPBITS(8);
-                                0 == this.zip_copy_leng && (this.zip_method = -1)
-                            }
-                            if (e == b) break
+                    },
+                    f = function v(r, n) {
+                        r = this.then(r, n);
+								   
+                        return {
+                            cancel: h,
+                            promise: r,
+                            then: v.bind(r),
+                            "catch": e.bind(r)
                         }
-                        if (-1 == this.zip_method) {
-                            if (this.zip_eof) break;
-                            this.zip_NEEDBITS(1);
-                            0 != this.zip_GETBITS(1) && (this.zip_eof = !0);
-                            this.zip_DUMPBITS(1);
-                            this.zip_NEEDBITS(2);
-                            this.zip_method = this.zip_GETBITS(2);
-                            this.zip_DUMPBITS(2);
-                            this.zip_tl = null;
-                            this.zip_copy_leng = 0
-                        }
-                        switch (this.zip_method) {
-                            case 0:
-                                var k = this.zip_inflate_stored(a, c + e, b - e);
-                                break;
-                            case 1:
-                                k = null != this.zip_tl ? this.zip_inflate_codes(a, c + e, b - e) : this.zip_inflate_fixed(a, c + e, b - e);
-                                break;
-                            case 2:
-                                k = null != this.zip_tl ? this.zip_inflate_codes(a, c + e, b - e) : this.zip_inflate_dynamic(a, c + e, b - e);
-                                break;
-                            default:
-                                k = -1
-                        }
-                        if (-1 == k) return this.zip_eof ?
-                            0 : -1;
-                        e += k
-                    }
-                    return e
+                    };
+                return {
+                    cancel: h,
+                    promise: x,
+                    then: f.bind(x),
+                    "catch": e.bind(x)
                 }
             };
-            p.inflate = function(a) {
-                return (new p.Stream(a)).getBytes(4E9)
+            m.CancellablePromise = function(x, h) {
+                var e = !1,
+                    f, g = new Promise(function(l, r) {
+                        f = function() {
+                            e || (h(), r("cancelled"))
+                        };
+							
+								  
+								   
+										
+										  
+					 
+				  
+													   
+							   
+														   
+											
+														  
+							  
+                        (new Promise(x)).then(function(n) {
+                            e = !0;
+                            l(n)
+                        }, function(n) {
+                            e = !0;
+                            r(n)
+							  
+						   
+								  
+				  
+														
+										   
+											
+											   
+												  
+                        })
+                    });
+                return t(g, f)
             };
-            n.a = p
-        },
-        function(e, n, l) {
-            e.exports = l(18)
-        },
-        function(e, n, l) {
-            l.r(n);
-            l(5);
-            e = l(13);
-            l(19);
-            l(20);
-            l(23);
-            l(24);
-            l(25);
-            l(26);
-            l(27);
-            Object(e.a)()
-        },
-        function(e, n, l) {
-            (function(e) {
-                "undefined" === typeof e.crypto && (e.crypto = {
-                    getRandomValues: function(e) {
-                        for (var b = 0; b < e.length; b++) e[b] = 256 * Math.random()
-                    }
+            m.CancellablePromise.all = function(x) {
+                var h = Promise.all(x);
+                return t(h, function() {
+                    x.forEach(function(e) {
+                        e.cancel && e.cancel()
+                    })
                 })
-            })("undefined" === typeof window ? self : window)
-        },
-        function(e, n, l) {
-            (function(e, m) {
-                function b(e) {
-                    "@babel/helpers - typeof";
-                    b = "function" === typeof Symbol &&
-                        "symbol" === typeof Symbol.iterator ? function(a) {
-                            return typeof a
-                        } : function(a) {
-                            return a && "function" === typeof Symbol && a.constructor === Symbol && a !== Symbol.prototype ? "symbol" : typeof a
-                        };
-                    return b(e)
-                }(function(e) {
-                    function a() {
-                        for (var d = 0; d < M.length; d++) M[d][0](M[d][1]);
-                        M = [];
-                        O = !1
-                    }
-
-                    function c(d, g) {
-                        M.push([d, g]);
-                        O || (O = !0, D(a, 0))
-                    }
-
-                    function k(d, a) {
-                        function g(d) {
-                            p(a, d)
-                        }
-
-                        function c(d) {
-                            n(a, d)
-                        }
-                        try {
-                            d(g, c)
-                        } catch (E) {
-                            c(E)
-                        }
-                    }
-
-                    function h(d) {
-                        var a = d.owner,
-                            g = a.state_;
-                        a = a.data_;
-                        var c = d[g];
-                        d = d.then;
-                        if ("function" === typeof c) {
-                            g = q;
-                            try {
-                                a =
-                                    c(a)
-                            } catch (E) {
-                                n(d, E)
-                            }
-                        }
-                        f(d, a) || (g === q && p(d, a), g === A && n(d, a))
-                    }
-
-                    function f(d, a) {
-                        var g;
-                        try {
-                            if (d === a) throw new TypeError("A promises callback cannot return that same promise.");
-                            if (a && ("function" === typeof a || "object" === b(a))) {
-                                var c = a.then;
-                                if ("function" === typeof c) return c.call(a, function(c) {
-                                    g || (g = !0, a !== c ? p(d, c) : v(d, c))
-                                }, function(a) {
-                                    g || (g = !0, n(d, a))
-                                }), !0
-                            }
-                        } catch (E) {
-                            return g || n(d, E), !0
-                        }
-                        return !1
-                    }
-
-                    function p(d, a) {
-                        d !== a && f(d, a) || v(d, a)
-                    }
-
-                    function v(a, q) {
-                        a.state_ === d && (a.state_ = g, a.data_ = q, c(t, a))
-                    }
-
-                    function n(a, q) {
-                        a.state_ ===
-                            d && (a.state_ = g, a.data_ = q, c(B, a))
-                    }
-
-                    function x(d) {
-                        var a = d.then_;
-                        d.then_ = void 0;
-                        for (d = 0; d < a.length; d++) h(a[d])
-                    }
-
-                    function t(d) {
-                        d.state_ = q;
-                        x(d)
-                    }
-
-                    function B(d) {
-                        d.state_ = A;
-                        x(d)
-                    }
-
-                    function y(d) {
-                        if ("function" !== typeof d) throw new TypeError("Promise constructor takes a function argument");
-                        if (!1 === this instanceof y) throw new TypeError("Failed to construct 'Promise': Please use the 'new' operator, this object constructor cannot be called as a function.");
-                        this.then_ = [];
-                        k(d, this)
-                    }
-                    e.createPromiseCapability = function() {
-                        var d = {},
-                            a = new y(function(a, g) {
-                                d.resolve = a;
-                                d.reject = g
-                            });
-                        d.promise = a;
-                        return d
-                    };
-                    var C = e.Promise,
-                        u = C && "resolve" in C && "reject" in C && "all" in C && "race" in C && function() {
-                            var d;
-                            new C(function(a) {
-                                d = a
-                            });
-                            return "function" === typeof d
-                        }();
-                    "undefined" !== typeof exports && exports ? (exports.Promise = u ? C : y, exports.Polyfill = y) : "function" === typeof define && l(22) ? define(function() {
-                        return u ? C : y
-                    }) : u || (e.Promise = y);
-                    var d = "pending",
-                        g = "sealed",
-                        q = "fulfilled",
-                        A = "rejected",
-                        w = function() {},
-                        D = "undefined" !== typeof m ? m : setTimeout,
-                        M = [],
-                        O;
-                    y.prototype = {
-                        constructor: y,
-                        state_: d,
-                        then_: null,
-                        data_: void 0,
-                        then: function(d, a) {
-                            d = {
-                                owner: this,
-                                then: new this.constructor(w),
-                                fulfilled: d,
-                                rejected: a
-                            };
-                            this.state_ === q || this.state_ === A ? c(h, d) : this.then_.push(d);
-                            return d.then
-                        },
-                        "catch": function(d) {
-                            return this.then(null, d)
-                        }
-                    };
-                    y.all = function(d) {
-                        if ("[object Array]" !== Object.prototype.toString.call(d)) throw new TypeError("You must pass an array to Promise.all().");
-                        return new this(function(a, g) {
-                            function c(d) {
-                                b++;
-                                return function(g) {
-                                    q[d] = g;
-                                    --b || a(q)
-                                }
-                            }
-                            for (var q = [], b = 0, e = 0, w; e <
-                                d.length; e++)(w = d[e]) && "function" === typeof w.then ? w.then(c(e), g) : q[e] = w;
-                            b || a(q)
+            }
+        })("undefined" === typeof self ?
+            void 0 : self)
+    }, function(k, p, q) {
+				   
+				   
+        (function(m, t) {
+            var x = q(1);
+            (function(h) {
+                h.Module = {
+                    INITIAL_MEMORY: 50331648,
+                    noExitRuntime: !0,
+                    devicePixelRatio: 1,
+                    cur_doc: null,
+                    cachePtrSize: 0,
+                    hasBufOwnership: !0,
+                    loaded: !1,
+                    initCb: null,
+                    cachePtr: null,
+                    cleanupState: null,
+                    docs: {},
+                    postEvent: function(e, f, g) {
+                        Module.workerMessageHandler.send("event", {
+                            docId: e,
+                            type: f,
+                            data: g
                         })
-                    };
-                    y.race = function(d) {
-                        if ("[object Array]" !== Object.prototype.toString.call(d)) throw new TypeError("You must pass an array to Promise.race().");
-                        return new this(function(a, g) {
-                            for (var c = 0, q; c < d.length; c++)(q = d[c]) && "function" === typeof q.then ? q.then(a, g) : a(q)
-                        })
-                    };
-                    y.resolve = function(d) {
-                        return d && "object" === b(d) && d.constructor === this ? d : new this(function(a) {
-                            a(d)
-                        })
-                    };
-                    y.reject = function(d) {
-                        return new this(function(a, g) {
-                            g(d)
-                        })
-                    }
-                })("undefined" !==
-                    typeof window ? window : "undefined" !== typeof e ? e : "undefined" !== typeof self ? self : void 0)
-            }).call(this, l(9), l(7).setImmediate)
-        },
-        function(e, n, l) {
-            (function(e, m) {
-                (function(b, e) {
-                    function a(d) {
-                        delete t[d]
-                    }
-
-                    function c(d) {
-                        if (B) setTimeout(c, 0, d);
-                        else {
-                            var g = t[d];
-                            if (g) {
-                                B = !0;
-                                try {
-                                    var q = g.callback,
-                                        b = g.args;
-                                    switch (b.length) {
-                                        case 0:
-                                            q();
-                                            break;
-                                        case 1:
-                                            q(b[0]);
-                                            break;
-                                        case 2:
-                                            q(b[0], b[1]);
-                                            break;
-                                        case 3:
-                                            q(b[0], b[1], b[2]);
-                                            break;
-                                        default:
-                                            q.apply(e, b)
-                                    }
-                                } finally {
-                                    a(d), B = !1
-                                }
-                            }
-                        }
-                    }
-
-                    function k() {
-                        C = function(d) {
-                            m.nextTick(function() {
-                                c(d)
-                            })
-                        }
-                    }
-
-                    function h() {
-                        if (b.postMessage &&
-                            !b.importScripts) {
-                            var d = !0,
-                                a = b.onmessage;
-                            b.onmessage = function() {
-                                d = !1
-                            };
-                            b.postMessage("", "*");
-                            b.onmessage = a;
-                            return d
-                        }
-                    }
-
-                    function f() {
-                        var d = "setImmediate$" + Math.random() + "$",
-                            a = function(a) {
-                                a.source === b && "string" === typeof a.data && 0 === a.data.indexOf(d) && c(+a.data.slice(d.length))
-                            };
-                        b.addEventListener ? b.addEventListener("message", a, !1) : b.attachEvent("onmessage", a);
-                        C = function(a) {
-                            b.postMessage(d + a, "*")
-                        }
-                    }
-
-                    function p() {
-                        var d = new MessageChannel;
-                        d.port1.onmessage = function(d) {
-                            c(d.data)
+                    },
+                    postPagesUpdatedEvent: function(e, f, g, l) {
+                        e = {
+                            pageDimensions: Module.GetPageDimensions(e)
                         };
-                        C = function(a) {
-                            d.port2.postMessage(a)
+                        if (g)
+                            for (var r = 0; r < g.length; ++r) g[r] in e.pageDimensions ? (e.pageDimensions[g[r]].contentChanged = !0, l && (e.pageDimensions[g[r]].annotationsUnchanged = !0)) : console.warn("Invalid Page Number ".concat(g[r]));
+                        Module.postEvent(f, "pagesUpdated", e);
+                        return e
+                    },
+                    postPagesRenamedEvent: function(e, f) {
+                        var g = {};
+                        e = Module.PDFDocGetPageIterator(e, 1);
+                        for (var l = 1; Module.IteratorHasNext(e); ++l) {
+                            var r = Module.stackSave(),
+                                n = Module.IteratorCurrent(e);
+                            g[l] = Module.PageGetId(n);
+                            Module.IteratorNext(e);
+                            Module.stackRestore(r)
                         }
-                    }
-
-                    function l() {
-                        var d = y.documentElement;
-                        C = function(a) {
-                            var g = y.createElement("script");
-                            g.onreadystatechange = function() {
-                                c(a);
-                                g.onreadystatechange = null;
-                                d.removeChild(g);
-                                g = null
-                            };
-                            d.appendChild(g)
+                        Module.postEvent(f, "pagesRenamed", {
+                            pageNumToId: g
+                        })
+                    },
+                    GetIndividualPageDimensions: function(e, f, g) {
+                        e = Module.PageGetPageInfo(g);
+                        e.id = Module.PageGetId(g);
+                        return e
+                    },
+                    GetPageDimensionsRange: function(e, f, g) {
+                        for (var l = {}, r = Module.PDFDocGetPageIterator(e, f); f < g && Module.IteratorHasNext(r); ++f) {
+                            var n = Module.stackSave(),
+                                v = Module.IteratorCurrent(r);
+                            l[f] = this.GetIndividualPageDimensions(e, f, v);
+                            Module.IteratorNext(r);
+                            Module.stackRestore(n)
                         }
-                    }
-
-                    function n() {
-                        C = function(d) {
-                            setTimeout(c, 0, d)
-                        }
-                    }
-                    if (!b.setImmediate) {
-                        var x = 1,
-                            t = {},
-                            B = !1,
-                            y = b.document,
-                            C, u = Object.getPrototypeOf && Object.getPrototypeOf(b);
-                        u = u && u.setTimeout ? u : b;
-                        "[object process]" === {}.toString.call(b.process) ? k() : h() ? f() : b.MessageChannel ? p() : y && "onreadystatechange" in y.createElement("script") ? l() : n();
-                        u.setImmediate = function(d) {
-                            "function" !== typeof d && (d = new Function("" + d));
-                            for (var a = Array(arguments.length - 1), c = 0; c < a.length; c++) a[c] = arguments[c + 1];
-                            t[x] = {
-                                callback: d,
-                                args: a
-                            };
-                            C(x);
-                            return x++
-                        };
-                        u.clearImmediate = a
-                    }
-                })("undefined" === typeof self ? "undefined" === typeof e ? this : e : self)
-            }).call(this, l(9), l(12))
-        },
-        function(e, n) {
-            e.exports = {}
-        },
-        function(e, n, l) {
-            (function(e) {
-                var f = function(b, e) {
-                    var a = function r(a) {
-                            a = this["catch"](a);
-                            return {
-                                cancel: e,
-                                promise: a,
-                                then: c.bind(a),
-                                "catch": r.bind(a)
-                            }
-                        },
-                        c = function v(c, b) {
-                            c = this.then(c,
-                                b);
-                            return {
-                                cancel: e,
-                                promise: c,
-                                then: v.bind(c),
-                                "catch": a.bind(c)
-                            }
-                        };
-                    return {
-                        cancel: e,
-                        promise: b,
-                        then: c.bind(b),
-                        "catch": a.bind(b)
-                    }
-                };
-                e.CancellablePromise = function(b, e) {
-                    var a = !1,
-                        c, k = new Promise(function(k, f) {
-                            c = function() {
-                                a || (e(), f("cancelled"))
-                            };
-                            (new Promise(b)).then(function(c) {
-                                a = !0;
-                                k(c)
-                            }, function(c) {
-                                a = !0;
-                                f(c)
-                            })
+                        return l
+                    },
+                    GetPageDimensionsContentChangedList: function(e, f) {
+                        f.sort(function(C, E) {
+                            return C - E
                         });
-                    return f(k, c)
-                };
-                e.CancellablePromise.all = function(b) {
-                    var e = Promise.all(b);
-                    return f(e, function() {
-                        b.forEach(function(a) {
-                            a.cancel && a.cancel()
-                        })
-                    })
-                }
-            })("undefined" === typeof self ? void 0 : self)
-        },
-        function(e,
-            n, l) {
-            (function(e, m) {
-                var b = l(0);
-                (function(f) {
-                    f.Module = {
-                        TOTAL_MEMORY: 50331648,
-                        noExitRuntime: !0,
-                        devicePixelRatio: 1,
-                        cur_doc: null,
-                        cachePtrSize: 0,
-                        hasBufOwnership: !0,
-                        loaded: !1,
-                        initCb: null,
-                        cachePtr: null,
-                        cleanupState: null,
-                        docs: {},
-                        postEvent: function(a, c, b) {
-                            Module.workerMessageHandler.send("event", {
-                                docId: a,
-                                type: c,
-                                data: b
-                            })
-                        },
-                        postPagesUpdatedEvent: function(a, c, b) {
-                            a = {
-                                pageDimensions: Module.GetPageDimensions(a)
+                        for (var g = {}, l = f[0], r = f[f.length - 1], n = 0, v = Module.PDFDocGetPageIterator(e, l); l <= r && Module.IteratorHasNext(v); ++l) {
+                            if (f[n] ==
+                                l) {
+                                ++n;
+                                var z = Module.stackSave(),
+                                    w = Module.IteratorCurrent(v);
+                                w = this.GetIndividualPageDimensions(e, l, w);
+                                w.contentChanged = !0;
+                                g[l] = w;
+                                Module.stackRestore(z)
+                            }
+                            Module.IteratorNext(v)
+                        }
+                        return g
+                    },
+                    GetPageDimensions: function(e) {
+                        try {
+                            var f = Module.stackSave();
+                            var g = Module.GetPageCount(e);
+                            if (0 === g) throw "This document has no pages.";
+                            return Module.GetPageDimensionsRange(e, 1, g + 1)
+                        } finally {
+                            Module.stackRestore(f)
+                        }
+                    },
+                    loadDoc: function(e, f) {
+                        "undefined" === typeof Module && this._main();
+                        var g = null;
+                        try {
+                            var l = Module.stackSave();
+                            e.customHandlerId &&
+                                Module._TRN_PDFNetAddPDFTronCustomHandler(e.customHandlerId);
+                            f = Module.CreateDoc(e, f);
+                            var r = Module.GetDoc(f);
+                            if (Module.PDFDocInitSecurityHandler(r)) return {
+                                docId: f,
+                                pageDimensions: Module.GetPageDimensions(r)
                             };
-                            if (b)
-                                for (var e = 0; e < b.length; ++e) b[e] in a.pageDimensions ? a.pageDimensions[b[e]].contentChanged = !0 : console.warn("Invalid Page Number ".concat(b[e]));
-                            Module.postEvent(c, "pagesUpdated", a);
-                            return a
-                        },
-                        GetIndividualPageDimensions: function(a, c, b) {
-                            a = Module.PageGetPageInfo(b);
-                            a.id = Module.PageGetId(b);
-                            return a
-                        },
-                        GetPageDimensionsRange: function(a, c, b) {
-                            for (var e = {}, k = Module.PDFDocGetPageIterator(a, c); c < b && Module.IteratorHasNext(k); ++c) {
-                                var p = Module.stackSave(),
-                                    f = Module.IteratorCurrent(k);
-                                e[c] = this.GetIndividualPageDimensions(a, c, f);
-                                Module.IteratorNext(k);
-                                Module.stackRestore(p)
+                            g = {
+                                type: "NeedsPassword",
+                                errorData: {
+                                    docId: f
+						  
+																		
+														  
+													   
+									
+                                },
+                                message: "This document requires a password"
+																															   
+														   
+																  
+																				 
+													   
+													  
                             }
-                            return e
-                        },
-                        GetPageDimensions: function(a) {
-                            try {
-                                var c = Module.stackSave(),
-                                    b = Module.GetPageCount(a);
-                                if (0 === b) throw "This document has no pages.";
-                                return Module.GetPageDimensionsRange(a, 1, b + 1)
-                            } finally {
-                                Module.stackRestore(c)
+                        } catch (n) {
+                            g = {
+                                type: "InvalidPDF",
+                                message: n
+														   
+															   
+																				 
+																				 
+									   
+													  
                             }
-                        },
-                        loadDoc: function(a, c) {
-                            "undefined" === typeof Module && this._main();
-                            var b = null;
-                            try {
-                                var e = Module.stackSave();
-                                c = Module.CreateDoc(a, c);
-                                var f = Module.GetDoc(c);
-                                if (Module.PDFDocInitSecurityHandler(f)) return {
-                                    docId: c,
-                                    pageDimensions: Module.GetPageDimensions(f)
+                        } finally {
+                            Module.stackRestore(l)
+                        }
+                        throw g;
+                    },
+                    loadCanvas: function(e, f, g, l, r, n, v, z) {
+                        return new Promise(function(w, C) {
+                            var E = Module.GetDoc(e),
+                                B = f + 1,
+                                D = function() {
+                                    w(Module.RasterizePage(E,
+                                        B, g, l, n, r, v, z))
+                                },
+                                I = Module.docs[e].chunkStorage;
+                            if (I) {
+                                var F = Module.GetDownloadData(E).downloader,
+                                    a = I.getRequiredChunkOffsetArrays(F, B);
+                                I.keepChunks(a.have);
+                                F = function() {
+                                    var b = I.getChunks(a.missing);
+                                    Module.loadPromise = b.then(function() {
+                                        var d = Module.loadPromise.cancelled;
+                                        Module.loadPromise = null;
+                                        d || D()
+                                    })["catch"](function(d) {
+                                        "cancelled" !== d ? C(d) : Module.loadPromise = null
+                                    })
                                 };
-                                b = {
-                                    type: "NeedsPassword",
-                                    errorData: {
-                                        docId: c
-                                    },
-                                    message: "This document requires a password"
+                                Module.loadPromise ? Module.loadPromise.then(F, F) : F()
+                            } else D()
+                        })
+                    },
+                    loadResources: function(e, f) {
+                        Module.Initialize(f);
+                        Object(x.b)("worker",
+                            "PDFNet initialized!");
+                        Module._TRN_PDFNetSetDefaultDiskCachingEnabled(!1);
+                        e = new Uint8Array(e);
+                        Module.PDFNetSetResourceData(e)
+                    },
+                    onRuntimeInitialized: function() {
+                        "undefined" === typeof Module && (("undefined" !== typeof window ? window : self).Module = {});
+                        (function(e) {
+                            e.PDFDocExportXFDF = function(f, g) {
+                                f = Module.GetDoc(f);
+                                var l = Module.stackSave();
+                                try {
+                                    var r = g ? Module.PDFDocFDFExtract(f, g) : Module.PDFDocFDFExtract(f);
+                                    var n = Module.FDFDocSaveAsXFDF(r);
+                                    Module.stackRestore(l)
+                                } catch (v) {
+                                    throw Module.stackRestore(l), v;
                                 }
-                            } catch (p) {
-                                b = {
-                                    type: "InvalidPDF",
-                                    message: p
+                                return n
+                            };
+                            e.PageArrayToPageSet = function(f) {
+                                var g = Module.stackSave();
+                                try {
+                                    var l = Module.PageSetCreate();
+                                    for (var r = 0; r < f.length; ++r) Module.PageSetAddPage(l, f[r]);
+                                    Module.stackRestore(g)
+                                } catch (n) {
+                                    throw Module.stackRestore(g), n;
                                 }
-                            } finally {
-                                Module.stackRestore(e)
-                            }
-                            throw b;
-                        },
-                        loadCanvas: function(a, c, b, e, f, p, m, l) {
-                            return new Promise(function(k, h) {
-                                var v = Module.GetDoc(a),
-                                    t = c + 1,
-                                    n = function() {
-                                        k(Module.RasterizePage(v, t, b, e, p, f, m, l))
-                                    },
-                                    x = Module.docs[a].chunkStorage;
-                                if (x) {
-                                    var d = Module.GetDownloadData(v).downloader,
-                                        g = x.getRequiredChunkOffsetArrays(d, t);
-                                    x.keepChunks(g.have);
-                                    d = function() {
-                                        var d = x.getChunks(g.missing);
-                                        Module.loadPromise = d.then(function() {
-                                            var d = Module.loadPromise.cancelled;
-                                            Module.loadPromise = null;
-                                            d || n()
-                                        })["catch"](function(d) {
-                                            "cancelled" !== d ? h(d) : Module.loadPromise =
-                                                null
+                                return l
+                            };
+                            e.cancelCurrent = function() {
+									
+						  
+																	  
+															   
+                                var f = Module.loadPromise;
+                                return f ? (f.cancel(), f.cancelled = !0) : (f = Module.cleanupState) ? (m(f.timeout), f.cleanupArr.reverse().forEach(function(g) {
+                                    g()
+                                }), Module.cleanupState = null, !0) : !1
+                            };
+                            e.SetWorkerRestartCallback = function(f) {
+                                Module.workerRestartCallback = f
+                            };
+                            e.XFDFMerge = function(f, g, l) {
+														 
+													
+																	   
+																				
+																				 
+																	  
+													
+																 
+																						   
+													
+										  
+									  
+																							
+										  
+							  
+						  
+													   
+												 
+																		 
+																			   
+												  
+														   
+						  
+														  
+																														   
+										  
+                                if (g) {
+														 
+                                    var r = [];
+                                    try {
+                                        Object(x.b)("worker", "Merge XFDF of length ".concat(g.length));
+                                        var n = Module.GetUStringFromJSString(g, !0);
+                                        r.push(function() {
+                                            Module.UStringDestroy(n)
+                                        });
+                                        var v = Module.allocate(4, "i8", Module.ALLOC_STACK);
+                                        REX(Module._TRN_FDFDocCreateFromXFDF(n, v));
+                                        var z = Module.getValue(v, "i8*");
+                                        r.push(function() {
+                                            Module.FDFDocDestroy(z)
+                                        });
+                                        Module.PDFDocFDFUpdate(f, z, l)
+                                    } finally {
+                                        r.reverse().forEach(function(w) {
+                                            w()
                                         })
-                                    };
-                                    Module.loadPromise ? Module.loadPromise.then(d, d) : d()
-                                } else n()
-                            })
-                        },
-                        loadResources: function(a, c) {
-                            Module.Initialize(c);
-                            Object(b.b)("worker", "PDFNet initialized!");
-                            Module._TRN_PDFNetSetDefaultDiskCachingEnabled(!1);
-                            a = new Uint8Array(a);
-                            Module.PDFNetSetResourceData(a)
-                        },
-                        onRuntimeInitialized: function() {
-                            "undefined" === typeof Module && (("undefined" !== typeof window ? window : self).Module = {});
-                            (function(a) {
-                                a.PDFDocExportXFDF = function(a, b) {
-                                    a = Module.GetDoc(a);
-                                    var c = Module.stackSave();
+                                    }
+                                }
+                            };
+                            e.MergeXFDF = function(f, g, l) {
+                                return new Promise(function(r,
+                                    n) {
+                                    var v = [];
                                     try {
-                                        var e = b ? Module.PDFDocFDFExtract(a,
-                                            b) : Module.PDFDocFDFExtract(a);
-                                        var k = Module.FDFDocSaveAsXFDF(e);
-                                        Module.stackRestore(c)
-                                    } catch (v) {
-                                        throw Module.stackRestore(c), v;
-                                    }
-                                    return k
-                                };
-                                a.PageArrayToPageSet = function(a) {
-                                    var c = Module.stackSave();
-                                    try {
-                                        var b = Module.PageSetCreate();
-                                        for (var e = 0; e < a.length; ++e) Module.PageSetAddPage(b, a[e]);
-                                        Module.stackRestore(c)
-                                    } catch (p) {
-                                        throw Module.stackRestore(c), p;
-                                    }
-                                    return b
-                                };
-                                a.cancelCurrent = function() {
-                                    var a = Module.loadPromise;
-                                    return a ? (a.cancel(), a.cancelled = !0) : (a = Module.cleanupState) ? (e(a.timeout), a.cleanupArr.forEach(function(a) {
-                                            a()
-                                        }),
-                                        Module.cleanupState = null, !0) : !1
-                                };
-                                a.SetWorkerRestartCallback = function(a) {
-                                    Module.workerRestartCallback = a
-                                };
-                                a.XFDFMerge = function(a, e, h) {
-                                    if (e) {
-                                        var c = [];
-                                        try {
-                                            Object(b.b)("worker", "Merge XFDF of length ".concat(e.length));
-                                            var k = Module.GetUStringFromJSString(e, !0);
-                                            c.push(function() {
-                                                Module.UStringDestroy(k)
-                                            });
-                                            var f = Module.allocate(4, "i8", Module.ALLOC_STACK);
-                                            REX(Module._TRN_FDFDocCreateFromXFDF(k, f));
-                                            var m = Module.getValue(f, "i8*");
-                                            c.push(function() {
-                                                Module.FDFDocDestroy(m)
-                                            });
-                                            Module.PDFDocFDFUpdate(a, m, h)
-                                        } finally {
-                                            c.forEach(function(a) {
-                                                a()
-                                            })
-                                        }
-                                    }
-                                };
-                                a.MergeXFDF = function(a, b, e) {
-                                    return new Promise(function(c, k) {
-                                        var f = [];
-                                        try {
-                                            var h = Module.stackSave();
-                                            f[f.length] = function() {
-                                                Module.stackRestore(h)
-                                            };
-                                            var p = Module.GetDoc(a);
-                                            Module.XFDFMerge(p, b, e);
-                                            f.forEach(function(a) {
-                                                a()
-                                            });
-                                            c({})
-                                        } catch (t) {
-                                            f.forEach(function(a) {
-                                                a()
-                                            }), k(t)
-                                        }
-                                    })
-                                };
-                                a.CreateBufferFile = function(a, b) {
-                                    Module.MakeDev(a);
-                                    var c = new ArrayBuffer(b);
-                                    c = new Uint8Array(c);
-                                    for (var e = 0; e < b; ++e) c[e] = 255;
-                                    Module.docs[a] = {
-                                        buffer: c
-                                    }
-                                };
-                                a.ReadBufferFile = function(a, b) {
-                                    var c = Module.docs[a].buffer;
-                                    b && (b = new Uint8Array(c.buffer.slice(0)),
-                                        Module.docs[a].buffer = b);
-                                    return c
-                                };
-                                a.RemoveBufferFile = function(a) {
-                                    Module.docs[a] = null
-                                };
-                                a.SaveHelper = function(a, b, e) {
-                                    e = "undefined" === typeof e ? 2 : e;
-                                    Module.MakeDev(b);
-                                    a = Module._TRN_PDFDocSave(a, Module.GetUStringFromJSString(b), e, 0);
-                                    Module.docs[b].sink = null;
-                                    REX(a);
-                                    return Module.docs[b].buffer.buffer
-                                };
-                                a.SaveDoc = function(a, b, e, m, p, l, n) {
-                                    return new Promise(function(c, k) {
-                                        var h = [];
-                                        try {
-                                            var t = Module.GetDoc(a),
-                                                v = Module.stackSave();
-                                            h[h.length] = function() {
-                                                Module.stackRestore(v)
-                                            };
-                                            Module.XFDFMerge(t, b, n);
-                                            for (var x =
-                                                    Module.PDFDocGetPageIterator(t, 1); Module.IteratorHasNext(x);) {
-                                                var d = Module.IteratorCurrent(x);
-                                                try {
-                                                    for (var g = Module.PageGetNumAnnots(d); 0 < g;) {
-                                                        var q = Module.PageGetAnnot(d, --g);
-                                                        Module.AnnotHasAppearance(q) || Module.AnnotRefreshAppearance(q)
-                                                    }
-                                                } catch (I) {
-                                                    Module.ObjErase(d, "Annots")
-                                                }
-                                                Module.IteratorNext(x)
-                                            }
-                                            if (l) {
-                                                g = function(a) {
-                                                    a = new Uint8Array(a);
-                                                    f.FS.writeFile("watermarkFile", a);
-                                                    a = Module.ImageCreateFromFile(t, Module.GetUStringFromJSString("watermarkFile"));
-                                                    f.FS.unlink("watermarkFile");
-                                                    return a
-                                                };
-                                                var A = Module.ElementBuilderCreate();
-                                                h.push(function() {
-                                                    Module.ElementBuilderDestroy(A)
-                                                });
-                                                var w = Module.ElementWriterCreate();
-                                                h.push(function() {
-                                                    Module.ElementWriterDestroy(w)
-                                                });
-                                                try {
-                                                    if (!l.hasOwnProperty("default")) throw Error("Watermark dictionary has no 'default' key!");
-                                                    var D = g(l["default"]);
-                                                    x = Module.PDFDocGetPageIterator(t, 1);
-                                                    for (q = -1; Module.IteratorHasNext(x);) {
-                                                        d = Module.IteratorCurrent(x);
-                                                        Module.IteratorNext(x);
-                                                        q++;
-                                                        var r = q.toString();
-                                                        try {
-                                                            if (l.hasOwnProperty(r)) {
-                                                                var z = l[r];
-                                                                if (z) var u = g(z);
-                                                                else continue
-                                                            } else u = D;
-                                                            var J = Module.PageGetPageInfo(d),
-                                                                K = Module.ElementBuilderCreateImage(A, u, 0, 0, J.width, J.height);
-                                                            Module.ElementWriterBegin(w, d);
-                                                            Module.ElementWriterWritePlacedElement(w, K);
-                                                            Module.ElementWriterEnd(w)
-                                                        } catch (I) {
-                                                            console.warn("Watermark for page " + r + "can not be added due to error: " + I)
-                                                        }
-                                                    }
-                                                } catch (I) {
-                                                    console.warn("Watermarks can not be added due to error: " + I)
-                                                }
-                                            }
-                                            x = 0;
-                                            if (m) {
-                                                var H = Module.PDFDocGetRoot(t);
-                                                (x = Module.ObjFindObj(H, "OpenAction")) && Module.ObjPut(H, "__OpenActionBackup__", x);
-                                                var E = Module.ObjPutDict(H, "OpenAction");
-                                                Module.ObjPutName(E, "Type",
-                                                    "Action");
-                                                Module.ObjPutName(E, "S", "JavaScript");
-                                                Module.ObjPutString(E, "JS", "this.print()")
-                                            }
-                                            var N = Module.SaveHelper(t, a, p);
-                                            m && (x ? Module.ObjPut(H, "OpenAction", Module.ObjFindObj(H, "__OpenActionBackup__")) : Module.ObjErase(H, "OpenAction"));
-                                            h.forEach(function(a) {
-                                                a()
-                                            });
-                                            if (e) c({
-                                                fileData: N
-                                            });
-                                            else {
-                                                var G = N.slice(0);
-                                                c({
-                                                    fileData: G
-                                                })
-                                            }
-                                        } catch (I) {
-                                            h.forEach(function(a) {
-                                                a()
-                                            }), k(I)
-                                        }
-                                    })
-                                };
-                                a.SaveDocFromFixedElements = function(a, b, e) {
-                                    a = Module.PDFDocCreateFromLayoutEls(a);
-                                    a = Module.CreateDoc({
-                                        type: "ptr",
-                                        value: a
-                                    });
-                                    return Module.SaveDoc(a,
-                                        b, !0, !1, e)
-                                };
-                                a.GetCurrentCanvasData = function(a) {
-                                    var c = Module.currentRenderData;
-                                    if (!c) return null;
-                                    a && REX(Module._TRN_PDFRasterizerUpdateBuffer(c.rast));
-                                    var e = Date.now();
-                                    a = Module.ReadBufferFile("b", a);
-                                    Object(b.b)("bufferTiming", "Copy took ".concat(Date.now() - e));
-                                    return {
-                                        pageBuf: a.buffer,
-                                        pageWidth: c.out_width,
-                                        pageHeight: c.out_height
-                                    }
-                                };
-                                a.RasterizePage = function(a, e, f, l, p, n, z, x) {
-                                    return new Promise(function(c, k) {
-                                        Module.currentRenderData = {};
-                                        var h = Module.currentRenderData;
-                                        h.out_width = parseInt(f, 10);
-                                        h.out_height =
-                                            parseInt(l, 10);
-                                        var t = [];
-                                        t.push(function() {
-                                            Module.currentRenderData = null
+                                        var z = Module.stackSave();
+                                        v[v.length] = function() {
+                                            Module.stackRestore(z)
+												 
+																		
+									 
+											
+                                        };
+															  
+                                        var w = Module.GetDoc(f);
+                                        Module.XFDFMerge(w, g, l);
+                                        v.forEach(function(C) {
+                                            C()
                                         });
-                                        try {
-                                            var v = Module.stackSave();
-                                            t[t.length] = function() {
-                                                Module.stackRestore(v)
+                                        r({})
+                                    } catch (C) {
+																		  
+																	
+								  
+																 
+											
+												   
+											 
+																											
+																						 
+                                        v.forEach(function(E) {
+																		
+											   
+																								 
+																						
+																			  
+                                            E()
+                                        }), n(C)
+											   
+																		   
+												   
+																   
+												   
+											  
+										 
+                                    }
+                                })
+                            };
+                            e.CreateBufferFile = function(f, g, l) {
+                                Module.MakeDev(f);
+                                var r = new ArrayBuffer(g);
+                                r = new Uint8Array(r);
+                                l = l ? 0 : 255;
+                                for (var n = 0; n < g; ++n) r[n] = l;
+                                Module.docs[f] = {
+                                    buffer: r
+                                }
+                            };
+                            e.ReadBufferFile = function(f, g) {
+                                var l = Module.docs[f].buffer;
+                                g && (Module.docs[f].buffer = new Uint8Array(l.buffer.slice(0)));
+                                return l
+                            };
+                            e.RemoveBufferFile = function(f) {
+                                Module.docs[f] = null
+                            };
+                            e.SaveHelper = function(f, g, l) {
+                                l = "undefined" === typeof l ? 2 : l;
+                                Module.MakeDev(g);
+                                var r = Module._TRN_PDFDocSave(f, Module.GetUStringFromJSString(g), l, 0);
+                                Module.docs[g].sink = null;
+                                REX(r);
+                                l & 16 && Module.postPagesRenamedEvent(f, g);
+                                return Module.docs[g].buffer.buffer
+                            };
+                            e.SaveDoc = function(f, g, l, r, n, v, z) {
+                                return new Promise(function(w, C) {
+                                    var E = [];
+                                    try {
+                                        var B = Module.GetDoc(f),
+                                            D = Module.stackSave();
+                                        E[E.length] = function() {
+                                            Module.stackRestore(D)
+                                        };
+                                        Module.XFDFMerge(B, g, z);
+                                        var I = Module.allocate(8, "i8", Module.ALLOC_STACK),
+                                            F = Module.allocate(Module.intArrayFromString('{"UseNonStandardRotation": true}'), "i8", Module.ALLOC_STACK);
+                                        Module.setValue(I, F, "i8*");
+                                        Module.setValue(I + 4, 0, "i32");
+                                        Module._TRN_PDFDocRefreshAnnotAppearances(B, I);
+                                        if (v) {
+                                            I = function(M) {
+                                                M = new Uint8Array(M);
+                                                h.FS.writeFile("watermarkFile", M);
+                                                M = Module.ImageCreateFromFile(B, Module.GetUStringFromJSString("watermarkFile"));
+                                                h.FS.unlink("watermarkFile");
+                                                return M
                                             };
-                                            var d = Module.GetPage(a, e),
-                                                g = Module.PageGetPageWidth(d),
-                                                q = Module.PageGetPageHeight(d);
-                                            h.stride = 4 * h.out_width;
-                                            h.buf_size = h.out_width * h.out_height * 4;
-                                            Object(b.b)("Memory", "Created rasterizer");
-                                            h.rast = Module.PDFRasterizerCreate();
-                                            t.push(function() {
-                                                Object(b.b)("Memory", "Destroyed rasterizer");
-                                                Module._TRN_PDFRasterizerDestroy(h.rast)
+                                            var a = Module.ElementBuilderCreate();
+                                            E.push(function() {
+                                                Module.ElementBuilderDestroy(a)
+												   
                                             });
-                                            if (z) {
-                                                var A = Module.EMSCreateUpdatedLayersContext(a,
-                                                    z);
-                                                0 !== A && (Module._TRN_PDFRasterizerSetOCGContext(h.rast, A), t.push(function() {
-                                                    Module._TRN_OCGContextDestroy(A)
-                                                }))
-                                            }
-                                            var w = Module.PageGetRotation(d),
-                                                D = 1 === n || 3 === n;
-                                            w = (1 === w || 3 === w) !== D;
-                                            var r = Module.allocate(48, "i8", Module.ALLOC_STACK);
-                                            if (p) {
-                                                p.x1 = p[0];
-                                                p.y1 = p[1];
-                                                p.x2 = p[2];
-                                                p.y2 = p[3];
-                                                var B = Module.PageGetDefaultMatrix(d, 0),
-                                                    u = Module.Matrix2DInverse(B);
-                                                p = Module.Matrix2DMultBBox(u, p);
-                                                if (p.x2 < p.x1) {
-                                                    var J = p.x1;
-                                                    p.x1 = p.x2;
-                                                    p.x2 = J
-                                                }
-                                                p.y2 < p.y1 && (J = p.y1, p.y1 = p.y2, p.y2 = J);
-                                                var K = h.out_width / (w ? p.y2 - p.y1 : p.x2 - p.x1);
-                                                var H =
-                                                    Module.GetDefaultMatrixBox(d, p, n)
-                                            } else H = Module.PageGetDefaultMatrix(d, n), K = h.out_width / (D ? q : g);
-                                            Module.Matrix2DSet(r, K, 0, 0, K, 0, 0);
-                                            Module.Matrix2DConcat(r, H);
-                                            Object(b.b)("Memory", "Allocated buffer of ".concat(h.buf_size));
-                                            t.push(function() {
-                                                Object(b.b)("Memory", "Deallocated buffer of ".concat(h.buf_size));
-                                                Module._free(h.bufPtr)
+                                            var b = Module.ElementWriterCreate();
+													 
+																   
+												   
+													
+										 
+									  
+								  
+																	 
+													  
+															   
+														  
+																		   
+													  
+												 
+									 
+								  
+																   
+																  
+																				
+																   
+											
+								  
+																  
+														 
+								  
+																  
+																		 
+													  
+																										  
+															   
+										   
+																	   
+								  
+																		   
+																	   
+												   
+											 
+																	 
+																	   
+																	  
+																	  
+											  
+																	  
+														
+																													 
+																				  
+													 
+																									  
+																							
+																														
+													 
+															 
+																				
+												 
+																	  
+											 
+													
+																 
+																		  
+																					   
+																																	  
+																				 
+															
+												  
+																					  
+                                            E.push(function() {
+																				   
+												   
+																					 
+																   
+                                                Module.ElementWriterDestroy(b)
                                             });
-                                            var E = Module.allocate(4, "i8", Module.ALLOC_STACK),
-                                                N = Module.allocate(4, "i8", Module.ALLOC_STACK);
-                                            REX(Module._TRN_PDFRasterizerSetDrawAnnotations(h.rast, 0));
-                                            Module.CreateBufferFile("b",
-                                                h.buf_size);
-                                            t.push(function() {
-                                                Module.RemoveBufferFile("b")
-                                            });
-                                            if (10 === x) {
-                                                REX(Module._TRN_PDFRasterizerSetOverprint(h.rast, 1));
-                                                var G = Module.PDFRasterizerRasterizeSeparations(h.rast, d, h.out_width, h.out_height, r, 0, 0);
-                                                c({
-                                                    pageBuf: G,
-                                                    pageWidth: h.out_width,
-                                                    pageHeight: h.out_height
-                                                })
-                                            } else {
-                                                REX(Module._TRN_PDFRasterizerSetOverprint(h.rast, x));
-                                                REX(Module._TRN_PDFRasterizerGetChunkRendererPath(h.rast, d, Module.GetUStringFromJSString("b"), h.out_width, h.out_height, !0, r, 0, 0, 0, E));
-                                                var I = Module.getValue(E, "i8*");
-                                                t.splice(1,
-                                                    0,
-                                                    function() {
-                                                        REX(Module._TRN_ChunkRendererDestroy(I))
-                                                    })
-                                            }
-                                            var F = (new Date).getTime(),
-                                                Q = m(function R() {
+                                            try {
+                                                if (!v.hasOwnProperty("default")) throw Error("Watermark dictionary has no 'default' key!");
+                                                var d = I(v["default"]),
+                                                    c = Module.PDFDocGetPageIterator(B, 1);
+                                                for (F = -1; Module.IteratorHasNext(c);) {
+                                                    var u = Module.IteratorCurrent(c);
+                                                    Module.IteratorNext(c);
+                                                    F++;
+                                                    var A = F.toString();
                                                     try {
-                                                        for (var a = 0, d = (new Date).getTime(), g = !1; 200 > a;) {
-                                                            REX(Module._TRN_ChunkRendererRenderNext(I, N));
-                                                            if (!Module.getValue(N, "i8*")) {
-                                                                g = !0;
-                                                                break
-                                                            }
-                                                            a = (new Date).getTime() - d
-                                                        }
-                                                        if (g) {
-                                                            var e = Module.GetCurrentCanvasData(!1);
-                                                            Object(b.b)("worker", "Total Page Time ".concat((new Date).getTime() - F));
-                                                            t.forEach(function(a) {
-                                                                a()
-                                                            });
-                                                            c(e)
-                                                        } else Module.cleanupState.timeout = m(R)
-                                                    } catch (S) {
-                                                        t.forEach(function(a) {
-                                                            a()
-                                                        }), k(S)
+                                                        var G = void 0;
+                                                        if (v.hasOwnProperty(A)) {
+                                                            var y = v[A];
+                                                            if (y) G = I(y);
+                                                            else continue
+                                                        } else G = d;
+                                                        var H = Module.PageGetPageInfo(u),
+                                                            J = Module.ElementBuilderCreateImage(a,
+                                                                G, 0, 0, H.width, H.height);
+                                                        Module.ElementWriterBegin(b, u);
+                                                        Module.ElementWriterWritePlacedElement(b, J);
+                                                        Module.ElementWriterEnd(b)
+                                                    } catch (M) {
+                                                        console.warn("Watermark for page " + A + "can not be added due to error: " + M)
+														 
                                                     }
-                                                });
-                                            Module.cleanupState = {
-                                                cleanupArr: t,
-                                                timeout: Q
-                                            };
-                                            t.push(function() {
-                                                Module.cleanupState = null
-                                            })
-                                        } catch (T) {
-                                            t.forEach(function(a) {
-                                                a()
-                                            }), k(T)
-                                        }
-                                    })
-                                };
-                                a.GetDestinationVPosHPos = function(a) {
-                                    var c = 0,
-                                        b = 0,
-                                        e = !1,
-                                        f = !1,
-                                        m = Module.DestinationGetPage(a),
-                                        l = Module.DestinationGetExplicitDestObj(a);
-                                    m = Module.PageGetDefaultMatrix(m);
-                                    m = Module.Matrix2DInverse(m);
-                                    var n = Module.Matrix2DMult(m, {
-                                        x: b,
-                                        y: c
-                                    });
-                                    b = n.x;
-                                    c = n.y;
-                                    try {
-                                        switch (Module.DestinationGetFitType(a)) {
-                                            case 2:
-                                            case 6:
-                                                var t = Module.ObjGetAt(l, 2);
-                                                Module.ObjIsNumber(t) && (c = Module.ObjGetNumber(t), e = !0);
-                                                break;
-                                            case 0:
-                                                t = Module.ObjGetAt(l, 2);
-                                                Module.ObjIsNumber(t) && (b = Module.ObjGetNumber(t), f = !0);
-                                                t = Module.ObjGetAt(l, 3);
-                                                Module.ObjIsNumber(t) && (c = Module.ObjGetNumber(t), e = !0);
-                                                break;
-                                            case 4:
-                                                t = Module.ObjGetAt(l, 2);
-                                                Module.ObjIsNumber(t) && (b = Module.ObjGetNumber(t), f = !0);
-                                                t = Module.ObjGetAt(l, 5);
-                                                Module.ObjIsNumber(t) && (c = Module.ObjGetNumber(t), e = !0);
-                                                break;
-                                            case 3:
-                                            case 7:
-                                                t = Module.ObjGetAt(l, 2), Module.ObjIsNumber(t) && (b = Module.ObjGetNumber(t), f = !0)
-                                        }
-                                        n = Module.Matrix2DMult(m, {
-                                            x: b,
-                                            y: c
-                                        });
-                                        b = n.x;
-                                        c = n.y;
-                                        e || (c = 0);
-                                        f || (b = 0)
-                                    } catch (B) {
-                                        b =
-                                            c = 0
-                                    }
-                                    return {
-                                        hpos: b,
-                                        vpos: c
-                                    }
-                                };
-                                a.FillBookmarkTree = function(a, b) {
-                                    for (var c = Module.stackSave(), e = 0; Module.BookmarkIsValid(a); a = Module.BookmarkGetNext(a), ++e) {
-                                        var k = Module.stackSave();
-                                        try {
-                                            var f = [];
-                                            if (Module.BookmarkHasChildren(a)) {
-                                                var m = Module.BookmarkGetFirstChild(a);
-                                                Module.FillBookmarkTree(m, f)
-                                            }
-                                            var l = Module.BookmarkGetTitle(a);
-                                            f = {
-                                                children: f,
-                                                name: l
-                                            };
-                                            var t = Module.BookmarkGetAction(a);
-                                            if (Module.ActionIsValid(t)) {
-                                                var n = Module.ActionGetType(t);
-                                                if (0 === n) {
-                                                    var y = Module.ActionGetDest(t);
-                                                    if (Module.DestinationIsValid(y)) {
-                                                        var C =
-                                                            Module.DestinationGetPage(y);
-                                                        if (Module.PageIsValid(C)) {
-                                                            var u = Module.PageGetIndex(C);
-                                                            if (0 < u) {
-                                                                f.pageNumber = u;
-                                                                var d = Module.GetDestinationVPosHPos(y);
-                                                                f.verticalOffset = d.vpos;
-                                                                f.horizontalOffset = d.hpos
-                                                            }
-                                                        }
-                                                    }
-                                                } else if (5 === n) {
-                                                    var g = Module.ObjFindObj(t, "URI");
-                                                    g && (f.url = Module.ObjGetAsPDFText(g))
+															 
+																												  
                                                 }
+                                            } catch (M) {
+                                                console.warn("Watermarks can not be added due to error: " + M)
+													
+																				
+																																		
+																						   
+																			
+															  
+																						
+																							
+											 
+																			   
+																																									   
+																   
+												   
+											   
+													  
+														   
+											   
+												  
+																   
+												   
+															   
+												  
                                             }
-                                            b[b.length] = f
-                                        } catch (q) {}
-                                        Module.stackRestore(k)
+													 
+																   
+												   
+													
+                                        }
+                                        d = 0;
+								  
+                                        if (r) {
+                                            var L = Module.PDFDocGetRoot(B);
+                                            (d = Module.ObjFindObj(L, "OpenAction")) && Module.ObjPut(L, "__OpenActionBackup__", d);
+                                            var K = Module.ObjPutDict(L, "OpenAction");
+                                            Module.ObjPutName(K, "Type", "Action");
+                                            Module.ObjPutName(K, "S",
+                                                "JavaScript");
+                                            Module.ObjPutString(K, "JS", "this.print()")
+                                        }
+                                        var N = Module.SaveHelper(B, f, n);
+                                        r && (d ? Module.ObjPut(L, "OpenAction", Module.ObjFindObj(L, "__OpenActionBackup__")) : Module.ObjErase(L, "OpenAction"));
+                                        E.reverse().forEach(function(M) {
+                                            M()
+													   
+																	  
+																									 
+											
+														  
+															   
+																
+									 
+								  
+																					
+																	   
+																	  
+																		 
+																	  
+													  
+															
+												   
+														   
+																		   
+                                        });
+											 
+																	   
+																	  
+																	  
+											  
+																		 
+																			   
+																				
+																	   
+																						
+																						
+																				  
+															   
+																							  
+																						
+											   
+                                        if (l) w({
+                                            fileData: N
+													   
+																																  
+																					
+												   
+											 
+																			  
+																	   
+																		   
+																								  
+													
+															
+															
+															
+															
+																						  
+																				  
+																				  
+																  
+																 
+																
+															
+												 
+																								 
+																									  
+													   
+																					   
+																														
+																					
+																		
+																											 
+															   
+																												   
+																	  
+											   
+																								 
+																								 
+																										
+																		
+															
+															   
+																			
+                                        });
+														   
+																									  
+																																				
+												   
+															   
+																		   
+																			
+												  
+                                        else {
+                                            var O = N.slice(0);
+                                            w({
+                                                fileData: O
+														   
+													  
+																
+																								
+													  
+											 
+																		 
+																	
+														 
+																													 
+																										   
+																							 
+																	   
+																	 
+															 
+																						
+														 
+																
+																									
+																																	   
+																				   
+																   
+															   
+																
+																								 
+																 
+																			   
+															   
+																
+													 
+												   
+																   
+															  
+														  
+											  
+															   
+																		  
+                                            })
+													 
+																   
+												   
+													
+                                        }
+                                    } catch (M) {
+                                        E.reverse().forEach(function(P) {
+                                            P()
+                                        }), C(M)
                                     }
-                                    Module.stackRestore(c)
-                                };
-                                a.LoadBookmarks = function(a) {
-                                    a = Module.GetDoc(a);
-                                    var c = [],
-                                        b = Module.stackSave();
+                                })
+                            };
+                            e.SaveDocFromFixedElements = function(f, g, l, r) {
+                                f = Module.PDFDocCreateFromLayoutEls(f);
+                                f = Module.CreateDoc({
+                                    type: "ptr",
+                                    value: f
+                                });
+                                return Module.SaveDoc(f,
+                                    g, !0, !1, l, r)
+                            };
+                            e.GetCurrentCanvasData = function(f) {
+                                var g = Module.currentRenderData;
+                                if (!g) return null;
+                                f && REX(Module._TRN_PDFRasterizerUpdateBuffer(g.rast));
+                                var l = Date.now();
+                                if (g.bufPtr) {
+                                    f = new Uint8Array(new ArrayBuffer(g.buf_size));
+                                    for (var r = 0, n = 0; n < g.out_height; ++n)
+											  
+                                        for (var v = g.bufPtr + g.stride * n, z = 0; z < g.out_width; ++z) f[r++] = Module.HEAPU8[v + 2], f[r++] = Module.HEAPU8[v + 1], f[r++] = Module.HEAPU8[v], f[r++] = Module.HEAPU8[v + 3], v += 4
+                                } else f = Module.ReadBufferFile("b", f);
+                                Object(x.b)("bufferTiming", "Copy took ".concat(Date.now() -
+                                    l));
+                                return {
+                                    pageBuf: f.buffer,
+                                    pageWidth: g.out_width,
+                                    pageHeight: g.out_height
+                                }
+                            };
+                            e.RasterizePage = function(f, g, l, r, n, v, z, w) {
+                                return new Promise(function(C, E) {
+                                    Module.currentRenderData = {};
+                                    var B = Module.currentRenderData;
+                                    B.out_width = parseInt(l, 10);
+                                    B.out_height = parseInt(r, 10);
+                                    var D = [];
+                                    D.push(function() {
+                                        Module.currentRenderData = null
+                                    });
+											
+											
                                     try {
-                                        var e = Module.PDFDocGetFirstBookmark(a);
-                                        Module.BookmarkIsValid(e) &&
-                                            Module.FillBookmarkTree(e, c)
-                                    } catch (p) {}
-                                    Module.stackRestore(b);
-                                    return {
-                                        bookmarks: c
+																				  
+												   
+												   
+                                        var I = Module.stackSave();
+                                        D[D.length] = function() {
+													  
+												   
+                                            Module.stackRestore(I)
+                                        };
+                                        var F = Module.GetPage(f, g),
+																		  
+                                            a = Module.PageGetPageWidth(F),
+													  
+												   
+                                            b = Module.PageGetPageHeight(F);
+                                        B.stride = 4 * B.out_width;
+                                        B.buf_size = B.out_width * B.out_height * 4;
+                                        Object(x.b)("Memory", "Created rasterizer");
+                                        B.rast = Module.PDFRasterizerCreate();
+                                        D.push(function() {
+                                            Object(x.b)("Memory", "Destroyed rasterizer");
+                                            Module._TRN_PDFRasterizerDestroy(B.rast)
+										 
+																	
+												 
+												
+                                        });
+                                        if (z) {
+                                            var d = Module.EMSCreateUpdatedLayersContext(f, z);
+                                            0 !== d && (REX(Module._TRN_PDFRasterizerSetOCGContext(B.rast, d)), D.push(function() {
+                                                Module._TRN_OCGContextDestroy(d)
+                                            }))
+                                        }
+                                        var c = !1;
+                                        w.hasOwnProperty("renderAnnots") ? (w.renderAnnots && (c = !0), REX(Module._TRN_PDFRasterizerSetDrawAnnotations(B.rast,
+                                            w.renderAnnots ? 1 : 0))) : REX(Module._TRN_PDFRasterizerSetDrawAnnotations(B.rast, 0));
+                                        w.hasOwnProperty("highlightFields") && (w.highlightFields && (c = !0), REX(Module._TRN_PDFRasterizerSetHighlightFields(B.rast, w.highlightFields)));
+                                        w.hasOwnProperty("antiAliasing") && REX(Module._TRN_PDFRasterizerSetAntiAliasing(B.rast, w.antiAliasing));
+                                        w.hasOwnProperty("pathHinting") && REX(Module._TRN_PDFRasterizerSetPathHinting(B.rast, w.pathHinting));
+                                        if (w.hasOwnProperty("thinLinePixelGridFit")) {
+                                            var u = !0;
+                                            w.hasOwnProperty("thinLineStrokeAdjust") &&
+                                                (u = w.thinLineStrokeAdjust);
+                                            REX(Module._TRN_PDFRasterizerSetThinLineAdjustment(B.rast, w.thinLinePixelGridFit, u))
+                                        } else w.hasOwnProperty("thinLineStrokeAdjust") && REX(Module._TRN_PDFRasterizerSetThinLineAdjustment(B.rast, !1, w.thinLineStrokeAdjust));
+                                        w.hasOwnProperty("imageSmoothing") ? (u = !1, w.hasOwnProperty("hqImageResampling") && (u = w.hqImageResampling), REX(Module._TRN_PDFRasterizerSetImageSmoothing(B.rast, w.imageSmoothing, u))) : w.hasOwnProperty("hqImageResampling") && REX(Module._TRN_PDFRasterizerSetImageSmoothing(B.rast,
+                                            !0, w.hqImageResampling));
+                                        w.hasOwnProperty("caching") && REX(Module._TRN_PDFRasterizerSetCaching(B.rast, w.caching));
+                                        w.hasOwnProperty("expGamma") && REX(Module._TRN_PDFRasterizerSetGamma(B.rast, w.expGamma));
+                                        w.hasOwnProperty("isPrinting") && (w.isPrinting && (c = !0), REX(Module._TRN_PDFRasterizerSetPrintMode(B.rast, w.isPrinting)));
+                                        w.hasOwnProperty("colorPostProcessMode") && (w.colorPostProcessMode && (c = !0), REX(Module._TRN_PDFRasterizerSetColorPostProcessMode(B.rast, w.colorPostProcessMode)));
+                                        var A = Module.PageGetRotation(F);
+                                        u = 1 === v || 3 === v;
+                                        A = (1 === A || 3 === A) !== u;
+                                        var G = Module.allocate(48, "i8", Module.ALLOC_STACK);
+                                        if (n) {
+                                            n.x1 = n[0];
+                                            n.y1 = n[1];
+                                            n.x2 = n[2];
+                                            n.y2 = n[3];
+                                            var y = Module.PageGetDefaultMatrix(F, 0),
+                                                H = Module.Matrix2DInverse(y);
+                                            n = Module.Matrix2DMultBBox(H, n);
+                                            if (n.x2 < n.x1) {
+                                                var J = n.x1;
+                                                n.x1 = n.x2;
+                                                n.x2 = J
+                                            }
+                                            n.y2 < n.y1 && (J = n.y1, n.y1 = n.y2, n.y2 = J);
+                                            var L = B.out_width / (A ? n.y2 - n.y1 : n.x2 - n.x1);
+                                            var K = Module.GetDefaultMatrixBox(F, n, v)
+                                        } else K = Module.PageGetDefaultMatrix(F, v), L = B.out_width / (u ? b : a);
+                                        Module.Matrix2DSet(G, L, 0, 0, L, 0, 0);
+                                        Module.Matrix2DConcat(G,
+                                            K);
+                                        var N = Module.allocate(4, "i8", Module.ALLOC_STACK),
+                                            O = Module.allocate(4, "i8", Module.ALLOC_STACK);
+                                        c ? (B.bufPtr = Module._malloc(B.buf_size), Module._memset(B.bufPtr, w.pageTransparent ? 0 : 255, B.buf_size), D.push(function() {
+                                            Module._free(B.bufPtr)
+                                        })) : (Module.CreateBufferFile("b", B.buf_size, w.pageTransparent), D.push(function() {
+                                            Module.RemoveBufferFile("b")
+                                        }));
+                                        var M = w.overprintMode;
+                                        if (10 === M) {
+                                            REX(Module._TRN_PDFRasterizerSetOverprint(B.rast, 1));
+                                            var P = Module.PDFRasterizerRasterizeSeparations(B.rast, F, B.out_width,
+                                                B.out_height, G, 0, 0);
+                                            C({
+                                                pageBuf: P,
+                                                pageWidth: B.out_width,
+                                                pageHeight: B.out_height
+                                            })
+                                        } else {
+                                            REX(Module._TRN_PDFRasterizerSetOverprint(B.rast, M));
+                                            c ? REX(Module._TRN_PDFRasterizerGetChunkRenderer(B.rast, F, B.bufPtr, B.out_width, B.out_height, B.stride, 4, !0, G, 0, 0, 0, N)) : REX(Module._TRN_PDFRasterizerGetChunkRendererPath(B.rast, F, Module.GetUStringFromJSString("b"), B.out_width, B.out_height, !0, G, 0, 0, 0, N));
+                                            var Q = Module.getValue(N, "i8*");
+                                            D.push(function() {
+                                                REX(Module._TRN_ChunkRendererDestroy(Q))
+                                            })
+                                        }
+                                        var T = (new Date).getTime(),
+                                            W = t(function R() {
+                                                try {
+                                                    if (REX(Module._TRN_ChunkRendererRenderForTimePeriod(Q, 200, O)), Module.getValue(O, "i8")) Module.cleanupState.timeout = t(R);
+                                                    else {
+                                                        var U = Module.GetCurrentCanvasData(!1);
+                                                        Object(x.b)("worker", "Total Page Time ".concat((new Date).getTime() - T));
+                                                        D.reverse().forEach(function(S) {
+                                                            S()
+                                                        });
+                                                        C(U)
+                                                    }
+                                                } catch (S) {
+                                                    D.reverse().forEach(function(V) {
+                                                        V()
+                                                    }), E(S)
+                                                }
+                                            });
+                                        Module.cleanupState = {
+                                            cleanupArr: D,
+                                            timeout: W
+                                        };
+														  
+								  
+                                        D.push(function() {
+                                            Module.cleanupState = null
+                                        })
+                                    } catch (X) {
+                                        D.reverse().forEach(function(R) {
+                                            R()
+                                        }), E(X)
+																		 
+												  
+														   
+											
+													
                                     }
-                                };
-                                a.UpdatePassword = function(a, b) {
+                                })
+                            };
+                            e.UpdatePassword =
+                                function(f, g) {
                                     try {
-                                        var c = Module.stackSave(),
-                                            e = Module.GetDoc(a);
-                                        return Module.PDFDocInitStdSecurityHandler(e, b) ? (e in downloadDataMap && REX(Module._TRN_PDFDocDownloaderInitialize(e, downloadDataMap[e].downloader)), {
+                                        var l = Module.stackSave();
+                                        var r = Module.GetDoc(f);
+                                        return Module.PDFDocInitStdSecurityHandler(r, g) ? (r in downloadDataMap && REX(Module._TRN_PDFDocDownloaderInitialize(r, downloadDataMap[r].downloader)), {
                                             success: !0,
-                                            pageDimensions: Module.GetPageDimensions(e)
+                                            pageDimensions: Module.GetPageDimensions(r)
                                         }) : {
                                             success: !1
                                         }
                                     } finally {
-                                        Module.stackRestore(c)
+                                        Module.stackRestore(l)
                                     }
                                 };
-                                a.GetTextData = function(a, b) {
-                                    return new Promise(function(c, e) {
-                                        var f = b + 1,
-                                            k = Module.GetDoc(a),
-                                            h = [];
-                                        try {
-                                            var m = Module.stackSave();
-                                            h[h.length] = function() {
-                                                Module.stackRestore(m)
-                                            };
-                                            var l = Module.GetPage(k, f),
-                                                n = Module.allocate(8, "i8", Module.ALLOC_STACK);
-                                            REX(Module._TRN_TextExtractorCreate(n));
-                                            var r = Module.getValue(n, "i8*");
-                                            h[h.length] = function() {
-                                                Module._TRN_TextExtractorDestroy(r)
-                                            };
-                                            REX(Module._TRN_TextExtractorBegin(r, l, 0, 1));
-                                            var C = Module.allocate(48, "i8", Module.ALLOC_STACK);
-                                            REX(Module._TRN_PageGetDefaultMatrix(l, !0, 1, 0, C));
-                                            var u = Module.allocate(4, "i8", Module.ALLOC_STACK);
-                                            REX(Module._TRN_TextExtractorGetQuads(r,
-                                                C, 0, u));
-                                            var d = Module.getValue(u, "i8*"),
-                                                g = Module._malloc(8 * d);
-                                            h[h.length] = function() {
-                                                Module._free(g)
-                                            };
-                                            REX(Module._TRN_TextExtractorGetQuads(r, C, g, u));
-                                            var q = Module.GetJSDoubleArrFromCore(g, d),
-                                                A = Module.allocate(4, "i8", Module.ALLOC_STACK),
-                                                w = Module.allocate(4, "i8", Module.ALLOC_STACK);
-                                            REX(Module._TRN_UStringCreate(w));
-                                            h[h.length] = function() {
-                                                Module._TRN_UStringDestroy(D)
-                                            };
-                                            var D = Module.getValue(w, "i8*");
-                                            REX(Module._TRN_TextExtractorGetAsTextWithOffsets(r, D, 0, A));
-                                            var M = Module.GetJSStringFromUString(D),
-                                                O = Module.getValue(A,
-                                                    "i8*"),
-                                                P = Module._malloc(4 * O);
-                                            h[h.length] = function() {
-                                                Module._free(P)
-                                            };
-                                            REX(Module._TRN_TextExtractorGetAsTextWithOffsets(r, D, P, A));
-                                            var J = Module.GetJSIntArrayFromCore(P, O),
-                                                K = Module.allocate(4, "i8", Module.ALLOC_STACK);
-                                            REX(Module._TRN_TextExtractorCmptSemanticInfo(r, C, 0, K));
-                                            var H = Module.getValue(K, "i8*"),
-                                                E = Module._malloc(8 * H);
-                                            h[h.length] = function() {
-                                                Module._free(E)
-                                            };
-                                            REX(Module._TRN_TextExtractorCmptSemanticInfo(r, C, E, K));
-                                            var N = Module.GetJSDoubleArrFromCore(E, H);
-                                            h.forEach(function(a) {
-                                                a()
-                                            });
-                                            c({
-                                                str: M,
-                                                quads: q,
-                                                offsets: J,
-                                                struct: N
-                                            })
-                                        } catch (G) {
-                                            h.forEach(function(a) {
-                                                a()
-                                            }), e(G)
+                            e.InsertBlankPages = function(f, g, l, r) {
+																	   
+													  
+																 
+												   
+											 
+																	   
+																	  
+																	  
+											  
+																		 
+																								 
+																					
+																			  
+																	  
+																				   
+											  
+																							
+																								  
+																								  
+																								 
+																					
+														  
+																			  
+																		  
+																	  
+															   
+											  
+																							   
+																						
+																								 
+																								 
+																			  
+																	  
+																			 
+											  
+																			  
+																										   
+																					 
+																	  
+														   
+																		  
+																	  
+															   
+											  
+																										   
+																					   
+																								 
+																									   
+																			  
+																		  
+																	  
+															   
+											  
+																									   
+																						
+																   
+												   
+											   
+											   
+													   
+														 
+														   
+														 
+											  
+													 
+																   
+												   
+													
+										 
+									  
+								  
+																		   
+                                return new Promise(function(n, v) {
+                                    var z = [],
+                                        w = Module.GetDoc(f);
+                                    try {
+                                        var C = Module.stackSave();
+                                        z[z.length] = function() {
+                                            Module.stackRestore(C)
+                                        };
+                                        for (var E =
+                                                g.length - 1; 0 <= E; --E) {
+                                            var B = Module.PDFDocGetPageIterator(w, g[E]),
+                                                D = Module.PDFDocPageCreate(w, l, r);
+                                            Module.PDFDocPageInsert(w, B, D)
+											 
+																					   
+																   
+												   
+											   
+												
+													 
+																   
+												   
+													
                                         }
-                                    })
-                                };
-                                a.InsertBlankPages = function(a, b, e, f) {
-                                    return new Promise(function(c, k) {
-                                        var h = [],
-                                            m = Module.GetDoc(a);
-                                        try {
-                                            var p = Module.stackSave();
-                                            h[h.length] = function() {
-                                                Module.stackRestore(p)
-                                            };
-                                            for (var l = b.length - 1; 0 <= l; --l) {
-                                                var n = Module.PDFDocGetPageIterator(m, b[l]),
-                                                    v = Module.PDFDocPageCreate(m, e, f);
-                                                Module.PDFDocPageInsert(m, n, v)
-                                            }
-                                            var r = Module.postPagesUpdatedEvent(m, a);
-                                            h.forEach(function(a) {
-                                                a()
-                                            });
-                                            c(r)
-                                        } catch (d) {
-                                            h.forEach(function(a) {
-                                                a()
-                                            }), k(d)
-                                        }
-                                    })
-                                };
-                                a.InsertPages =
-                                    function(a, b, e, f, m) {
-                                        return new Promise(function(c, h) {
-                                            var k = [],
-                                                l = Module.GetDoc(a);
-                                            try {
-                                                var p = Module.stackSave();
-                                                k[k.length] = function() {
-                                                    Module.stackRestore(p)
-                                                };
-                                                if (b instanceof ArrayBuffer) {
-                                                    var n = Module.CreateDoc(b);
-                                                    var v = Module.GetDoc(n);
-                                                    k[k.length] = function() {
-                                                        Module.DeleteDoc(n)
-                                                    }
-                                                } else v = Module.GetDoc(b);
-                                                for (var r = e.length, d = Module.PageSetCreate(), g = 0; g < r; ++g) Module.PageSetAddPage(d, e[g]);
-                                                Module.PDFDocInsertPages(l, f, v, d, m);
-                                                var q = Module.postPagesUpdatedEvent(l, a);
-                                                k.forEach(function(a) {
-                                                    a()
-                                                });
-                                                c(q)
-                                            } catch (A) {
-                                                k.forEach(function(a) {
-                                                        a()
-                                                    }),
-                                                    h(A)
-                                            }
-                                        })
-                                    };
-                                a.MovePages = function(a, b, e) {
-                                    return new Promise(function(c, f) {
-                                        var k = [],
-                                            h = Module.GetDoc(a);
-                                        try {
-                                            var m = Module.stackSave();
-                                            k[k.length] = function() {
-                                                Module.stackRestore(m)
-                                            };
-                                            for (var l = b.length, p = Module.PageSetCreate(), n = 0; n < l; ++n) Module.PageSetAddPage(p, b[n]);
-                                            Module.PDFDocMovePages(h, e, p);
-                                            var r = Module.postPagesUpdatedEvent(h, a);
-                                            k.forEach(function(a) {
-                                                a()
-                                            });
-                                            c(r)
-                                        } catch (L) {
-                                            k.forEach(function(a) {
-                                                a()
-                                            }), f(L)
-                                        }
-                                    })
-                                };
-                                a.RemovePages = function(a, b) {
-                                    return new Promise(function(c, e) {
-                                        var f = Module.GetDoc(a),
-                                            k = [];
-                                        try {
-                                            var h =
-                                                Module.stackSave();
-                                            k[k.length] = function() {
-                                                Module.stackRestore(h)
-                                            };
-                                            for (var m = b.length - 1; 0 <= m; --m) {
-                                                var l = Module.PDFDocGetPageIterator(f, b[m]);
-                                                Module.IteratorHasNext(l) && Module.PDFDocPageRemove(f, l)
-                                            }
-                                            var n = Module.postPagesUpdatedEvent(f, a);
-                                            k.forEach(function(a) {
-                                                a()
-                                            });
-                                            c(n)
-                                        } catch (y) {
-                                            k.forEach(function(a) {
-                                                a()
-                                            }), e(y)
-                                        }
-                                    })
-                                };
-                                a.RotatePages = function(a, b, e) {
-                                    return new Promise(function(c, f) {
-                                        var k = Module.GetDoc(a),
-                                            h = [];
-                                        try {
-                                            var m = Module.stackSave();
-                                            h[h.length] = function() {
-                                                Module.stackRestore(m)
-                                            };
-                                            var l = b.length,
-                                                p = 0,
-                                                n = Module.PDFDocGetPageIterator(k, b[0]),
-                                                r = [];
-                                            h.push(function() {
-                                                Module._TRN_IteratorDestroy(n)
-                                            });
-                                            for (var u = b[0]; Module.IteratorHasNext(n) && p < b[l - 1]; ++u) {
-                                                if (u === b[p]) {
-                                                    var d = Module.IteratorCurrent(n),
-                                                        g = (Module.PageGetRotation(d) + e) % 4;
-                                                    Module.PageSetRotation(d, g);
-                                                    r.push(u);
-                                                    p++
-                                                }
-                                                Module.IteratorNext(n)
-                                            }
-                                            var q = Module.postPagesUpdatedEvent(k, a, r);
-                                            h.forEach(function(a) {
-                                                a()
-                                            });
-                                            c(q)
-                                        } catch (A) {
-                                            h.forEach(function(a) {
-                                                a()
-                                            }), f(A)
-                                        }
-                                    })
-                                };
-                                a.ExtractPages = function(a, b, e, f, m) {
-                                    return new Promise(function(c, h) {
-                                        var k = [];
-                                        try {
-                                            var l =
-                                                Module.GetDoc(a),
-                                                p = Module.stackSave();
-                                            k[k.length] = function() {
-                                                Module.stackRestore(p)
-                                            };
-                                            var n = function(a) {
-                                                k.forEach(function(a) {
-                                                    a()
-                                                });
-                                                h(a)
-                                            };
-                                            Module.XFDFMerge(l, e, m);
-                                            var v = Module.CreateEmptyDoc();
-                                            k[k.length] = function() {
-                                                Module.DeleteDoc(v)
-                                            };
-                                            var r = Module.InsertPages(v, a, b, 1, !0).then(function() {
-                                                return Module.SaveDoc(v, void 0, !0, !1, void 0, f)
-                                            }).then(function(a) {
-                                                k.forEach(function(a) {
-                                                    a()
-                                                });
-                                                return a
-                                            })["catch"](n);
-                                            c(r)
-                                        } catch (d) {
-                                            n(d)
-                                        }
-                                    })
-                                };
-                                a.CropPages = function(a, b, e, f, m, l) {
-                                    return new Promise(function(c, k) {
-                                        var h =
-                                            Module.GetDoc(a),
-                                            p = [];
-                                        try {
-                                            var n = Module.stackSave();
-                                            p[p.length] = function() {
-                                                Module.stackRestore(n)
-                                            };
-                                            var x = b.length,
-                                                v = 0,
-                                                d = Module.PDFDocGetPageIterator(h, b[0]);
-                                            p.push(function() {
-                                                Module._TRN_IteratorDestroy(d)
-                                            });
-                                            for (var g = [], q = b[0]; Module.IteratorHasNext(d) && v < b[x - 1]; ++q) {
-                                                if (q === b[v]) {
-                                                    var A = Module.IteratorCurrent(d),
-                                                        w = Module.allocate(8, "i8", Module.ALLOC_STACK);
-                                                    REX(Module._TRN_PageGetCropBox(A, w));
-                                                    var D = Module.PageGetRotation(A),
-                                                        r = Module.getValue(w, "double"),
-                                                        u = Module.getValue(w + 8, "double"),
-                                                        z = Module.getValue(w +
-                                                            16, "double"),
-                                                        J = Module.getValue(w + 24, "double");
-                                                    0 === D % 4 ? (Module.setValue(w, r + m, "double"), Module.setValue(w + 8, u + f, "double"), Module.setValue(w + 16, z - l, "double"), Module.setValue(w + 24, J - e, "double")) : 1 === D % 4 ? (Module.setValue(w, r + e, "double"), Module.setValue(w + 8, u + m, "double"), Module.setValue(w + 16, z - f, "double"), Module.setValue(w + 24, J - l, "double")) : 2 === D % 4 ? (Module.setValue(w, r + l, "double"), Module.setValue(w + 8, u + e, "double"), Module.setValue(w + 16, z - m, "double"), Module.setValue(w + 24, J - f, "double")) : 3 === D % 4 && (Module.setValue(w,
-                                                        r + f, "double"), Module.setValue(w + 8, u + l, "double"), Module.setValue(w + 16, z - e, "double"), Module.setValue(w + 24, J - m, "double"));
-                                                    Module.setValue(w + 32, 0, "double");
-                                                    REX(Module._TRN_PageSetBox(A, 0, w));
-                                                    REX(Module._TRN_PageSetBox(A, 1, w));
-                                                    g.push(q);
-                                                    v++
-                                                }
-                                                Module.IteratorNext(d)
-                                            }
-                                            var K = Module.postPagesUpdatedEvent(h, a, g);
-                                            p.forEach(function(a) {
-                                                a()
-                                            });
-                                            c(K)
-                                        } catch (H) {
-                                            p.forEach(function(a) {
-                                                a()
-                                            }), k(H)
-                                        }
-                                    })
-                                }
-                            })("undefined" === typeof self ? this.Module : self.Module);
-                            this.loaded = !0;
-                            Module.initCb && Module.initCb()
-                        }
-                    }
-                })(self)
-            }).call(this,
-                l(7).clearImmediate, l(7).setImmediate)
-        },
-        function(e, n, l) {
-            (function(e) {
-                function f(a) {
-                    "@babel/helpers - typeof";
-                    f = "function" === typeof Symbol && "symbol" === typeof Symbol.iterator ? function(a) {
-                        return typeof a
-                    } : function(a) {
-                        return a && "function" === typeof Symbol && a.constructor === Symbol && a !== Symbol.prototype ? "symbol" : typeof a
-                    };
-                    return f(a)
-                }
-                var b = l(0),
-                    n = "undefined" !== typeof window ? window : self;
-                n.global = n;
-                (function(a) {
-                    a.currentFileString = "/current";
-                    var c = 0,
-                        k = 0,
-                        h = {},
-                        l = null;
-                    Module.chunkMax = 200;
-                    var m = function(a, g, b,
-                            c, e) {
-                            var d = new XMLHttpRequest;
-                            return CancellablePromise(function(q, w) {
-                                d.open("GET", a, !0);
-                                d.responseType = "arraybuffer";
-                                d.onerror = function() {
-                                    w("Network error occurred")
-                                };
-                                d.onload = function() {
-                                    if (206 === this.status && d.response.byteLength === b) {
-                                        var a = new Int8Array(d.response);
-                                        q(a)
-                                    } else w("Download Failed")
-                                };
-                                var f = ["bytes=", g, "-", g + b - 1].join("");
-                                d.setRequestHeader("Range", f);
-                                e && (d.withCredentials = e);
-                                c && Object.keys(c).forEach(function(a) {
-                                    d.setRequestHeader(a, c[a])
-                                });
-                                d.send()
-                            }, function() {
-                                d.abort()
-                            })
-                        },
-                        v = function(a) {
-                            this.file =
-                                a;
-                            this.filePosition = 0;
-                            this.fileLength = a.size;
-                            this.chunkData = null;
-                            this.chunkPosition = 0;
-                            this.chunkSize = 2097152;
-                            this.reader = new FileReaderSync
-                        };
-                    v.prototype = {
-                        read: function(a, g, b) {
-                            b = this.filePosition + b <= this.fileLength ? b : this.fileLength - this.filePosition;
-                            a = a.subarray(g, g + b);
-                            g = b;
-                            if (0 < b && this.chunkData && this.chunkPosition < this.chunkData.length) {
-                                var d = this.chunkPosition + b;
-                                d <= this.chunkData.length ? (a.set(this.chunkData.subarray(this.chunkPosition, d)), this.chunkPosition = d, this.filePosition += b, b = 0) : (a.set(this.chunkData.subarray(this.chunkPosition)),
-                                    this.filePosition += this.chunkData.length - this.chunkPosition, b = d - this.chunkData.length)
-                            }
-                            0 < b && (this.fileLength <= this.chunkSize ? (this.chunkData = new Int8Array(this.reader.readAsArrayBuffer(this.file)), this.chunkPosition = this.filePosition, a.set(this.chunkData.subarray(this.chunkPosition, this.chunkPosition + b)), this.chunkPosition += b) : b < this.chunkSize ? (this.chunkPosition = 0, d = this.filePosition, d + this.chunkSize > this.fileLength && (d = this.fileLength - this.chunkSize, this.chunkPosition = this.filePosition - d), this.chunkData =
-                                new Int8Array(this.reader.readAsArrayBuffer(this.file.slice(d, d + this.chunkSize))), a.set(this.chunkData.subarray(this.chunkPosition, this.chunkPosition + b), g - b), this.chunkPosition += b) : (d = new Int8Array(this.reader.readAsArrayBuffer(this.file.slice(this.filePosition, this.filePosition + b))), a.set(d), this.chunkPosition = 0, this.chunkData = null), this.filePosition += b);
-                            return g
-                        },
-                        seek: function(a) {
-                            this.chunkData && (this.chunkPosition += a - this.filePosition, this.fileLength > this.chunkSize && (this.chunkPosition > this.chunkData.length ||
-                                0 > this.chunkPosition) && (this.chunkPosition = 0, this.chunkData = null));
-                            this.filePosition = a
-                        },
-                        close: function() {
-                            this.reader = this.file = null
-                        },
-                        getPos: function() {
-                            return this.filePosition
-                        },
-                        getTotalSize: function() {
-                            return this.fileLength
-                        }
-                    };
-                    var u = function(a) {
-                        this.data = a;
-                        this.position = 0;
-                        this.length = this.data.length
-                    };
-                    u.prototype = {
-                        read: function(a, g, b) {
-                            b = this.position + b <= this.length ? b : this.length - this.position;
-                            a = a.subarray(g, g + b);
-                            g = this.data.subarray(this.position, this.position + b);
-                            a.set(g);
-                            this.position += b;
-                            return b
-                        },
-                        write: function(a, g, b) {
-                            b = this.position + b <= this.length ? b : this.length - this.position;
-                            a = a.subarray(g, g + b);
-                            this.data.subarray(this.position, this.position + b).set(a);
-                            this.position += b;
-                            return b
-                        },
-                        seek: function(a) {
-                            this.position = a
-                        },
-                        close: function() {
-                            this.data = null
-                        },
-                        getPos: function() {
-                            return this.position
-                        },
-                        getTotalSize: function() {
-                            return this.length
-                        }
-                    };
-                    var x = function(a, g, b, c, e) {
-                        "object" === f(a) ? (this.lruList = a.lruList, this.chunkMap = a.chunkMap, this.length = a.length, this.url = a.url, this.customHeaders = a.customHeaders, this.withCredentials =
-                            a.withCredentials) : (this.lruList = [], this.chunkMap = {}, this.chunkMap[g] = e, this.length = g, this.url = a, this.customHeaders = b, this.withCredentials = c)
-                    };
-                    x.prototype = {
-                        lruUpdate: function(a) {
-                            var d = this.lruList.lastIndexOf(a);
-                            0 <= d && this.lruList.splice(d, 1);
-                            this.lruList.push(a)
-                        },
-                        getChunk: function(a) {
-                            var d = this;
-                            if (this.chunkMap[a]) this.lruUpdate(a);
-                            else {
-                                var b = Math.min(a + 1048576, this.length) - 1,
-                                    c = new XMLHttpRequest;
-                                c.open("GET", this.url, !1);
-                                c.responseType = "arraybuffer";
-                                c.setRequestHeader("Range", ["bytes=", a, "-", b].join(""));
-                                this.withCredentials && (c.withCredentials = this.withCredentials);
-                                this.customHeaders && Object.keys(this.customHeaders).forEach(function(a) {
-                                    c.setRequestHeader(a, d.customHeaders[a])
-                                });
-                                c.send();
-                                if (200 === c.status || 206 === c.status) this.writeChunk(new Int8Array(c.response), a);
-                                else throw Error("Failed to load data from");
-                            }
-                            return this.chunkMap[a]
-                        },
-                        hadChunk: function(a) {
-                            return a in this.chunkMap
-                        },
-                        hasChunk: function(a) {
-                            return this.chunkMap[a]
-                        },
-                        getCacheData: function() {
-                            return this.chunkMap[this.length]
-                        },
-                        getRequiredChunkOffsetArrays: function(a,
-                            g) {
-                            var d = {
-                                have: [],
-                                downloading: [],
-                                missing: []
+                                        var I = Module.postPagesUpdatedEvent(w, f);
+                                        z.forEach(function(F) {
+                                            F()
+                                        });
+                                        n(I)
+                                    } catch (F) {
+                                        z.forEach(function(a) {
+                                            a()
+                                        }), v(F)
+                                    }
+                                })
                             };
-                            try {
-                                var b = Module.stackSave();
-                                var c = Module.allocate(4, "i8", Module.ALLOC_STACK);
-                                REX(Module._TRN_DownloaderGetRequiredChunksSize(a, g, c));
-                                var e = Module.getValue(c, "i8*");
-                                if (e) {
-                                    var f = Module._malloc(4 * e);
-                                    REX(Module._TRN_DownloaderGetRequiredChunks(a, g, f, e));
-                                    for (a = 0; a < e; ++a) {
-                                        var k = Module.getValue(f + 4 * a, "i8*");
-                                        this.hasChunk(k) ? d.have.push(k) : this.hadChunk(k) ? d.missing.push(k) : d.downloading.push(k)
+                            e.InsertPages = function(f, g, l, r, n, v) {
+															 
+                                return new Promise(function(z, w) {
+                                    var C = [],
+                                        E = Module.GetDoc(f);
+                                    try {
+                                        var B = Module.stackSave();
+                                        C[C.length] = function() {
+                                            Module.stackRestore(B)
+                                        };
+                                        if (g instanceof ArrayBuffer) {
+                                            var D = Module.CreateDoc(g);
+                                            var I = Module.GetDoc(D);
+                                            C[C.length] =
+                                                function() {
+                                                    Module.DeleteDoc(D)
+                                                }
+                                        } else I = Module.GetDoc(g);
+                                        for (var F = l.length, a = Module.PageSetCreate(), b = 0; b < F; ++b) Module.PageSetAddPage(a, l[b]);
+                                        Module.PDFDocInsertPages(E, r, I, a, n);
+                                        var d;
+                                        v || (d = Module.postPagesUpdatedEvent(E, f));
+                                        C.reverse().forEach(function(c) {
+                                            c()
+                                        });
+                                        z(d)
+                                    } catch (c) {
+                                        C.reverse().forEach(function(u) {
+                                            u()
+                                        }), w(c)
+														
                                     }
-                                }
-                            } finally {
-                                f && Module._free(f), Module.stackRestore(b)
+                                })
+                            };
+                            e.MovePages = function(f, g, l) {
+                                return new Promise(function(r, n) {
+                                    var v = [],
+                                        z = Module.GetDoc(f);
+                                    try {
+                                        var w = Module.stackSave();
+                                        v[v.length] = function() {
+                                            Module.stackRestore(w)
+                                        };
+                                        for (var C = g.length,
+                                                E = Module.PageSetCreate(), B = 0; B < C; ++B) Module.PageSetAddPage(E, g[B]);
+                                        Module.PDFDocMovePages(z, l, E);
+                                        var D = Module.postPagesUpdatedEvent(z, f);
+                                        v.forEach(function(I) {
+                                            I()
+                                        });
+                                        r(D)
+                                    } catch (I) {
+                                        v.forEach(function(F) {
+                                            F()
+                                        }), n(I)
+                                    }
+                                })
+                            };
+                            e.RemovePages = function(f, g, l) {
+                                return new Promise(function(r, n) {
+                                    var v = Module.GetDoc(f),
+                                        z = [];
+                                    try {
+                                        var w = Module.stackSave();
+                                        z[z.length] = function() {
+                                            Module.stackRestore(w)
+                                        };
+                                        for (var C = g.length - 1; 0 <= C; --C) {
+                                            var E = Module.PDFDocGetPageIterator(v, g[C]);
+                                            Module.IteratorHasNext(E) && Module.PDFDocPageRemove(v,
+                                                E)
+                                        }
+                                        var B;
+                                        l || (B = Module.postPagesUpdatedEvent(v, f));
+                                        z.forEach(function(D) {
+                                            D()
+                                        });
+                                        r(B)
+                                    } catch (D) {
+                                        z.forEach(function(I) {
+                                            I()
+                                        }), n(D)
+                                    }
+                                })
+                            };
+                            e.RotatePages = function(f, g, l) {
+                                return new Promise(function(r, n) {
+                                    var v = Module.GetDoc(f),
+                                        z = [];
+                                    try {
+                                        var w = Module.stackSave();
+																   
+                                        z[z.length] = function() {
+                                            Module.stackRestore(w)
+                                        };
+                                        var C = g.length,
+                                            E = 0,
+                                            B = Module.PDFDocGetPageIterator(v, g[0]),
+                                            D = [];
+                                        z.push(function() {
+                                            Module._TRN_IteratorDestroy(B)
+                                        });
+                                        for (var I = g[0]; Module.IteratorHasNext(B) && E < g[C - 1]; ++I) {
+                                            if (I === g[E]) {
+                                                var F = Module.IteratorCurrent(B),
+                                                    a = (Module.PageGetRotation(F) + l) % 4;
+                                                Module.PageSetRotation(F, a);
+                                                D.push(I);
+                                                E++
+                                            }
+                                            Module.IteratorNext(B)
+																   
+												   
+											   
+												
+													 
+																   
+												   
+													
+                                        }
+                                        var b = Module.postPagesUpdatedEvent(v, f, D, !0);
+                                        z.reverse().forEach(function(d) {
+                                            d()
+                                        });
+                                        r(b)
+                                    } catch (d) {
+                                        z.reverse().forEach(function(c) {
+																	   
+                                            c()
+                                        }), n(d)
+                                    }
+                                })
+                            };
+                            e.ExtractPages = function(f, g, l, r, n) {
+                                return new Promise(function(v, z) {
+                                    var w = [];
+                                    try {
+															   
+																			  
+											   
+																												
+																 
+                                        var C = Module.GetDoc(f),
+                                            E = Module.stackSave();
+                                        w[w.length] = function() {
+                                            Module.stackRestore(E)
+                                        };
+                                        var B = function(F) {
+												 
+																	  
+											 
+																						  
+                                            w.reverse().forEach(function(a) {
+                                                a()
+                                            });
+                                            z(F)
+                                        };
+                                        Module.XFDFMerge(C, l, n);
+                                        var D = Module.CreateEmptyDoc();
+                                        w[w.length] = function() {
+                                            Module.DeleteDoc(D)
+                                        };
+                                        var I = Module.InsertPages(D, f, g, 1, !0).then(function() {
+                                            return Module.SaveDoc(D, void 0, !0, !1, void 0, r)
+                                        }).then(function(F) {
+                                            w.reverse().forEach(function(a) {
+                                                a()
+													
+										 
+									  
+								  
+																		  
+																	   
+												   
+											 
+												   
+																 
+																	   
+																	  
+																	  
+											  
+																 
+																	   
+													   
+												   
+													
+											  
+																	  
+																			
+																	  
+																   
+											  
+																										
+																								   
+																 
+																	   
+													   
+												   
+														
+														   
+												
+													 
+												
+										 
+									  
+								  
+																		  
+																	   
+											   
+															 
+												   
+											 
+																	   
+																	  
+																	  
+											  
+															 
+													  
+																						  
+															   
+																			  
+                                            });
+                                            return F
+                                        })["catch"](B);
+                                        v(I)
+                                    } catch (F) {
+                                        B(F)
+                                    }
+                                })
+                            };
+                            e.CropPages = function(f, g, l, r, n, v) {
+                                return new Promise(function(z, w) {
+                                    var C = Module.GetDoc(f),
+                                        E = [];
+                                    try {
+                                        var B = Module.stackSave();
+                                        E[E.length] = function() {
+                                            Module.stackRestore(B)
+                                        };
+                                        var D = g.length,
+                                            I = 0,
+                                            F = Module.PDFDocGetPageIterator(C, g[0]);
+                                        E.push(function() {
+                                            Module._TRN_IteratorDestroy(F)
+                                        });
+                                        for (var a = [], b = g[0]; Module.IteratorHasNext(F) && I < g[D - 1]; ++b) {
+                                            if (b === g[I]) {
+                                                var d = Module.IteratorCurrent(F),
+                                                    c = Module.allocate(8, "i8", Module.ALLOC_STACK);
+                                                REX(Module._TRN_PageGetCropBox(d, c));
+                                                var u = Module.PageGetRotation(d),
+                                                    A = Module.getValue(c, "double"),
+                                                    G = Module.getValue(c + 8, "double"),
+                                                    y = Module.getValue(c + 16, "double"),
+																		  
+                                                    H = Module.getValue(c + 24, "double");
+                                                0 === u % 4 ? (Module.setValue(c, A + n, "double"), Module.setValue(c + 8, G + r, "double"), Module.setValue(c + 16, y - v, "double"),
+                                                    Module.setValue(c + 24, H - l, "double")) : 1 === u % 4 ? (Module.setValue(c, A + l, "double"), Module.setValue(c + 8, G + n, "double"), Module.setValue(c + 16, y - r, "double"), Module.setValue(c + 24, H - v, "double")) : 2 === u % 4 ? (Module.setValue(c, A + v, "double"), Module.setValue(c + 8, G + l, "double"), Module.setValue(c + 16, y - n, "double"), Module.setValue(c + 24, H - r, "double")) : 3 === u % 4 && (Module.setValue(c, A + r, "double"), Module.setValue(c + 8, G + v, "double"), Module.setValue(c + 16, y - l, "double"), Module.setValue(c + 24, H - n, "double"));
+																																																	   
+                                                Module.setValue(c + 32, 0, "double");
+                                                REX(Module._TRN_PageSetBox(d, 0, c));
+                                                REX(Module._TRN_PageSetBox(d, 1, c));
+                                                a.push(b);
+                                                I++
+												 
+																	  
+                                            }
+                                            Module.IteratorNext(F)
+																   
+												   
+											   
+												
+													 
+																   
+												   
+													
+                                        }
+                                        var J = Module.postPagesUpdatedEvent(C, f, a, !0);
+                                        E.reverse().forEach(function(L) {
+                                            L()
+                                        });
+                                        z(J)
+                                    } catch (L) {
+                                        E.reverse().forEach(function(K) {
+                                            K()
+                                        }), w(L)
+                                    }
+                                })
                             }
-                            return d
-                        },
-                        keepVisibleChunks: function(a,
-                            g) {
-                            for (var d = g.length, b = Module.chunkMax / 2, c = 0, e = 0; e < d; ++e) {
-                                var f = this.getRequiredChunkOffsetArrays(a, g[e]),
-                                    k = f.have,
-                                    h = k.length;
-                                c += h;
-                                if (c > b) {
-                                    this.keepChunks(k.slice(0, h - c + b));
-                                    break
-                                }
-                                this.keepChunks(f.have)
-                            }
-                        },
-                        getChunkAsync: function(a) {
-                            var d = this,
-                                b = a + 1048576,
-                                c = 1048576;
-                            b > this.length && (c -= b - this.length);
-                            return m(this.url, a, c, this.customHeaders, this.withCredentials).then(function(g) {
-                                d.writeChunk(g, a)
-                            })
-                        },
-                        getChunks: function(a) {
-                            for (var d = a.length, b = Array(d), c = 0; c < d; ++c) b[c] = this.getChunkAsync(a[c]);
-                            return CancellablePromise.all(b)
-                        },
-                        keepChunks: function(a) {
-                            for (var d = a.length, b = 0; b < d; ++b) this.lruUpdate(a[b])
-                        },
-                        writeChunk: function(a, g, b) {
-                            b = b || 0;
-                            var d = this.chunkMap[g],
-                                c = a.length,
-                                e = this.lruList.length >= Module.chunkMax && !d;
-                            1048576 !== c || a.buffer.byteLength !== c ? (e ? (d = this.lruList.shift(), e = this.chunkMap[d], 1048576 > e.length && (e = new Int8Array(1048576)), this.chunkMap[d] = null) : e = d ? this.chunkMap[g] : new Int8Array(1048576), e.subarray(b, b + c).set(a), a = e) : e && (d = this.lruList.shift(), this.chunkMap[d] = null);
-                            this.lruUpdate(g);
-                            this.chunkMap[g] = a
-                        }
-                    };
-                    var t = function(a) {
-                        this.chunkStorage = a;
-                        this.position = 0;
-                        this.length = this.chunkStorage.length
-                    };
-                    t.prototype = {
-                        read: function(a, g, b) {
-                            var d = this.position + b <= this.length,
-                                c = d ? b : this.length - this.position;
-                            if (this.position < this.length) {
-                                var e;
-                                for (e = 0; e < c;) {
-                                    var q = this.position % 1048576;
-                                    var f = this.position - q;
-                                    var k = c - e;
-                                    if (this.chunkStorage.hadChunk(f)) {
-                                        f = this.chunkStorage.getChunk(f);
-                                        var h = a.subarray(g + e, g + e + k);
-                                        q = f.subarray(q, q + k);
-                                        h.set(q);
-                                        q = q.length;
-                                        e += q;
-                                        this.position += q
-                                    } else
-                                        for (this.position += k; e < c; ++e) h[e] = 0
-                                }
-                            }
-                            if (!d) {
-                                h =
-                                    g + c;
-                                if (b -= c) g = this.chunkStorage.getCacheData(), b > g.length && (b = g.length), d = this.position - this.length, h = a.subarray(h, h + b), q = g.subarray(d, d + b), h.set(q);
-                                this.position += b;
-                                return c + b
-                            }
-                            return c
-                        },
-                        write: function(a, g, b) {
-                            var d = this.position + b <= this.length,
-                                c = this.position + b <= this.length ? b : this.length - this.position,
-                                e = a.subarray(g, g + c),
-                                q = this.position % 1048576;
-                            this.chunkStorage.writeChunk(e, this.position - q, q);
-                            this.position += c;
-                            if (!d) {
-                                e = g + c;
-                                if (b -= c) g = this.chunkStorage.getCacheData(), b > g.length && (b = g.length), d = this.position -
-                                    this.length, e = a.subarray(e, e + b), g.subarray(d, d + b).set(e);
-                                this.position += b;
-                                return c + b
-                            }
-                            return c
-                        },
-                        seek: function(a) {
-                            this.position = a
-                        },
-                        close: function() {
-                            this.chunkStorage = null
-                        },
-                        getPos: function() {
-                            return this.position
-                        },
-                        getTotalSize: function() {
-                            return this.length
-                        }
-                    };
-                    var B = function(a) {
-                        this.docId = a;
-                        this.length = 0;
-                        this.data = new Int8Array(8192);
-                        this.position = 0
-                    };
-                    B.prototype = {
-                        seek: function(a) {
-                            this.position = a
-                        },
-                        close: function() {
-                            var a = new Int8Array(this.data.buffer.slice(0, this.length));
-                            Module.ChangeDocBackend(this.docId, {
-                                ptr: Module.GetDoc(this.docId),
-                                buffer: a
+                        })("undefined" === typeof self ? this.Module : self.Module);
+                        this.loaded = !0;
+                        Module.initCb && Module.initCb()
+						 
+                    }
+                }
+            })(self)
+        }).call(this, q(8).clearImmediate, q(8).setImmediate)
+													   
+    }, function(k, p, q) {
+        (function(m) {
+            function t(e) {
+                "@babel/helpers - typeof";
+                return t = "function" ==
+                    typeof Symbol && "symbol" == typeof Symbol.iterator ? function(f) {
+                        return typeof f
+                    } : function(f) {
+                        return f && "function" == typeof Symbol && f.constructor === Symbol && f !== Symbol.prototype ? "symbol" : typeof f
+                    }, t(e)
+            }
+            var x = q(1),
+                h = "undefined" !== typeof window ? window : self;
+            h.global = h;
+            (function(e) {
+                e.currentFileString = "/current";
+                var f = 0,
+                    g = 0,
+                    l = {},
+                    r = null;
+                Module.chunkMax = 200;
+                var n = function(a, b, d, c, u) {
+                        var A = new XMLHttpRequest;
+                        return CancellablePromise(function(G, y) {
+                            A.open("GET", a, !0);
+                            A.responseType = "arraybuffer";
+                            A.onerror = function() {
+                                y("Network error occurred")
+                            };
+                            A.onload = function() {
+                                if (206 === this.status && A.response.byteLength === d) {
+                                    var J = new Int8Array(A.response);
+                                    G(J)
+                                } else y("Download Failed")
+                            };
+                            var H = ["bytes=", b, "-", b + d - 1].join("");
+                            A.setRequestHeader("Range", H);
+                            u && (A.withCredentials = u);
+                            c && Object.keys(c).forEach(function(J) {
+                                A.setRequestHeader(J, c[J])
                             });
-                            this.data = null
-                        },
-                        getPos: function() {
-                            return this.position
-                        },
-                        getTotalSize: function() {
-                            return this.length
-                        },
-                        read: function(a, g, b) {
-                            var d = this.data.length;
-                            b = b + g < d ? b : d - g;
-                            a = a.subarray(g, g + b);
-                            g = this.data.subarray(this.position, this.position + b);
-                            a.set(g);
-                            this.position += b;
-                            return b
-                        },
-                        write: function(a, g, b) {
-                            for (var d = this.position + b, c = this.data.length; d > c;) {
-                                c = Math.max(c * (16777216 < c ? 1.5 : 2), d);
-                                var e = new Int8Array(c);
-                                e.set(this.data.subarray(0, this.length), 0);
-                                this.data = e
-                            }
-                            a = a.subarray(g,
-                                g + b);
-                            this.data.set(a, this.position);
-                            this.position += b;
-                            this.position > this.length && (this.length = this.position);
-                            return b
-                        }
-                    };
-                    var y = {
-                        IsSink: function(a) {
-                            return 66 === (a.flags & 255)
-                        },
-                        open: function(a) {
-                            var d = a.path.slice(1);
-                            this.IsSink(a) ? (a.provider = new B(d), Module.docs[d].sink = a.provider) : a.provider = Module.docs[d].sink ? new u(Module.docs[d].sink.data) : Module.docs[d].chunkStorage ? new t(Module.docs[d].chunkStorage) : Module.docs[d].buffer ? new u(Module.docs[d].buffer) : new v(Module.docs[d].file)
-                        },
-                        close: function(a) {
-                            a.provider.close()
-                        },
-                        read: function(a, g, b, c, e) {
-                            return a.provider.read(g, b, c)
-                        },
-                        llseek: function(a, g, b) {
-                            a = a.provider;
-                            1 === b ? g += a.getPos() : 2 === b && (g = a.getTotalSize() + g);
-                            if (0 > g) throw new FS.ErrnoError(n.ERRNO_CODES.EINVAL);
-                            a.seek(g);
-                            return g
-                        },
-                        write: function(a, g, b, c, e) {
-                            return c ? a.provider.write(g, b, c) : 0
-                        }
-                    };
-                    n.THROW = function(a) {
-                        throw {
-                            type: "InvalidPDF",
-                            message: a
-                        };
-                    };
-                    var C = function(d) {
-                        return "Exception: \n\t Message: ".concat(a.GetJSStringFromCString(Module._TRN_GetMessage(d)), "\n\t Filename: ").concat(a.GetJSStringFromCString(Module._TRN_GetFileName(d)),
-                            "\n\t Function: ").concat(a.GetJSStringFromCString(Module._TRN_GetFunction(d)), "\n\t Linenumber: ").concat(a.GetJSStringFromCString(Module._TRN_GetLineNum(d)))
-                    };
-                    a.GetErrToString = C;
-                    n.REX = function(a) {
-                        a && THROW(C(a))
-                    };
-                    a.Initialize = function(a) {
-                        var d = Module.stackSave();
-                        a = a ? Module.allocate(Module.intArrayFromString(a), "i8", Module.ALLOC_STACK) : 0;
-                        REX(Module._TRN_PDFNetInitialize(a));
-                        Module.stackRestore(d)
-                    };
-                    a.GetDoc = function(a) {
-                        if (a in Module.docs) return Module.docs[a].ptr;
-                        throw {
-                            type: "InvalidDocReference",
-                            message: "Unable to access Document id=".concat(a, ". The document appears to be invalid or was deleted.")
-                        };
-                    };
-                    a.clearDocBackend = function() {
-                        null !== Module.cachePtr ? (Module.hasBufOwnership && Module._free(Module.cachePtr), Module.cachePtr = null) : Module.docs[a.currentFileString] && delete Module.docs[a.currentFileString]
-                    };
-                    a.MakeDev = function(a) {
-                        if (!h[a]) {
-                            var d = FS.makedev(3, 5);
-                            FS.registerDevice(d, y);
-                            FS.mkdev(a, 511, d);
-                            h[a] = !0
-                        }
-                    };
-                    a.CreateDocFileBackend = function(a, g) {
-                        Module.MakeDev(g);
-                        var d = Module.allocate(4, "i8",
-                            Module.ALLOC_STACK);
-                        Module.docs[g] = {
-                            file: a
-                        };
-                        a = Module.allocate(Module.intArrayFromString(g), "i8", Module.ALLOC_STACK);
-                        REX(Module._TRN_PDFDocCreateFromFilePath(a, d));
-                        d = Module.getValue(d, "i8*");
-                        Module.docs[g].ptr = d
-                    };
-                    a.InsertImageIntoDoc = function(a, g, b) {
-                        var d = [];
-                        try {
-                            var c = Module.ElementBuilderCreate();
-                            d.push(function() {
-                                Module.ElementBuilderDestroy(c)
-                            });
-                            var e = Module.ElementWriterCreate();
-                            d.push(function() {
-                                Module.ElementWriterDestroy(e)
-                            });
-                            if (b) {
-                                var q = b.width;
-                                var f = b.height
-                            } else q = Module.ImageGetImageWidth(g),
-                                f = Module.ImageGetImageHeight(g), b = q / f, b > 612 / 792 ? (q = 612, f = parseInt(q / b, 10)) : (f = 792, q = parseInt(f * b, 10));
-                            var k = Module.ElementBuilderCreateImage(c, g, 0, 0, q, f),
-                                h = Module.PDFDocPageCreate(a, q, f);
-                            Module.ElementWriterBegin(e, h);
-                            Module.ElementWriterWritePlacedElement(e, k);
-                            Module.ElementWriterEnd(e);
-                            Module.PDFDocPagePushBack(a, h)
-                        } finally {
-                            d.forEach(function(a) {
-                                a()
-                            })
-                        }
-                    };
-                    var L = function(a, b, c) {
-                        "object" === f(a) ? (this.m_pages = a.m_pages, this.m_has_named_dests = a.m_has_named_dests, this.m_finished_download = a.m_finished_download,
-                            this.m_has_outline = a.m_has_outline, this.m_current_page = a.m_current_page, this.m_id = a.m_id, this.size = a.size, this.timeout = a.timeout, this.eventPageArray = a.eventPageArray, this.requirePageCallbacks = a.requirePageCallbacks) : (this.m_pages = [], this.m_has_outline = this.m_finished_download = this.m_has_named_dests = !1, this.m_current_page = 1, this.m_id = c, this.size = a, this.timeout = null, this.eventPageArray = [], this.requirePageCallbacks = {});
-                        this.downloadUserData = Module.createDownloadUserData(b, c)
-                    };
-                    L.prototype = {
-                        getJSUrl: function() {
-                            return Module.extractDownloadUserData(this.downloadUserData).url
-                        },
-                        getDocId: function() {
-                            return Module.extractDownloadUserData(this.downloadUserData).docId
-                        },
-                        destroyUserData: function() {
-                            this.m_id in Module.withCredentials && delete Module.withCredentials[this.m_id];
-                            this.m_id in Module.customHeadersMap && delete Module.customHeadersMap[this.m_id];
-                            Module.destroyDownloadUserData(this.downloadUserData)
-                        }
-                    };
-                    a.createDownloadUserData = function(a, b) {
-                        a = Module.allocate(Module.intArrayFromString(a), "i8", Module.ALLOC_NORMAL);
-                        var d = Module.allocate(8, "i8", Module.ALLOC_NORMAL);
-                        Module.setValue(d,
-                            a, "i8*");
-                        Module.setValue(d + 4, parseInt(b, 10), "i32");
-                        return this.downloadUserData = d
-                    };
-                    a.extractDownloadUserData = function(d) {
-                        var b = Module.getValue(d, "i8*");
-                        b = a.GetJSStringFromCString(b);
-                        d = Module.getValue(d + 4, "i32").toString();
-                        return {
-                            url: b,
-                            docId: d
-                        }
-                    };
-                    a.destroyDownloadUserData = function(a) {
-                        Module._free(Module.getValue(a, "i8*"));
-                        Module._free(a)
-                    };
-                    n.downloadDataMap = {};
-                    Module.customHeadersMap = {};
-                    Module.withCredentials = {};
-                    a.GetDownloadData = function(a) {
-                        if (a in downloadDataMap) return downloadDataMap[a]
-                    };
-                    a.DownloaderHint =
-                        function(a, b) {
-                            var d = this,
-                                g = Module.GetDoc(a),
-                                c = downloadDataMap[g];
-                            b.currentPage && (c.m_current_page = b.currentPage);
-                            if (b.visiblePages) {
-                                var e = b.visiblePages;
-                                for (b = 0; b < e.length; ++b) ++e[b];
-                                Object.keys(this.requirePageCallbacks).forEach(function(a) {
-                                    d.requirePageCallbacks.hasOwnProperty(a) && e.push(parseInt(a, 10))
-                                });
-                                (b = Module.docs[a].chunkStorage) && b.keepVisibleChunks(c.downloader, e);
-                                c = e.length;
-                                a = Module.allocate(4 * c, "i8", Module.ALLOC_STACK);
-                                for (b = 0; b < c; ++b) Module.setValue(a + 4 * b, e[b], "i32");
-                                REX(Module._TRN_PDFDocDownloadPages(g,
-                                    a, c, 1, 0))
-                            }
-                        };
-                    a.RequirePage = function(a, b) {
-                        return new Promise(function(d, g) {
-                            g = Module.GetDoc(a);
-                            var c = downloadDataMap[g];
-                            !c || c.m_finished_download || c.m_pages[b] ? d() : (b in c.requirePageCallbacks ? c.requirePageCallbacks[b].push(d) : c.requirePageCallbacks[b] = [d], d = Module.allocate(4, "i8", Module.ALLOC_STACK), Module.setValue(d, b, "i32"), Module._TRN_PDFDocDownloadPages(g, d, 1, 0, 0))
+                            A.send()
+                        }, function() {
+                            A.abort()
                         })
+                    },
+                    v = function(a) {
+                        this.maxChunkNum = a;
+                        this.lruList = [];
+                        this.chunkMap = {}
                     };
-                    a.IsLinearizationValid = function(a) {
-                        a = Module.GetDoc(a);
-                        if (a = downloadDataMap[a]) {
-                            var d = Module.allocate(4, "i8", Module.ALLOC_STACK);
-                            REX(Module._TRN_DownloaderIsLinearizationValid(a.downloader, d));
-                            return 0 !== Module.getValue(d, "i8")
+                v.prototype = {
+				 
+							 
+																	  
+							 
+                    has: function(a) {
+                        return a in this.chunkMap
+                    },
+							  
+							   
+								 
+										  
+                    insert: function(a, b) {
+                        this.lruList.length >= this.maxChunkNum &&
+                            (delete this.chunkMap[this.lruList[0]], this.lruList.shift());
+                        this.lruList.push(b);
+                        this.chunkMap[b] = a
+                    },
+                    get: function(a) {
+                        var b = this.lruList.lastIndexOf(a);
+                        0 <= b && this.lruList.splice(b, 1);
+                        this.lruList.push(a);
+                        return this.chunkMap[a]
+                    }
+                };
+															   
+								  
+																			   
+															   
+															 
+																		 
+															   
+								   
+										
+										   
+										 
+							  
+						  
+                var z = function(a) {
+                    this.file = a;
+								  
+                    this.filePosition = 0;
+                    this.fileLength = a.size;
+                    this.chunkSize = 1048576;
+                    this.chunkCache = new v(8);
+													 
+                    this.reader = new FileReaderSync
+                };
+                z.prototype = {
+                    read: function(a, b, d) {
+                        d = this.filePosition + d <= this.fileLength ? d : this.fileLength - this.filePosition;
+                        a = a.subarray(b,
+                            b + d);
+                        b = d;
+																										
+															   
+                        for (var c = this.filePosition % this.chunkSize, u = this.filePosition - c, A = 0; 0 < d;) {
+                            if (this.chunkCache.has(u)) var G = this.chunkCache.get(u);
+							 
+                            else G = new Int8Array(this.reader.readAsArrayBuffer(this.file.slice(u, u + this.chunkSize))), this.chunkCache.insert(G, u);
+                            var y = G.length,
+                                H = c + d;
+                            H <= y ? (a.set(G.subarray(c, H), A), this.filePosition += d, d = 0) : (a.set(G.subarray(c), A), this.filePosition += y - c, c = 0, u = this.filePosition, d = H - y, A = b - d)
+									
+						  
+										   
+																																											  
+																											
+												 
+						  
+										   
+														  
+						  
+											
+													
+						  
+												  
+												  
                         }
-                        return !1
+                        return b
+                    },
+                    seek: function(a) {
+                        this.filePosition = a
+                    },
+                    close: function() {
+                        this.reader = this.file =
+                            null
+                    },
+                    getPos: function() {
+                        return this.filePosition
+                    },
+                    getTotalSize: function() {
+                        return this.fileLength
+                    }
+                };
+                var w = function(a) {
+                    this.data = a;
+                    this.position = 0;
+                    this.length = this.data.length
+                };
+                w.prototype = {
+                    read: function(a, b, d) {
+                        d = this.position + d <= this.length ? d : this.length - this.position;
+                        a = a.subarray(b, b + d);
+                        b = this.data.subarray(this.position, this.position + d);
+                        a.set(b);
+                        this.position += d;
+                        return d
+                    },
+                    write: function(a, b, d) {
+                        d = this.position + d <= this.length ? d : this.length - this.position;
+                        a = a.subarray(b, b + d);
+                        this.data.subarray(this.position,
+                            this.position + d).set(a);
+                        this.position += d;
+                        return d
+                    },
+                    seek: function(a) {
+                        this.position = a
+                    },
+                    close: function() {
+                        this.data = null
+                    },
+                    getPos: function() {
+                        return this.position
+                    },
+                    getTotalSize: function() {
+                        return this.length
+                    }
+                };
+                var C = function(a, b, d, c, u) {
+                    "object" === t(a) ? (this.lruList = a.lruList, this.chunkMap = a.chunkMap, this.length = a.length, this.url = a.url, this.customHeaders = a.customHeaders, this.withCredentials = a.withCredentials) : (this.lruList = [], this.chunkMap = {}, this.chunkMap[b] = u, this.length = b, this.url = a, this.customHeaders =
+                        d, this.withCredentials = c)
+                };
+                C.prototype = {
+                    lruUpdate: function(a) {
+                        var b = this.lruList.lastIndexOf(a);
+                        0 <= b && this.lruList.splice(b, 1);
+                        this.lruList.push(a)
+                    },
+                    getChunk: function(a) {
+                        var b = this;
+                        if (this.chunkMap[a]) this.lruUpdate(a);
+                        else {
+                            var d = Math.min(a + 1048576, this.length) - 1,
+                                c = new XMLHttpRequest;
+                            c.open("GET", this.url, !1);
+                            c.responseType = "arraybuffer";
+                            c.setRequestHeader("Range", ["bytes=", a, "-", d].join(""));
+                            this.withCredentials && (c.withCredentials = this.withCredentials);
+                            this.customHeaders && Object.keys(this.customHeaders).forEach(function(u) {
+                                c.setRequestHeader(u,
+                                    b.customHeaders[u])
+                            });
+                            c.send();
+                            if (200 === c.status || 206 === c.status) this.writeChunk(new Int8Array(c.response), a);
+                            else throw Error("Failed to load data from");
+                        }
+					  
+													 
+																																																		 
+																																															   
+					  
+								   
+												
+																
+																
+												
+						  
+											   
+										 
+																	
+								  
+																			   
+														   
+															
+															   
+																							
+																								   
+																										   
+																			 
+								   
+										 
+																														
+																			 
+							 
+                        return this.chunkMap[a]
+                    },
+                    hadChunk: function(a) {
+                        return a in this.chunkMap
+                    },
+                    hasChunk: function(a) {
+                        return this.chunkMap[a]
+                    },
+                    getCacheData: function() {
+                        return this.chunkMap[this.length]
+                    },
+                    getRequiredChunkOffsetArrays: function(a, b) {
+								
+                        var d = {
+                            have: [],
+                            downloading: [],
+                            missing: []
+                        };
+                        try {
+                            var c = Module.stackSave();
+                            var u = Module.allocate(4, "i8", Module.ALLOC_STACK);
+                            REX(Module._TRN_DownloaderGetRequiredChunksSize(a,
+                                b, u));
+                            var A = Module.getValue(u, "i8*");
+                            if (A) {
+                                var G = Module._malloc(4 * A);
+                                REX(Module._TRN_DownloaderGetRequiredChunks(a, b, G, A));
+                                for (a = 0; a < A; ++a) {
+                                    var y = Module.getValue(G + 4 * a, "i8*");
+                                    this.hasChunk(y) ? d.have.push(y) : this.hadChunk(y) ? d.missing.push(y) : d.downloading.push(y)
+									 
+								 
+									   
+																			
+							 
+									
+						  
+													  
+								
+																									   
+																				   
+											   
+												 
+									   
+											
+																		   
+										 
+                                }
+													   
+                            }
+                        } finally {
+                            G && Module._free(G), Module.stackRestore(c)
+										 
+												
+											
+																	  
+																												 
+												  
+							  
+						  
+												
+																													
+															
+						  
+												 
+																						  
+						  
+													   
+									   
+													 
+											 
+																				 
+																																																																																								
+											  
+												
+                        }
+                        return d
+                    },
+											  
+										  
+															  
+					  
+								   
+                    keepVisibleChunks: function(a, b) {
+                        for (var d = b.length, c = Module.chunkMax / 2, u = 0, A = 0; A < d; ++A) {
+                            var G = this.getRequiredChunkOffsetArrays(a, b[A]),
+                                y = G.have,
+									  
+													 
+																	
+															  
+												  
+																		
+																		  
+																			 
+																 
+												 
+													 
+											   
+														  
+										  
+																					 
+								 
+							 
+									 
+								   
+										  
+																																																				
+												   
+											
+							 
+									
+						  
+												  
+																	 
+                                H = y.length;
+														 
+															
+																				  
+                            u += H;
+									 
+										  
+                            if (u > c) {
+                                this.keepChunks(y.slice(0,
+                                    H - u + c));
+                                break
+                            }
+                            this.keepChunks(G.have)
+						  
+										   
+											 
+						  
+										   
+													
+						  
+											
+												
+						  
+												  
+											  
+                        }
+                    },
+                    getChunkAsync: function(a) {
+                        var b = this,
+                            d = a + 1048576,
+                            c = 1048576;
+                        d > this.length && (c -= d - this.length);
+					  
+								   
+                        return n(this.url, a, c, this.customHeaders, this.withCredentials).then(function(u) {
+                            b.writeChunk(u, a)
+                        })
+                    },
+                    getChunks: function(a) {
+                        for (var b = a.length, d = Array(b), c = 0; c < b; ++c) d[c] = this.getChunkAsync(a[c]);
+                        return CancellablePromise.all(d)
+															   
+										 
+							   
+											
+						  
+											
+												
+                    },
+                    keepChunks: function(a) {
+                        for (var b = a.length, d = 0; d < b; ++d) this.lruUpdate(a[d])
+                    },
+                    writeChunk: function(a, b, d) {
+                        d = d || 0;
+                        var c = this.chunkMap[b],
+                            u = a.length,
+                            A = this.lruList.length >= Module.chunkMax && !c;
+                        1048576 !== u || a.buffer.byteLength !== u ? (A ? (c = this.lruList.shift(), A = this.chunkMap[c], 1048576 > A.length && (A = new Int8Array(1048576)), this.chunkMap[c] = null) : A = c ? this.chunkMap[b] : new Int8Array(1048576), A.subarray(d, d + u).set(a), a = A) : A && (c = this.lruList.shift(), this.chunkMap[c] = null);
+                        this.lruUpdate(b);
+                        this.chunkMap[b] = a
+                    }
+                };
+                var E = function(a) {
+                    this.chunkStorage = a;
+                    this.position = 0;
+                    this.length = this.chunkStorage.length
+                };
+                E.prototype = {
+                    read: function(a, b, d) {
+                        var c = this.position +
+                            d <= this.length,
+                            u = c ? d : this.length - this.position;
+                        if (this.position < this.length) {
+                            var A;
+                            for (A = 0; A < u;) {
+                                var G = this.position % 1048576;
+                                var y = this.position - G;
+                                var H = u - A,
+                                    J = a.subarray(b + A, b + A + H);
+                                if (this.chunkStorage.hadChunk(y)) y = this.chunkStorage.getChunk(y).subarray(G, G + H), J.set(y), J = y.length, A += J, this.position += J;
+                                else
+                                    for (this.position += H; A < u; ++A) J[A] = 0
+                            }
+											 
+									   
+															
+											   
+																						 
+									
+						 
+					  
+							 
+											 
+														 
+						  
+										   
+													
+																																																																																  
+						  
+											
+											  
+						  
+													   
+														   
+						  
+												   
+										   
+																							  
+																					 
+									  
+									
+						  
+														
+																	
+						 
+					  
+										   
+							   
+											   
+									  
+						  
+					  
+										 
+																																																	  
+																																															
+					  
+										 
+										 
+										
+					  
+												
+												   
+																											
+															 
+											  
+					  
+											
+																		
+							   
+														
+																																	  
+						  
+					  
+													
+																																																				  
+					  
+											 
+									
+													 
+													
+												
+									 
+                        }
+                        if (!c) {
+                            b += u;
+                            if (d -= u) c = this.chunkStorage.getCacheData(), d > c.length && (d = c.length), A = this.position - this.length, a = a.subarray(b, b + d), y = c.subarray(A, A + d), a.set(y);
+                            this.position += d;
+                            return u + d
+										  
+								   
+						  
+																									
+																		
+													  
+											  
+					  
+															  
+								   
+							 
+																  
+											   
+															   
+							   
+																 
+											   
+															  
+							   
+									
+												
+												
+																	
+																																									  
+																					   
+																	 
+															
+																		 
+													   
+														   
+								   
+												   
+								   
+							  
+                        }
+                        return u
+                    },
+                    write: function(a, b, d) {
+                        var c = this.position + d <= this.length,
+                            u = this.position + d <= this.length ? d : this.length - this.position,
+                            A = a.subarray(b, b + u),
+                            G = this.position % 1048576;
+                        this.chunkStorage.writeChunk(A, this.position - G, G);
+                        this.position += u;
+                        if (!c) {
+                            A = b + u;
+                            if (d -= u) b = this.chunkStorage.getCacheData(), d > b.length && (d = b.length), c = this.position - this.length, A = a.subarray(A, A + d), b.subarray(c, c + d).set(A);
+                            this.position += d;
+                            return u + d
+													 
+																											
+																											  
+																				 
+                        }
+                        return u
+                    },
+                    seek: function(a) {
+                        this.position = a
+                    },
+                    close: function() {
+                        this.chunkStorage =
+                            null
+                    },
+                    getPos: function() {
+                        return this.position
+                    },
+                    getTotalSize: function() {
+                        return this.length
+                    }
+                };
+                var B = function(a) {
+                    this.docId = a;
+                    this.length = 0;
+                    this.data = new Int8Array(8192);
+                    this.position = 0
+                };
+                B.prototype = {
+                    seek: function(a) {
+                        this.position = a
+                    },
+                    close: function() {
+                        var a = new Int8Array(this.data.buffer.slice(0, this.length));
+                        Module.ChangeDocBackend(this.docId, {
+                            ptr: Module.GetDoc(this.docId),
+                            buffer: a
+                        });
+                        this.data = null
+                    },
+                    getPos: function() {
+                        return this.position
+                    },
+                    getTotalSize: function() {
+                        return this.length
+                    },
+                    read: function(a, b,
+                        d) {
+                        var c = this.data.length;
+                        d = d + b < c ? d : c - b;
+                        a = a.subarray(b, b + d);
+                        b = this.data.subarray(this.position, this.position + d);
+                        a.set(b);
+                        this.position += d;
+                        return d
+                    },
+                    write: function(a, b, d) {
+                        for (var c = this.position + d, u = this.data.length; c > u;) {
+                            u = Math.max(u * (16777216 < u ? 1.5 : 2), c);
+                            var A = new Int8Array(u);
+                            A.set(this.data.subarray(0, this.length), 0);
+                            this.data = A
+                        }
+                        a = a.subarray(b, b + d);
+                        this.data.set(a, this.position);
+                        this.position += d;
+                        this.position > this.length && (this.length = this.position);
+                        return d
+                    }
+                };
+                var D = {
+                    IsSink: function(a) {
+                        return 66 ===
+                            (a.flags & 255)
+                    },
+                    open: function(a) {
+                        var b = a.path.slice(1);
+                        this.IsSink(a) ? (a.provider = new B(b), Module.docs[b].sink = a.provider) : a.provider = Module.docs[b].sink ? new w(Module.docs[b].sink.data) : Module.docs[b].chunkStorage ? new E(Module.docs[b].chunkStorage) : Module.docs[b].buffer ? new w(Module.docs[b].buffer) : new z(Module.docs[b].file)
+                    },
+                    close: function(a) {
+                        a.provider.close()
+                    },
+                    read: function(a, b, d, c, u) {
+                        return a.provider.read(b, d, c)
+                    },
+                    llseek: function(a, b, d) {
+                        a = a.provider;
+                        1 === d ? b += a.getPos() : 2 === d && (b = a.getTotalSize() +
+                            b);
+                        if (0 > b) throw new FS.ErrnoError(h.ERRNO_CODES.EINVAL);
+                        a.seek(b);
+                        return b
+                    },
+                    write: function(a, b, d, c, u) {
+                        return c ? a.provider.write(b, d, c) : 0
+                    }
+                };
+                h.THROW = function(a) {
+                    throw {
+                        type: "PDFWorkerError",
+                        message: a
                     };
-                    a.ShouldRunRender = function(a, b) {
+                };
+                var I = function(a) {
+                    return "Exception: \n\t Message: ".concat(e.GetJSStringFromCString(Module._TRN_GetMessage(a)), "\n\t Filename: ").concat(e.GetJSStringFromCString(Module._TRN_GetFileName(a)), "\n\t Function: ").concat(e.GetJSStringFromCString(Module._TRN_GetFunction(a)), "\n\t Linenumber: ").concat(e.GetJSStringFromCString(Module._TRN_GetLineNum(a)))
+                };
+                e.GetErrToString = I;
+                h.REX = function(a) {
+                    a && THROW(I(a))
+                };
+                e.Initialize = function(a) {
+                    var b = Module.stackSave();
+                    a = a ? Module.allocate(Module.intArrayFromString(a), "i8", Module.ALLOC_STACK) : 0;
+                    REX(Module._TRN_PDFNetInitialize(a));
+                    Module.stackRestore(b)
+                };
+                e.GetDoc = function(a) {
+                    if (a in Module.docs) return Module.docs[a].ptr;
+                    throw {
+                        type: "InvalidDocReference",
+                        message: "Unable to access Document id=".concat(a, ". The document appears to be invalid or was deleted.")
+                    };
+                };
+                e.clearDocBackend = function() {
+                    null !== Module.cachePtr ? (Module.hasBufOwnership &&
+                        Module._free(Module.cachePtr), Module.cachePtr = null) : Module.docs[e.currentFileString] && delete Module.docs[e.currentFileString]
+                };
+                e.MakeDev = function(a) {
+                    if (!l[a]) {
+                        var b = FS.makedev(3, 5);
+                        FS.registerDevice(b, D);
+                        FS.mkdev(a, 511, b);
+                        l[a] = !0
+                    }
+                };
+                e.CreateDocFileBackend = function(a, b) {
+                    Module.MakeDev(b);
+                    var d = Module.allocate(4, "i8", Module.ALLOC_STACK);
+                    Module.docs[b] = {
+                        file: a
+                    };
+                    a = Module.allocate(Module.intArrayFromString(b), "i8", Module.ALLOC_STACK);
+                    REX(Module._TRN_PDFDocCreateFromFilePath(a, d));
+										 
+                    d = Module.getValue(d, "i8*");
+                    Module.docs[b].ptr = d
+                };
+                e.InsertImageIntoDoc = function(a, b, d) {
+                    var c = [];
+                    try {
+                        var u = Module.ElementBuilderCreate();
+                        c.push(function() {
+                            Module.ElementBuilderDestroy(u)
+                        });
+                        var A = Module.ElementWriterCreate();
+                        c.push(function() {
+                            Module.ElementWriterDestroy(A)
+                        });
+                        if (d) {
+                            var G = d.width;
+                            var y = d.height
+                        } else G = Module.ImageGetImageWidth(b), y = Module.ImageGetImageHeight(b), d = G / y, d > 612 / 792 ? (G = 612, y = parseInt(G / d, 10)) : (y = 792, G = parseInt(y * d, 10));
+                        var H = Module.ElementBuilderCreateImage(u, b, 0, 0, G, y),
+                            J = Module.PDFDocPageCreate(a, G,
+                                y);
+                        Module.ElementWriterBegin(A, J);
+                        Module.ElementWriterWritePlacedElement(A, H);
+                        Module.ElementWriterEnd(A);
+                        Module.PDFDocPagePushBack(a, J)
+                    } finally {
+                        c.reverse().forEach(function(L) {
+                            L()
+                        })
+                    }
+                };
+                var F = function(a, b, d) {
+                    "object" === t(a) ? (this.m_pages = a.m_pages, this.m_has_named_dests = a.m_has_named_dests, this.m_finished_download = a.m_finished_download, this.m_has_outline = a.m_has_outline, this.m_current_page = a.m_current_page, this.m_id = a.m_id, this.size = a.size, this.timeout = a.timeout, this.eventPageArray = a.eventPageArray,
+                        this.requirePageCallbacks = a.requirePageCallbacks) : (this.m_pages = [], this.m_has_outline = this.m_finished_download = this.m_has_named_dests = !1, this.m_current_page = 1, this.m_id = d, this.size = a, this.timeout = null, this.eventPageArray = [], this.requirePageCallbacks = {});
+                    this.downloadUserData = Module.createDownloadUserData(b, d)
+                };
+                F.prototype = {
+                    getJSUrl: function() {
+                        return Module.extractDownloadUserData(this.downloadUserData).url
+                    },
+                    getDocId: function() {
+                        return Module.extractDownloadUserData(this.downloadUserData).docId
+                    },
+                    destroyUserData: function() {
+                        this.m_id in
+                            Module.withCredentials && delete Module.withCredentials[this.m_id];
+                        this.m_id in Module.customHeadersMap && delete Module.customHeadersMap[this.m_id];
+                        Module.destroyDownloadUserData(this.downloadUserData)
+                    }
+                };
+                e.createDownloadUserData = function(a, b) {
+                    a = Module.allocate(Module.intArrayFromString(a), "i8", Module.ALLOC_NORMAL);
+                    var d = Module.allocate(8, "i8", Module.ALLOC_NORMAL);
+                    Module.setValue(d, a, "i8*");
+                    Module.setValue(d + 4, parseInt(b, 10), "i32");
+                    return this.downloadUserData = d
+                };
+                e.extractDownloadUserData = function(a) {
+                    var b =
+                        Module.getValue(a, "i8*");
+                    b = e.GetJSStringFromCString(b);
+                    a = Module.getValue(a + 4, "i32").toString();
+                    return {
+                        url: b,
+                        docId: a
+                    }
+                };
+                e.destroyDownloadUserData = function(a) {
+                    Module._free(Module.getValue(a, "i8*"));
+                    Module._free(a)
+                };
+                h.downloadDataMap = {};
+                Module.customHeadersMap = {};
+                Module.withCredentials = {};
+                e.GetDownloadData = function(a) {
+                    if (a in downloadDataMap) return downloadDataMap[a]
+                };
+                e.DownloaderHint = function(a, b) {
+                    var d = Module.GetDoc(a),
+                        c = downloadDataMap[d];
+                    b.currentPage && (c.m_current_page = b.currentPage);
+                    if (b.visiblePages) {
+                        var u =
+                            b.visiblePages;
+                        for (b = 0; b < u.length; ++b) ++u[b];
+                        Object.keys(c.requirePageCallbacks).forEach(function(G) {
+                            c.requirePageCallbacks.hasOwnProperty(G) && u.push(parseInt(G, 10))
+                        });
+                        (b = Module.docs[a].chunkStorage) && b.keepVisibleChunks(c.downloader, u);
+                        a = u.length;
+                        var A = Module.allocate(4 * a, "i8", Module.ALLOC_STACK);
+                        for (b = 0; b < a; ++b) Module.setValue(A + 4 * b, u[b], "i32");
+                        REX(Module._TRN_PDFDocDownloadPages(d, A, a, 1, 0))
+                    }
+                };
+                e.RequirePage = function(a, b) {
+                    return new Promise(function(d, c) {
+                        c = Module.GetDoc(a);
+                        var u = downloadDataMap[c];
+                        !u || u.m_finished_download || u.m_pages[b] ? d() : (b in u.requirePageCallbacks ? u.requirePageCallbacks[b].push(d) : u.requirePageCallbacks[b] = [d], d = Module.allocate(4, "i8", Module.ALLOC_STACK), Module.setValue(d, b, "i32"), Module._TRN_PDFDocDownloadPages(c, d, 1, 0, 0))
+                    })
+                };
+                e.IsLinearizationValid = function(a) {
+                    a = Module.GetDoc(a);
+                    if (a = downloadDataMap[a]) {
+                        var b = Module.allocate(4, "i8", Module.ALLOC_STACK);
+                        REX(Module._TRN_DownloaderIsLinearizationValid(a.downloader, b));
+                        return 0 !== Module.getValue(b, "i8")
+                    }
+                    return !1
+                };
+                e.ShouldRunRender =
+                    function(a, b) {
                         a = Module.GetDoc(a);
                         return (a = downloadDataMap[a]) ? a.m_finished_download ? !0 : a.m_pages[b] : !0
                     };
-                    a.createCallbacksStruct = function(a) {
-                        if (!l) {
-                            var d = function(a) {
-                                return function(d) {
-                                    var b = arguments;
-                                    d in downloadDataMap ? a.apply(this, b) : e(function() {
-                                        d in downloadDataMap && a.apply(this, b)
-                                    }, 0)
-                                }
-                            };
-                            l = {
-                                downloadProc: Module.addFunction(function(a, d, b, c, g) {
-                                    c = Module.extractDownloadUserData(c);
-                                    var e = c.docId;
-                                    m(c.url, d, b, Module.customHeadersMap[e], Module.withCredentials[e]).then(function(c) {
-                                        e in Module.docs && Module.docs[e].chunkStorage && Module.docs[e].chunkStorage.writeChunk(c, d);
-                                        Module._TRN_DownloadComplete(0, d, b, a)
-                                    })
-                                }),
-                                notifyUpdatePage: Module.addFunction(d(function(a, d, b, c) {
-                                    var g = downloadDataMap[a];
-                                    g.m_pages[d] = !0;
-                                    var e = g.eventPageArray;
-                                    if (d in g.requirePageCallbacks)
-                                        for (b = g.requirePageCallbacks[d], c = 0; c < b.length; ++c) b[c]();
-                                    g.timeout ? e.push(d) : (e = g.eventPageArray = [d], g.timeout = setTimeout(function() {
-                                        Module.postPagesUpdatedEvent(a,
-                                            g.m_id, e);
-                                        g.timeout = null
-                                    }, 100))
-                                })),
-                                notifyUpdateOutline: Module.addFunction(d(function(a, d) {
-                                    a = downloadDataMap[a];
-                                    a.m_has_outline || (a.m_has_outline = !0, Module.postEvent(a.m_id, "bookmarksUpdated", {}))
-                                })),
-                                notifyUpdateNamedDests: Module.addFunction(d(function(a, d) {
-                                    a = downloadDataMap[a];
-                                    a.m_has_named_dests || (a.m_has_named_dests = !0)
-                                })),
-                                notifyUpdateThumb: Module.addFunction(d(function(a, d) {})),
-                                notifyFinishedDownload: Module.addFunction(d(function(a, d) {
-                                    a = downloadDataMap[a];
-                                    a.m_finished_download || (a.m_finished_download = !0, Module.postEvent(a.m_id, "documentComplete", {}))
-                                })),
-                                notifyDocumentError: Module.addFunction(function(a, d) {}),
-                                getCurrentPage: Module.addFunction(function(a, d) {
-                                    return downloadDataMap[a].m_current_page
-                                })
+                e.postPagesDownloadedEvent = function(a, b, d) {
+                    a = {
+                        pageDimensions: Module.GetPageDimensionsContentChangedList(a, d),
+                        pageNumbers: d
+													  
+																							
+																				
+										 
+								 
+							  
+								 
+																						  
+																		  
+													
+																															
+																																		
+																				
+									  
+								   
+																							 
+															   
+													  
+															 
+																	
+																											 
+																															
+																	   
+													   
+														
+											
+									
+																						  
+														   
+																															   
+									
+																							 
+														   
+																					 
+									
+																							
+																							 
+														   
+																																		   
+									
+																						   
+																				   
+																			
+								  
+							 
+						 
+																		  
+																  
+														 
+																		  
+																			  
+																				 
+																	
+								   
+																				 
+																			  
+																		 
+														  
+								
+                    };
+                    Module.postEvent(b, "pagesDownloaded", a);
+                    return a
+                };
+                e.createCallbacksStruct = function(a) {
+                    if (!r) {
+															  
+															 
+                        var b = function(d) {
+                            return function(c) {
+                                var u = arguments;
+                                c in downloadDataMap ? d.apply(this, u) : m(function() {
+                                    c in downloadDataMap && d.apply(this, u)
+                                }, 0)
                             }
-                        }
-                        d = Module.allocate(40, "i8", Module.ALLOC_STACK);
-                        Module.setValue(d, l.downloadProc, "i8*");
-                        Module.setValue(d + 4, a, "i8*");
-                        Module.setValue(d + 8, l.notifyUpdatePage, "i8*");
-                        Module.setValue(d + 12, l.notifyUpdateOutline, "i8*");
-                        Module.setValue(d + 16, l.notifyUpdateNamedDests, "i8*");
-                        Module.setValue(d + 20, l.notifyUpdateThumb,
-                            "i8*");
-                        Module.setValue(d + 24, l.notifyFinishedDownload, "i8*");
-                        Module.setValue(d + 28, l.notifyDocumentError, "i8*");
-                        Module.setValue(d + 32, l.getCurrentPage, "i8*");
-                        Module.setValue(d + 36, 0, "i8*");
-                        return d
-                    };
-                    a.CreateDocDownloaderBackend = function(a, b, c) {
-                        var d = a.url,
-                            g = a.size,
-                            e = a.customHeaders,
-                            f = a.withCredentials;
-                        e && (Module.customHeadersMap[c] = e);
-                        f && (Module.withCredentials[c] = f);
-                        var q = a.downloadData ? new L(a.downloadData, d, c, e, f) : new L(a.size, d, c, e, f);
-                        var k = Module.createCallbacksStruct(q.downloadUserData),
-                            h = Module.allocate(4,
-                                "i8", Module.ALLOC_STACK);
-                        Module.MakeDev(c);
-                        a.chunkStorage ? d = new x(a.chunkStorage) : (a = new Int8Array(new ArrayBuffer(Math.ceil((a.size + 1048576 - 1) / 1048576 / 8))), d = new x(d, g, e, f, a));
-                        Module.docs[c] = {
-                            chunkStorage: d
+										   
                         };
-                        REX(Module._TRN_DownloaderCreate(k, g, Module.GetUStringFromJSString(c), h));
-                        q.downloader = Module.getValue(h, "i8*");
-                        if (g = Module._TRN_PDFDocCreateFromFilter(q.downloader, b)) Module._TRN_FilterDestroy(q.downloader), REX(g);
-                        b = Module.getValue(b, "i8*");
-                        Module.docs[c].ptr = b;
-                        Module.PDFDocInitSecurityHandler(b) &&
-                            REX(Module._TRN_PDFDocDownloaderInitialize(b, q.downloader));
-                        downloadDataMap[b] = q
+                        r = {
+                            downloadProc: Module.addFunction(function(d,
+                                c, u, A, G) {
+                                A = Module.extractDownloadUserData(A);
+                                var y = A.docId;
+                                n(A.url, c, u, Module.customHeadersMap[y], Module.withCredentials[y]).then(function(H) {
+                                    y in Module.docs && Module.docs[y].chunkStorage && Module.docs[y].chunkStorage.writeChunk(H, c);
+                                    Module._TRN_DownloadComplete(0, c, u, d)
+                                })
+                            }, "viiiii"),
+                            notifyUpdatePage: Module.addFunction(b(function(d, c, u, A) {
+                                var G = downloadDataMap[d];
+                                G.m_pages[c] = !0;
+                                var y = G.eventPageArray;
+                                if (c in G.requirePageCallbacks)
+                                    for (u = G.requirePageCallbacks[c], A = 0; A < u.length; ++A) u[A]();
+                                G.timeout ?
+                                    y.push(c) : (y = G.eventPageArray = [c], G.timeout = setTimeout(function() {
+                                        Module.postPagesDownloadedEvent(d, G.m_id, y);
+                                        G.timeout = null
+                                    }, 100))
+                            }), "viiii"),
+                            notifyUpdateOutline: Module.addFunction(b(function(d, c) {
+                                d = downloadDataMap[d];
+                                d.m_has_outline || (d.m_has_outline = !0, Module.postEvent(d.m_id, "bookmarksUpdated", {}))
+                            }), "vii"),
+                            notifyUpdateNamedDests: Module.addFunction(b(function(d, c) {
+                                d = downloadDataMap[d];
+                                d.m_has_named_dests || (d.m_has_named_dests = !0)
+                            }), "vii"),
+                            notifyUpdateThumb: Module.addFunction(b(function(d, c) {}),
+                                "viiii"),
+                            notifyFinishedDownload: Module.addFunction(b(function(d, c) {
+                                d = downloadDataMap[d];
+                                d.m_finished_download || (d.m_finished_download = !0, Module.postEvent(d.m_id, "documentComplete", {}))
+                            }), "vii"),
+                            notifyDocumentError: Module.addFunction(function(d, c) {}, "viii"),
+                            getCurrentPage: Module.addFunction(function(d, c) {
+                                return downloadDataMap[d].m_current_page
+                            }, "iii")
+                        }
+                    }
+                    b = Module.allocate(40, "i8", Module.ALLOC_STACK);
+                    Module.setValue(b, r.downloadProc, "i8*");
+                    Module.setValue(b + 4, a, "i8*");
+                    Module.setValue(b + 8, r.notifyUpdatePage,
+                        "i8*");
+                    Module.setValue(b + 12, r.notifyUpdateOutline, "i8*");
+                    Module.setValue(b + 16, r.notifyUpdateNamedDests, "i8*");
+                    Module.setValue(b + 20, r.notifyUpdateThumb, "i8*");
+                    Module.setValue(b + 24, r.notifyFinishedDownload, "i8*");
+                    Module.setValue(b + 28, r.notifyDocumentError, "i8*");
+                    Module.setValue(b + 32, r.getCurrentPage, "i8*");
+                    Module.setValue(b + 36, 0, "i8*");
+                    return b
+                };
+                e.CreateDocDownloaderBackend = function(a, b, d) {
+                    var c = a.url,
+                        u = a.size,
+                        A = a.customHeaders,
+                        G = a.withCredentials;
+                    A && (Module.customHeadersMap[d] = A);
+                    G && (Module.withCredentials[d] =
+                        G);
+                    var y = a.downloadData ? new F(a.downloadData, c, d, A, G) : new F(a.size, c, d, A, G);
+                    var H = Module.createCallbacksStruct(y.downloadUserData),
+                        J = Module.allocate(4, "i8", Module.ALLOC_STACK);
+                    Module.MakeDev(d);
+                    a.chunkStorage ? c = new C(a.chunkStorage) : (a = new Int8Array(new ArrayBuffer(Math.ceil((a.size + 1048576 - 1) / 1048576 / 8))), c = new C(c, u, A, G, a));
+                    Module.docs[d] = {
+                        chunkStorage: c
                     };
-                    a.CreateDocBackend = function(d, b) {
-                        var g = d.value,
-                            e = d.extension,
-                            k = d.type,
-                            h = Module.allocate(4, "i8", Module.ALLOC_STACK),
-                            l = Module.stackSave();
-                        try {
-                            if (g)
-                                if ("ptr" === k) Module.docs[b] = {
-                                    ptr: g
-                                };
+                    REX(Module._TRN_DownloaderCreate(H, u, Module.GetUStringFromJSString(d), J));
+                    y.downloader = Module.getValue(J, "i8*");
+                    if (u = Module._TRN_PDFDocCreateFromFilter(y.downloader,
+                            b)) Module._TRN_FilterDestroy(y.downloader), REX(u);
+                    b = Module.getValue(b, "i8*");
+                    Module.docs[d].ptr = b;
+                    Module.PDFDocInitSecurityHandler(b) && REX(Module._TRN_PDFDocDownloaderInitialize(b, y.downloader));
+                    downloadDataMap[b] = y
+                };
+                e.CreateDocBackend = function(a, b) {
+                    var d = a.value,
+                        c = a.extension,
+                        u = a.type,
+                        A = Module.allocate(4, "i8", Module.ALLOC_STACK),
+                        G = Module.stackSave();
+                    try {
+                        if (d)
+                            if ("ptr" === u) Module.docs[b] = {
+                                ptr: d
+                            };
+                            else {
+                                var y = "object" === t(d) && d.url;
+                                u = c && "pdf" !== c;
+                                if (y) e.CreateDocDownloaderBackend(d, A, b);
                                 else {
-                                    var m = "object" === f(g) && g.url;
-                                    k = e && "pdf" !== e;
-                                    if (m) a.CreateDocDownloaderBackend(g, h, b);
-                                    else {
-                                        var n = g instanceof ArrayBuffer;
-                                        m = n ? "buffer" : "file";
-                                        if (n && (g = new Uint8Array(g), 10485760 > g.length + c && !k)) {
-                                            c += g.length;
-                                            var p = g.length,
-                                                t = Module._malloc(g.length);
-                                            Module.HEAPU8.set(g, t);
-                                            REX(Module._TRN_PDFDocCreateFromBuffer(t, p, h));
-                                            var x = Module.getValue(h, "i8*");
-                                            Module.docs[b] = {
-                                                ptr: x,
-                                                bufPtr: t,
-                                                bufPtrSize: p,
-                                                ownership: !0
-                                            };
-                                            Module.docs[b].extension = e;
-                                            return
-                                        }
-                                        Module.MakeDev(b);
-                                        n = {};
-                                        n[m] = g;
-                                        Module.docs[b] = n;
-                                        if (k) {
-                                            if (d.pageSizes && d.pageSizes.length) var v = d.pageSizes[0];
-                                            else d.defaultPageSize && (v = d.defaultPageSize);
-                                            var r = Module.GetUStringFromJSString(b);
-                                            REX(Module._TRN_PDFDocCreate(h));
-                                            x = Module.getValue(h, "i8*");
-                                            var u = Module.ImageCreateFromFile(x, r);
-                                            Module.InsertImageIntoDoc(x,
-                                                u, v)
-                                        } else {
-                                            var B = Module.allocate(Module.intArrayFromString(b), "i8", Module.ALLOC_STACK);
-                                            REX(Module._TRN_PDFDocCreateFromFilePath(B, h));
-                                            x = Module.getValue(h, "i8*")
-                                        }
-                                        Module.docs[b].extension = e;
-                                        Module.docs[b].ptr = x
+                                    var H = d instanceof
+                                    ArrayBuffer;
+																				 
+										  
+																		 
+                                    y = H ? "buffer" : "file";
+                                    if (H && (d = new Uint8Array(d), 10485760 > d.length + f && !u)) {
+                                        f += d.length;
+                                        var J = d.length,
+                                            L = Module._malloc(d.length);
+                                        Module.HEAPU8.set(d, L);
+                                        REX(Module._TRN_PDFDocCreateFromBuffer(L, J, A));
+                                        var K = Module.getValue(A, "i8*");
+                                        Module.docs[b] = {
+                                            ptr: K,
+                                            bufPtr: L,
+                                            bufPtrSize: J,
+                                            ownership: !0
+                                        };
+																		 
+												  
+										 
+														  
+											   
+												 
+														   
+												
+																										  
+																							  
+																					 
+																			 
+																		  
+																					 
+																		
+													 
+												
+																															
+																							
+																		 
+										 
+                                        Module.docs[b].extension = c;
+                                        return
                                     }
+                                    Module.MakeDev(b);
+                                    H = {};
+                                    H[y] = d;
+                                    Module.docs[b] = H;
+                                    if (u) {
+                                        if (a.pageSizes && a.pageSizes.length) var N = a.pageSizes[0];
+                                        else a.defaultPageSize && (N = a.defaultPageSize);
+                                        var O = Module.GetUStringFromJSString(b);
+                                        REX(Module._TRN_PDFDocCreate(A));
+                                        K = Module.getValue(A, "i8*");
+                                        var M = Module.ImageCreateFromFile(K, O);
+                                        Module.InsertImageIntoDoc(K, M, N)
+                                    } else {
+                                        var P = Module.allocate(Module.intArrayFromString(b), "i8", Module.ALLOC_STACK);
+                                        REX(Module._TRN_PDFDocCreateFromFilePath(P, A));
+                                        K = Module.getValue(A, "i8*")
+                                    }
+                                    Module.docs[b].extension = c;
+                                    Module.docs[b].ptr = K
                                 }
-                            else REX(Module._TRN_PDFDocCreate(h)), x = Module.getValue(h, "i8*"), Module.docs[b] = {
-                                ptr: x
-                            }, Module.docs[b].extension = e
-                        } finally {
-                            Module.stackRestore(l)
-                        }
-                    };
-                    a.ChangeDocBackend = function(a, g) {
+                            }
+                        else REX(Module._TRN_PDFDocCreate(A)), K = Module.getValue(A, "i8*"), Module.docs[b] = {
+                            ptr: K
+                        }, Module.docs[b].extension = c
+                    } finally {
+                        Module.stackRestore(G)
+                    }
+                };
+                e.ChangeDocBackend =
+                    function(a, b) {
+																															 
+																										 
+										  
+					  
+											   
                         var d = Module.docs[a];
-                        d ? (d.bufPtr && d.ownership && (Module._free(d.bufPtr), c -= d.bufPtrSize), delete Module.docs[a]) :
-                            Object(b.d)("Trying to delete document ".concat(a, " that does not exist."));
-                        Module.docs[a] = g
+                        d ? (d.bufPtr && d.ownership && (Module._free(d.bufPtr), f -= d.bufPtrSize), delete Module.docs[a]) : Object(x.d)("Trying to delete document ".concat(a, " that does not exist."));
+					  
+											 
+							
+                        Module.docs[a] = b
+								 
+																			 
+						 
+													
+												 
+								
                     };
-                    a.DeleteDoc = function(a) {
-                        var d = Module.docs[a];
-                        d ? (d.ptr && (d.ptr in downloadDataMap && (clearTimeout(downloadDataMap[d.ptr].timeout), downloadDataMap[d.ptr].destroyUserData(), delete downloadDataMap[d.ptr]), Module.PDFDocDestroy(d.ptr)), d.bufPtr && d.ownership && (Module._free(d.bufPtr), c -= d.bufPtrSize), delete Module.docs[a]) : Object(b.d)("Trying to delete document ".concat(a, " that does not exist."))
+                e.DeleteDoc = function(a) {
+                    var b = Module.docs[a];
+                    b ? (b.ptr && (b.ptr in downloadDataMap && (clearTimeout(downloadDataMap[b.ptr].timeout), downloadDataMap[b.ptr].destroyUserData(), delete downloadDataMap[b.ptr]), Module.PDFDocDestroy(b.ptr)), b.bufPtr && b.ownership && (Module._free(b.bufPtr), f -= b.bufPtrSize),
+                        delete Module.docs[a]) : Object(x.d)("Trying to delete document ".concat(a, " that does not exist."))
+                };
+                e.CreateDoc = function(a, b) {
+                    if ("id" === a.type) return Module.docPtrStringToIdMap[a.value];
+                    if (!b) {
+                        do b = (++g).toString(); while (b in Module.docs)
+                    }
+                    Module.hasBufOwnership = !0;
+                    e.CreateDocBackend(a, b);
+                    return b
+                };
+                e.CreateEmptyDoc = function() {
+                    var a = (++g).toString(),
+                        b = Module.allocate(4, "i8", Module.ALLOC_STACK);
+                    REX(Module._TRN_PDFDocCreate(b));
+                    b = Module.getValue(b, "i8*");
+                    Module.docs[a] = {
+                        ptr: b
+						  
+								
                     };
-                    a.CreateDoc = function(d,
-                        b) {
-                        if ("id" === d.type) return Module.docPtrStringToIdMap[d.value];
-                        if (!b) {
-                            do b = (++k).toString(); while (b in Module.docs)
-                        }
-                        Module.hasBufOwnership = !0;
-                        a.CreateDocBackend(d, b);
-                        return b
-                    };
-                    a.CreateEmptyDoc = function() {
-                        var a = (++k).toString(),
-                            b = Module.allocate(4, "i8", Module.ALLOC_STACK);
-                        REX(Module._TRN_PDFDocCreate(b));
-                        b = Module.getValue(b, "i8*");
-                        Module.docs[a] = {
-                            ptr: b
-                        };
-                        return a
-                    };
-                    a.PDFDocCreateFromLayoutEls = function(a) {
-                        var d = new Uint8Array(a);
-                        a = Module._malloc(d.length);
-                        var b = Module.stackSave(),
-                            c = Module.allocate(4,
-                                "i8", Module.ALLOC_STACK);
-                        Module.HEAPU8.set(d, a);
-                        d = Module._TRN_PDFDocCreateFromLayoutEls(a, d.length, c);
+                    return a
+                };
+                e.PDFDocCreateFromLayoutEls =
+                    function(a) {
+                        var b = new Uint8Array(a);
+                        a = Module._malloc(b.length);
+                        var d = Module.stackSave(),
+                            c = Module.allocate(4, "i8", Module.ALLOC_STACK);
+														  
+                        Module.HEAPU8.set(b, a);
+                        b = Module._TRN_PDFDocCreateFromLayoutEls(a, b.length, c);
                         c = Module.getValue(c, "i8*");
                         Module._free(a);
-                        Module.stackRestore(b);
-                        REX(d);
+                        Module.stackRestore(d);
+                        REX(b);
                         return c
                     };
-                    a.GetPageCount = function(a) {
-                        var d = Module.allocate(4, "i8", Module.ALLOC_STACK);
-                        REX(Module._TRN_PDFDocGetPageCount(a, d));
-                        return Module.getValue(d, "i8*")
-                    };
-                    a.GetPage = function(a, b) {
-                        var d = Module.allocate(4, "i8", Module.ALLOC_STACK);
-                        REX(Module._TRN_PDFDocGetPage(a, b, d));
-                        a = Module.getValue(d, "i8*");
-                        Module.PageIsValid(a) || THROW("Trying to access page that doesn't exist at index ".concat(b));
-                        return a
-                    };
-                    a.PageGetPageWidth = function(a) {
-                        var d = Module.allocate(8, "i8", Module.ALLOC_STACK);
-                        REX(Module._TRN_PageGetPageWidth(a, 1, d));
-                        return Module.getValue(d, "double")
-                    };
-                    a.PageGetPageHeight = function(a) {
-                        var d = Module.allocate(8, "i8", Module.ALLOC_STACK);
-                        REX(Module._TRN_PageGetPageHeight(a, 1, d));
-                        return Module.getValue(d, "double")
-                    };
-                    a.PageGetDefaultMatrix = function(a, b) {
+                e.GetPageCount = function(a) {
+                    var b = Module.allocate(4, "i8", Module.ALLOC_STACK);
+                    REX(Module._TRN_PDFDocGetPageCount(a, b));
+                    return Module.getValue(b, "i8*")
+                };
+                e.GetPage = function(a, b) {
+                    var d = Module.allocate(4, "i8", Module.ALLOC_STACK);
+                    REX(Module._TRN_PDFDocGetPage(a, b, d));
+                    a = Module.getValue(d, "i8*");
+                    Module.PageIsValid(a) || THROW("Trying to access page that doesn't exist at index ".concat(b));
+                    return a
+                };
+                e.PageGetPageWidth = function(a) {
+                    var b = Module.allocate(8, "i8", Module.ALLOC_STACK);
+                    REX(Module._TRN_PageGetPageWidth(a, 1, b));
+                    return Module.getValue(b, "double")
+                };
+                e.PageGetPageHeight = function(a) {
+                    var b = Module.allocate(8, "i8", Module.ALLOC_STACK);
+                    REX(Module._TRN_PageGetPageHeight(a, 1, b));
+                    return Module.getValue(b, "double")
+                };
+                e.PageGetDefaultMatrix =
+                    function(a, b) {
                         var d = Module.allocate(48, "i8", Module.ALLOC_STACK);
                         b || (b = 0);
                         REX(Module._TRN_PageGetDefaultMatrix(a, !0, 1, b, d));
                         return d
+					  
+										
+									 
+																											
+									
+						  
+													 
+																			  
+																			 
+																			 
+																			 
+																				  
+								
+																
+																
+																 
+															  
+						 
+					  
+											  
+										
+																				 
+													   
+																										   
+														  
+																		  
+												 
+								   
+															
+						  
+															
+																			   
+														   
+																			   
+					  
+															
+													 
+					  
+														   
+																  
+															 
+																						 
+													  
+					  
+												   
+														 
+					  
+												   
+																			 
+															 
+														
+					  
+													
+																			  
+													  
+								   
+														
+					  
+												   
+														 
+					  
+														
+																			 
+																   
+														
+					  
+														   
+														  
+															  
+															  
+													  
+													  
+													  
+												  
+												  
+													   
+									
+															 
+								
+												
+										   
+								   
+						 
+					  
+																						 
+																			 
+																								   
+													  
+													
+									 
+																													 
+												
+								
+					  
+													 
+																			 
+															   
+														
+					  
+											   
+																			 
+															 
+													  
+																		 
+															
+													  
+																			 
+															
+													  
+														  
+					  
+														
+														  
+							   
+					  
+															   
+																			 
+															   
+																
+																		  
+									
+								   
+																									
+								   
+																									
+								   
+																									
+								   
+																								   
+						 
+																				  
+					  
+														 
+																			 
+																			 
+														   
+														   
+															   
+															
+															
+														   
+														   
+															   
+															
+															
+								
+					  
+												
+							
+																			 
+																			 
+														  
+														  
+															   
+														   
+														   
+								
+					  
+													   
+															 
+																 
+																  
+																  
+																  
+															  
+																			
+					  
+																   
+																		 
+					  
+													 
+																			 
+															   
+															 
+					  
+													 
+																			 
+															   
+																				
+					  
+												  
+														
+					  
+													  
+																			 
+																
+														
+					  
+													 
+																			 
+															   
+														
+					  
+														
+																	 
+					  
+												  
+																			 
+															
+												 
+								  
+					  
+														
+																			 
+																		
+															  
+					  
+															
+																  
+					  
+												 
+																									
+															  
+					  
+															   
+																											  
+								
+					  
+															  
+																										   
+								
                     };
-                    a.GetMatrixAsArray =
-                        function(a) {
-                            for (var d = [], b = 0; 6 > b; ++b) d[b] = Module.getValue(a + 8 * b, "double");
-                            return d
-                        };
-                    a.PageGetPageInfo = function(a) {
-                        var d = Module.allocate(48, "i8", Module.ALLOC_STACK),
-                            b = Module.allocate(8, "i8", Module.ALLOC_STACK),
-                            c = Module.allocate(8, "i8", Module.ALLOC_STACK),
-                            e = Module.allocate(4, "i8", Module.ALLOC_STACK);
-                        REX(Module._TRN_PageGetPageInfo(a, !0, 1, 0, b, c, d, e));
-                        return {
-                            rotation: Module.getValue(e, "i8*"),
-                            width: Module.getValue(b, "double"),
-                            height: Module.getValue(c, "double"),
-                            matrix: Module.GetMatrixAsArray(d)
-                        }
-                    };
-                    a.GetUStringFromJSString =
-                        function(a, b) {
-                            var d = Module.allocate(4, "i8", Module.ALLOC_STACK),
-                                c = 2 * (a.length + 1),
-                                e = Module.allocate(c, "i8", b ? Module.ALLOC_NORMAL : Module.ALLOC_STACK);
-                            Module.stringToUTF16(a, e, c);
-                            a = Module._TRN_UStringCreateFromString(e, d);
-                            b && Module._free(e);
-                            REX(a);
-                            return Module.getValue(d, "i8*")
-                        };
-                    a.GetJSStringFromUString = function(a) {
-                        var d = Module.allocate(4, "i16*", Module.ALLOC_STACK);
-                        REX(Module._TRN_UStringCStr(a, d));
-                        return Module.UTF16ToString(Module.getValue(d, "i16*"))
-                    };
-                    a.GetJSStringFromCString = function(a) {
-                        return Module.UTF8ToString(a)
-                    };
-                    a.PDFNetSetResourceData = function(a) {
-                        Module.res_ptr = Module._malloc(a.length);
-                        Module.HEAPU8.set(a, Module.res_ptr);
-                        REX(Module._TRN_PDFNetSetResourceData(Module.res_ptr, a.length));
-                        Module.res_ptr_size = a.length
-                    };
-                    a.PDFDocDestroy = function(a) {
-                        REX(Module._TRN_PDFDocDestroy(a))
-                    };
-                    a.VectorGetSize = function(a) {
-                        var d = Module.allocate(4, "i8", Module.ALLOC_STACK);
-                        REX(Module._TRN_VectorGetSize(a, d));
-                        return Module.getValue(d, "i32")
-                    };
-                    a.VectorGetAt = function(a, b) {
-                        var d = Module.allocate(1, "i8*", Module.ALLOC_STACK);
-                        REX(Module._TRN_VectorGetAt(a,
-                            b, d));
-                        return Module.getValue(d, "i8*")
-                    };
-                    a.VectorDestroy = function(a) {
-                        REX(Module._TRN_VectorDestroy(a))
-                    };
-                    a.PDFRasterizerCreate = function() {
-                        var a = Module.allocate(4, "i8", Module.ALLOC_STACK);
-                        REX(Module._TRN_PDFRasterizerCreate(0, a));
-                        return Module.getValue(a, "i8*")
-                    };
-                    a.ExtractSeparationData = function(a) {
-                        var d = Module.getValue(a, "i8*"),
-                            b = Module.getValue(a + 4, "i32"),
-                            c = Module.getValue(a + 8, "i8*"),
-                            e = Module.HEAPU8[a + 12],
-                            f = Module.HEAPU8[a + 13],
-                            h = Module.HEAPU8[a + 14];
-                        a = Module.HEAPU8[a + 15];
-                        var k = new Uint8Array(b);
-                        k.set(Module.HEAPU8.subarray(d,
-                            d + b));
-                        d = Module.GetJSStringFromUString(c);
-                        return {
-                            color: [e, f, h, a],
-                            data: k.buffer,
-                            name: d
-                        }
-                    };
-                    a.PDFRasterizerRasterizeSeparations = function(a, b, c, e, f, h, k) {
-                        var d = Module.allocate(8, "i8", Module.ALLOC_STACK);
-                        REX(Module._TRN_PDFRasterizerRasterizeSeparations(a, b, c, e, f, h, k, d));
-                        a = Module.getValue(d, "i8*");
-                        b = Module.VectorGetSize(a);
-                        c = Array(b);
-                        for (e = 0; e < b; ++e) f = Module.VectorGetAt(a, e), c[e] = Module.ExtractSeparationData(f);
-                        Module.VectorDestroy(a);
-                        return c
-                    };
-                    a.PageGetRotation = function(a) {
-                        var d = Module.allocate(4, "i8", Module.ALLOC_STACK);
-                        REX(Module._TRN_PageGetRotation(a, d));
-                        return Module.getValue(d, "i8*")
-                    };
-                    a.PageGetId = function(a) {
-                        var d = Module.allocate(4, "i8", Module.ALLOC_STACK);
-                        REX(Module._TRN_PageGetSDFObj(a, d));
-                        d = Module.getValue(d, "i8*");
-                        a = Module.allocate(4, "i8", Module.ALLOC_STACK);
-                        REX(Module._TRN_ObjGetObjNum(d, a));
-                        a = Module.getValue(a, "i32");
-                        var b = Module.allocate(2, "i8", Module.ALLOC_STACK);
-                        REX(Module._TRN_ObjGetGenNum(d, b));
-                        b = Module.getValue(b, "i16");
-                        return "".concat(a, "-").concat(b)
-                    };
-                    a.PageSetRotation = function(a, b) {
-                        REX(Module._TRN_PageSetRotation(a,
-                            b))
-                    };
-                    a.GetDefaultMatrixBox = function(a, b, c) {
-                        var d = Module.allocate(4, "i8", Module.ALLOC_STACK);
-                        REX(Module._TRN_PageGetRotation(a, d));
-                        a = (Module.getValue(d, "i32") + c) % 4;
-                        c = Module.allocate(48, "i8", Module.ALLOC_STACK);
-                        switch (a) {
-                            case 0:
-                                return REX(Module._TRN_Matrix2DSet(c, 1, 0, 0, -1, -b.x1, b.y2)), c;
-                            case 1:
-                                return REX(Module._TRN_Matrix2DSet(c, 0, 1, 1, 0, -b.y1, -b.x1)), c;
-                            case 2:
-                                return REX(Module._TRN_Matrix2DSet(c, -1, 0, 0, 1, b.x2, -b.y1)), c;
-                            case 3:
-                                return REX(Module._TRN_Matrix2DSet(c, 0, -1, -1, 0, b.y2, b.x2)), c
-                        }
-                        throw Error("Yikes, we don't support that rotation type");
-                    };
-                    a.Matrix2DMultBBox = function(a, b) {
-                        var d = Module.allocate(8, "i8", Module.ALLOC_STACK),
-                            c = Module.allocate(8, "i8", Module.ALLOC_STACK);
-                        Module.setValue(d, b.x1, "double");
-                        Module.setValue(c, b.y1, "double");
-                        REX(Module._TRN_Matrix2DMult(a, d, c));
-                        b.x1 = Module.getValue(d, "double");
-                        b.y1 = Module.getValue(c, "double");
-                        Module.setValue(d, b.x2, "double");
-                        Module.setValue(c, b.y2, "double");
-                        REX(Module._TRN_Matrix2DMult(a, d, c));
-                        b.x2 = Module.getValue(d, "double");
-                        b.y2 = Module.getValue(c, "double");
-                        return b
-                    };
-                    a.Matrix2DMult = function(a,
-                        b) {
-                        var d = Module.allocate(8, "i8", Module.ALLOC_STACK),
-                            c = Module.allocate(8, "i8", Module.ALLOC_STACK);
-                        Module.setValue(d, b.x, "double");
-                        Module.setValue(c, b.y, "double");
-                        REX(Module._TRN_Matrix2DMult(a, d, c));
-                        b.x = Module.getValue(d, "double");
-                        b.y = Module.getValue(c, "double");
-                        return b
-                    };
-                    a.Matrix2DConcat = function(a, b) {
-                        var d = Module.getValue(b, "double"),
-                            c = Module.getValue(b + 8, "double"),
-                            e = Module.getValue(b + 16, "double"),
-                            g = Module.getValue(b + 24, "double"),
-                            f = Module.getValue(b + 32, "double");
-                        b = Module.getValue(b + 40, "double");
-                        REX(Module._TRN_Matrix2DConcat(a, d, c, e, g, f, b))
-                    };
-                    a.Matrix2DSet = function(a, b, c, e, f, h, k) {
-                        REX(Module._TRN_Matrix2DSet(a, b, c, e, f, h, k))
-                    };
-                    a.IteratorHasNext = function(a) {
-                        var b = Module.allocate(4, "i8", Module.ALLOC_STACK);
-                        REX(Module._TRN_IteratorHasNext(a, b));
-                        return 0 !== Module.getValue(b, "i8")
-                    };
-                    a.IteratorCurrent = function(a) {
-                        var b = Module.allocate(4, "i8", Module.ALLOC_STACK);
-                        REX(Module._TRN_IteratorCurrent(a, b));
-                        return Module.getValue(Module.getValue(b, "i8*"), "i8*")
-                    };
-                    a.IteratorNext = function(a) {
-                        REX(Module._TRN_IteratorNext(a))
-                    };
-                    a.PageGetNumAnnots = function(a) {
-                        var b = Module.allocate(4, "i8", Module.ALLOC_STACK);
-                        REX(Module._TRN_PageGetNumAnnots(a, b));
-                        return Module.getValue(b, "i32")
-                    };
-                    a.PageGetAnnot = function(a, b) {
-                        var d = Module.allocate(4, "i8", Module.ALLOC_STACK);
-                        REX(Module._TRN_PageGetAnnot(a, b, d));
-                        return Module.getValue(d, "i8*")
-                    };
-                    a.PageAnnotRemove = function(a, b) {
-                        REX(Module._TRN_PageAnnotRemoveByIndex(a, b))
-                    };
-                    a.AnnotGetType = function(a) {
-                        var b = Module.allocate(4, "i8", Module.ALLOC_STACK);
-                        REX(Module._TRN_AnnotGetType(a, b));
-                        return Module.getValue(b,
-                            "i32")
-                    };
-                    a.AnnotHasAppearance = function(a) {
-                        var b = Module.allocate(4, "i8", Module.ALLOC_STACK);
-                        REX(Module._TRN_AnnotGetAppearance(a, 0, 0, b));
-                        return 0 !== Module.getValue(b, "i8*")
-                    };
-                    a.AnnotRefreshAppearance = function(a) {
-                        REX(Module._TRN_AnnotRefreshAppearance(a))
-                    };
-                    a.ObjErase = function(a, b) {
-                        b = Module.allocate(Module.intArrayFromString(b), "i8", Module.ALLOC_STACK);
-                        REX(Module._TRN_ObjEraseFromKey(a, b))
-                    };
-                    a.GetJSDoubleArrFromCore = function(a, b) {
-                        for (var d = Array(b), c = 0; c < b; ++c) d[c] = Module.getValue(a, "double"), a += 8;
-                        return d
-                    };
-                    a.GetJSIntArrayFromCore = function(a, b) {
-                        for (var d = Array(b), c = 0; c < b; ++c) d[c] = Module.getValue(a, "i32"), a += 4;
-                        return d
-                    };
-                    a.BookmarkIsValid = function(a) {
-                        var b = Module.allocate(4, "i8", Module.ALLOC_STACK);
-                        REX(Module._TRN_BookmarkIsValid(a, b));
-                        return 0 !== Module.getValue(b, "i8")
-                    };
-                    a.BookmarkGetNext = function(a) {
-                        var b = Module.allocate(4, "i8", Module.ALLOC_STACK);
-                        REX(Module._TRN_BookmarkGetNext(a, b));
-                        return Module.getValue(b, "i8*")
-                    };
-                    a.BookmarkGetFirstChild = function(a) {
-                        var b = Module.allocate(4, "i8", Module.ALLOC_STACK);
-                        REX(Module._TRN_BookmarkGetFirstChild(a, b));
-                        return Module.getValue(b, "i8*")
-                    };
-                    a.BookmarkHasChildren = function(a) {
-                        var b = Module.allocate(4, "i8", Module.ALLOC_STACK);
-                        REX(Module._TRN_BookmarkHasChildren(a, b));
-                        return 0 !== Module.getValue(b, "i8")
-                    };
-                    a.BookmarkGetAction = function(a) {
-                        var b = Module.allocate(4, "i8", Module.ALLOC_STACK);
-                        REX(Module._TRN_BookmarkGetAction(a, b));
-                        return Module.getValue(b, "i8*")
-                    };
-                    a.BookmarkGetTitle = function(a) {
-                        var b = Module.allocate(4, "i8", Module.ALLOC_STACK);
-                        REX(Module._TRN_BookmarkGetTitle(a,
-                            b));
-                        a = Module.getValue(b, "i8*");
-                        return Module.GetJSStringFromUString(a)
-                    };
-                    a.ActionIsValid = function(a) {
-                        var b = Module.allocate(4, "i8", Module.ALLOC_STACK);
-                        REX(Module._TRN_ActionIsValid(a, b));
-                        return 0 !== Module.getValue(b, "i8")
-                    };
-                    a.ActionGetType = function(a) {
-                        var b = Module.allocate(4, "i8", Module.ALLOC_STACK);
-                        REX(Module._TRN_ActionGetType(a, b));
-                        return Module.getValue(b, "i32")
-                    };
-                    a.ActionGetDest = function(a) {
-                        var b = Module.allocate(4, "i8", Module.ALLOC_STACK);
-                        REX(Module._TRN_ActionGetDest(a, b));
-                        return Module.getValue(b,
-                            "i8*")
-                    };
-                    a.DestinationIsValid = function(a) {
-                        var b = Module.allocate(4, "i8", Module.ALLOC_STACK);
-                        REX(Module._TRN_DestinationIsValid(a, b));
-                        return 0 !== Module.getValue(b, "i8")
-                    };
-                    a.DestinationGetPage = function(a) {
-                        var b = Module.allocate(4, "i8", Module.ALLOC_STACK);
-                        REX(Module._TRN_DestinationGetPage(a, b));
-                        return Module.getValue(b, "i8*")
-                    };
-                    a.PageIsValid = function(a) {
-                        var b = Module.allocate(4, "i8", Module.ALLOC_STACK);
-                        REX(Module._TRN_PageIsValid(a, b));
-                        return 0 !== Module.getValue(b, "i8")
-                    };
-                    a.PageGetIndex = function(a) {
-                        var b =
-                            Module.allocate(4, "i8", Module.ALLOC_STACK);
-                        REX(Module._TRN_PageGetIndex(a, b));
-                        return Module.getValue(b, "i32")
-                    };
-                    a.ObjGetAsPDFText = function(a) {
-                        var b = Module.allocate(4, "i8", Module.ALLOC_STACK);
-                        REX(Module._TRN_ObjGetAsPDFText(a, b));
-                        a = Module.getValue(b, "i8*");
-                        return Module.GetJSStringFromUString(a)
-                    };
-                    a.ObjFindObj = function(a, b) {
-                        var d = Module.allocate(4, "i8", Module.ALLOC_STACK);
-                        b = Module.allocate(Module.intArrayFromString(b), "i8", Module.ALLOC_STACK);
-                        REX(Module._TRN_ObjFindObj(a, b, d));
-                        return Module.getValue(d,
-                            "i8*")
-                    };
-                    a.PDFDocGetFirstBookmark = function(a) {
-                        var b = Module.allocate(4, "i8", Module.ALLOC_STACK);
-                        REX(Module._TRN_PDFDocGetFirstBookmark(a, b));
-                        return Module.getValue(b, "i8*")
-                    };
-                    a.DestinationGetExplicitDestObj = function(a) {
-                        var b = Module.allocate(4, "i8", Module.ALLOC_STACK);
-                        REX(Module._TRN_DestinationGetExplicitDestObj(a, b));
-                        return Module.getValue(b, "i8*")
-                    };
-                    a.DestinationGetFitType = function(a) {
-                        var b = Module.allocate(4, "i8", Module.ALLOC_STACK);
-                        REX(Module._TRN_DestinationGetFitType(a, b));
-                        return Module.getValue(b,
-                            "i32")
-                    };
-                    a.ObjIsNumber = function(a) {
-                        var b = Module.allocate(4, "i8", Module.ALLOC_STACK);
-                        REX(Module._TRN_ObjIsNumber(a, b));
-                        return 0 !== Module.getValue(b, "i8")
-                    };
-                    a.ObjGetNumber = function(a) {
-                        var b = Module.allocate(4, "i8", Module.ALLOC_STACK);
-                        REX(Module._TRN_ObjGetNumber(a, b));
-                        return Module.getValue(b, "double")
-                    };
-                    a.PDFDocGetRoot = function(a) {
+													 
+																			 
+															   
+															 
+					  
+													 
+																			 
+															   
+														
+					  
+														   
+																			 
+																	 
+														
+					  
+                e.GetMatrixAsArray = function(a) {
+                    for (var b = [], d = 0; 6 > d; ++d) b[d] = Module.getValue(a + 8 * d, "double");
+                    return b
+                };
+                e.PageGetPageInfo = function(a) {
+                    var b = Module.allocate(48, "i8", Module.ALLOC_STACK),
+                        d = Module.allocate(8, "i8", Module.ALLOC_STACK),
+                        c = Module.allocate(8, "i8", Module.ALLOC_STACK),
+                        u = Module.allocate(4, "i8", Module.ALLOC_STACK);
+                    REX(Module._TRN_PageGetPageInfo(a, !0, 1, 0, d, c, b, u));
+                    return {
+                        rotation: Module.getValue(u, "i8*"),
+                        width: Module.getValue(d, "double"),
+                        height: Module.getValue(c, "double"),
+                        matrix: Module.GetMatrixAsArray(b)
+                    }
+                };
+                e.GetUStringFromJSString = function(a, b) {
+                    var d = Module.allocate(4, "i8", Module.ALLOC_STACK),
+                        c = 2 * (a.length + 1),
+                        u = Module.allocate(c, "i8", b ? Module.ALLOC_NORMAL : Module.ALLOC_STACK);
+                    Module.stringToUTF16(a, u, c);
+                    a = Module._TRN_UStringCreateFromString(u, d);
+                    b && Module._free(u);
+                    REX(a);
+                    return Module.getValue(d, "i8*")
+                };
+                e.GetJSStringFromUString = function(a) {
+                    var b = Module.allocate(4,
+                        "i16*", Module.ALLOC_STACK);
+                    REX(Module._TRN_UStringCStr(a, b));
+                    return Module.UTF16ToString(Module.getValue(b, "i16*"))
+                };
+                e.GetJSStringFromCString = function(a) {
+                    return Module.UTF8ToString(a)
+                };
+                e.PDFNetSetResourceData = function(a) {
+                    Module.res_ptr = Module._malloc(a.length);
+                    Module.HEAPU8.set(a, Module.res_ptr);
+                    REX(Module._TRN_PDFNetSetResourceData(Module.res_ptr, a.length));
+                    Module.res_ptr_size = a.length
+                };
+                e.PDFDocDestroy = function(a) {
+                    REX(Module._TRN_PDFDocDestroy(a))
+                };
+                e.VectorGetSize = function(a) {
+                    var b = Module.allocate(4,
+                        "i8", Module.ALLOC_STACK);
+                    REX(Module._TRN_VectorGetSize(a, b));
+                    return Module.getValue(b, "i32")
+                };
+                e.VectorGetAt = function(a, b) {
+                    var d = Module.allocate(1, "i8*", Module.ALLOC_STACK);
+                    REX(Module._TRN_VectorGetAt(a, b, d));
+                    return Module.getValue(d, "i8*")
+                };
+                e.VectorDestroy = function(a) {
+                    REX(Module._TRN_VectorDestroy(a))
+                };
+                e.PDFRasterizerCreate = function() {
+                    var a = Module.allocate(4, "i8", Module.ALLOC_STACK);
+                    REX(Module._TRN_PDFRasterizerCreate(0, a));
+                    return Module.getValue(a, "i8*")
+                };
+                e.ExtractSeparationData = function(a) {
+                    var b =
+                        Module.getValue(a, "i8*"),
+                        d = Module.getValue(a + 4, "i32"),
+                        c = Module.getValue(a + 8, "i8*"),
+                        u = Module.HEAPU8[a + 12],
+                        A = Module.HEAPU8[a + 13],
+                        G = Module.HEAPU8[a + 14];
+                    a = Module.HEAPU8[a + 15];
+                    var y = new Uint8Array(d);
+                    y.set(Module.HEAPU8.subarray(b, b + d));
+                    b = Module.GetJSStringFromUString(c);
+                    return {
+                        color: [u, A, G, a],
+                        data: y.buffer,
+                        name: b
+                    }
+                };
+                e.PDFRasterizerRasterizeSeparations = function(a, b, d, c, u, A, G) {
+                    var y = Module.allocate(8, "i8", Module.ALLOC_STACK);
+                    REX(Module._TRN_PDFRasterizerRasterizeSeparations(a, b, d, c, u, A, G, y));
+                    a = Module.getValue(y,
+                        "i8*");
+                    b = Module.VectorGetSize(a);
+                    d = Array(b);
+                    for (c = 0; c < b; ++c) u = Module.VectorGetAt(a, c), d[c] = Module.ExtractSeparationData(u);
+                    Module.VectorDestroy(a);
+                    return d
+                };
+                e.PageGetRotation = function(a) {
+                    var b = Module.allocate(4, "i8", Module.ALLOC_STACK);
+                    REX(Module._TRN_PageGetRotation(a, b));
+                    return Module.getValue(b, "i8*")
+                };
+                e.PageGetId = function(a) {
+                    var b = Module.allocate(4, "i8", Module.ALLOC_STACK);
+                    REX(Module._TRN_PageGetSDFObj(a, b));
+                    b = Module.getValue(b, "i8*");
+                    a = Module.allocate(4, "i8", Module.ALLOC_STACK);
+                    REX(Module._TRN_ObjGetObjNum(b,
+                        a));
+                    a = Module.getValue(a, "i32");
+                    var d = Module.allocate(2, "i8", Module.ALLOC_STACK);
+                    REX(Module._TRN_ObjGetGenNum(b, d));
+                    d = Module.getValue(d, "i16");
+                    return "".concat(a, "-").concat(d)
+                };
+                e.PageSetRotation = function(a, b) {
+                    REX(Module._TRN_PageSetRotation(a, b))
+                };
+                e.GetDefaultMatrixBox = function(a, b, d) {
+                    var c = Module.allocate(4, "i8", Module.ALLOC_STACK);
+                    REX(Module._TRN_PageGetRotation(a, c));
+                    a = (Module.getValue(c, "i32") + d) % 4;
+                    d = Module.allocate(48, "i8", Module.ALLOC_STACK);
+                    switch (a) {
+                        case 0:
+                            return REX(Module._TRN_Matrix2DSet(d,
+                                1, 0, 0, -1, -b.x1, b.y2)), d;
+                        case 1:
+                            return REX(Module._TRN_Matrix2DSet(d, 0, 1, 1, 0, -b.y1, -b.x1)), d;
+                        case 2:
+                            return REX(Module._TRN_Matrix2DSet(d, -1, 0, 0, 1, b.x2, -b.y1)), d;
+                        case 3:
+                            return REX(Module._TRN_Matrix2DSet(d, 0, -1, -1, 0, b.y2, b.x2)), d
+                    }
+                    throw Error("Yikes, we don't support that rotation type");
+                };
+                e.Matrix2DMultBBox = function(a, b) {
+                    var d = Module.allocate(8, "i8", Module.ALLOC_STACK),
+                        c = Module.allocate(8, "i8", Module.ALLOC_STACK);
+                    Module.setValue(d, b.x1, "double");
+                    Module.setValue(c, b.y1, "double");
+                    REX(Module._TRN_Matrix2DMult(a,
+                        d, c));
+                    b.x1 = Module.getValue(d, "double");
+                    b.y1 = Module.getValue(c, "double");
+                    Module.setValue(d, b.x2, "double");
+                    Module.setValue(c, b.y2, "double");
+                    REX(Module._TRN_Matrix2DMult(a, d, c));
+                    b.x2 = Module.getValue(d, "double");
+                    b.y2 = Module.getValue(c, "double");
+                    return b
+                };
+                e.Matrix2DMult = function(a, b) {
+                    var d = Module.allocate(8, "i8", Module.ALLOC_STACK),
+                        c = Module.allocate(8, "i8", Module.ALLOC_STACK);
+                    Module.setValue(d, b.x, "double");
+                    Module.setValue(c, b.y, "double");
+                    REX(Module._TRN_Matrix2DMult(a, d, c));
+                    b.x = Module.getValue(d, "double");
+                    b.y = Module.getValue(c, "double");
+                    return b
+                };
+                e.Matrix2DConcat = function(a, b) {
+                    var d = Module.getValue(b, "double"),
+                        c = Module.getValue(b + 8, "double"),
+                        u = Module.getValue(b + 16, "double"),
+                        A = Module.getValue(b + 24, "double"),
+                        G = Module.getValue(b + 32, "double");
+                    b = Module.getValue(b + 40, "double");
+                    REX(Module._TRN_Matrix2DConcat(a, d, c, u, A, G, b))
+                };
+                e.Matrix2DSet = function(a, b, d, c, u, A, G) {
+                    REX(Module._TRN_Matrix2DSet(a, b, d, c, u, A, G))
+                };
+                e.IteratorHasNext = function(a) {
+                    var b = Module.allocate(4, "i8", Module.ALLOC_STACK);
+                    REX(Module._TRN_IteratorHasNext(a,
+                        b));
+                    return 0 !== Module.getValue(b, "i8")
+                };
+                e.IteratorCurrent = function(a) {
+                    var b = Module.allocate(4, "i8", Module.ALLOC_STACK);
+                    REX(Module._TRN_IteratorCurrent(a, b));
+                    return Module.getValue(Module.getValue(b, "i8*"), "i8*")
+                };
+                e.IteratorNext = function(a) {
+                    REX(Module._TRN_IteratorNext(a))
+                };
+                e.PageGetNumAnnots = function(a) {
+                    var b = Module.allocate(4, "i8", Module.ALLOC_STACK);
+                    REX(Module._TRN_PageGetNumAnnots(a, b));
+                    return Module.getValue(b, "i32")
+                };
+                e.PageGetAnnot = function(a, b) {
+                    var d = Module.allocate(4, "i8", Module.ALLOC_STACK);
+                    REX(Module._TRN_PageGetAnnot(a, b, d));
+                    return Module.getValue(d, "i8*")
+                };
+                e.PageAnnotRemove = function(a, b) {
+                    REX(Module._TRN_PageAnnotRemoveByIndex(a, b))
+                };
+                e.AnnotGetType = function(a) {
+                    var b = Module.allocate(4, "i8", Module.ALLOC_STACK);
+                    REX(Module._TRN_AnnotGetType(a, b));
+                    return Module.getValue(b, "i32")
+                };
+                e.AnnotHasAppearance = function(a) {
+                    var b = Module.allocate(4, "i8", Module.ALLOC_STACK);
+                    REX(Module._TRN_AnnotGetAppearance(a, 0, 0, b));
+                    return 0 !== Module.getValue(b, "i8*")
+                };
+                e.AnnotRefreshAppearance = function(a) {
+                    REX(Module._TRN_AnnotRefreshAppearance(a))
+                };
+                e.ObjErase = function(a, b) {
+                    b = Module.allocate(Module.intArrayFromString(b), "i8", Module.ALLOC_STACK);
+                    REX(Module._TRN_ObjEraseFromKey(a, b))
+                };
+                e.GetJSDoubleArrFromCore = function(a, b) {
+                    for (var d = Array(b), c = 0; c < b; ++c) d[c] = Module.getValue(a, "double"), a += 8;
+                    return d
+                };
+                e.GetJSIntArrayFromCore = function(a, b) {
+                    for (var d = Array(b), c = 0; c < b; ++c) d[c] = Module.getValue(a, "i32"), a += 4;
+                    return d
+                };
+                e.BookmarkIsValid = function(a) {
+                    var b = Module.allocate(4, "i8", Module.ALLOC_STACK);
+                    REX(Module._TRN_BookmarkIsValid(a, b));
+                    return 0 !== Module.getValue(b,
+                        "i8")
+                };
+                e.BookmarkGetNext = function(a) {
+                    var b = Module.allocate(4, "i8", Module.ALLOC_STACK);
+                    REX(Module._TRN_BookmarkGetNext(a, b));
+                    return Module.getValue(b, "i8*")
+                };
+                e.BookmarkGetFirstChild = function(a) {
+                    var b = Module.allocate(4, "i8", Module.ALLOC_STACK);
+                    REX(Module._TRN_BookmarkGetFirstChild(a, b));
+                    return Module.getValue(b, "i8*")
+                };
+                e.BookmarkHasChildren = function(a) {
+                    var b = Module.allocate(4, "i8", Module.ALLOC_STACK);
+                    REX(Module._TRN_BookmarkHasChildren(a, b));
+                    return 0 !== Module.getValue(b, "i8")
+                };
+                e.BookmarkGetAction = function(a) {
+                    var b =
+                        Module.allocate(4, "i8", Module.ALLOC_STACK);
+                    REX(Module._TRN_BookmarkGetAction(a, b));
+                    return Module.getValue(b, "i8*")
+                };
+                e.BookmarkGetTitle = function(a) {
+                    var b = Module.allocate(4, "i8", Module.ALLOC_STACK);
+                    REX(Module._TRN_BookmarkGetTitle(a, b));
+                    a = Module.getValue(b, "i8*");
+                    return Module.GetJSStringFromUString(a)
+                };
+                e.ActionIsValid = function(a) {
+                    var b = Module.allocate(4, "i8", Module.ALLOC_STACK);
+                    REX(Module._TRN_ActionIsValid(a, b));
+                    return 0 !== Module.getValue(b, "i8")
+                };
+                e.ActionGetType = function(a) {
+                    var b = Module.allocate(4,
+                        "i8", Module.ALLOC_STACK);
+                    REX(Module._TRN_ActionGetType(a, b));
+                    return Module.getValue(b, "i32")
+                };
+                e.ActionGetDest = function(a) {
+                    var b = Module.allocate(4, "i8", Module.ALLOC_STACK);
+                    REX(Module._TRN_ActionGetDest(a, b));
+                    return Module.getValue(b, "i8*")
+                };
+                e.DestinationIsValid = function(a) {
+                    var b = Module.allocate(4, "i8", Module.ALLOC_STACK);
+                    REX(Module._TRN_DestinationIsValid(a, b));
+                    return 0 !== Module.getValue(b, "i8")
+                };
+                e.DestinationGetPage = function(a) {
+                    var b = Module.allocate(4, "i8", Module.ALLOC_STACK);
+                    REX(Module._TRN_DestinationGetPage(a,
+                        b));
+                    return Module.getValue(b, "i8*")
+                };
+                e.PageIsValid = function(a) {
+                    var b = Module.allocate(4, "i8", Module.ALLOC_STACK);
+                    REX(Module._TRN_PageIsValid(a, b));
+                    return 0 !== Module.getValue(b, "i8")
+                };
+                e.PageGetIndex = function(a) {
+                    var b = Module.allocate(4, "i8", Module.ALLOC_STACK);
+																		 
+                    REX(Module._TRN_PageGetIndex(a, b));
+                    return Module.getValue(b, "i32")
+                };
+                e.ObjGetAsPDFText = function(a) {
+                    var b = Module.allocate(4, "i8", Module.ALLOC_STACK);
+                    REX(Module._TRN_ObjGetAsPDFText(a, b));
+                    a = Module.getValue(b, "i8*");
+                    return Module.GetJSStringFromUString(a)
+                };
+                e.ObjFindObj = function(a, b) {
+                    var d = Module.allocate(4, "i8", Module.ALLOC_STACK);
+                    b = Module.allocate(Module.intArrayFromString(b), "i8", Module.ALLOC_STACK);
+                    REX(Module._TRN_ObjFindObj(a, b, d));
+                    return Module.getValue(d, "i8*")
+								  
+                };
+                e.PDFDocGetFirstBookmark = function(a) {
+                    var b = Module.allocate(4, "i8", Module.ALLOC_STACK);
+                    REX(Module._TRN_PDFDocGetFirstBookmark(a, b));
+                    return Module.getValue(b, "i8*")
+                };
+                e.DestinationGetExplicitDestObj = function(a) {
+                    var b = Module.allocate(4, "i8", Module.ALLOC_STACK);
+                    REX(Module._TRN_DestinationGetExplicitDestObj(a,
+                        b));
+                    return Module.getValue(b, "i8*")
+                };
+                e.DestinationGetFitType = function(a) {
+                    var b = Module.allocate(4, "i8", Module.ALLOC_STACK);
+                    REX(Module._TRN_DestinationGetFitType(a, b));
+                    return Module.getValue(b, "i32")
+								  
+                };
+                e.ObjIsNumber = function(a) {
+                    var b = Module.allocate(4, "i8", Module.ALLOC_STACK);
+                    REX(Module._TRN_ObjIsNumber(a, b));
+                    return 0 !== Module.getValue(b, "i8")
+                };
+                e.ObjGetNumber = function(a) {
+                    var b = Module.allocate(4, "i8", Module.ALLOC_STACK);
+                    REX(Module._TRN_ObjGetNumber(a, b));
+                    return Module.getValue(b, "double")
+                };
+                e.PDFDocGetRoot =
+                    function(a) {
                         var b = Module.allocate(4, "i8", Module.ALLOC_STACK);
                         REX(Module._TRN_PDFDocGetRoot(a, b));
                         return Module.getValue(b, "i8*")
                     };
-                    a.ObjPutName = function(a, b, c) {
-                        b = Module.allocate(Module.intArrayFromString(b),
-                            "i8", Module.ALLOC_STACK);
-                        c = Module.allocate(Module.intArrayFromString(c), "i8", Module.ALLOC_STACK);
-                        var d = Module.allocate(4, "i8", Module.ALLOC_STACK);
-                        REX(Module._TRN_ObjPutName(a, b, c, d));
-                        return Module.getValue(d, "i8*")
-                    };
-                    a.ObjPutDict = function(a, b) {
-                        b = Module.allocate(Module.intArrayFromString(b), "i8", Module.ALLOC_STACK);
-                        var d = Module.allocate(4, "i8", Module.ALLOC_STACK);
-                        REX(Module._TRN_ObjPutDict(a, b, d));
-                        return Module.getValue(d, "i8*")
-                    };
-                    a.ObjPutString = function(a, b, c) {
-                        b = Module.allocate(Module.intArrayFromString(b),
-                            "i8", Module.ALLOC_STACK);
-                        c = Module.allocate(Module.intArrayFromString(c), "i8", Module.ALLOC_STACK);
-                        var d = Module.allocate(4, "i8", Module.ALLOC_STACK);
-                        REX(Module._TRN_ObjPutString(a, b, c, d));
-                        return Module.getValue(d, "i8*")
-                    };
-                    a.ObjPut = function(a, b, c) {
-                        b = Module.allocate(Module.intArrayFromString(b), "i8", Module.ALLOC_STACK);
-                        var d = Module.allocate(4, "i8", Module.ALLOC_STACK);
-                        REX(Module._TRN_ObjPut(a, b, c, d));
-                        return Module.getValue(d, "i8*")
-                    };
-                    a.ObjGetAt = function(a, b) {
-                        var d = Module.allocate(4, "i8", Module.ALLOC_STACK);
-                        REX(Module._TRN_ObjGetAt(a, b, d));
-                        return Module.getValue(d, "i8*")
-                    };
-                    a.Matrix2DInverse = function(a) {
-                        var b = Module.allocate(48, "i8", Module.ALLOC_STACK);
-                        REX(Module._TRN_Matrix2DInverse(a, b));
-                        return b
-                    };
-                    a.PDFDocInitSecurityHandler = function(a) {
-                        var b = Module.allocate(4, "i8", Module.ALLOC_STACK);
-                        REX(Module._TRN_PDFDocInitSecurityHandler(a, 0, b));
-                        return 0 !== Module.getValue(b, "i8")
-                    };
-                    a.PDFDocInitStdSecurityHandler = function(a, b) {
-                        var d = Module.allocate(4, "i8", Module.ALLOC_STACK);
-                        b = Module.intArrayFromString(b);
-                        var c = Module.allocate(b,
-                            "i8", Module.ALLOC_STACK);
-                        REX(Module._TRN_PDFDocInitStdSecurityHandler(a, c, b.length - 1, d));
-                        return 0 !== Module.getValue(d, "i8")
-                    };
-                    a.PDFDocInsertPages = function(a, b, c, e, f) {
-                        REX(Module._TRN_PDFDocInsertPageSet(a, b, c, e, f ? 1 : 0, 0))
-                    };
-                    a.PDFDocMovePages = function(a, b, c) {
-                        REX(Module._TRN_PDFDocMovePageSet(a, b, a, c, 0, 0))
-                    };
-                    a.PDFDocGetPageIterator = function(a, b) {
-                        var d = Module.allocate(4, "i8", Module.ALLOC_STACK);
-                        REX(Module._TRN_PDFDocGetPageIterator(a, b, d));
-                        return Module.getValue(d, "i8*")
-                    };
-                    a.PDFDocPageRemove = function(a, b) {
-                        REX(Module._TRN_PDFDocPageRemove(a,
-                            b))
-                    };
-                    a.PDFDocPageCreate = function(a, b, c) {
-                        var d = Module.allocate(40, "i8", Module.ALLOC_STACK);
-                        Module.setValue(d, 0, "double");
-                        Module.setValue(d + 8, 0, "double");
-                        Module.setValue(d + 16, b, "double");
-                        Module.setValue(d + 24, c, "double");
-                        Module.setValue(d + 32, 0, "double");
-                        b = Module.allocate(4, "i8", Module.ALLOC_STACK);
-                        REX(Module._TRN_PDFDocPageCreate(a, d, b));
-                        return Module.getValue(b, "i8*")
-                    };
-                    a.PDFDocPageInsert = function(a, b, c) {
-                        REX(Module._TRN_PDFDocPageInsert(a, b, c))
-                    };
-                    a.PageSetCreate = function() {
-                        var a = Module.allocate(4, "i8",
-                            Module.ALLOC_STACK);
-                        REX(Module._TRN_PageSetCreate(a));
-                        return Module.getValue(a, "i8*")
-                    };
-                    a.PageSetCreateRange = function(a, b) {
-                        var d = Module.allocate(4, "i8", Module.ALLOC_STACK);
-                        REX(Module._TRN_PageSetCreateRange(d, a, b));
-                        return Module.getValue(d, "i8*")
-                    };
-                    a.PageSetAddPage = function(a, b) {
-                        REX(Module._TRN_PageSetAddPage(a, b))
-                    };
-                    a.ElementBuilderCreate = function() {
+													  
+																		 
+													  
+																									
+																			 
+																
+														
+					  
+												   
+																									
+																			 
+															 
+														
+					  
+                e.ObjPutName = function(a, b, d) {
+                    b = Module.allocate(Module.intArrayFromString(b), "i8", Module.ALLOC_STACK);
+													  
+                    d = Module.allocate(Module.intArrayFromString(d), "i8", Module.ALLOC_STACK);
+                    var c = Module.allocate(4, "i8", Module.ALLOC_STACK);
+                    REX(Module._TRN_ObjPutName(a, b, d, c));
+                    return Module.getValue(c, "i8*")
+                };
+                e.ObjPutDict = function(a, b) {
+                    b = Module.allocate(Module.intArrayFromString(b), "i8",
+                        Module.ALLOC_STACK);
+                    var d = Module.allocate(4, "i8", Module.ALLOC_STACK);
+                    REX(Module._TRN_ObjPutDict(a, b, d));
+                    return Module.getValue(d, "i8*")
+                };
+                e.ObjPutString = function(a, b, d) {
+                    b = Module.allocate(Module.intArrayFromString(b), "i8", Module.ALLOC_STACK);
+                    d = Module.allocate(Module.intArrayFromString(d), "i8", Module.ALLOC_STACK);
+                    var c = Module.allocate(4, "i8", Module.ALLOC_STACK);
+                    REX(Module._TRN_ObjPutString(a, b, d, c));
+                    return Module.getValue(c, "i8*")
+                };
+                e.ObjPut = function(a, b, d) {
+                    b = Module.allocate(Module.intArrayFromString(b),
+                        "i8", Module.ALLOC_STACK);
+                    var c = Module.allocate(4, "i8", Module.ALLOC_STACK);
+                    REX(Module._TRN_ObjPut(a, b, d, c));
+                    return Module.getValue(c, "i8*")
+                };
+                e.ObjGetAt = function(a, b) {
+                    var d = Module.allocate(4, "i8", Module.ALLOC_STACK);
+                    REX(Module._TRN_ObjGetAt(a, b, d));
+                    return Module.getValue(d, "i8*")
+                };
+                e.Matrix2DInverse = function(a) {
+                    var b = Module.allocate(48, "i8", Module.ALLOC_STACK);
+                    REX(Module._TRN_Matrix2DInverse(a, b));
+                    return b
+                };
+                e.PDFDocInitSecurityHandler = function(a) {
+                    var b = Module.allocate(4, "i8", Module.ALLOC_STACK);
+                    REX(Module._TRN_PDFDocInitSecurityHandler(a,
+                        0, b));
+                    return 0 !== Module.getValue(b, "i8")
+                };
+                e.PDFDocInitStdSecurityHandler = function(a, b) {
+                    var d = Module.allocate(4, "i8", Module.ALLOC_STACK);
+													  
+                    REX(Module._TRN_PDFDocInitStdSecurityHandlerUString(a, Module.GetUStringFromJSString(b), d));
+                    return 0 !== Module.getValue(d, "i8")
+                };
+                e.PDFDocInsertPages = function(a, b, d, c, u) {
+                    REX(Module._TRN_PDFDocInsertPageSet(a, b, d, c, u ? 1 : 0, 0))
+                };
+                e.PDFDocMovePages = function(a, b, d) {
+                    REX(Module._TRN_PDFDocMovePageSet(a, b, a, d, 0, 0))
+                };
+                e.PDFDocGetPageIterator = function(a, b) {
+                    var d = Module.allocate(4,
+                        "i8", Module.ALLOC_STACK);
+                    REX(Module._TRN_PDFDocGetPageIterator(a, b, d));
+                    return Module.getValue(d, "i8*")
+                };
+                e.PDFDocPageRemove = function(a, b) {
+                    REX(Module._TRN_PDFDocPageRemove(a, b))
+							   
+                };
+                e.PDFDocPageCreate = function(a, b, d) {
+                    var c = Module.allocate(40, "i8", Module.ALLOC_STACK);
+                    Module.setValue(c, 0, "double");
+                    Module.setValue(c + 8, 0, "double");
+                    Module.setValue(c + 16, b, "double");
+                    Module.setValue(c + 24, d, "double");
+                    Module.setValue(c + 32, 0, "double");
+                    b = Module.allocate(4, "i8", Module.ALLOC_STACK);
+                    REX(Module._TRN_PDFDocPageCreate(a,
+                        c, b));
+                    return Module.getValue(b, "i8*")
+                };
+                e.PDFDocPageInsert = function(a, b, d) {
+                    REX(Module._TRN_PDFDocPageInsert(a, b, d))
+                };
+                e.PageSetCreate = function() {
+                    var a = Module.allocate(4, "i8", Module.ALLOC_STACK);
+												
+                    REX(Module._TRN_PageSetCreate(a));
+                    return Module.getValue(a, "i8*")
+                };
+                e.PageSetCreateRange = function(a, b) {
+                    var d = Module.allocate(4, "i8", Module.ALLOC_STACK);
+                    REX(Module._TRN_PageSetCreateRange(d, a, b));
+                    return Module.getValue(d, "i8*")
+                };
+                e.PageSetAddPage = function(a, b) {
+                    REX(Module._TRN_PageSetAddPage(a, b))
+                };
+                e.ElementBuilderCreate =
+                    function() {
                         var a = Module.allocate(4, "i8", Module.ALLOC_STACK);
                         REX(Module._TRN_ElementBuilderCreate(a));
                         return Module.getValue(a, "i8*")
                     };
-                    a.ElementBuilderDestroy = function(a) {
-                        REX(Module._TRN_ElementBuilderDestroy(a))
-                    };
-                    a.ElementBuilderCreateImage = function(a, b, c, e, f, h) {
-                        var d = Module.allocate(4, "i8", Module.ALLOC_STACK);
-                        REX(Module._TRN_ElementBuilderCreateImageScaled(a, b, c, e, f, h, d));
-                        return Module.getValue(d, "i8*")
-                    };
-                    a.ElementWriterCreate = function() {
-                        var a = Module.allocate(4, "i8", Module.ALLOC_STACK);
-                        REX(Module._TRN_ElementWriterCreate(a));
-                        return Module.getValue(a, "i8*")
-                    };
-                    a.ElementWriterDestroy = function(a) {
-                        REX(Module._TRN_ElementWriterDestroy(a))
-                    };
-                    a.ElementWriterBegin = function(a, b) {
-                        REX(Module._TRN_ElementWriterBeginOnPage(a,
-                            b, 1))
-                    };
-                    a.ElementWriterWritePlacedElement = function(a, b) {
-                        REX(Module._TRN_ElementWriterWritePlacedElement(a, b))
-                    };
-                    a.ElementWriterEnd = function(a) {
-                        var b = Module.allocate(4, "i8", Module.ALLOC_STACK);
-                        REX(Module._TRN_ElementWriterEnd(a, b))
-                    };
-                    a.ImageGetImageWidth = function(a) {
-                        var b = Module.allocate(4, "i8", Module.ALLOC_STACK);
-                        REX(Module._TRN_ImageGetImageWidth(a, b));
-                        return Module.getValue(b, "i32")
-                    };
-                    a.ImageGetImageHeight = function(a) {
-                        var b = Module.allocate(4, "i8", Module.ALLOC_STACK);
-                        REX(Module._TRN_ImageGetImageHeight(a,
-                            b));
-                        return Module.getValue(b, "i32")
-                    };
-                    a.ImageCreateFromMemory2 = function(a, b, c) {
-                        var d = Module.allocate(4, "i8", Module.ALLOC_STACK);
-                        REX(Module._TRN_ImageCreateFromMemory2(a, b, c, 0, d));
-                        return Module.getValue(d, "i8*")
-                    };
-                    a.ImageCreateFromFile = function(a, b) {
-                        var d = Module.allocate(4, "i8", Module.ALLOC_STACK);
-                        REX(Module._TRN_ImageCreateFromFile(a, b, 0, d));
-                        return Module.getValue(d, "i8*")
-                    };
-                    a.PDFDocPagePushBack = function(a, b) {
-                        REX(Module._TRN_PDFDocPagePushBack(a, b))
-                    };
-                    a.PDFDocHasOC = function(a) {
-                        var b = Module.allocate(4,
-                            "i8", Module.ALLOC_STACK);
-                        REX(Module._TRN_PDFDocHasOC(a, b));
-                        return 0 !== Module.getValue(b, "i8")
-                    };
-                    a.PDFDocGetOCGConfig = function(a) {
-                        var b = Module.allocate(4, "i8", Module.ALLOC_STACK);
-                        REX(Module._TRN_PDFDocGetOCGConfig(a, b));
-                        return Module.getValue(b, "i8*")
-                    };
-                    a.OCGContextCreate = function(a) {
-                        var b = Module.allocate(4, "i8", Module.ALLOC_STACK);
-                        REX(Module._TRN_OCGContextCreateFromConfig(a, b));
-                        return Module.getValue(b, "i8*")
-                    };
-                    a.UStringDestroy = function(a) {
-                        REX(Module._TRN_UStringDestroy(a))
-                    };
-                    a.PDFDocFDFUpdate = function(a,
-                        b, c) {
-                        if (c) {
-                            for (var d = Object.keys(c), e = d.length, f = Module._malloc(8 * e), g = 0; g < e; ++g) {
-                                var h = 8 * g,
-                                    k = d[g],
-                                    l = Module.GetDoc(c[k]);
-                                k = Module.GetUStringFromJSString(k);
-                                Module.setValue(f + h, l, "i8*");
-                                Module.setValue(f + h + 4, k, "i8*")
-                            }
-                            REX(Module._TRN_PDFDocFDFUpdateAppearanceDocs(a, b, f, e))
-                        } else REX(Module._TRN_PDFDocFDFUpdate(a, b))
-                    };
-                    a.FDFDocDestroy = function(a) {
-                        REX(Module._TRN_FDFDocDestroy(a))
-                    }
-                })(n.Module)
-            }).call(this, l(7).setImmediate)
-        },
-        function(e, n, l) {
-            function f(e) {
-                "@babel/helpers - typeof";
-                f = "function" === typeof Symbol &&
-                    "symbol" === typeof Symbol.iterator ? function(b) {
-                        return typeof b
-                    } : function(b) {
-                        return b && "function" === typeof Symbol && b.constructor === Symbol && b !== Symbol.prototype ? "symbol" : typeof b
-                    };
-                return f(e)
-            }(function(e) {
-                e.SetupPDFNetFunctions = function(b) {
-                    Module._IB_ = [];
-                    for (var l = function B(a) {
-                            if ("object" === f(a) && null !== a)
-                                if ("undefined" !== typeof a.byteLength) {
-                                    var b = Module._IB_.length;
-                                    Module._IB_[b] = new Uint8Array(a);
-                                    a = {
-                                        handle: b,
-                                        isArrayBufferRef: !0
-                                    }
-                                } else Object.keys(a).forEach(function(b) {
-                                    a.hasOwnProperty(b) && (a[b] =
-                                        B(a[b]))
-                                });
-                            return a
-                        }, a = function y(a) {
-                            "object" === f(a) && null !== a && (a.buffer ? a = a.buffer.slice(a.byteOffset, a.byteOffset + a.length) : a.isArrayBufferRef ? a = Module._IB_[a.handle].buffer : Object.keys(a).forEach(function(b) {
-                                a.hasOwnProperty(b) && (a[b] = y(a[b]))
-                            }));
-                            return a
-                        }, c = Module._TRN_EMSCreateSharedWorkerInstance(), k, h = Module._TRN_EMSWorkerInstanceGetFunctionIterator(c), m = function(b, e) {
-                            return new Promise(function(f, h) {
-                                b = l(b);
-                                var d = b.docId;
-                                d = d ? Module.GetDoc(d) : 0;
-                                (d = Module.EMSCallSharedFunction(c, e, d)) ? h({
-                                    type: "InvalidPDF",
-                                    message: Module.GetErrToString(d)
-                                }): (h = Module.EMSGetLastResponse(c), h = a(h), f(h))
-                            })
-                        }; k = Module._TRN_EMSFunctionIteratorGetNextCommandName(h);) k = Module.GetJSStringFromCString(k), e.queue.onAsync(k, m);
-                    Module._TRN_EMSFunctionIteratorDestroy(h);
-                    if (Module._TRN_EMSCreatePDFNetWorkerInstance) {
-                        var n = {};
-                        h = function(a, c) {
-                            b.on(a, c);
-                            n[a] = !0
-                        };
-                        Module.docPtrStringToIdMap = {};
-                        var v = function(a) {
-                            if (a in Module.docPtrStringToIdMap) return Module.docPtrStringToIdMap[a];
-                            throw Error("Couldn't find document ".concat(a));
-                        };
-                        e.queue.onAsync("PDFDoc.RequirePage",
-                            function(a) {
-                                return Module.RequirePage(v(a.docId), a.pageNum)
-                            });
-                        h("pdfDocCreateFromBuffer", function(a) {
-                            a = Module.CreateDoc({
-                                type: "array",
-                                value: a.buf
-                            });
-                            var b = Module.GetDoc(a).toString(16);
-                            Module.docPtrStringToIdMap[b] = a;
-                            return b
-                        });
-                        h("PDFDoc.destroy", function(a) {
-                            a = v(a.auto_dealloc_obj);
-                            Module.DeleteDoc(a)
-                        });
-                        h("PDFDoc.saveMemoryBuffer", function(a) {
-                            var b = v(a.doc);
-                            return Module.SaveHelper(Module.GetDoc(b), b, a.flags).slice(0)
-                        });
-                        h("pdfDocCreate", function() {
-                            var a = Module.CreateDoc({
-                                    type: "new"
-                                }),
-                                b = Module.GetDoc(a).toString(16);
-                            Module.docPtrStringToIdMap[b] = a;
-                            return b
-                        });
-                        h("GetPDFDoc", function(a) {
-                            a = a.docId;
-                            var b = Module.GetDoc(a).toString(16);
-                            Module.docPtrStringToIdMap[b] = a;
-                            return b
-                        });
-                        h("ExtractPDFNetLayersContext", function(a) {
-                            var b = a.layers;
-                            a = Module.GetDoc(a.docId);
-                            var c = 0;
-                            b ? c = Module.EMSCreateUpdatedLayersContext(a, b) : Module.PDFDocHasOC(a) && (b = Module.PDFDocGetOCGConfig(a), c = Module.OCGContextCreate(b));
-                            return c.toString(16)
-                        });
-                        var z = Module._TRN_EMSCreatePDFNetWorkerInstance();
-                        h = Module._TRN_EMSWorkerInstanceGetFunctionIterator(z);
-                        for (m = function(b) {
-                                return new Promise(function(c, e) {
-                                    b = l(b);
-                                    var f = Module.EMSCallPDFNetFunction(z, b);
-                                    f ? e(Module.GetErrToString(f)) : (e = Module.EMSGetLastResponse(z), e = a(e), c(e))
-                                })
-                            }; k = Module._TRN_EMSFunctionIteratorGetNextCommandName(h);)
-                            if (k = Module.GetJSStringFromCString(k), !n[k]) b.onAsync(k, m);
-                        Module._TRN_EMSFunctionIteratorDestroy(h)
-                    }
+                e.ElementBuilderDestroy = function(a) {
+                    REX(Module._TRN_ElementBuilderDestroy(a))
+                };
+                e.ElementBuilderCreateImage = function(a, b, d, c, u, A) {
+                    var G = Module.allocate(4, "i8", Module.ALLOC_STACK);
+                    REX(Module._TRN_ElementBuilderCreateImageScaled(a, b, d, c, u, A, G));
+                    return Module.getValue(G, "i8*")
+                };
+                e.ElementWriterCreate = function() {
+                    var a = Module.allocate(4, "i8", Module.ALLOC_STACK);
+                    REX(Module._TRN_ElementWriterCreate(a));
+                    return Module.getValue(a, "i8*")
+                };
+                e.ElementWriterDestroy = function(a) {
+                    REX(Module._TRN_ElementWriterDestroy(a))
+                };
+                e.ElementWriterBegin = function(a, b) {
+                    REX(Module._TRN_ElementWriterBeginOnPage(a, b, 1, 1, 1, 0))
+								  
+                };
+                e.ElementWriterWritePlacedElement = function(a, b) {
+                    REX(Module._TRN_ElementWriterWritePlacedElement(a, b))
+                };
+                e.ElementWriterEnd = function(a) {
+                    var b = Module.allocate(4, "i8", Module.ALLOC_STACK);
+                    REX(Module._TRN_ElementWriterEnd(a, b))
+                };
+                e.ImageGetImageWidth = function(a) {
+                    var b = Module.allocate(4, "i8", Module.ALLOC_STACK);
+                    REX(Module._TRN_ImageGetImageWidth(a, b));
+                    return Module.getValue(b, "i32")
+                };
+                e.ImageGetImageHeight = function(a) {
+                    var b = Module.allocate(4, "i8", Module.ALLOC_STACK);
+                    REX(Module._TRN_ImageGetImageHeight(a, b));
+								
+                    return Module.getValue(b, "i32")
+                };
+                e.ImageCreateFromMemory2 = function(a, b, d) {
+                    var c = Module.allocate(4, "i8", Module.ALLOC_STACK);
+                    REX(Module._TRN_ImageCreateFromMemory2(a, b, d, 0, c));
+                    return Module.getValue(c, "i8*")
+                };
+                e.ImageCreateFromFile = function(a, b) {
+                    var d = Module.allocate(4, "i8", Module.ALLOC_STACK);
+                    REX(Module._TRN_ImageCreateFromFile(a,
+                        b, 0, d));
+                    return Module.getValue(d, "i8*")
+                };
+                e.PDFDocPagePushBack = function(a, b) {
+                    REX(Module._TRN_PDFDocPagePushBack(a, b))
+                };
+                e.PDFDocHasOC = function(a) {
+                    var b = Module.allocate(4, "i8", Module.ALLOC_STACK);
+													  
+                    REX(Module._TRN_PDFDocHasOC(a, b));
+                    return 0 !== Module.getValue(b, "i8")
+                };
+                e.PDFDocGetOCGConfig = function(a) {
+                    var b = Module.allocate(4, "i8", Module.ALLOC_STACK);
+                    REX(Module._TRN_PDFDocGetOCGConfig(a, b));
+                    return Module.getValue(b, "i8*")
+                };
+                e.OCGContextCreate = function(a) {
+                    var b = Module.allocate(4, "i8", Module.ALLOC_STACK);
+                    REX(Module._TRN_OCGContextCreateFromConfig(a,
+                        b));
+                    return Module.getValue(b, "i8*")
+                };
+                e.UStringDestroy = function(a) {
+                    REX(Module._TRN_UStringDestroy(a))
+                };
+                e.PDFDocFDFUpdate = function(a, b, d) {
+							   
+                    if (d) {
+                        for (var c = Object.keys(d), u = c.length, A = Module._malloc(8 * u), G = 0; G < u; ++G) {
+                            var y = 8 * G,
+                                H = c[G],
+                                J = Module.GetDoc(d[H]);
+                            H = Module.GetUStringFromJSString(H);
+                            Module.setValue(A + y, J, "i8*");
+                            Module.setValue(A + y + 4, H, "i8*")
+                        }
+                        REX(Module._TRN_PDFDocFDFUpdateAppearanceDocs(a, b, A, u))
+                    } else REX(Module._TRN_PDFDocFDFUpdate(a, b))
+                };
+                e.FDFDocDestroy = function(a) {
+                    REX(Module._TRN_FDFDocDestroy(a))
                 }
-            })(self)
-        },
-        function(e, n, l) {
-            e = l(6);
-            var f = l.n(e),
-                m = l(14),
-                b = l(15),
-                u = l(10),
-                a = l(0),
-                c = l(8);
-            (function(e) {
-                var h = null;
-                e.basePath = "../";
-                var k = function() {
-                    var b = e.pdfWorkerPath || "";
-                    e.workerBasePath && (e.basePath = e.workerBasePath);
-                    var f = Object(c.a)(e.location.search),
-                        h = "true" === f.isfull,
-                        k = h ? "full/" : "lean/";
-                    Object(a.c)();
-                    f.pdfWorkerPath && (b = f.pdfWorkerPath, e.basePath = "../", Object(u.b)() || (b = ""));
-                    e.basePath = f.externalPath ? f.externalPath : e.basePath + "external/";
-                    Object(u.a)("".concat(b + k, "PDFNetC"), {
-                        "Wasm.wasm": 5E6,
-                        "Wasm.js.mem": 1E5,
-                        ".js.mem": 6E6,
-                        ".mem": h ? 2E6 : 3E5
-                    })
-                };
-                self.shouldResize || k();
-                e.EmscriptenPDFManager = function() {};
-                e.EmscriptenPDFManager.prototype = {
-                    OnInitialized: function(b) {
-                        Module.loaded ?
-                            b() : (Module.initCb = function() {
-                                b()
-                            }, Object(a.b)("worker", "PDFNet is not initialized yet!"))
-                    },
-                    NewDoc: function(a, b) {
-                        return new Promise(function(c, e) {
-                            try {
-                                c(Module.loadDoc(a, b))
-                            } catch (B) {
-                                e(B)
-                            }
+            })(h.Module)
+        }).call(this,
+            q(8).setImmediate)
+    }, function(k, p, q) {
+        function m(t) {
+            "@babel/helpers - typeof";
+            return m = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function(x) {
+                return typeof x
+            } : function(x) {
+                return x && "function" == typeof Symbol && x.constructor === Symbol && x !== Symbol.prototype ? "symbol" : typeof x
+            }, m(t)
+        }(function(t) {
+            t.SetupPDFNetFunctions = function(x) {
+                Module._IB_ = [];
+                for (var h = function E(C) {
+                        if ("object" === m(C) && null !== C)
+                            if ("undefined" !== typeof C.byteLength) {
+                                var B = Module._IB_.length;
+                                Module._IB_[B] = new Uint8Array(C);
+                                C = {
+                                    handle: B,
+                                    isArrayBufferRef: !0
+                                }
+                            } else Object.keys(C).forEach(function(D) {
+                                C.hasOwnProperty(D) && (C[D] = E(C[D]))
+                            });
+                        return C
+                    }, e = function B(E) {
+                        "object" === m(E) && null !== E && (E.buffer ? E = E.buffer.slice(E.byteOffset, E.byteOffset + E.length) : E.isArrayBufferRef ? E = Module._IB_[E.handle].buffer : Object.keys(E).forEach(function(D) {
+                            E.hasOwnProperty(D) && (E[D] = B(E[D]))
+                        }));
+                        return E
+                    }, f = Module._TRN_EMSCreateSharedWorkerInstance(), g, l = Module._TRN_EMSWorkerInstanceGetFunctionIterator(f), r = function(E, B) {
+                        return new Promise(function(D,
+                            I) {
+                            E = h(E);
+                            var F = E.docId;
+                            F = F ? Module.GetDoc(F) : 0;
+                            (F = Module.EMSCallSharedFunction(f, B, F)) ? I({
+                                type: "PDFWorkerError",
+                                message: Module.GetErrToString(F)
+                            }): (I = Module.EMSGetLastResponse(f), I = e(I), D(I))
                         })
-                    },
-                    Initialize: function(a, b, c, f) {
-                        a && (Module.TOTAL_MEMORY = a);
-                        Module.memoryInitializerPrefixURL = b;
-                        Module.asmjsPrefix = c;
-                        e.basePath = f;
-                        k()
-                    },
-                    shouldRunRender: function(a) {
-                        return Module.ShouldRunRender(a.docId, a.pageIndex + 1)
-                    }
-                };
-                var l = new b.a("worker_processor", self);
-                Object(a.a)(l);
-                (function(b) {
-                    function c(b) {
-                        var c = b.data,
-                            d =
-                            b.action;
-                        var f = "GetCanvas" === d || "GetCanvasPartial" === d ? p.shouldRunRender(c) : !0;
-                        if (f) {
-                            h = b;
-                            var g = b.asyncCallCapability;
-                            Object(a.b)("Memory", "Worker running command: ".concat(d));
-                            r.actionMap[d](c, b).then(function(a) {
-                                "BeginOperation" !== h.action && (h = null);
-                                g.resolve(a)
-                            }, function(a) {
-                                h = null;
-                                g.reject(a)
-                            })
-                        } else e.deferredQueue.queue(b), n()
-                    }
-
-                    function k(a) {
-                        a.asyncCallCapability = createPromiseCapability();
-                        h || r.length ? r.queue(a) : c(a);
-                        return a.asyncCallCapability.promise
-                    }
-
-                    function l(a) {
-                        self.shouldResize && p.Initialize(a.options.workerHeapSize,
-                            a.options.pdfResourcePath, a.options.pdfAsmPath, a.options.parentUrl);
-                        Module.chunkMax = a.options.chunkMax;
-                        if (a.array instanceof Uint8Array) {
-                            var c = 255 === a.array[0];
-                            b.postMessageTransfers = c;
-                            "response" in new XMLHttpRequest ? p.OnInitialized(function() {
-                                e.SetupPDFNetFunctions(b);
-                                g();
-                                b.send("test", {
-                                    supportTypedArray: !0,
-                                    supportTransfers: c
-                                })
-                            }) : b.send("test", !1)
-                        } else b.send("test", !1)
-                    }
-
-                    function n() {
-                        m.a.setImmediate(function() {
-                            if ((!h || "BeginOperation" !== h.action) && r.length && !h) {
-                                var a = r.dequeue();
-                                c(a)
-                            }
-                        })
-                    }
-                    var p = new e.EmscriptenPDFManager,
-                        r, u = !1,
-                        d = !1;
-                    Module.workerMessageHandler = b;
-                    var g = function() {
-                        u ? d || (b.send("workerLoaded", {}), d = !0) : u = !0
+                    }; g = Module._TRN_EMSFunctionIteratorGetNextCommandName(l);) g = Module.GetJSStringFromCString(g), t.queue.onAsync(g, r);
+                Module._TRN_EMSFunctionIteratorDestroy(l);
+                if (Module._TRN_EMSCreatePDFNetWorkerInstance) {
+                    var n = {};
+                    l = function(w, C) {
+                        x.on(w, C);
+                        n[w] = !0
                     };
-                    p.OnInitialized(g);
+                    Module.docPtrStringToIdMap = {};
+														 
+					 
+							
+											
+		  
+						   
+						   
+										  
+                    var v = function(w) {
+                        if (w in Module.docPtrStringToIdMap) return Module.docPtrStringToIdMap[w];
+                        throw Error("Couldn't find document ".concat(w));
+									 
+																																			
+                    };
+						   
+						   
+													  
+									 
+												
+																
+																		  
+															   
+																	   
+										 
+												  
+															
+									 
+																		   
+																  
+												
+								   
+									
+											  
+																																																								   
+																	   
+								
+									
+																																							
+															   
+										 
+												
+															 
+																				 
+													   
+																	 
+																					  
+							  
+																																				  
+															  
+																	
+								   
+											
+									   
+									 
+						  
+														
+											 
+																									  
+																			 
+						  
+                    t.queue.onAsync("PDFDoc.RequirePage", function(w) {
+										 
+                        return Module.RequirePage(v(w.docId), w.pageNum)
+                    });
+                    l("pdfDocCreateFromBuffer", function(w) {
+                        w = Module.CreateDoc({
+                            type: "array",
+                            value: w.buf
+							   
+																  
+															  
+									
+						   
+														 
+													  
+											   
+						   
+																  
+											 
+																						   
+						   
+													  
+													  
+											   
+								   
+																  
+															  
+									
+						   
+													
+										
+																  
+															  
+									
+						   
+																	 
+											 
+													   
+									  
+																																											 
+												 
+                        });
+                        var C = Module.GetDoc(w).toString(16);
+                        Module.docPtrStringToIdMap[C] = w;
+                        return C
+                    });
+                    l("PDFDoc.destroy", function(w) {
+                        w = v(w.auto_dealloc_obj);
+                        Module.DeleteDoc(w)
+                    });
+                    l("PDFDoc.saveMemoryBuffer", function(w) {
+                        var C = v(w.doc);
+                        return Module.SaveHelper(Module.GetDoc(C), C, w.flags).slice(0)
+                    });
+                    l("pdfDocCreate", function() {
+                        var w = Module.CreateDoc({
+                                type: "new"
+                            }),
+                            C = Module.GetDoc(w).toString(16);
+                        Module.docPtrStringToIdMap[C] = w;
+                        return C
+                    });
+                    l("GetPDFDoc", function(w) {
+                        w = w.docId;
+                        var C = Module.GetDoc(w).toString(16);
+                        Module.docPtrStringToIdMap[C] = w;
+                        return C
+                    });
+                    l("ExtractPDFNetLayersContext", function(w) {
+                        var C = w.layers;
+                        w = Module.GetDoc(w.docId);
+                        var E = 0;
+                        C ? E = Module.EMSCreateUpdatedLayersContext(w, C) : Module.PDFDocHasOC(w) && (C = Module.PDFDocGetOCGConfig(w), E = Module.OCGContextCreate(C));
+                        return E.toString(16)
+                    });
+                    var z = Module._TRN_EMSCreatePDFNetWorkerInstance();
+                    l = Module._TRN_EMSWorkerInstanceGetFunctionIterator(z);
+                    for (r = function(w) {
+                            return new Promise(function(C, E) {
+                                w = h(w);
+                                var B = Module.EMSCallPDFNetFunction(z, w);
+                                B ? E(Module.GetErrToString(B)) : (E = Module.EMSGetLastResponse(z), E = e(E), C(E))
+                            })
+                        }; g = Module._TRN_EMSFunctionIteratorGetNextCommandName(l);)
+                        if (g = Module.GetJSStringFromCString(g), !n[g]) x.onAsync(g, r);
+                    Module._TRN_EMSFunctionIteratorDestroy(l)
+					 
+                }
+            }
+        })(self)
+    }, function(k, p, q) {
+						   
+        k = q(7);
+        var m = q.n(k),
+            t = q(18),
+            x = q(19),
+            h =
+            q(13),
+            e = q(1),
+            f = q(20);
+        (function(g) {
+            var l = null;
+            g.basePath = "../";
+            var r = function() {
+                var v = g.pdfWorkerPath || "";
+                g.workerBasePath && (g.basePath = g.workerBasePath);
+                var z = g.isFull,
+												
+                    w = z ? "full/" : "lean/";
+                g.useOptimizedWorker && (w += f.a);
+                var C = g.wasmDisabled;
+                Object(e.c)();
+                g.overriddenPdfWorkerPath && (v = g.overriddenPdfWorkerPath, g.basePath = "../", !Object(h.b)() || C) && (v = "");
+                g.basePath = g.externalPath ? g.externalPath : g.basePath + "external/";
+                Object(h.a)("".concat(v + w, "PDFNetC"), {
+                    "Wasm.wasm": z ? 1E7 : 4E6,
+                    "Wasm.js.mem": 1E5,
+                    ".js.mem": 12E6,
+                    ".mem": z ? 2E6 : 6E5
+                }, C)
+            };
+            g.EmscriptenPDFManager = function() {};
+            g.EmscriptenPDFManager.prototype = {
+                OnInitialized: function(v) {
+                    Module.loaded ? v() : (Module.initCb = function() {
+                        v()
+                    }, Object(e.b)("worker", "PDFNet is not initialized yet!"))
+                },
+                NewDoc: function(v, z) {
+                    return new Promise(function(w, C) {
+                        try {
+                            w(Module.loadDoc(v, z))
+                        } catch (E) {
+                            C(E)
+                        }
+                    })
+                },
+										 
+													   
+													
+                Initialize: function(v, z, w, C) {
+									   
+															   
+								   
+																					   
+					  
+											
+														   
+								 
+													   
+										 
+									
+							 
+						  
+					  
+													  
+                    v && (Module.TOTAL_MEMORY = v);
+                    Module.memoryInitializerPrefixURL = z;
+                    Module.asmjsPrefix = w;
+                    g.basePath = C;
+                    r()
+                },
+                shouldRunRender: function(v) {
+                    return Module.ShouldRunRender(v.docId,
+                        v.pageIndex + 1)
+                }
+            };
+            var n = {
+							   
+                setup: function(v) {
+                    function z(c) {
+                        var u = c.data,
+							   
+                            A = c.action;
+                        var G = "GetCanvas" === A || "GetCanvasPartial" === A ? B.shouldRunRender(u) : !0;
+                        if (G) {
+                            l = c;
+                            var y = c.asyncCallCapability;
+                            Object(e.b)("Memory", "Worker running command: ".concat(A));
+                            D.actionMap[A](u, c).then(function(H) {
+                                "BeginOperation" !== l.action && (l = null);
+                                y.resolve(H)
+                            }, function(H) {
+                                l = null;
+                                y.reject(H)
+                            })
+                        } else g.deferredQueue.queue(c), E()
+                    }
+
+                    function w(c) {
+                        c.asyncCallCapability = createPromiseCapability();
+                        l || D.length ? D.queue(c) : z(c);
+                        return c.asyncCallCapability.promise
+                    }
+
+                    function C(c) {
+																				   
+                        self.shouldResize && B.Initialize(c.options.workerHeapSize, c.options.pdfResourcePath, c.options.pdfAsmPath, c.options.parentUrl);
+                        Module.chunkMax = c.options.chunkMax;
+                        if (c.array instanceof Uint8Array) {
+                            var u = 255 === c.array[0];
+                            v.postMessageTransfers = u;
+                            "response" in new XMLHttpRequest ? B.OnInitialized(function() {
+                                g.SetupPDFNetFunctions(v);
+                                a();
+                                v.send("test", {
+                                    supportTypedArray: !0,
+                                    supportTransfers: u
+                                })
+                            }) : v.send("test", !1)
+                        } else v.send("test", !1)
+                    }
+
+                    function E() {
+                        t.a.setImmediate(function() {
+                            if ((!l || "BeginOperation" !==
+                                    l.action) && D.length && !l) {
+                                var c = D.dequeue();
+                                z(c)
+                            }
+                        })
+                    }
+                    var B = new g.EmscriptenPDFManager,
+                        D, I = !1,
+                        F = !1;
+                    Module.workerMessageHandler = v;
+                    var a = function() {
+                        I ? F || (v.send("workerLoaded", {}), F = !0) : I = !0
+                    };
+                    B.OnInitialized(a);
                     (function() {
-                        e.queue = r = new f.a({
-                            strategy: f.a.ArrayStrategy,
-                            comparator: function(a, b) {
-                                return a.priority === b.priority ? a.callbackId - b.callbackId : b.priority - a.priority
+                        g.queue = D = new m.a({
+                            strategy: m.a.ArrayStrategy,
+                            comparator: function(c, u) {
+                                return c.priority === u.priority ? c.callbackId - u.callbackId : u.priority - c.priority
                             }
                         });
-                        e.deferredQueue = new f.a({
-                            strategy: f.a.ArrayStrategy,
-                            comparator: function(a, b) {
-                                return a.priority === b.priority ? a.callbackId - b.callbackId : b.priority - a.priority
+                        g.deferredQueue = new m.a({
+                            strategy: m.a.ArrayStrategy,
+                            comparator: function(c, u) {
+                                return c.priority === u.priority ? c.callbackId - u.callbackId :
+                                    u.priority - c.priority
                             }
                         });
-                        r.actionMap = {};
-                        r.onAsync = function(a, c) {
-                            b.onAsync(a, k);
-                            r.actionMap[a] =
-                                c
+                        D.actionMap = {};
+                        D.onAsync = function(c, u) {
+                            v.onAsync(c, w);
+                            D.actionMap[c] = u
+								 
                         }
                     })();
-                    b.on("test", l);
-                    b.on("InitWorker", l);
-                    var q = function(a) {
-                            h && a(h) && (Module.cancelCurrent(), h = null);
-                            r.removeAllMatching(a, function(a) {
-                                a.asyncCallCapability.reject({
+                    v.on("test", C);
+                    v.on("InitWorker", C);
+                    var b = function(c) {
+                            l && c(l) && (Module.cancelCurrent(), l = null);
+                            D.removeAllMatching(c, function(u) {
+                                u.asyncCallCapability.reject({
                                     type: "Cancelled",
                                     message: "Operation was cancelled due to a change affecting the loaded document."
                                 })
                             })
                         },
-                        v = function(a) {
-                            q(function(b) {
-                                return b.data && b.data.docId === a
+                        d = function(c) {
+                            b(function(u) {
+                                return u.data && u.data.docId === c
                             })
                         };
-                    b.on("UpdatePassword", function(a) {
-                        return Module.UpdatePassword(a.docId, a.password)
+                    v.on("UpdatePassword", function(c) {
+                        return Module.UpdatePassword(c.docId, c.password)
                     });
-                    b.on("LoadRes", function(a) {
-                        Module.loadResources(a.array, a.l);
+                    v.on("LoadRes", function(c) {
+                        Module.loadResources(c.array, c.l);
                         return {}
                     });
-                    b.on("DownloaderHint",
-                        function(a) {
-                            Module.DownloaderHint(a.docId, a.hint)
+										  
+									 
+																  
+						   
+													  
+																   
+					   
+									 
+                    v.on("DownloaderHint", function(c) {
+                        Module.DownloaderHint(c.docId, c.hint)
+                    });
+                    v.on("IsLinearized", function(c) {
+																																
+																														
+                        return Module.IsLinearizationValid(c.docId)
+													  
+                    });
+                    v.onNextAsync(E);
+                    D.onAsync("NewDoc", function(c) {
+                        return B.NewDoc(c)
+																																		
+                    });
+                    D.onAsync("GetCanvas", function(c) {
+                        Object(e.b)("workerdetails", "Run GetCanvas PageIdx: ".concat(c.pageIndex, " Width: ").concat(c.width));
+                        Object(e.b)("Memory", "loadCanvas with potential memory usage ".concat(c.width *
+                            c.height * 8));
+                        return Module.loadCanvas(c.docId, c.pageIndex, c.width, c.height, c.rotation, null, c.layers, c.renderOptions)
+                    });
+                    D.onAsync("GetCanvasPartial", function(c) {
+                        Object(e.b)("Memory", "GetCanvasPartial with potential memory usage ".concat(c.width * c.height * 8));
+                        return Module.loadCanvas(c.docId, c.pageIndex, c.width, c.height, c.rotation, c.bbox, c.layers, c.renderOptions)
+                    });
+                    D.onAsync("SaveDoc", function(c) {
+                        return Module.SaveDoc(c.docId, c.xfdfString, c.finishedWithDocument, c.printDocument, c.flags, c.watermarks, c.apdocs)
+                    });
+                    D.onAsync("SaveDocFromFixedElements", function(c) {
+                        return Module.SaveDocFromFixedElements(c.bytes, c.xfdfString, c.flags, c.watermarks)
+                    });
+                    D.onAsync("MergeXFDF", function(c) {
+                        return Module.MergeXFDF(c.docId, c.xfdf, c.apdocs)
+                    });
+                    D.onAsync("InsertPages", function(c) {
+                        return Module.InsertPages(c.docId, c.doc, c.pageArray, c.destPos, c.insertBookmarks, c.skipUpdateEvent)
+                    });
+                    D.onAsync("MovePages", function(c) {
+                        return Module.MovePages(c.docId, c.pageArray, c.destPos)
+                    });
+                    D.onAsync("RemovePages", function(c) {
+                        return Module.RemovePages(c.docId,
+                            c.pageArray, c.skipUpdateEvent)
+                    });
+                    D.onAsync("RotatePages", function(c) {
+                        return Module.RotatePages(c.docId, c.pageArray, c.rotation)
+                    });
+                    D.onAsync("ExtractPages", function(c) {
+                        return Module.ExtractPages(c.docId, c.pageArray, c.xfdfString, c.watermarks, c.apdocs)
+                    });
+                    D.onAsync("CropPages", function(c) {
+                        return Module.CropPages(c.docId, c.pageArray, c.topMargin, c.botMargin, c.leftMargin, c.rightMargin)
+                    });
+                    D.onAsync("InsertBlankPages", function(c) {
+                        return Module.InsertBlankPages(c.docId, c.pageArray, c.width, c.height)
+                    });
+                    D.onAsync("BeginOperation",
+                        function() {
+                            return Promise.resolve()
                         });
-                    b.on("IsLinearized", function(a) {
-                        return Module.IsLinearizationValid(a.docId)
+                    D.onAsync("RequirePage", function(c, u) {
+                        return Module.RequirePage(c.docId, c.pageNum)
                     });
-                    b.onNextAsync(n);
-                    r.onAsync("NewDoc", function(a) {
-                        return p.NewDoc(a)
-                    });
-                    r.onAsync("GetCanvas", function(b) {
-                        Object(a.b)("workerdetails", "Run GetCanvas PageIdx: ".concat(b.pageIndex, " Width: ").concat(b.width));
-                        Object(a.b)("Memory", "loadCanvas with potential memory usage ".concat(b.width * b.height * 8));
-                        return Module.loadCanvas(b.docId, b.pageIndex, b.width, b.height, b.rotation, null,
-                            b.layers, b.overprintMode)
-                    });
-                    r.onAsync("GetCanvasPartial", function(b) {
-                        Object(a.b)("Memory", "GetCanvasPartial with potential memory usage ".concat(b.width * b.height * 8));
-                        return Module.loadCanvas(b.docId, b.pageIndex, b.width, b.height, b.rotation, b.bbox, b.layers, b.overprintMode)
-                    });
-                    r.onAsync("LoadText", function(a) {
-                        return Module.GetTextData(a.docId, a.pageIndex)
-                    });
-                    r.onAsync("SaveDoc", function(a) {
-                        return Module.SaveDoc(a.docId, a.xfdfString, a.finishedWithDocument, a.printDocument, a.flags, a.watermarks, a.apdocs)
-                    });
-                    r.onAsync("SaveDocFromFixedElements", function(a) {
-                        return Module.SaveDocFromFixedElements(a.bytes, a.xfdfString, a.flags, a.watermarks)
-                    });
-                    r.onAsync("MergeXFDF", function(a) {
-                        return Module.MergeXFDF(a.docId, a.xfdf, a.apdocs)
-                    });
-                    r.onAsync("InsertPages", function(a) {
-                        return Module.InsertPages(a.docId, a.doc, a.pageArray, a.destPos, a.insertBookmarks)
-                    });
-                    r.onAsync("MovePages", function(a) {
-                        return Module.MovePages(a.docId, a.pageArray, a.destPos)
-                    });
-                    r.onAsync("RemovePages", function(a) {
-                        return Module.RemovePages(a.docId, a.pageArray)
-                    });
-                    r.onAsync("RotatePages", function(a) {
-                        return Module.RotatePages(a.docId, a.pageArray, a.rotation)
-                    });
-                    r.onAsync("ExtractPages", function(a) {
-                        return Module.ExtractPages(a.docId, a.pageArray, a.xfdfString, a.watermarks, a.apdocs)
-                    });
-                    r.onAsync("CropPages", function(a) {
-                        return Module.CropPages(a.docId, a.pageArray, a.topMargin, a.botMargin, a.leftMargin, a.rightMargin)
-                    });
-                    r.onAsync("InsertBlankPages", function(a) {
-                        return Module.InsertBlankPages(a.docId, a.pageArray, a.width, a.height)
-                    });
-                    r.onAsync("BeginOperation", function() {
-                        return Promise.resolve()
-                    });
-                    r.onAsync("RequirePage", function(a, b) {
-                        return Module.RequirePage(a.docId, a.pageNum)
-                    });
-                    b.on("FinishOperation", function() {
-                        if (h && "BeginOperation" === h.action) h = null, n();
+                    v.on("FinishOperation", function() {
+                        if (l && "BeginOperation" === l.action) l = null, E();
                         else throw {
                             message: "Operation has not started."
                         };
                     });
-                    b.on("DeleteDocument", function(a) {
-                        a = a.docId;
-                        v(a);
-                        Module.DeleteDoc(a)
+														
+									
+							 
+										   
+					   
+                    v.on("DeleteDocument", function(c) {
+                        c = c.docId;
+                        d(c);
+                        Module.DeleteDoc(c)
                     });
-                    b.on("LoadBookmarks", function(a) {
-                        return Module.LoadBookmarks(a.docId)
-                    });
-                    b.on("GetCanvasProgressive", function(b) {
-                        if (h && h.callbackId === b.callbackId) {
-                            Object(a.b)("worker", "Progressive request in progress");
-                            var c = Module.GetCurrentCanvasData(!0)
+                    v.on("GetCanvasProgressive", function(c) {
+                        if (l && l.callbackId === c.callbackId) {
+                            Object(e.b)("worker", "Progressive request in progress");
+                            var u = Module.GetCurrentCanvasData(!0)
                         } else {
-                            if (r.find({
+                            if (D.find({
                                     priority: 0,
-                                    callbackId: b.callbackId
-                                })) throw Object(a.b)("worker", "Progressive request Queued"), {
+                                    callbackId: c.callbackId
+                                })) throw Object(e.b)("worker", "Progressive request Queued"), {
                                 type: "Queued",
                                 message: "Rendering has not started yet."
                             };
-                            if (e.deferredQueue.find({
+                            if (g.deferredQueue.find({
                                     priority: 0,
-                                    callbackId: b.callbackId
-                                })) throw Object(a.b)("worker", "Progressive request Deferred"), {
+                                    callbackId: c.callbackId
+                                })) throw Object(e.b)("worker", "Progressive request Deferred"), {
                                 type: "Queued",
                                 message: "Rendering has not started yet."
                             };
                         }
-                        if (!c) throw Object(a.b)("worker", "Progressive request invalid (render already complete)"), {
+                        if (!u) throw Object(e.b)("worker", "Progressive request invalid (render already complete)"), {
                             type: "Unavailable",
                             message: "Rendering is complete or was cancelled."
                         };
-                        return c
+                        return u
                     });
-                    b.on("actionCancel",
-                        function(b) {
-                            h && h.callbackId === b.callbackId ? (Object(a.b)("workerdetails", "Cancelled Current Operation"), Module.cancelCurrent() && (h = null, n())) : (Object(a.b)("workerdetails", "Cancelled queued operation"), r.remove({
+                    v.on("actionCancel",
+                        function(c) {
+                            l && l.callbackId === c.callbackId ? (Object(e.b)("workerdetails", "Cancelled Current Operation"), Module.cancelCurrent() && (l = null, E())) : (Object(e.b)("workerdetails", "Cancelled queued operation"), D.remove({
                                 priority: 0,
-                                callbackId: b.callbackId
-                            }), e.deferredQueue.remove({
+                                callbackId: c.callbackId
+                            }), g.deferredQueue.remove({
                                 priority: 0,
-                                callbackId: b.callbackId
+                                callbackId: c.callbackId
                             }))
                         })
-                })(l)
-            })("undefined" === typeof window ? self : window)
-        }
-    ]);
+                }
+            };
+            g.onmessage = function(v) {
+                if ("init" === v.data.action) {
+                    var z = v.data.shouldResize;
+                    g.shouldResize = z;
+                    g.isFull = v.data.isFull;
+                    g.wasmDisabled = !v.data.wasm;
+                    g.externalPath = v.data.externalPath;
+                    g.useOptimizedWorker =
+                        v.data.useOptimizedWorker;
+                    if (v = v.data.pdfWorkerPath) g.overriddenPdfWorkerPath = v;
+                    z || r();
+                    z = new x.a("worker_processor", self);
+                    Object(e.a)(z);
+                    n.setup(z)
+                }
+            }
+        })("undefined" === typeof window ? self : window)
+    }]);
+	   
 }).call(this || window)

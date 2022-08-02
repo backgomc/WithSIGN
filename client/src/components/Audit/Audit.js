@@ -209,15 +209,17 @@ const Audit = ({location}) => {
     },
     viewer.current
     ).then(async instance => {
-      const { annotManager, CoreControls } = instance;
+      // const { annotManager, CoreControls } = instance;
+      const { Core, UI } = instance;
+      const { annotationManager } = Core;
 
-      instance.setToolbarGroup('toolbarGroup-View');
-      CoreControls.setCustomFontURL('/webfonts/');
-      annotManager.setReadOnly(true);
+      UI.setToolbarGroup('toolbarGroup-View');
+      Core.setCustomFontURL('/webfonts/');
+      annotationManager.setReadOnly(true);
 
       let auditDocument = <AuditDocument item={location.state.docInfo} />;
       asPdf.updateContainer(auditDocument);
-      instance.docViewer.loadDocument(await asPdf.toBlob(), { filename: docTitle+'_진본확인.pdf' });
+      UI.loadDocument(await asPdf.toBlob(), { filename: docTitle+'_진본확인.pdf' });
     });
   }, []);
 

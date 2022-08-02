@@ -49,21 +49,23 @@ const PreviewPDF = ({location}) => {
     )
     .then(instance => {
 
-      const { docViewer, CoreControls } = instance;
+      // const { docViewer, CoreControls } = instance;
+      const { Core, UI } = instance;
+      const { documentViewer } = Core;
 
       // set local font 
-      CoreControls.setCustomFontURL("/webfonts/");
+      Core.setCustomFontURL("/webfonts/");
 
       // set language
-      instance.setLanguage('ko');
+      UI.setLanguage('ko');
 
       setInstance(instance)
 
       // set file url
       const URL = '/' + docRef;      
-      instance.docViewer.loadDocument(URL);
+      UI.loadDocument(URL);
       
-      docViewer.on('documentLoaded', () => {
+      documentViewer.addEventListener('documentLoaded', () => {
         console.log('documentLoaded called');
       });
     });

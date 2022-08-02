@@ -966,7 +966,7 @@ router.post('/statistic', ValidateToken, async (req, res) => {
         '_id': {
           '$dateToString': {
             'format': '%Y-%m', 
-            'date': '$signedTime'
+            'date': {$add: ['$signedTime', 9*3600*1000]}
           }
         }, 
         'totalPage': {

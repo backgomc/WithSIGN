@@ -57,7 +57,7 @@ const PaperlessCard = (props) => {
       <StatisticCard
         statistic={{
           title: '본인',
-          value: paperlessNum + ' 장',
+          value: paperlessNum.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',') + ' 장',
           icon: (
             <img
               style={{display: 'block', width: 42, height: 42}}
@@ -72,7 +72,7 @@ const PaperlessCard = (props) => {
         statistic={{
           title: '회사',
           // tip: '본인이 서명 요청하여 완료된 건수를 기준으로 산정',
-          value: totalPaperlessNum + ' 장',
+          value: totalPaperlessNum.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',') + ' 장',
           icon: (
             <img
               style={{display: 'block', width: 42, height: 42}}

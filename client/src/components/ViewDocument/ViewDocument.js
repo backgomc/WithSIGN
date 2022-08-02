@@ -20,7 +20,6 @@ import { LICENSE_KEY } from '../../config/Config';
 import {DOCUMENT_SIGNED, DOCUMENT_TOSIGN, DOCUMENT_SIGNING, DOCUMENT_CANCELED, DOCUMENT_TOCONFIRM, DOCUMENT_TODO} from '../../common/Constants';
 
 const ViewDocument = () => {
-  const [annotManager, setAnnotatManager] = useState(null);
   const [instance, setInstance] = useState(null);
   const [responsive, setResponsive] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -57,14 +56,16 @@ const ViewDocument = () => {
       viewer.current,
     ).then(async instance => {
 
-      const { annotManager, Annotations, CoreControls } = instance;
+      // const { annotManager, Annotations, CoreControls } = instance;
+      const { Core, UI } = instance;
+      const { annotationManager, Annotations } = Core;
 
       // select only the view group
-      instance.setToolbarGroup('toolbarGroup-View');
-      CoreControls.setCustomFontURL("/webfonts/");
+      UI.setToolbarGroup('toolbarGroup-View');
+      Core.setCustomFontURL("/webfonts/");
       // instance.setToolbarGroup('toolbarGroup-Insert');
 
-      annotManager.setReadOnly(true);
+      annotationManager.setReadOnly(true);
 
       setInstance(instance);
 
@@ -76,7 +77,7 @@ const ViewDocument = () => {
       // DISTO
       const URL = '/' + docRef;
       console.log("URL:"+URL);      
-      instance.docViewer.loadDocument(URL, { filename: docTitle+'.pdf' });
+      UI.loadDocument(URL, { filename: docTitle+'.pdf' });
 
       const normalStyles = (widget) => {
         if (widget instanceof Annotations.TextWidgetAnnotation) {
@@ -97,7 +98,7 @@ const ViewDocument = () => {
       };
 
       // TODO annotation 수정 안되게 하기
-      annotManager.on('annotationChanged', (annotations, action, { imported }) => {
+      annotationManager.addEventListener('annotationChanged', (annotations, action, { imported }) => {
 
         console.log('annotationChanged called')
         if (imported && action === 'add') {
