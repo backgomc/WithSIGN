@@ -9,4 +9,9 @@ server/node_modules
 server/sessions/*
 server/storage/*
 .vscode/
-
+*.lock
+*.DS_Store
+server/package-lock.json
+./TODO.md
+.DS_Store
+docker.env

@@ -174,20 +174,20 @@ const SignDocument = () => {
           const fieldManager = annotationManager.getFieldManager();
           fieldManager.forEachField(field => {
             console.log(field.getValue());
-            console.log('fieldName', field.qd);
+            console.log('fieldName', field.name);
 
-            if (field.qd?.startsWith(_id) || field.qd?.startsWith('bulk')) { 
-              if (field.qd?.includes('AUTONAME')) {
+            if (field.name?.startsWith(_id) || field.name?.startsWith('bulk')) { 
+              if (field.name?.includes('AUTONAME')) {
                 field.setValue(name);
-              } else if (field.qd?.includes('AUTOJOBTITLE')) {
+              } else if (field.name?.includes('AUTOJOBTITLE')) {
                 field.setValue(JOB_TITLE);
-              } else if (field.qd?.includes('AUTOSABUN')) {
+              } else if (field.name?.includes('AUTOSABUN')) {
                 field.setValue(SABUN);
-              } else if (field.qd?.includes('AUTODATE')) {
+              } else if (field.name?.includes('AUTODATE')) {
                 field.setValue(moment().format('YYYY년 MM월 DD일'));
-              } else if (field.qd?.includes('AUTOOFFICE')) {
+              } else if (field.name?.includes('AUTOOFFICE')) {
                 field.setValue(OFFICE_NAME);
-              } else if (field.qd?.includes('AUTODEPART')) {
+              } else if (field.name?.includes('AUTODEPART')) {
                 field.setValue(DEPART_NAME);
               }
             }
