@@ -23,7 +23,7 @@ import {
 } from '@ant-design/icons';
 import { useSelector, useDispatch } from 'react-redux';
 import { selectUser } from '../../app/infoSlice';
-import { navigate } from '@reach/router';
+import { navigate, Link } from '@reach/router';
 import { setDocToView } from '../ViewDocument/ViewDocumentSlice';
 import { setDocToSign } from '../SignDocument/SignDocumentSlice';
 import Moment from 'react-moment';
@@ -36,7 +36,7 @@ import { PageContainer } from '@ant-design/pro-layout';
 import 'antd/dist/antd.css';
 import RcResizeObserver from 'rc-resize-observer';
 import { useIntl } from "react-intl";
-import { setSendType } from '../Assign/AssignSlice';
+import { resetDocumentTempPath, setSendType } from '../Assign/AssignSlice';
 import banner from '../../assets/images/sub_top2.png';
 import banner_small from '../../assets/images/sub_top2_2.png';
 import styled from 'styled-components';
@@ -64,7 +64,7 @@ const DocumentList = ({location}) => {
   const [searchedColumn, setSearchedColumn] = useState('');
   const [status, setStatus] = useState();
   const [data, setData] = useState([]);
-  const [pagination, setPagination] = useState({current:1, pageSize:10, showSizeChanger:true, pageSizeOptions: ["10", "20", "30"]});
+  const [pagination, setPagination] = useState(location.state.pagination ? location.state.pagination : {current:1, pageSize:10, showSizeChanger:true, pageSizeOptions: ["10", "20", "30"]});
   const [loading, setLoading] = useState(false);
   const [loadingDownload, setLoadingDownload] = useState([]);
   const [loadingFolder, setLoadingFolder] = useState(false);
@@ -823,7 +823,7 @@ const DocumentList = ({location}) => {
                 const docType = row["docType"]
                 const docTitle = row["docTitle"]
                 dispatch(setDocToView({ docRef, docId, docType, docTitle }));
-                navigate(`/viewDocument`);
+                navigate('/viewDocument', { state: {pagination: pagination}});
               }}></Button></Tooltip>
             )
           case DOCUMENT_SIGNED:
@@ -842,7 +842,7 @@ const DocumentList = ({location}) => {
                 const downloads = row["downloads"]
                 const status = DOCUMENT_SIGNED
                 dispatch(setDocToView({ docRef, docId, docType, docTitle, status, downloads }));
-                navigate(`/viewDocument`);
+                navigate('/viewDocument', { state: {pagination: pagination}});
               }}></Button></Tooltip>
               {/* <a href={row["docRef"]} download={row["docTitle"]+'.pdf'}> 
                 <Button key="2" icon={<DownloadOutlined />}>
@@ -881,7 +881,7 @@ const DocumentList = ({location}) => {
                 const docType = row["docType"]
                 const docTitle = row["docTitle"]
                 dispatch(setDocToView({ docRef, docId, docType, docTitle }));
-                navigate(`/viewDocument`);
+                navigate('/viewDocument', { state: {pagination: pagination}});
               }}></Button></Tooltip>
             );
           default:
@@ -911,7 +911,7 @@ const DocumentList = ({location}) => {
                 const docType = row["docType"]
                 const docTitle = row["docTitle"]
                 dispatch(setDocToView({ docRef, docId, docType, docTitle }));
-                navigate(`/viewDocument`);
+                navigate('/viewDocument', { state: {pagination: pagination}});
               }}></Button>
               </Tooltip>
             )
@@ -930,7 +930,11 @@ const DocumentList = ({location}) => {
                 const downloads = row["downloads"]
                 const status = DOCUMENT_SIGNED
                 dispatch(setDocToView({ docRef, docId, docType, docTitle, status, downloads }));
-                navigate(`/viewDocument`);
+                // navigate('/viewDocument', { state: {pagination:pagination, from: 'documentList'}});
+                console.log('pagination called', pagination);
+                navigate('/viewDocument', { state: {pagination: pagination}});
+
+                
               }}></Button></Tooltip>&nbsp;&nbsp;
               {/* <a href={row["docRef"]} download={row["docTitle"]+'.pdf'}> */}
               <Tooltip placement="top" title={'다운로드'}>
@@ -983,7 +987,7 @@ const DocumentList = ({location}) => {
                 const docType = row["docType"]
                 const docTitle = row["docTitle"]
                 dispatch(setDocToView({ docRef, docId, docType, docTitle }));
-                navigate(`/viewDocument`);
+                navigate('/viewDocument', { state: {pagination: pagination}});
               }}></Button></Tooltip>
             );
           default:
@@ -999,6 +1003,16 @@ const DocumentList = ({location}) => {
 
     console.log("useEffect called")
     console.log("includeBulk:"+location.state.includeBulk)
+
+    console.log('pagination', location.state.pagination)
+    // 뒤로 가기로 왔을때는 화면 재로딩을 하지 않도록 한다.
+    // let _pagination = {current:3, pageSize:10, showSizeChanger:true, pageSizeOptions: ["10", "20", "30"]};
+    // if (location.state.from === 'viewDocument') {
+    //   console.log('hello')
+    //   _pagination = {current:3, pageSize:10, showSizeChanger:true, pageSizeOptions: ["10", "20", "30"]};
+    //   setPagination({current:3, pageSize:10, showSizeChanger:true, pageSizeOptions: ["10", "20", "30"]})
+    //   pagination.current = 3;
+    // };
 
     if (location.state.status) {
       setStatus(location.state.status)

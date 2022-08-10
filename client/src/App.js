@@ -28,6 +28,7 @@ import Customer from './components/Customer/Customer';
 import FAQList from './components/Board/FAQList';
 import Sign from './components/Sign';
 import View from './components/View';
+import ViewDocument from './components/ViewDocument/ViewDocument';
 import SignDirect from './components/SignDirect/SignDirect';
 import Welcome from './components/Welcome';
 import Home from './components/Home/Home';
@@ -221,7 +222,7 @@ const App = () => {
       <MyFolder path="/myFolder" />
       <MySign path="mySign" />
       <Sign path="/signDocument" />
-      <View path="/viewDocument" />
+      <ViewDocument path="/viewDocument" />
       <Setting path="/setting" />
       <Test path="/test" />
       <BoardList path="/boardList" />

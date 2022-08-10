@@ -4,6 +4,7 @@ import 'antd/dist/antd.css';
 import axios from 'axios';
 // import Profile from '../Profile/Profile';
 import { CheckCard } from '@ant-design/pro-card';
+import { navigate, Link } from '@reach/router';
 
 
 import BTN01 from '../../assets/images/btn_board01.png';
@@ -204,7 +205,7 @@ const TreeTransfer = ({ dataSource, targetKeys, onSearch, expandedKeys, autoExpa
 //   { key: '0-2', title: '0-3' },
 // ];
 
-const Test = () => {
+const Test = ({location}) => {
 
   const [targetKeys, setTargetKeys] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -349,6 +350,8 @@ const Test = () => {
 
   useEffect(() => {
     
+    console.log("Test called", location.state.pagination);
+    
     fetch({
       OFFICE_CODE: "7831"
     });
@@ -391,7 +394,9 @@ const Test = () => {
 
     
     <div>
-
+    <Button onClick={()=> {
+      navigate('/viewDocument', { state: {from: 'Test'}});
+    }}>move to viewDocument</Button>
     <MyStyle>
     <Row gutter={12}>
 

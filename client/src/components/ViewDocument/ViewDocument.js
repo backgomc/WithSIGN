@@ -19,7 +19,7 @@ import { DownloadOutlined, ArrowLeftOutlined, CheckCircleTwoTone } from '@ant-de
 import { LICENSE_KEY } from '../../config/Config';
 import {DOCUMENT_SIGNED, DOCUMENT_TOSIGN, DOCUMENT_SIGNING, DOCUMENT_CANCELED, DOCUMENT_TOCONFIRM, DOCUMENT_TODO} from '../../common/Constants';
 
-const ViewDocument = () => {
+const ViewDocument = ({location}) => {
   const [instance, setInstance] = useState(null);
   const [responsive, setResponsive] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -36,7 +36,9 @@ const ViewDocument = () => {
 
   const viewer = useRef(null);
 
+
   useEffect(() => {
+
     WebViewer(
       {
         path: 'webviewer',
@@ -153,7 +155,12 @@ const ViewDocument = () => {
           ],
         },
         extra: [
-          <Button key="2" icon={<ArrowLeftOutlined />} onClick={() => window.history.back()}>
+          <Button key="2" icon={<ArrowLeftOutlined />} onClick={() => {
+            // console.log('pagination cccc', location?.state?.pagination)
+            // let pagination = {current:3, pageSize:10, showSizeChanger:true, pageSizeOptions: ["10", "20", "30"]}
+            location?.state?.pagination ? navigate('/documentList', { state: {pagination: location?.state?.pagination} }) : window.history.back();
+          }}> 
+          {/* <Button key="2" icon={<ArrowLeftOutlined />} onClick={() => window.history.back()}>  */}
             {/* {formatMessage({id: 'Back'})} */}
           </Button>,
           // <Button key="3" type="primary" onClick={() => download()} icon={<DownloadOutlined />}>
