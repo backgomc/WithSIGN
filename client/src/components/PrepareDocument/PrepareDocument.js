@@ -615,7 +615,7 @@ const PrepareDocument = () => {
               {
                 type: 'Tx',
                 value: annot.custom.value,
-                flags: [Annotations.WidgetFlags.MULTILINE, Annotations.WidgetFlags.DO_NOT_SCROLL, Annotations.WidgetFlags.DO_NOT_SPELL_CHECK]
+                // flags: [Annotations.WidgetFlags.MULTILINE, Annotations.WidgetFlags.DO_NOT_SCROLL, Annotations.WidgetFlags.DO_NOT_SPELL_CHECK]
               },
             );
             inputAnnot = new Annotations.TextWidgetAnnotation(field);
