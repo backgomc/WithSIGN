@@ -273,13 +273,13 @@ const SignDirect = () => {
               border: '1px solid #a5c7ff',
               'background-color': '#e8e8e8',
               color: 'black',
-              lineHeight: 1.5,
+              // lineHeight: 1.5,
               textAlign: widget.getCustomData('textAlign')
             };
           } else {
             return {
               color: 'black',
-              lineHeight: 1.5,
+              // lineHeight: 1.5,
               textAlign: widget.getCustomData('textAlign')
             };
           }

@@ -207,13 +207,13 @@ const SignDocument = () => {
               border: '1px solid #a5c7ff',
               'background-color': '#e8e8e8',
               color: 'black',
-              lineHeight: 1.5,
+              // lineHeight: 1.5,
               textAlign: widget.getCustomData('textAlign')
             };
           } else {
             return {
               color: 'black',
-              lineHeight: 1.5,
+              // lineHeight: 1.5,
               textAlign: widget.getCustomData('textAlign')
             };
           }
@@ -238,7 +238,7 @@ const SignDocument = () => {
           let createCount = 0;
           annotList.forEach(function(annot) {
             if (annot instanceof Annotations.SignatureWidgetAnnotation && annot.fieldName.startsWith(_id)) widgetCount++;
-            if (annot.ToolName === 'AnnotationCreateRubberStamp' && annot.Xa === null) createCount++;
+            if (annot.ToolName === 'AnnotationCreateRubberStamp' && annot.IsAdded ) createCount++;
           });
           if (widgetCount === 0 || widgetCount > 0 && widgetCount === createCount) setDisableNext(false);
         }
