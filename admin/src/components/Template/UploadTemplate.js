@@ -66,11 +66,12 @@ const UploadTemplate = () => {
       viewer.current
     ).then(instance => {
       setInstance(instance);
-      const { docViewer, CoreControls } = instance;
-      CoreControls.setCustomFontURL('/webfonts/');
+      const { Core, UI } = instance;
+      const { documentViewer } = Core;
+      Core.setCustomFontURL('/webfonts/');
 
-      docViewer.on('documentLoaded', () => {
-        const doc = docViewer.getDocument();
+      documentViewer.addEventListener('documentLoaded', () => {
+        const doc = documentViewer.getDocument();
 
         doc.loadCanvasAsync(({
           pageNumber: 1,

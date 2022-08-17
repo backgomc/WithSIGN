@@ -42,13 +42,14 @@ const ViewDocument = ({location}) => {
     },
     viewer.current
     ).then(async instance => {
-      const { annotManager, Annotations, CoreControls } = instance;
+      const { Core, UI } = instance;
+      const { annotationManager, Annotations } = Core;
 
-      instance.setToolbarGroup('toolbarGroup-View');
-      CoreControls.setCustomFontURL('/webfonts/');
-      annotManager.setReadOnly(true);
+      UI.setToolbarGroup('toolbarGroup-View');
+      Core.setCustomFontURL('/webfonts/');
+      annotationManager.setReadOnly(true);
 
-      annotManager.on('annotationChanged', (annotations, action, { imported }) => {
+      annotationManager.addEventListener('annotationChanged', (annotations, action, { imported }) => {
         if (imported) {
           annotations.forEach(function(annot) {
             annot.NoMove = true;
@@ -66,7 +67,7 @@ const ViewDocument = ({location}) => {
 
       const URL = '/' + docRef;
       console.log('URL:'+URL);
-      instance.docViewer.loadDocument(URL, { filename: docTitle+'.pdf' });
+      UI.loadDocument(URL, { filename: docTitle+'.pdf' });
     });
     return () => {
       setLoadingDownload([]);
