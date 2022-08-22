@@ -239,8 +239,11 @@ const SignDocument = () => {
           annotList.forEach(function(annot) {
             if (annot instanceof Annotations.SignatureWidgetAnnotation && annot.fieldName.startsWith(_id)) widgetCount++;
             if (annot.ToolName === 'AnnotationCreateRubberStamp' && annot.IsAdded ) createCount++;
+
           });
-          if (widgetCount === 0 || widgetCount > 0 && widgetCount === createCount) setDisableNext(false);
+          if (widgetCount === 0 || widgetCount > 0 && widgetCount === createCount) {
+            setDisableNext(false);
+          }
         }
 
         if (!imported && action === 'delete') {  // 서명 및 입력값이 삭제 된 경우
