@@ -4,6 +4,7 @@ import axios from 'axios';
 import { v4 as uuidv4 } from 'uuid';
 import { Table, Input, Space, Button, Checkbox, Badge, Tooltip, Select, Typography, Modal, message, TreeSelect, Switch, Radio, Empty } from "antd";
 import Highlighter from 'react-highlight-words';
+import { setPathname } from '../../config/MenuSlice';
 import {
   SearchOutlined,
   FileOutlined,
@@ -453,6 +454,7 @@ const DocumentList = ({location}) => {
 
   // 사용자별 폴더 목록 조회  
   const fetchFolders = (params = {}) => {
+    console.log('fetchFolders called')
     axios.post('/api/folder/listFolder', params).then(response => {
       console.log(response.data.folders);
       if (response.data.success && response.data.folders.length > 0) {
@@ -1001,6 +1003,9 @@ const DocumentList = ({location}) => {
 
   useEffect(() => {
 
+    // 좌측 메뉴 선택
+    dispatch(setPathname('/documentList'));
+
     console.log("useEffect called")
     console.log("includeBulk:"+location.state.includeBulk)
 
@@ -1018,6 +1023,17 @@ const DocumentList = ({location}) => {
       setStatus(location.state.status)
     }
 
+    // 폴더관리 부분 
+    // fixed: includeBulk 시 return 되므로 상단으로 위치 변경 [2022.08.25]
+    fetchFolders({
+      user: _id,
+      includeOption: true
+    });
+
+    fetchMyOrgs({
+      user: _id
+    });
+
     // HOME 에서 대량 발송 건 포함 이동해온 경우 대량 발송 건 포함 useDidMountEffect 서비스로 목록 호출
     if (location.state.includeBulk) {
       setIncludeBulk(location.state.includeBulk)
@@ -1028,16 +1044,6 @@ const DocumentList = ({location}) => {
       user: _id,
       pagination,
       status:location.state.status
-    });
-
-    // 폴더관리 부분
-    fetchFolders({
-      user: _id,
-      includeOption: true
-    });
-
-    fetchMyOrgs({
-      user: _id
     });
 
     // fetchTreeSelect({

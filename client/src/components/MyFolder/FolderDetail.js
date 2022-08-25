@@ -14,6 +14,7 @@ import { SearchOutlined, TeamOutlined, FileOutlined, ArrowLeftOutlined, Appstore
 import { PageContainer } from '@ant-design/pro-layout';
 import ProCard from '@ant-design/pro-card';
 import RcResizeObserver from 'rc-resize-observer';
+import { setPathname } from '../../config/MenuSlice';
 import 'antd/dist/antd.css';
 import '@ant-design/pro-list/dist/list.css';
 import '@ant-design/pro-card/dist/card.css';
@@ -499,7 +500,10 @@ const FolderDetail = ({location}) => {
   };
 
   useEffect(() => {
-    console.log('useEffect()');
+    console.log('useEffect() FolderDetail called');
+
+    // 좌측 메뉴 선택
+    dispatch(setPathname('/myFolder'));
     
     fetchDocs({
       user: _id,

@@ -348,4 +348,8 @@ db.documents.find( {$and: [
 # 기능 개선
 - 문서 상세보기 후 이전 화면 이동시 페이지 유지
 
+# 내 문서함이 아닌 대시보드에서 메뉴 이동시 폴더 목록이 안뜨는 문제 -> includeBulk 가 있는 경우 return 되어서 앞으로 로직 이동
+# 대시보드에서 문서 바로 클릭시 좌측 메뉴에 내 문서함 선택이 안됨 -> useEffect에 dispatch(setPathname('/documentList')); 
+# 내 문서함에서 폴더 이동시 좌측 메뉴에 폴더 관리 선택이 안됨 -> useEffect에 dispatch(setPathname('/myFolder')); 
+ 
 192.168.161.25

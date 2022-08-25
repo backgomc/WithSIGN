@@ -1221,7 +1221,7 @@ const Home = () => {
   return (
     <div>
 
-      <RcResizeObserver
+      <RcResizeObserver.Collection
         key="resize-observer"
         onResize={(offset) => {
           setResponsive(offset.width < 1280);
@@ -1257,7 +1257,7 @@ const Home = () => {
           <DirectCard></DirectCard>
         </Col>
       </Row>
-      </RcResizeObserver>
+      </RcResizeObserver.Collection>
     </div>
   );
 };

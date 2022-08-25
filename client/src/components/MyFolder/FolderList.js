@@ -314,7 +314,7 @@ const FolderList = () => {
   };
 
   useEffect(() => {
-    console.log('useEffect()');
+    console.log('useEffect() FolderList called');
     fetchFolders({
       user: _id,
       includeOption: includeOption
