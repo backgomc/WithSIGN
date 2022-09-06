@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
-import { Table, Input, Space, Button, Descriptions, Tooltip, Modal, message } from "antd";
+import { Table, Input, Space, Button, Descriptions, Tooltip, Modal, message, Badge } from "antd";
 import Highlighter from 'react-highlight-words';
 import { SearchOutlined, BellFilled, FileExcelOutlined } from '@ant-design/icons';
 import { useSelector, useDispatch } from 'react-redux';
@@ -20,7 +20,8 @@ import {
   FileOutlined,
   FilePdfOutlined,
   DownloadOutlined,
-  ArrowLeftOutlined
+  ArrowLeftOutlined,
+  CheckCircleTwoTone
 } from '@ant-design/icons';
 import { PageContainer } from '@ant-design/pro-layout';
 import 'antd/dist/antd.css';
@@ -42,7 +43,8 @@ const BulkDetail = ({location}) => {
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [hasSelected, setHasSelected] = useState(selectedRowKeys.length > 0);
   
-  const [pagination, setPagination] = useState({current:1, pageSize:10});
+  const [pagination, setPagination] = useState(location.state.pagination ? location.state.pagination : {current:1, pageSize:10, showSizeChanger:true, pageSizeOptions: ["10", "20", "30"]});
+
   const [loading, setLoading] = useState(false);
   const [loadingDownload, setLoadingDownload] = useState([]);
   const [loadingOrgInfos, setLoadingOrgInfos] = useState(false);
@@ -55,6 +57,9 @@ const BulkDetail = ({location}) => {
   const handleTableChange = (pagination, filters, sorter) => {
     console.log("handleTableChange called")
     console.log(filters)
+
+    setPagination(pagination);
+
     // fetch({
     //   sortField: sorter.field,
     //   sortOrder: sorter.order,
@@ -436,16 +441,26 @@ const BulkDetail = ({location}) => {
             const docRef = row["docRef"]
             const docTitle = row["docTitle"]
             dispatch(setDocToView({ docRef, docId, docTitle }));
-            navigate(`/viewDocument`);
+            navigate('/viewDocument', { state: {bulk: bulk, pagination: pagination}});
           }}></Button></Tooltip>&nbsp;&nbsp;
               <Tooltip placement="top" title={'다운로드'}>
+                <Badge count={row['downloads'].find(e => e === _id)?<CheckCircleTwoTone/>:0}>
                 <Button key="3" href={row["docRef"]} download={row["docTitle"]+'_'+filterUsers(row['users'][0])[0].name+'.pdf'} icon={<DownloadOutlined />} loading={loadingDownload[row["_id"]]}  onClick={(e) => {
-                  setLoadingDownload( { [row["_id"]] : true } )
+                  // setLoadingDownload( { [row["_id"]] : true } )
+                  // setTimeout(() => {
+                  //   setLoadingDownload( { [row["_id"]] : false})
+                  // }, 3000);
+
+                  row['downloads'].push(_id);
+                  axios.post('/api/document/updateDownloads', {docId:row['_id'], usrId:_id});
+                  setLoadingDownload( { [row['_id']] : true } );
                   setTimeout(() => {
-                    setLoadingDownload( { [row["_id"]] : false})
+                    setLoadingDownload( { [row['_id']] : false } );
                   }, 3000);
+                  
                 }}>
                 </Button>
+                </Badge>
               </Tooltip>
           </div>  : ''
         )
@@ -467,7 +482,7 @@ const BulkDetail = ({location}) => {
             const docRef = row["docRef"]
             const docTitle = row["docTitle"]
             dispatch(setDocToView({ docRef, docId, docTitle }));
-            navigate(`/viewDocument`);
+            navigate('/viewDocument', { state: {bulk: bulk, pagination: pagination}});
           }}></Button></Tooltip> : ''
         )
       }
@@ -574,7 +589,7 @@ const BulkDetail = ({location}) => {
         rowKey={ item => { return item._id } }
         columns={columns}
         dataSource={data}
-        // pagination={pagination}
+        pagination={pagination}
         loading={loading}
         // expandedRowRender={row => <BulkExpander item={row} />}
         // expandRowByClick

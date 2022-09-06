@@ -158,7 +158,11 @@ const ViewDocument = ({location}) => {
           <Button key="2" icon={<ArrowLeftOutlined />} onClick={() => {
             // console.log('pagination cccc', location?.state?.pagination)
             // let pagination = {current:3, pageSize:10, showSizeChanger:true, pageSizeOptions: ["10", "20", "30"]}
-            location?.state?.pagination ? navigate('/documentList', { state: {pagination: location?.state?.pagination} }) : window.history.back();
+
+            // 대량전송 상세보기 이동시 페이지 유지 처리 
+            location?.state?.bulk ? navigate('/bulkDetail', { state: {bulk: location?.state?.bulk, pagination: location?.state?.pagination} }) : ( location?.state?.pagination ? navigate('/documentList', { state: {pagination: location?.state?.pagination} }) : window.history.back())
+
+            // location?.state?.pagination ? navigate('/documentList', { state: {pagination: location?.state?.pagination} }) : window.history.back();
           }}> 
           {/* <Button key="2" icon={<ArrowLeftOutlined />} onClick={() => window.history.back()}>  */}
             {/* {formatMessage({id: 'Back'})} */}
