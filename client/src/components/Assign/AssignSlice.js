@@ -15,7 +15,8 @@ export const AssignSlice = createSlice({
     templateType: null,
     sendType: "G",  // G:일반, B:벌크방식, default: G
     orderType: "A", // A: 동차, S: 순차, default: A
-    hasRequester: false 
+    hasRequester: false,
+    isWithPDF: false 
   },
   reducers: {
     addSignee: (state, action) => {
@@ -91,6 +92,9 @@ export const AssignSlice = createSlice({
     setHasRequester: (state, action) => {
       state.hasRequester = action.payload;
     },
+    setIsWithPDF: (state, action) => {
+      state.isWithPDF = action.payload;
+    },
     resetAssignAll: (state, action) => {
       state.documentType = null;
       state.documentFile = null;
@@ -105,11 +109,12 @@ export const AssignSlice = createSlice({
       state.attachFiles = [];
       state.hasRequester = null;
       state.observers = [];
+      state.isWithPDF = false;
     },
   },
 });
 
-export const { addSignee, setSignees, resetSignee, setObservers, setDocumentFile, resetDocumentFile, setDocumentTitle, resetDocumentTitle, setTemplate, resetTemplate, setTemplateTitle, resetTemplateTitle, setDocumentType, resetDocumentType, setTemplateType, resetTemplateType, setSendType, resetAssignAll, setDocumentTempPath, resetDocumentTempPath, setAttachFiles, resetAttachFiles, setHasRequester } = AssignSlice.actions;
+export const { addSignee, setSignees, resetSignee, setObservers, setDocumentFile, resetDocumentFile, setDocumentTitle, resetDocumentTitle, setTemplate, resetTemplate, setTemplateTitle, resetTemplateTitle, setDocumentType, resetDocumentType, setTemplateType, resetTemplateType, setSendType, resetAssignAll, setDocumentTempPath, resetDocumentTempPath, setAttachFiles, resetAttachFiles, setHasRequester, setIsWithPDF } = AssignSlice.actions;
 
 export const selectAssignees = state => state.assign.signees;
 export const selectObservers = state => state.assign.observers;
@@ -124,7 +129,7 @@ export const selectTemplateType = state => state.assign.templateType;
 export const selectSendType = state => state.assign.sendType;
 export const selectOrderType = state => state.assign.orderType;
 export const selectHasRequester = state => state.assign.hasRequester;
-
+export const selectIsWithPDF = state => state.assign.isWithPDF;
 
 
 export default AssignSlice.reducer;

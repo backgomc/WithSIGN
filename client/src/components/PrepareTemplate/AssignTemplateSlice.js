@@ -7,7 +7,8 @@ export const AssignTemplateSlice = createSlice({
     observers: [],
     templateId: '',
     templateRef: '',
-    templateFileName: ''
+    templateFileName: '',
+    isWithPDF: false
   },
   reducers: {
     addSignee: (state, action) => {
@@ -35,21 +36,29 @@ export const AssignTemplateSlice = createSlice({
       var path = action.payload.docRef;
       state.templateFileName = path.substring(path.lastIndexOf('/')+1, path.lastIndexOf('.')) + '_CUSTOM.pdf';
     },
+    setIsWithPDF: (state, action) => {
+      state.isWithPDF = action.payload;
+    },
+    resetIsWithPDF: (state, action) => {
+      state.isWithPDF = false;
+    },
     resetAssignAll: (state, action) => {
       state.signees = [];
       state.observers = [];
       state.templateId = null;
       state.templateRef = null;
+      state.isWithPDF = false;
     }
   }
 });
 
-export const { addSignee, setSignees, resetSignee, setObservers, resetObservers, setTemplateInfo, resetAssignAll } = AssignTemplateSlice.actions;
+export const { addSignee, setSignees, resetSignee, setObservers, resetObservers, setTemplateInfo, setIsWithPDF, resetIsWithPDF, resetAssignAll } = AssignTemplateSlice.actions;
 
 export const selectSignees = state => state.assignTemplate.signees;
 export const selectObservers = state => state.assignTemplate.observers;
 export const selectTemplateId = state => state.assignTemplate.templateId;
 export const selectTemplateRef = state => state.assignTemplate.templateRef;
 export const selectTemplateFileName = state => state.assignTemplate.templateFileName;
+export const selectIsWithPDF = state => state.assignTemplate.isWithPDF;
 
 export default AssignTemplateSlice.reducer;

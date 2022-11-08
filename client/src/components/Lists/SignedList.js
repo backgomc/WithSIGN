@@ -190,7 +190,8 @@ const SignedList = () => {
       render: (_,row) => <Button onClick={() => {
         const docId = row["_id"]
         const docRef = row["docRef"]
-        dispatch(setDocToView({ docRef, docId }));
+        const isWithPDF = row["isWithPDF"]
+        dispatch(setDocToView({ docRef, docId, isWithPDF }));
         navigate(`/viewDocument`);
       }}>View</Button>, 
     },

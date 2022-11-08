@@ -75,8 +75,10 @@ const PrepareResult = ({location}) => {
         const usersTodo = document.usersTodo;
         const usersOrder = document.usersOrder;
         const attachFiles = document.attachFiles;
-    
-        dispatch(setDocToSign({ docRef, docId, docType, docUser, observers, orderType, usersTodo, usersOrder, attachFiles }));
+        const items = document.items;
+        const isWithPDF = document.isWithPDF;
+
+        dispatch(setDocToSign({ docRef, docId, docType, docUser, observers, orderType, usersTodo, usersOrder, attachFiles, items, isWithPDF }));
 
         navigate(`/signDocument`);
       },
@@ -96,8 +98,10 @@ const PrepareResult = ({location}) => {
     const usersTodo = data.usersTodo;
     const usersOrder = data.usersOrder;
     const attachFiles = data.attachFiles;
+    const items = data.items;
+    const isWithPDF = data.isWithPDF;
 
-    dispatch(setDocToSign({ docRef, docId, docType, docUser, observers, orderType, usersTodo, usersOrder, attachFiles }));
+    dispatch(setDocToSign({ docRef, docId, docType, docUser, observers, orderType, usersTodo, usersOrder, attachFiles, items, isWithPDF }));
     navigate(`/signDocument`);
   }
 

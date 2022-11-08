@@ -189,22 +189,22 @@ const Setting = () => {
                 disabled
                 width="md"
                 name="office"
-                label="소속"
+                label="회사"
                 fieldProps={{
                   size: 'large'
                 }}
-                placeholder="소속명"
+                placeholder="회사명"
               />
       
               <ProFormText
                 disabled
                 width="md"
                 name="depart"
-                label="부서명"
+                label="소속명"
                 fieldProps={{
                   size: 'large'
                 }}
-                placeholder="부서명"
+                placeholder="소속명"
               />
     
             <div style={{width:"328px"}}>

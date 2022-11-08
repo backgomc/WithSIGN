@@ -440,7 +440,10 @@ const BulkDetail = ({location}) => {
             const docId = row["_id"]
             const docRef = row["docRef"]
             const docTitle = row["docTitle"]
-            dispatch(setDocToView({ docRef, docId, docTitle }));
+            const isWithPDF = row["isWithPDF"]
+            const downloads = row["downloads"]
+            const status = DOCUMENT_SIGNED
+            dispatch(setDocToView({ docRef, docId, docTitle, isWithPDF, downloads, status }));
             navigate('/viewDocument', { state: {bulk: bulk, pagination: pagination}});
           }}></Button></Tooltip>&nbsp;&nbsp;
               <Tooltip placement="top" title={'다운로드'}>
@@ -481,7 +484,10 @@ const BulkDetail = ({location}) => {
             const docId = row["_id"]
             const docRef = row["docRef"]
             const docTitle = row["docTitle"]
-            dispatch(setDocToView({ docRef, docId, docTitle }));
+            const isWithPDF = row["isWithPDF"]
+            const status = DOCUMENT_SIGNED
+            const downloads = row["downloads"]
+            dispatch(setDocToView({ docRef, docId, docTitle, isWithPDF, status, downloads }));
             navigate('/viewDocument', { state: {bulk: bulk, pagination: pagination}});
           }}></Button></Tooltip> : ''
         )

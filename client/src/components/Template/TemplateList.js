@@ -2,10 +2,10 @@ import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
 import { Popover, Tooltip, Badge, Modal, Table, Input, Space, Button, Popconfirm, Tag, Progress, List, Pagination, Card } from "antd";
 import Highlighter from 'react-highlight-words';
-import { SearchOutlined, DeleteOutlined, FileOutlined, DownloadOutlined, FileAddOutlined, FormOutlined, FilePdfOutlined, ExclamationCircleOutlined, SettingTwoTone, QuestionCircleTwoTone } from '@ant-design/icons';
+import { SearchOutlined, DeleteOutlined, FileOutlined, DownloadOutlined, FileAddOutlined, FormOutlined, InfoCircleOutlined, ExclamationCircleOutlined, SettingTwoTone, QuestionCircleTwoTone } from '@ant-design/icons';
 import { useSelector, useDispatch } from 'react-redux';
 import { selectUser } from '../../app/infoSlice';
-import { resetSignee, setTemplateInfo, setSignees as setTemplateSignees, setObservers as setTemplateObservers } from '../PrepareTemplate/AssignTemplateSlice';
+import { resetSignee, setTemplateInfo, setIsWithPDF, setSignees as setTemplateSignees, setObservers as setTemplateObservers } from '../PrepareTemplate/AssignTemplateSlice';
 import { navigate } from '@reach/router';
 import { setDocToView } from '../ViewDocument/ViewDocumentSlice';
 import { setDocToSign } from '../SignDocument/SignDocumentSlice';
@@ -13,15 +13,19 @@ import Moment from 'react-moment';
 import moment from 'moment';
 import 'moment/locale/ko';
 // import { DocumentType, DocumentTypeText, DOCUMENT_SIGNED, DOCUMENT_TOSIGN, DOCUMENT_SIGNING, DOCUMENT_CANCELED } from './DocumentType';
+
 import TemplateExpander from "./TemplateExpander";
 import { setDirectTitle, setDirect } from '../SignDirect/DirectSlice';
-import { setHasRequester, setTemplate, setDocumentType, setTemplateTitle, setTemplateType, setSendType, resetAssignAll, setSignees, setObservers } from '../Assign/AssignSlice';
+import { setHasRequester, setTemplate, setDocumentType, setTemplateTitle, setTemplateType, setSendType, resetAssignAll, setSignees, setObservers, setIsWithPDF as setIsWithPDF2 } from '../Assign/AssignSlice';
 import { PageContainer } from '@ant-design/pro-layout';
 import RcResizeObserver from 'rc-resize-observer';
 import 'antd/dist/antd.css';
 import { useIntl } from "react-intl";
 import banner from '../../assets/images/sub_top4.png'
 import banner_small from '../../assets/images/sub_top4_2.png'
+
+// import guide01 from '../../assets/pdf/guide01.pdf';
+// import guide02 from '../../assets/pdf/guide02.pdf';
 
 import ProList from '@ant-design/pro-list';
 import { ProFormRadio } from '@ant-design/pro-form';
@@ -62,12 +66,13 @@ const TemplateList = () => {
   const dispatch = useDispatch();
   const user = useSelector(selectUser);
 
-  const { _id, name } = user;
+  const { _id, name, COMPANY_CODE } = user;
   const [searchText, setSearchText] = useState('');
   const [searchedColumn, setSearchedColumn] = useState('');
 
   const [data, setData] = useState([]);
   const [dataPrivate, setDataPrivate] = useState([]);
+  const [dataGroup, setDataGroup] = useState([]);
   const [dataPublic, setDataPublic] = useState([]);
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [hasSelected, setHasSelected] = useState(selectedRowKeys.length > 0);
@@ -75,13 +80,17 @@ const TemplateList = () => {
   
   const [pagination, setPagination] = useState({current:1, pageSize:10});
   const [paginationPrivate, setPaginationPrivate] = useState({current:1, pageSize:10});
+  const [paginationGroup, setPaginationGroup] = useState({current:1, pageSize:10});
   const [paginationPublic, setPaginationPublic] = useState({current:1, pageSize:10});
   const [total, setTotal] = useState();
   const [totalPrivate, setTotalPrivate] = useState();
+  const [totalGroup, setTotalGroup] = useState();
   const [totalPublic, setTotalPublic] = useState();
   const [current, setCurrent] = useState();
   const [currentPrivate, setCurrentPrivate] = useState();
+  const [currentGroup, setCurrentGroup] = useState();
   const [currentPublic, setCurrentPublic] = useState();
+
   const [pageSize, setPageSize] = useState(10);
   const [responsive, setResponsive] = useState(false);
 
@@ -89,7 +98,9 @@ const TemplateList = () => {
 
   const [loading, setLoading] = useState(false);
   const [loadingPrivate, setLoadingPrivate] = useState(false);
+  const [loadingGroup, setLoadingGroup] = useState(false);
   const [loadingPublic, setLoadingPublic] = useState(false);
+  
   // const [expandable, setExpandable] = useState();
   const [visiblePopconfirm, setVisiblePopconfirm] = useState(false);
 
@@ -130,6 +141,7 @@ const TemplateList = () => {
     });
   };
 
+  // 개인
   const fetchPrivate = (params = {}) => {
     setLoadingPrivate(true);
 
@@ -152,6 +164,30 @@ const TemplateList = () => {
     });
   };
 
+    // 회사
+    const fetchGroup = (params = {}) => {
+      setLoadingGroup(true);
+  
+      axios.post('/api/template/templates', params).then(response => {
+  
+        console.log(response)
+        if (response.data.success) {
+          const templates = response.data.templates;
+  
+          setPaginationGroup({...params.pagination, total:response.data.total});
+          setDataGroup(templates);
+          setTotalGroup(response.data.total);
+          setLoadingGroup(false);
+  
+        } else {
+          setLoadingGroup(false);
+          alert(response.data.error);
+        }
+  
+      });
+    };
+
+  // 신청서 
   const fetchPublic = (params = {}) => {
     setLoadingPublic(true);
 
@@ -212,16 +248,26 @@ const TemplateList = () => {
       onOk() {
         axios.post('/api/template/deleteTemplate', {_ids: [templateId]}).then(response => {
           if (response.data.success) {
-            fetchPrivate({
-              uid: _id,
-              pagination: paginationPrivate,
-              type: 'M'
-            });
-            fetchTotal({
-              uid: _id,
-              pagination: pagination,
-              type: 'T'
-            });
+
+            loadData();
+            // fetchPrivate({
+            //   uid: _id,
+            //   pagination: paginationPrivate,
+            //   type: 'M',
+            //   COMPANY_CODE: COMPANY_CODE
+            // });
+            // fetchTotal({
+            //   uid: _id,
+            //   pagination: pagination,
+            //   type: 'T',
+            //   COMPANY_CODE: COMPANY_CODE
+            // });
+            // fetchPublic({
+            //   uid: _id,
+            //   pagination: paginationPublic,
+            //   type: 'C',
+            //   COMPANY_CODE: COMPANY_CODE
+            // });
           }
         })
       },
@@ -246,6 +292,7 @@ const TemplateList = () => {
       dispatch(setDocumentType('DIRECT'));
       dispatch(setTemplateTitle(`${item.docTitle}_${name}_${moment().format('YYYYMMDD')}`));
       dispatch(setObservers(item.observers));
+      dispatch(setIsWithPDF2(item.isWithPDF));
 
       navigate('/signDirect');
 
@@ -459,21 +506,32 @@ const TemplateList = () => {
         pagination: {current: 1, pageSize: pageSize},
         uid: _id,
         docTitle: value,
-        type: 'M'
+        type: 'M',
+        COMPANY_CODE: COMPANY_CODE
       });
     } else if (tab === 'total') {
       fetchTotal({
         pagination: {current: 1, pageSize: pageSize},
         uid: _id,
         docTitle: value,
-        type: 'T'
+        type: 'T',
+        COMPANY_CODE: COMPANY_CODE
+      });
+    } else if (tab === 'group') {
+      fetchGroup({
+        pagination: {current: 1, pageSize: pageSize},
+        uid: _id,
+        docTitle: value,
+        type: 'G',
+        COMPANY_CODE: COMPANY_CODE
       });
     } else {
       fetchPublic({
         pagination: {current: 1, pageSize: pageSize},
         uid: _id,
         docTitle: value,
-        type: 'C'
+        type: 'C',
+        COMPANY_CODE: COMPANY_CODE
       });
     }
 
@@ -491,6 +549,8 @@ const TemplateList = () => {
       onOk() {
         dispatch(resetSignee());
         dispatch(setTemplateInfo(item));
+        dispatch(setTemplateTitle(item.docTitle));
+        dispatch(setIsWithPDF(item.isWithPDF));
         if(item.hasRequester) {
           // dispatch(setTemplateSignees([...item.signees, {key:'requester1',name:'서명 참여자1',order:0}]));
           dispatch(setTemplateSignees([...item.signees, ...item.requesters]));
@@ -516,7 +576,7 @@ const TemplateList = () => {
           <tr>
             <td align='left' width='280px'>
               자주 사용하는 문서를 미리 등록할 수 있습니다.
-              회사 템플릿 등록은 관리자에게 문의 해주세요.
+              신청서 등록은 관리자에게 문의 해주세요.
             </td>
             <td align='right'>
             <img src={responsive? banner_small : banner} width={responsive ? "100px" : "500px"} />
@@ -631,28 +691,42 @@ const TemplateList = () => {
     )
   }
   const actionItems = (item) => {
-    if (item.type && item.type == 'C') { 
+    if (item.user?._id === _id || user.role) {
       return (
-        item.user._id == _id ? 
-        [btnReqeust(item),
+      [btnReqeust(item),
         <Button type="text" icon={<FileOutlined />} onClick={e => { navigate('/previewPDF', {state: {docRef:item.docRef, docTitle:item.docTitle}}) }}>문서보기</Button>,
-        <Button type="text" danger icon={<DeleteOutlined />} onClick={e => { deleteTemplateSingle(item._id) }}>삭제</Button>] :
-        [btnReqeust(item),
-          <Button type="text" icon={<FileOutlined />} onClick={e => { navigate('/previewPDF', {state: {docRef:item.docRef, docTitle:item.docTitle}}) }}>문서보기</Button>]
-      )
+        <Button type="text" danger icon={<DeleteOutlined />} onClick={e => { deleteTemplateSingle(item._id) }}>삭제</Button>]);
     } else {
       return (
-        [btnReqeust(item),
-        <Button type="text" icon={<FileOutlined />} onClick={e => { navigate('/previewPDF', {state: {docRef:item.docRef, docTitle:item.docTitle}}) }}>문서보기</Button>,
-        <Button type="text" danger icon={<DeleteOutlined />} onClick={e => { deleteTemplateSingle(item._id) }}>삭제</Button>]
-      ) 
+      [btnReqeust(item),
+        <Button type="text" icon={<FileOutlined />} onClick={e => { navigate('/previewPDF', {state: {docRef:item.docRef, docTitle:item.docTitle}}) }}>문서보기</Button>]);
     }
+
+    // if (item.type && item.type == 'C') { 
+    //   return (
+    //     item.user._id == _id ? 
+    //     [btnReqeust(item),
+    //     <Button type="text" icon={<FileOutlined />} onClick={e => { navigate('/previewPDF', {state: {docRef:item.docRef, docTitle:item.docTitle}}) }}>문서보기</Button>,
+    //     <Button type="text" danger icon={<DeleteOutlined />} onClick={e => { deleteTemplateSingle(item._id) }}>삭제</Button>] :
+    //     [btnReqeust(item),
+    //       <Button type="text" icon={<FileOutlined />} onClick={e => { navigate('/previewPDF', {state: {docRef:item.docRef, docTitle:item.docTitle}}) }}>문서보기</Button>]
+    //   )
+    // } else {
+    //   return (
+    //     [btnReqeust(item),
+    //     <Button type="text" icon={<FileOutlined />} onClick={e => { navigate('/previewPDF', {state: {docRef:item.docRef, docTitle:item.docTitle}}) }}>문서보기</Button>,
+    //     <Button type="text" danger icon={<DeleteOutlined />} onClick={e => { deleteTemplateSingle(item._id) }}>삭제</Button>]
+    //   ) 
+    // }
   }
 
+
+  // type: C(신청서), M(개인), G(회사)
   const CustomLabel = (item) => {
     let label = '';
     let text = '';
-    if (item.type !== 'C' || (item.type === 'C' && user.role)) {
+    // if (item.type !== 'C' || (item.type === 'C' && user.role)) {
+    if (item.user?._id === _id || user.role ) {
       if (item.hasRequester || (item.users && item.users.length > 0)) {
         text = '파일 + 참여자';
       } else {
@@ -665,7 +739,7 @@ const TemplateList = () => {
             backgroundColor: '#000000AA',
             color: 'white',
             textAlign: 'center',
-            width: '280px'
+            width: '280px'  // 280px
           }}
           onClick={()=>{confirmToPrepare(item);}}
         >
@@ -681,7 +755,7 @@ const TemplateList = () => {
         backgroundSize: 'cover',
         justifyContent: 'center',
         alignItems: 'center',
-        width: '280px',
+        width: '280px', // 280px
         height: '395px',
         display: 'flex'
       }}>
@@ -714,7 +788,7 @@ const TemplateList = () => {
     // pagination={pagination}
     renderItem={item => (
       <List.Item key={item._id}>
-        <Badge.Ribbon color={(item.type && item.type == 'C') ? '#519BE3' : 'green'} text={(item.type && item.type == 'C') ? '회사' : '개인'}>
+        <Badge.Ribbon color={(item.type && item.type == 'C') ? '#519BE3' : 'green'} text={(item.type && item.type == 'C') ? '신청' : '개인'}>
         <ProCard 
           hoverable
           bordered
@@ -735,6 +809,53 @@ const TemplateList = () => {
     )}
     />
   )
+
+  const cardModeGroup = (
+    <List
+    rowKey="id"
+    loading={loadingGroup}
+    grid={{ gutter: 24, lg: 3, md: 2, sm: 1, xs: 1 }}
+    dataSource={dataGroup}
+    // onChange={handlePageChange}
+    pagination={{
+      onChange: page => {
+        console.log('page:'+page);
+        setCurrentGroup(page);
+        fetchGroup({
+          pagination: {current: page, pageSize: pageSize},
+          uid: _id,
+          type: 'G'
+        });
+      },
+      pageSize: pageSize,
+      total: totalGroup,
+      current: currentGroup
+    }}
+    // pagination={pagination}
+    renderItem={item => (
+      <List.Item key={item._id}>
+        <Badge.Ribbon color={(item.type && item.type == 'C') ? '#519BE3' : 'green'} text={(item.type && item.type == 'C') ? '신청' : '개인'}>
+        <ProCard 
+          hoverable
+          bordered
+          title={<Tooltip placement="topLeft" title={item.docTitle} arrowPointAtCenter><CardTitle>{item.docTitle}</CardTitle></Tooltip>}
+          // tooltip={moment(item.requestedTime).fromNow() + ' ' + item.user.name + ' ' + item.user.JOB_TITLE + ' ' + '생성'}
+          // extra={moment(item.requestedTime).fromNow()}
+          // subTitle={<Tag color="#5BD8A6">private</Tag>}
+          // colSpan="300px" 
+          layout="center" 
+          style={{ minWidth: "320px", height: "100%" }}
+          bodyStyle={{ padding: "5px"}}
+          actions={actionItems(item)}>
+            {/* <div><img src={item.thumbnail} style={{width: '280px', height: '395px'}} /></div> */}
+            {CustomLabel(item)}
+        </ProCard>
+        </Badge.Ribbon>
+      </List.Item>
+    )}
+    />
+  )
+
 
   const cardModePublic = (
     <List
@@ -760,7 +881,7 @@ const TemplateList = () => {
     // pagination={pagination}
     renderItem={item => (
       <List.Item key={item._id}>
-        <Badge.Ribbon color={(item.type && item.type == 'C') ? '#519BE3' : 'green'} text={(item.type && item.type == 'C') ? '회사' : '개인'}>
+        <Badge.Ribbon color={(item.type && item.type == 'C') ? '#519BE3' : 'green'} text={(item.type && item.type == 'C') ? '신청' : '개인'}>
         <ProCard 
           hoverable
           bordered
@@ -786,7 +907,7 @@ const TemplateList = () => {
     <List
     rowKey="id"
     loading={loading}
-    grid={{ gutter: 24, lg: 3, md: 2, sm: 1, xs: 1 }}
+    grid={{ gutter: 24, xs: 1 }}
     dataSource={data}
     // onChange={handlePageChange}
     pagination={{
@@ -796,7 +917,8 @@ const TemplateList = () => {
         fetchTotal({
           pagination: {current: page, pageSize: pageSize},
           uid: _id,
-          type: 'T'
+          type: 'T',
+          COMPANY_CODE: COMPANY_CODE
         });
       },
       pageSize: pageSize,
@@ -806,7 +928,7 @@ const TemplateList = () => {
     // pagination={pagination}
     renderItem={item => (
       <List.Item key={item._id}>
-        <Badge.Ribbon color={(item.type && item.type == 'C') ? '#519BE3' : 'green'} text={(item.type && item.type == 'C') ? '회사' : '개인'}>
+        <Badge.Ribbon color={(item.type && item.type == 'C') ? '#519BE3' : 'green'} text={(item.type && item.type == 'C') ? '신청' : '개인'}>
         <ProCard 
           hoverable
           bordered
@@ -829,32 +951,79 @@ const TemplateList = () => {
       return cardModePrivate;
     } else if (tab === 'public') {
       return cardModePublic;
+    } else if (tab === 'group') {
+      return cardModeGroup;
     } else {
       return cardModeTotal;
     }
   }
 
+  const loadData = () => {
+    if (tab === 'private') {
+      fetchPrivate({
+        pagination: {current: 1, pageSize: pageSize},
+        uid: _id,
+        type: 'M',
+        COMPANY_CODE: COMPANY_CODE
+      });
+    } else if (tab === 'total') {
+      fetchTotal({
+        pagination: {current: 1, pageSize: pageSize},
+        uid: _id,
+        type: 'T',
+        COMPANY_CODE: COMPANY_CODE
+      });
+    } else if (tab === 'group') {
+      fetchGroup({
+        pagination: {current: 1, pageSize: pageSize},
+        uid: _id,
+        type: 'G',
+        COMPANY_CODE: COMPANY_CODE
+      });
+    } else {
+      fetchPublic({
+        pagination: {current: 1, pageSize: pageSize},
+        uid: _id,
+        type: 'C',
+        COMPANY_CODE: COMPANY_CODE
+      });
+    }
+  }
+
   useEffect(() => {
 
-    fetchTotal({
-      uid: _id,
-      pagination: pagination,
-      type: 'T'
-    });
+    console.log('tab', tab);
+    loadData();
 
-    fetchPrivate({
-      uid: _id,
-      pagination: paginationPrivate,
-      type: 'M'
-    });
+    // fetchTotal({
+    //   uid: _id,
+    //   pagination: pagination,
+    //   type: 'T',
+    //   COMPANY_CODE: COMPANY_CODE
+    // });
 
-    fetchPublic({
-      uid: _id,
-      pagination: paginationPublic,
-      type: 'C'
-    });
+    // fetchPrivate({
+    //   uid: _id,
+    //   pagination: paginationPrivate,
+    //   type: 'M',
+    //   COMPANY_CODE: COMPANY_CODE
+    // });
 
-  }, [_id]);
+    // fetchPublic({
+    //   uid: _id,
+    //   pagination: paginationPublic,
+    //   type: 'C',
+    //   COMPANY_CODE: COMPANY_CODE
+    // });
+
+    // fetchGroup({
+    //   uid: _id,
+    //   pagination: paginationPublic,
+    //   type: 'G',
+    //   COMPANY_CODE: COMPANY_CODE
+    // });
+
+  }, [tab]);
 
 
   return (
@@ -877,13 +1046,23 @@ const TemplateList = () => {
             ],
           },
           extra: [  
-          <Search style={{ width: 200 }} placeholder="문서명 검색" onSearch={onSearch} enterButton />,           
-          (tab === 'public') ? 
-            user.role ? <Button type="primary" icon={<FileAddOutlined />} onClick={() => {navigate('/uploadTemplate', {state: {templateType:'C'}} );}}>템플릿 등록</Button> 
-            : '' 
-          : <Button type="primary" icon={<FileAddOutlined />} onClick={() => {navigate('/uploadTemplate', {state: {templateType:'M'}} );}}>
-          템플릿 등록
-          </Button>,
+          <Search style={{ width: 200 }} placeholder="문서명 검색" onSearch={onSearch} enterButton />,   
+          
+          // <Button icon={<InfoCircleOutlined />} onClick={e => { navigate('/previewPDF', {state: {docRef:guide01, docTitle:"양식 등록 안내"}}) }}>등록 안내</Button>,
+          
+          // user.role || user.manager_flag === 1 ? <Button type="primary" icon={<FileAddOutlined />} onClick={() => {navigate('/uploadTemplate', {state: {templateType: tab === 'private' ? 'M' : (tab === 'public' ? 'C' : 'G') }} );}}>템플릿 등록</Button> : ''
+          
+          <Button type="primary" icon={<FileAddOutlined />} onClick={() => {navigate('/uploadTemplate', {state: {templateType: tab === 'public' ? 'C' : 'M' }} );}}>템플릿 등록</Button>
+
+          
+          // (tab === 'public') ? 
+          //   user.role || user.manager_flag === 1 ? <Button type="primary" icon={<FileAddOutlined />} onClick={() => {navigate('/uploadTemplate', {state: {templateType:'C'}} );}}>양식 등록</Button> 
+          //   : '' 
+          // : user.role || user.manager_flag === 1 ? <Button type="primary" icon={<FileAddOutlined />} onClick={() => {navigate('/uploadTemplate', {state: {templateType:'M'}} );}}>
+          // 양식 등록
+          // </Button> : '',
+
+
           // <Popconfirm title="삭제하시겠습니까？" okText="네" cancelText="아니오" visible={visiblePopconfirm} onConfirm={deleteTemplate} onCancel={() => {setVisiblePopconfirm(false);}}>
           //   <Button type="primary" danger disabled={!hasSelected} onClick={()=>{setVisiblePopconfirm(true);}}>
           //     삭제
@@ -903,8 +1082,12 @@ const TemplateList = () => {
             tab: '개인 템플릿',
             key: 'private',
           },
+          // {
+          //   tab: '회사 템플릿',
+          //   key: 'group',
+          // },
           {
-            tab: '회사 템플릿',
+            tab: '신청서',
             key: 'public',
           },
         ]}

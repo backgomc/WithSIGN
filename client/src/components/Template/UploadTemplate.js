@@ -3,18 +3,20 @@ import { useSelector, useDispatch } from 'react-redux';
 import axios from 'axios';
 import { navigate } from '@reach/router';
 import { selectUser } from '../../app/infoSlice';
-import { resetSignee, resetObservers, setTemplateInfo } from '../PrepareTemplate/AssignTemplateSlice';
+import { resetSignee, resetObservers, setTemplateInfo, setIsWithPDF } from '../PrepareTemplate/AssignTemplateSlice';
+import { selectPathname, setPathname } from '../../config/MenuSlice';
+import { setTemplateTitle } from '../Assign/AssignSlice';
 import 'antd/dist/antd.css';
 import { Upload, message, Form, Button, Modal } from 'antd';
 import { useIntl } from "react-intl";
 import { PageContainer } from '@ant-design/pro-layout';
 import ProCard from '@ant-design/pro-card';
-import ProForm, { ProFormUploadDragger, ProFormText } from '@ant-design/pro-form';
+import ProForm, { ProFormUploadDragger, ProFormText, ProFormRadio } from '@ant-design/pro-form';
 import '@ant-design/pro-card/dist/card.css';
 import 'antd/dist/antd.css';
 import '@ant-design/pro-form/dist/form.css';
 import WebViewer from '@pdftron/webviewer';
-import { LICENSE_KEY } from '../../config/Config';
+import { LICENSE_KEY, USE_WITHPDF } from '../../config/Config';
 import Icon, { CheckCircleTwoTone } from '@ant-design/icons';
 import { ReactComponent as PDF_ICON} from '../../assets/images/pdf-icon.svg';
 import { ReactComponent as DOC_ICON} from '../../assets/images/word-icon.svg';
@@ -22,17 +24,20 @@ import { ReactComponent as PPT_ICON} from '../../assets/images/ppt-icon.svg';
 import { ReactComponent as XLS_ICON} from '../../assets/images/excel-icon.svg';
 import * as common from "../../util/common";
 import { setTemplateType } from '../Assign/AssignSlice';
+import PDFViewer from '@niceharu/withpdf';
 
 const { confirm } = Modal;
 
 const UploadTemplate = ({location}) => {
 
-  const templateType = location.state.templateType  // C: 회사, M: 개인
+  // const templateType = location.state.templateType  // C: 회사, M: 개인
 
   const dispatch = useDispatch();
   const { formatMessage } = useIntl();
   const [form] = Form.useForm();
 
+  const pathname = useSelector(selectPathname);
+  
   const [instance, setInstance] = useState(null)
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -40,10 +45,14 @@ const UploadTemplate = ({location}) => {
 
   const [tempFilePath, setTempFilePath] = useState(null);
   const [thumbnail, setThumbnail] = useState(null);
-
+  
   const user = useSelector(selectUser);
-  const { email, _id } = user;
+  const { email, _id, COMPANY_CODE } = user;
   const viewer = useRef(null);
+  const pdfRef = useRef();
+
+  const [type, setType] = useState(user.role ? location.state.templateType : 'M');
+
 
   const fetchUploadTempFile = async () => {
     setLoading(true);
@@ -64,85 +73,70 @@ const UploadTemplate = ({location}) => {
       setTempFilePath(docRef)
     }
     
-    if(instance && docRef) {
-      const URL = '/' + docRef;      
-      instance.docViewer.loadDocument(URL);
+    if (USE_WITHPDF) {
+      await pdfRef.current.uploadPDF(docRef);
+      const _thumbnail = await pdfRef.current.getThumbnail(0, 0.5);
+      setThumbnail(_thumbnail);
+    } else {
+      if(instance && docRef) {
+        const URL = '/' + docRef;      
+        instance.docViewer.loadDocument(URL);
+      }
     }
+
   };
 
   useEffect(() => {
 
-    // FILE Thumbnail 추출 
-    WebViewer(
-      {
-        path: 'webviewer',
-        licenseKey: LICENSE_KEY,
-        disabledElements: [
-          'ribbons',
-          'toggleNotesButton',
-          'searchButton',
-          'menuButton',
-        ],
-      },
-      viewer.current,
-    )
-    .then(instance => {
-      setInstance(instance)
+    if (USE_WITHPDF) {
 
-      // const { docViewer, CoreControls } = instance;
-      const { Core, UI } = instance;
-      const { documentViewer } = Core;
-      Core.setCustomFontURL("/webfonts/");
-      
-      documentViewer.addEventListener('documentLoaded', () => {
-        console.log('documentLoaded called');
-        const doc = documentViewer.getDocument();
-        const pageIdx = 1;
+    } else {
+      // FILE Thumbnail 추출 
+      WebViewer(
+        {
+          path: 'webviewer',
+          licenseKey: LICENSE_KEY,
+          disabledElements: [
+            'ribbons',
+            'toggleNotesButton',
+            'searchButton',
+            'menuButton',
+          ],
+        },
+        viewer.current,
+      )
+      .then(instance => {
+        setInstance(instance)
 
-        // doc.loadThumbnailAsync(pageIdx, (thumbnail) => {
-        //   // thumbnail is a HTMLCanvasElement or HTMLImageElement
-        //   console.log("loadThumbnailAsync called")
-        //   console.log('thumbnail:'+thumbnail.toDataURL());
+        // const { docViewer, CoreControls } = instance;
+        const { Core, UI } = instance;
+        const { documentViewer } = Core;
+        Core.setCustomFontURL("/webfonts/");
+        
+        documentViewer.addEventListener('documentLoaded', () => {
+          console.log('documentLoaded called');
+          const doc = documentViewer.getDocument();
+          const pageIdx = 1;
 
-        //   setThumbnail(thumbnail.toDataURL())
-        // });
+          doc.loadCanvasAsync(({
+            pageNumber: 1,
+            // zoom: 0.21, // render at twice the resolution //mac: 0.21 window: ??
+            width: 300,  // mac 300
+            drawComplete: async (thumbnail) => {
+              // const pageNumber = 1;
+              // optionally comment out "drawAnnotations" below to exclude annotations
+              // await instance.docViewer.getAnnotationManager().drawAnnotations(pageNumber, thumbnail);
+              // thumbnail is a HTMLCanvasElement or HTMLImageElement
+              console.log('thumbnail:'+thumbnail.toDataURL());
+              setThumbnail(thumbnail.toDataURL())
+            }
+          }));
 
-        doc.loadCanvasAsync(({
-          pageNumber: 1,
-          // zoom: 0.21, // render at twice the resolution //mac: 0.21 window: ??
-          width: 300,  // mac 300
-          drawComplete: async (thumbnail) => {
-            // const pageNumber = 1;
-            // optionally comment out "drawAnnotations" below to exclude annotations
-            // await instance.docViewer.getAnnotationManager().drawAnnotations(pageNumber, thumbnail);
-            // thumbnail is a HTMLCanvasElement or HTMLImageElement
-            console.log('thumbnail:'+thumbnail.toDataURL());
-            setThumbnail(thumbnail.toDataURL())
-          }
-        }));
+        });
 
       });
+    }
 
-
-      // docViewer.on('annotationsLoaded', () => {
-      //   console.log('annotationsLoaded called');
-      //   const doc = docViewer.getDocument();
-      //   const pageIdx = 1;
-      //   doc.loadCanvasAsync(({
-      //     pageNumber: 1,
-      //     zoom: 2, // render at twice the resolution
-      //     drawComplete: async (thumbnail) => {
-      //       // const pageNumber = 1;
-      //       // optionally comment out "drawAnnotations" below to exclude annotations
-      //       // await instance.docViewer.getAnnotationManager().drawAnnotations(pageNumber, thumbnail);
-      //       // thumbnail is a HTMLCanvasElement or HTMLImageElement
-      //       console.log('thumbnail:'+thumbnail);
-      //       setThumbnail(thumbnail.toDataURL())
-      //     }
-      //  }));
-      // });
-
-    });
 
   }, []);
 
@@ -196,14 +190,16 @@ const UploadTemplate = ({location}) => {
       email: email,
       docRef: docRef,
       thumbnail: thumbnail,
-      type: templateType
+      type: type,
+      isWithPDF: USE_WITHPDF,
+      COMPANY_CODE: COMPANY_CODE
     }
     const res2 = await axios.post('/api/template/addTemplate', body);
     setLoading(false);
     if (res2.data.success) {
       confirmToPrepare(res2.data.templateInfo);
     } else {
-      navigate('/templateList');
+      navigate(pathname? pathname : '/templateList');
     }
   }
 
@@ -219,11 +215,13 @@ const UploadTemplate = ({location}) => {
         dispatch(resetSignee());
         dispatch(resetObservers());
         dispatch(setTemplateInfo(templateInfo));
-        dispatch(setTemplateType(templateInfo.type))
+        dispatch(setTemplateType(templateInfo.type));
+        dispatch(setIsWithPDF(USE_WITHPDF));
+        dispatch(setTemplateTitle(form.getFieldValue('documentTitle')));
         navigate('/assignTemplate');
       },
       onCancel() {
-        navigate('/templateList');
+        navigate(pathname? pathname : '/templateList');
       },
     });
   }
@@ -250,7 +248,7 @@ const UploadTemplate = ({location}) => {
       loading={loading}
       ghost
       header={{
-        title: templateType === 'M' ? '템플릿 등록(개인)' : '템플릿 등록(회사)',
+        title: (type === 'M' || type === 'G') ? '템플릿 등록 (개인 템플릿)' : '템플릿 등록 (신청서)',
         ghost: false,
         breadcrumb: {
           routes: [
@@ -265,7 +263,7 @@ const UploadTemplate = ({location}) => {
           ],
         },
         extra: [
-          <Button key="1" onClick={() => {navigate(`/templateList`);}}>이전</Button>,
+          <Button key="1" onClick={() => {window.history.back();}}>이전</Button>,
           <Button key="2" onClick={() => form.resetFields()}>{formatMessage({id: 'Initialize'})}</Button>,
           <Button key="3" type="primary" onClick={() => form.submit()} disabled={disableNext}>
             {formatMessage({id: 'Save'})}
@@ -287,6 +285,7 @@ const UploadTemplate = ({location}) => {
             type: 'card',
           }}
         >
+
           <ProCard.TabPane key="tab1" tab="내 컴퓨터">
             <ProForm 
               form={form}
@@ -366,7 +365,7 @@ const UploadTemplate = ({location}) => {
                     setFile(file);
                     
                     form.setFieldsValue({
-                      documentTitle: file.name.replace(/\.[^/.]+$/, ""),
+                      documentTitle: file.name.replace(/\.[^/.]+$/, "").normalize('NFC'),  // MAC 에서 파일 업로드 시 한글 자소 분리 문제로 NFD 방식을 NFC로 변경 
                     })
 
                     // FILE Thumbnail 추출 
@@ -419,6 +418,29 @@ const UploadTemplate = ({location}) => {
                 rules={[{ required: true, message: formatMessage({id: 'input.documentTitle'}) }]}
               />
 
+              <ProFormRadio.Group
+                name="radio"
+                label="템플릿 타입"
+                rules={[{ required: true }]}
+                initialValue={type}
+                disabled={!user.role}
+                onChange={(e) => { setType(e.target.value) }}
+                options={[
+                  {
+                    label: '개인 템플릿',
+                    value: 'M'
+                  },
+                  // {
+                  //   label: '일반 양식', // 회사양식 
+                  //   value: 'G'
+                  // },
+                  {
+                    label: '신청서',
+                    value: 'C'
+                  }
+                ]}
+                />
+
             </ProForm>
 
             <div><img src={thumbnail}></img></div>
@@ -428,8 +450,8 @@ const UploadTemplate = ({location}) => {
       </ProCard>
     </PageContainer>
     
-    <div className="webviewer" ref={viewer} style={{display:'none'}}></div>
-    {/* <div className="webviewer" ref={viewer}></div> */}
+    {USE_WITHPDF ? <div  style={{display:'none'}} ><PDFViewer ref={pdfRef} /></div> : <div className="webviewer" ref={viewer} style={{display:'none'}}></div>}
+
   </div>
   )
 

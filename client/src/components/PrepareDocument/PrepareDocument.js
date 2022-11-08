@@ -12,7 +12,7 @@ import { navigate } from '@reach/router';
 //   Button,
 //   SelectList,
 // } from 'gestalt';
-import { Upload, message, Badge, Button, Row, Col, List, Card, Checkbox, Tooltip, Tag, Divider } from 'antd';
+import { Upload, message, Badge, Button, Row, Col, List, Card, Checkbox, Tooltip, Tag, Divider, Spin, Typography } from 'antd';
 import Icon, { InboxOutlined, HighlightOutlined, PlusOutlined, ArrowLeftOutlined, SendOutlined } from '@ant-design/icons';
 import { selectDocumentTempPath, 
          resetAssignAll,
@@ -21,6 +21,7 @@ import { selectDocumentTempPath,
          resetSignee, 
          selectDocumentFile, 
          selectDocumentTitle, 
+         setDocumentTitle,
          resetDocumentFile, 
          resetDocumentTitle, 
          selectTemplate, 
@@ -28,6 +29,7 @@ import { selectDocumentTempPath,
          selectDocumentType, 
          resetDocumentType, 
          selectTemplateTitle, 
+         setTemplateTitle,
          selectSendType, 
          selectOrderType,
          selectAttachFiles,
@@ -46,10 +48,23 @@ import ProCard from '@ant-design/pro-card';
 import 'antd/dist/antd.css';
 import '@ant-design/pro-card/dist/card.css';
 import logo from '../../assets/images/logo.svg';
-import { LICENSE_KEY } from '../../config/Config';
+import { LICENSE_KEY, USE_WITHPDF } from '../../config/Config';
 import { ReactComponent as IconSign} from '../../assets/images/sign.svg';
 import { ReactComponent as IconText} from '../../assets/images/text.svg';
 import { ReactComponent as IconCheckbox} from '../../assets/images/checkbox.svg';
+
+import loadash from 'lodash';
+import PDFViewer from "@niceharu/withpdf";
+import {TYPE_SIGN, TYPE_IMAGE, TYPE_TEXT, TYPE_BOX, TYPE_CHECKBOX, COLORS, AUTO_NAME, AUTO_JOBTITLE, AUTO_OFFICE, AUTO_DEPART, AUTO_SABUN, AUTO_DATE} from '../../common/Constants';
+import styled from 'styled-components';
+const PageContainerStyle = styled.div`
+.ant-pro-page-container-children-content {
+  margin-top: 5px !important; 
+  margin-left: 5px !important; 
+  // margin-right: 0px !important;
+}
+`;
+
 const { Dragger } = Upload;
 
 const { detect } = require('detect-browser');
@@ -84,6 +99,8 @@ const PrepareDocument = () => {
   const templateTitle = useSelector(selectTemplateTitle);
   const sendType = useSelector(selectSendType);
 
+  const [docTitle, setDocTitle] = useState((documentType === "PC") ? documentTitle : templateTitle);
+
   // const directTitle = useSelector(selectDirectTitle);
   // const directTempPath = useSelector(selectDirectTempPath);
 
@@ -113,6 +130,7 @@ const PrepareDocument = () => {
   const myname = user.name;
 
   const viewer = useRef(null);
+  const pdfRef = useRef();
   const filePicker = useRef(null);
 
   const props = {
@@ -165,20 +183,91 @@ const PrepareDocument = () => {
   // }
   // E. control inputValue map
 
+  const fetchSigns = async () => {
+    let param = {
+      user: _id
+    }
+    const res = await axios.post('/api/sign/signs', param);
+    if (res.data.success) {
+      const signs = res.data.signs;
+      if (USE_WITHPDF) {
+        pdfRef.current.setSigns(signs);
+      }
+    }
+  }
 
+  const initWithPDF = async () => {
+    if (documentType === 'TEMPLATE' || documentType === 'TEMPLATE_CUSTOM') {
+      await pdfRef.current.uploadPDF(template.docRef);
 
-  // if using a class, equivalent of componentDidMount
+      console.log('assignees', assignees)
+      // 일반 전송인 경우 requester 는 제외
+      let newItems = [];  
+      template.items.forEach(item => {
+
+        if (sendType === 'B') {
+          if(template.requesters?.some(user => user.key === item.uid)) {
+            let newItem = loadash.cloneDeep(item);
+            newItem.uid = 'bulk'; //requester1 -> bulk
+            newItems.push(newItem);
+          }
+        } else {
+          if(assignees.some(user => user.key === item.uid)) {
+            newItems.push(item);
+          }
+        }
+
+      })
+
+      await pdfRef.current.importItems(newItems);
+
+      // init boxData
+      newItems.forEach(item => {
+        let member = boxData.filter(e => e.key === item.uid)[0];
+        if (member) {
+          if (item.subType === TYPE_SIGN) {
+            member.sign = member.sign + 1;
+          } else if (item.subType === TYPE_TEXT) {
+            
+            if (item.autoInput) {
+              if (item.autoInput === AUTO_NAME) {
+                member.auto_name = member.auto_name + 1;
+              } else if (item.autoInput === AUTO_JOBTITLE) {
+                member.auto_jobtitle = member.auto_jobtitle + 1;
+              } else if (item.autoInput === AUTO_OFFICE) {
+                member.auto_office = member.auto_office + 1;
+              } else if (item.autoInput === AUTO_DEPART) {
+                member.auto_depart = member.auto_depart + 1;
+              } else if (item.autoInput === AUTO_SABUN) {
+                member.auto_sabun = member.auto_sabun + 1;
+              } else if (item.autoInput === AUTO_DATE) {
+                member.auto_date = member.auto_date + 1;
+              }
+            } else {
+              member.text = member.text + 1;
+            }
+            
+          } else if (item.subType === TYPE_CHECKBOX) {
+            member.checkbox = member.checkbox + 1;
+          }
+  
+          let newBoxData = boxData.slice();
+          newBoxData[boxData.filter(e => e.key === user).index] = member;
+          setBoxData(newBoxData);
+        }
+      })
+      
+    } else if (documentType === 'PC' || documentType === 'DIRECT') {
+      await pdfRef.current.uploadPDF(documentTempPath);
+    }
+
+    let pageCnt = await pdfRef.current.getPageCount();
+    setPageCount(pageCnt);
+
+    await fetchSigns();
+  }
+
   useEffect(() => {
-
-    // init inputValue
-    // assignees.map(user => {
-    //   insertInputValue(user.key, {sign:0, text:0})
-    // });
-
-    // setInputValue(
-    //   assignees.map(user => {
-    //     return { [user.key]: {sign:0, text:0} };
-    // }))
 
     if (sendType !== 'B') {
       setObservers(preObserver.filter((value) => {
@@ -186,377 +275,385 @@ const PrepareDocument = () => {
       }));
     }
 
-    WebViewer(
-      {
-        path: 'webviewer',
-        licenseKey: LICENSE_KEY,
-        disabledElements: [
-          'ribbons',
-          'toggleNotesButton',
-          'searchButton',
-          'menuButton',
-        ],
-      },
-      viewer.current,
-    ).then(async instance => {
-      // const { iframeWindow, docViewer, CoreControls, Annotations } = instance;  // v6
-      const { Core, UI } = instance;
-      const { documentViewer, Annotations, Tools } = Core;
-      // select only the view group
-      // toolbarGroup-View, toolbarGroup-Annotate, toolbarGroup-Shapes, toolbarGroup-Insert, toolbarGroup-Measure, toolbarGroup-Edit, toolbarGroup-FillAndSign
-      // instance.setToolbarGroup('toolbarGroup-FillAndSign');
-      // instance.setToolbarGroup('toolbarGroup-Annotate');
+    if (USE_WITHPDF) {
+      initWithPDF();
 
-      // instance.setHeaderItems(function(header) {
-      //   // get the tools overlay
-      //   const toolsOverlay = header.getHeader('toolbarGroup-Annotate').get('toolsOverlay');
-      //   header.getHeader('toolbarGroup-Annotate').delete('toolsOverlay');
-      //   // add the line tool to the top header
-      //   header.getHeader('default').push({
-      //     type: 'toolGroupButton',
-      //     toolGroup: 'lineTools',
-      //     dataElement: 'lineToolGroupButton',
-      //     title: 'annotation.line',
-      //   });
-      //   // add the tools overlay to the top header
-      //   // header.push(toolsOverlay);
-      // });
+    } else {
 
-    
-      // set the ribbons(상단 그룹) and second header
-      UI.enableElements(['ribbons']);
-      UI.disableElements(['toolbarGroup-View', 'toolbarGroup-Annotate', 'toolbarGroup-Shapes', 'toolbarGroup-Insert', 'toolbarGroup-Measure', 'toolbarGroup-Edit', 'toolbarGroup-Forms', 'annotationCommentButton', 'linkButton', 'contextMenuPopup']);
-      UI.disableTools([Tools.ToolNames.FORM_FILL_CROSS, Tools.ToolNames.FORM_FILL_CHECKMARK, Tools.ToolNames.FORM_FILL_DOT]);
-      // instance.disableTools([ 'AnnotationCreateSticky', 'AnnotationCreateFreeText' ]); // hides DOM element + disables shortcut
-      // instance.enableFeatures([instance.Feature.Annotations]);
-      // instance.enableFeatures([instance.Feature.Ribbons]);
-      
-      UI.setToolbarGroup('toolbarGroup-View');
-
-      // set local font 
-      Core.setCustomFontURL('/webfonts/');
-
-      // set language
-      UI.setLanguage('ko');
-
-      // copy 방지 
-      UI.disableFeatures([instance.UI.Feature.Copy]);
-
-      // 포커스 
-      documentViewer.setToolMode(documentViewer.getTool('Pan'));
-
+      WebViewer(
+        {
+          path: 'webviewer',
+          licenseKey: LICENSE_KEY,
+          disabledElements: [
+            'ribbons',
+            'toggleNotesButton',
+            'searchButton',
+            'menuButton',
+          ],
+        },
+        viewer.current,
+      ).then(async instance => {
+        // const { iframeWindow, docViewer, CoreControls, Annotations } = instance;  // v6
+        const { Core, UI } = instance;
+        const { documentViewer, Annotations, Tools } = Core;
+        // select only the view group
+        // toolbarGroup-View, toolbarGroup-Annotate, toolbarGroup-Shapes, toolbarGroup-Insert, toolbarGroup-Measure, toolbarGroup-Edit, toolbarGroup-FillAndSign
+        // instance.setToolbarGroup('toolbarGroup-FillAndSign');
+        // instance.setToolbarGroup('toolbarGroup-Annotate');
   
-      setInstance(instance);
-
-      const iframeDoc = UI.iframeWindow.document.body;
-      iframeDoc.addEventListener('dragover', dragOver);
-      iframeDoc.addEventListener('drop', e => {
-        drop(e, instance);
-      });
-
-      if (documentType === 'TEMPLATE') {
-        // /storage/... (O) storage/...(X)
-        UI.loadDocument('/'+template.docRef);
-      } else if (documentType === 'TEMPLATE_CUSTOM') {
-        // /storage/... (O) storage/...(X)
-        UI.loadDocument('/'+template.customRef);
-      } else if (documentType === 'PC' || documentType === 'DIRECT') {
-        UI.loadDocument('/'+documentTempPath);
-      }
-
-      const annotationManager = documentViewer.getAnnotationManager();
-
-      documentViewer.addEventListener('documentLoaded', async () => {
-        console.log('documentLoaded called');
-        
-        // 디폴트 설정
-        // docViewer.setToolMode(docViewer.getTool('AnnotationCreateFreeText'));
-
-        // 페이지 저장
-        setPageCount(documentViewer.getPageCount());
-
-        const doc = documentViewer.getDocument();
-        // const pageIdx = 1;
-
-        // doc.loadThumbnailAsync(pageIdx, (thumbnail) => {
-        //   // thumbnail is a HTMLCanvasElement or HTMLImageElement
-        //   console.log("loadThumbnailAsync called")
-        //   // console.log('thumbnail:'+thumbnail.toDataURL());
-
-        //   setThumbnail(thumbnail.toDataURL())
+        // instance.setHeaderItems(function(header) {
+        //   // get the tools overlay
+        //   const toolsOverlay = header.getHeader('toolbarGroup-Annotate').get('toolsOverlay');
+        //   header.getHeader('toolbarGroup-Annotate').delete('toolsOverlay');
+        //   // add the line tool to the top header
+        //   header.getHeader('default').push({
+        //     type: 'toolGroupButton',
+        //     toolGroup: 'lineTools',
+        //     dataElement: 'lineToolGroupButton',
+        //     title: 'annotation.line',
+        //   });
+        //   // add the tools overlay to the top header
+        //   // header.push(toolsOverlay);
         // });
-
-        doc.loadCanvasAsync(({
-          pageNumber: 1,
-          // zoom: 0.21, // render at twice the resolution //mac: 0.21 window: ??
-          width: 300,  // 윈도우 기준으로 맞춤. 맥에서는 해상도가 더 크게 나옴
-          drawComplete: async (thumbnail) => {
-            // const pageNumber = 1;
-            // optionally comment out "drawAnnotations" below to exclude annotations
-            // await instance.docViewer.getAnnotationManager().drawAnnotations(pageNumber, thumbnail);
-            // thumbnail is a HTMLCanvasElement or HTMLImageElement
-            // console.log('thumbnail:'+thumbnail.toDataURL());
-            setThumbnail(thumbnail.toDataURL())
-          }
-        }));
-
-      });
-
-      // const normalStyles = (widget) => {
-      //   if (widget instanceof Annotations.TextWidgetAnnotation) {
-      //     return {
-      //       border: '1px solid #a5c7ff',
-      //       'background-color': '#a5c7ff',
-      //       color: 'black',
-      //     };
-      //   } else if (widget instanceof Annotations.SignatureWidgetAnnotation) {
-      //     return {
-      //       border: '1px solid #a5c7ff',
-      //     };
-      //   }
-      // };
-
-      // Annotations.WidgetAnnotation.getCustomStyles = normalStyles;
-
-      annotationManager.addEventListener('annotationChanged', async (annotations, action, info) => {
-
-        console.log('called annotationChanged:'+ action);
-
-        // const { documentViewer, Font } = instance;
-        let firstChk = false;
-
-        annotations.forEach(async function(annot) {
-          console.log('annot', annot.fieldName);
-          console.log(annot.getCustomData('id'));
-          // 템플릿 항목 설정 체크
-          if ((annot.getCustomData('id') && annot.getCustomData('id').endsWith('CUSTOM'))) {
-            let name = annot.getCustomData('id'); // sample: 6156a3c9c7f00c0d4ace4744_SIGN_CUSTOM, 6156a3c9c7f00c0d4ace4744_SIGN_16570691999435
-            let user = name.split('_')[0];
-            let type = name.split('_')[1];
-            
-            firstChk = true;
-
-
-            let member = boxData.filter(e => e.key === user)[0];
-
-            // user 가 requester 이면 현재 본인으로 매핑해준다. => 대량발송만 매핑하도록 변경, 일반발송은 신청서 방식으로 대체
-            if (user === 'requester1') {
-              if (sendType === 'B') {
-                member = boxData.filter(e => e.key === 'bulk')?.[0];
-                if (!type.includes("AUTO")) annot.setContents(type);
-              } else {
-                // member = boxData.filter(e => e.key === _id)?.[0];
-                // if (!type.includes("AUTO")) annot.setContents(myname+(type==='SIGN'?'\n'+type:' '+type));
-              }
-            }
-            console.log(member);
-
-            if (member) {
-              if ((browser && browser.name.includes('chrom') && parseInt(browser.version) < 87) && name.includes('TEXT')) {
-                // 브라우저 버전이 87보다 낮을 경우 삭제
-                annotationManager.deleteAnnotation(annot);
-              } else {
-                if (name.includes('SIGN')) {
-                  member.sign = member.sign + 1;
-                } else if (name.includes('TEXT')) {
-                  member.text = member.text + 1;
-                } else if (name.includes('CHECKBOX')) {
-                  member.checkbox = member.checkbox + 1;
-                } else if (name.includes('AUTONAME')) {
-                  member.auto_name = member.auto_name + 1;
-                } else if (name.includes('AUTOJOBTITLE')) {
-                  member.auto_jobtitle = member.auto_jobtitle + 1;
-                } else if (name.includes('AUTOOFFICE')) {
-                  member.auto_office = member.auto_office + 1;
-                } else if (name.includes('AUTODEPART')) {
-                  member.auto_depart = member.auto_depart + 1;
-                } else if (name.includes('AUTOSABUN')) {
-                  member.auto_sabun = member.auto_sabun + 1;
-                } else if (name.includes('AUTODATE')) {
-                  member.auto_date = member.auto_date + 1;
-                }
-                let newBoxData = boxData.slice();
-                newBoxData[boxData.filter(e => e.key === user).index] = member;
-                setBoxData(newBoxData);
-
-                if (annot.getCustomData('fontSize')) {
-                  annot.FontSize = annot.getCustomData('fontSize');
-                } 
   
-                // annotation 구분값 복원
-                // annot.FontSize = '' + 18.0 / docViewer.getZoom() + 'px';
-                annot.custom = {
-                  type,
-                  name : `${member.key}_${type}_`
-                }
-                annot.deleteCustomData('id');
-              }
-            // } else if (user === 'requester') {
-            //   console.log('requester field')
-
-            } else {
-              // boxData 와 일치하는 annotation 없을 경우 삭제
-              annotationManager.deleteAnnotation(annot);
-            }
-          }
-        });
-
-        // 자유 텍스트 상단 짤리는 문제 ...
-        console.log(annotations[0].Subject, annotations[0].ToolName, annotations[0].TextAlign);
-       
-        if (annotations[0].ToolName && annotations[0].ToolName.startsWith('AnnotationCreateFreeText') && action === 'add') {
-          // annotations[0].TextAlign = 'center'
-          annotations[0].setPadding(new Annotations.Rect(0, 0, 0, 2)); // left bottom right top 
-          annotations[0].Font = 'monospace';
-        }
+      
+        // set the ribbons(상단 그룹) and second header
+        UI.enableElements(['ribbons']);
+        UI.disableElements(['toolbarGroup-View', 'toolbarGroup-Annotate', 'toolbarGroup-Shapes', 'toolbarGroup-Insert', 'toolbarGroup-Measure', 'toolbarGroup-Edit', 'toolbarGroup-Forms', 'annotationCommentButton', 'linkButton', 'contextMenuPopup']);
+        UI.disableTools([Tools.ToolNames.FORM_FILL_CROSS, Tools.ToolNames.FORM_FILL_CHECKMARK, Tools.ToolNames.FORM_FILL_DOT]);
+        // instance.disableTools([ 'AnnotationCreateSticky', 'AnnotationCreateFreeText' ]); // hides DOM element + disables shortcut
+        // instance.enableFeatures([instance.Feature.Annotations]);
+        // instance.enableFeatures([instance.Feature.Ribbons]);
         
-
-        // 최초 실행 또는 applyFields 에서 호출 시는 아래가 호출되지 않도록 처리 
-        if (firstChk || !annotations[0].custom) {
-          return;
-        } 
-
-        // 해당 메서드에서는 state 값을 제대로 못불러온다 ... 
-        // Ref 를 써서 해결 ...
-        if (action === 'add') {
-          console.log('added annotation');
-
-          const name = annotations[0].custom.name; //sample: 6156a3c9c7f00c0d4ace4744_SIGN_
-          const user = name.split('_')[0]
-
-          const member = boxData.filter(e => e.key === user)[0]
-
-          if (name.includes('SIGN')) {
-            member.sign = member.sign + 1
-          } else if (name.includes('TEXT')) {
-            member.text = member.text + 1
-          } else if (name.includes('CHECKBOX')) {
-            member.checkbox = member.checkbox + 1
-          } else if (name.includes('AUTONAME')) {
-            member.auto_name = member.auto_name + 1
-          } else if (name.includes('AUTOJOBTITLE')) {
-            member.auto_jobtitle = member.auto_jobtitle + 1
-          } else if (name.includes('AUTOOFFICE')) {
-            member.auto_office = member.auto_office + 1
-          } else if (name.includes('AUTODEPART')) {
-            member.auto_depart = member.auto_depart + 1
-          } else if (name.includes('AUTOSABUN')) {
-            member.auto_sabun = member.auto_sabun + 1
-          } else if (name.includes('AUTODATE')) {
-            member.auto_date = member.auto_date + 1
+        UI.setToolbarGroup('toolbarGroup-View');
+  
+        // set local font 
+        Core.setCustomFontURL('/webfonts/');
+  
+        // set language
+        UI.setLanguage('ko');
+  
+        // copy 방지 
+        UI.disableFeatures([instance.UI.Feature.Copy]);
+  
+        // 포커스 
+        documentViewer.setToolMode(documentViewer.getTool('Pan'));
+  
+    
+        setInstance(instance);
+  
+        const iframeDoc = UI.iframeWindow.document.body;
+        iframeDoc.addEventListener('dragover', dragOver);
+        iframeDoc.addEventListener('drop', e => {
+          drop(e, instance);
+        });
+  
+        if (documentType === 'TEMPLATE') {
+          // /storage/... (O) storage/...(X)
+          UI.loadDocument('/'+template.docRef);
+        } else if (documentType === 'TEMPLATE_CUSTOM') {
+          // /storage/... (O) storage/...(X)
+          UI.loadDocument('/'+template.customRef);
+        } else if (documentType === 'PC' || documentType === 'DIRECT') {
+          UI.loadDocument('/'+documentTempPath);
+        }
+  
+        const annotationManager = documentViewer.getAnnotationManager();
+  
+        documentViewer.addEventListener('documentLoaded', async () => {
+          console.log('documentLoaded called');
+          
+          // 디폴트 설정
+          // docViewer.setToolMode(docViewer.getTool('AnnotationCreateFreeText'));
+  
+          // 페이지 저장
+          setPageCount(documentViewer.getPageCount());
+  
+          const doc = documentViewer.getDocument();
+          // const pageIdx = 1;
+  
+          // doc.loadThumbnailAsync(pageIdx, (thumbnail) => {
+          //   // thumbnail is a HTMLCanvasElement or HTMLImageElement
+          //   console.log("loadThumbnailAsync called")
+          //   // console.log('thumbnail:'+thumbnail.toDataURL());
+  
+          //   setThumbnail(thumbnail.toDataURL())
+          // });
+  
+          doc.loadCanvasAsync(({
+            pageNumber: 1,
+            // zoom: 0.21, // render at twice the resolution //mac: 0.21 window: ??
+            width: 300,  // 윈도우 기준으로 맞춤. 맥에서는 해상도가 더 크게 나옴
+            drawComplete: async (thumbnail) => {
+              // const pageNumber = 1;
+              // optionally comment out "drawAnnotations" below to exclude annotations
+              // await instance.docViewer.getAnnotationManager().drawAnnotations(pageNumber, thumbnail);
+              // thumbnail is a HTMLCanvasElement or HTMLImageElement
+              // console.log('thumbnail:'+thumbnail.toDataURL());
+              setThumbnail(thumbnail.toDataURL())
+            }
+          }));
+  
+        });
+  
+        // const normalStyles = (widget) => {
+        //   if (widget instanceof Annotations.TextWidgetAnnotation) {
+        //     return {
+        //       border: '1px solid #a5c7ff',
+        //       'background-color': '#a5c7ff',
+        //       color: 'black',
+        //     };
+        //   } else if (widget instanceof Annotations.SignatureWidgetAnnotation) {
+        //     return {
+        //       border: '1px solid #a5c7ff',
+        //     };
+        //   }
+        // };
+  
+        // Annotations.WidgetAnnotation.getCustomStyles = normalStyles;
+  
+        annotationManager.addEventListener('annotationChanged', async (annotations, action, info) => {
+  
+          console.log('called annotationChanged:'+ action);
+  
+          // const { documentViewer, Font } = instance;
+          let firstChk = false;
+  
+          annotations.forEach(async function(annot) {
+            console.log('annot', annot.fieldName);
+            console.log(annot.getCustomData('id'));
+            // 템플릿 항목 설정 체크
+            if ((annot.getCustomData('id') && annot.getCustomData('id').endsWith('CUSTOM'))) {
+              let name = annot.getCustomData('id'); // sample: 6156a3c9c7f00c0d4ace4744_SIGN_CUSTOM, 6156a3c9c7f00c0d4ace4744_SIGN_16570691999435
+              let user = name.split('_')[0];
+              let type = name.split('_')[1];
+              
+              firstChk = true;
+  
+  
+              let member = boxData.filter(e => e.key === user)[0];
+  
+              // user 가 requester 이면 현재 본인으로 매핑해준다. => 대량발송만 매핑하도록 변경, 일반발송은 신청서 방식으로 대체
+              if (user === 'requester1') {
+                if (sendType === 'B') {
+                  member = boxData.filter(e => e.key === 'bulk')?.[0];
+                  if (!type.includes("AUTO")) annot.setContents(type);
+                } else {
+                  // member = boxData.filter(e => e.key === _id)?.[0];
+                  // if (!type.includes("AUTO")) annot.setContents(myname+(type==='SIGN'?'\n'+type:' '+type));
+                }
+              }
+              console.log(member);
+  
+              if (member) {
+                if ((browser && browser.name.includes('chrom') && parseInt(browser.version) < 87) && name.includes('TEXT')) {
+                  // 브라우저 버전이 87보다 낮을 경우 삭제
+                  annotationManager.deleteAnnotation(annot);
+                } else {
+                  if (name.includes('SIGN')) {
+                    member.sign = member.sign + 1;
+                  } else if (name.includes('TEXT')) {
+                    member.text = member.text + 1;
+                  } else if (name.includes('CHECKBOX')) {
+                    member.checkbox = member.checkbox + 1;
+                  } else if (name.includes('AUTONAME')) {
+                    member.auto_name = member.auto_name + 1;
+                  } else if (name.includes('AUTOJOBTITLE')) {
+                    member.auto_jobtitle = member.auto_jobtitle + 1;
+                  } else if (name.includes('AUTOOFFICE')) {
+                    member.auto_office = member.auto_office + 1;
+                  } else if (name.includes('AUTODEPART')) {
+                    member.auto_depart = member.auto_depart + 1;
+                  } else if (name.includes('AUTOSABUN')) {
+                    member.auto_sabun = member.auto_sabun + 1;
+                  } else if (name.includes('AUTODATE')) {
+                    member.auto_date = member.auto_date + 1;
+                  }
+                  let newBoxData = boxData.slice();
+                  newBoxData[boxData.filter(e => e.key === user).index] = member;
+                  setBoxData(newBoxData);
+  
+                  if (annot.getCustomData('fontSize')) {
+                    annot.FontSize = annot.getCustomData('fontSize');
+                  } 
+    
+                  // annotation 구분값 복원
+                  // annot.FontSize = '' + 18.0 / docViewer.getZoom() + 'px';
+                  annot.custom = {
+                    type,
+                    name : `${member.key}_${type}_`
+                  }
+                  annot.deleteCustomData('id');
+                }
+              // } else if (user === 'requester') {
+              //   console.log('requester field')
+  
+              } else {
+                // boxData 와 일치하는 annotation 없을 경우 삭제
+                annotationManager.deleteAnnotation(annot);
+              }
+            }
+          });
+  
+          // 자유 텍스트 상단 짤리는 문제 ...
+          console.log(annotations[0].Subject, annotations[0].ToolName, annotations[0].TextAlign);
+         
+          if (annotations[0].ToolName && annotations[0].ToolName.startsWith('AnnotationCreateFreeText') && action === 'add') {
+            // annotations[0].TextAlign = 'center'
+            annotations[0].setPadding(new Annotations.Rect(0, 0, 0, 2)); // left bottom right top 
+            annotations[0].Font = 'monospace';
           }
-
-          const newBoxData = boxData.slice()
-          newBoxData[boxData.filter(e => e.key === user).index] = member 
           
-          setBoxData(newBoxData)
-
-
-          // 0: {key: '6156a3c9c7f00c0d4ace4744', sign: 0, text: 0}
-          // 1: {key: '6156a3c9c7f00c0d4ace4746', sign: 0, text: 0}
-
-
-          // setBoxData( (prev) => [...prev, {key:123, sign:1, text:2}] );
-          // setBoxData([{key: '6156a3c9c7f00c0d4ace4744', sign: 1, text: 0}, {key: '6156a3c9c7f00c0d4ace4746', sign: 0, text: 0}])
-
-          // if (temp) {
-
-          //   const asisInputValue = tmp(user)
-
-          //   console.log("asisInputValue.sign:"+asisInputValue.sign)
-          //   const updateNum = asisInputValue.sign + 1 
-          //   console.log("updateNum:"+updateNum)
-          //   updateInputValue(user, {sign:updateNum, text:asisInputValue.text})
-
-          // } else {
-          //   insertInputValue(user, {sign:1, text:0})
-          // }
-
-          
-
-        } else if (action === 'modify') {
-          console.log('this change modified annotations');
-        } else if (action === 'delete') {
-          console.log('deleted annotation:'+ annotations);
-
-          // annotation 이 동시 삭제되는 경우 처리 : observer 체크 시 
-          annotations.map(annotation => {
-            const name = annotation.custom.name //sample: 6156a3c9c7f00c0d4ace4744_SIGN_
+  
+          // 최초 실행 또는 applyFields 에서 호출 시는 아래가 호출되지 않도록 처리 
+          if (firstChk || !annotations[0].custom) {
+            return;
+          } 
+  
+          // 해당 메서드에서는 state 값을 제대로 못불러온다 ... 
+          // Ref 를 써서 해결 ...
+          if (action === 'add') {
+            console.log('added annotation');
+  
+            const name = annotations[0].custom.name; //sample: 6156a3c9c7f00c0d4ace4744_SIGN_
             const user = name.split('_')[0]
   
             const member = boxData.filter(e => e.key === user)[0]
   
             if (name.includes('SIGN')) {
-              member.sign = member.sign - 1
+              member.sign = member.sign + 1
             } else if (name.includes('TEXT')) {
-              member.text = member.text - 1
+              member.text = member.text + 1
             } else if (name.includes('CHECKBOX')) {
-              member.checkbox = member.checkbox - 1
+              member.checkbox = member.checkbox + 1
             } else if (name.includes('AUTONAME')) {
-              member.auto_name = member.auto_name - 1
+              member.auto_name = member.auto_name + 1
             } else if (name.includes('AUTOJOBTITLE')) {
-              member.auto_jobtitle = member.auto_jobtitle - 1
+              member.auto_jobtitle = member.auto_jobtitle + 1
             } else if (name.includes('AUTOOFFICE')) {
-              member.auto_office = member.auto_office - 1
+              member.auto_office = member.auto_office + 1
             } else if (name.includes('AUTODEPART')) {
-              member.auto_depart = member.auto_depart - 1
+              member.auto_depart = member.auto_depart + 1
             } else if (name.includes('AUTOSABUN')) {
-              member.auto_sabun = member.auto_sabun - 1
+              member.auto_sabun = member.auto_sabun + 1
             } else if (name.includes('AUTODATE')) {
-              member.auto_date = member.auto_date - 1
+              member.auto_date = member.auto_date + 1
             }
   
             const newBoxData = boxData.slice()
             newBoxData[boxData.filter(e => e.key === user).index] = member 
             
             setBoxData(newBoxData)
-          });
-
-        }
-
-        // 유효성 체크 
-        // var check = false
-        // boxData.map(box => {
-        // //{ key:user.key, sign:0, text:0 };
-        // //observers.filter(v => v != item.key)
-
-        // //TODO: 체크박스도 조건 추가하기
-        //   // if(box.sign === 0 && box.text === 0 && observers.filter(v => v == box.key).count == 0) { 
-        //   if(box.sign === 0 && box.text === 0) { 
-        //     check = true
+  
+  
+            // 0: {key: '6156a3c9c7f00c0d4ace4744', sign: 0, text: 0}
+            // 1: {key: '6156a3c9c7f00c0d4ace4746', sign: 0, text: 0}
+  
+  
+            // setBoxData( (prev) => [...prev, {key:123, sign:1, text:2}] );
+            // setBoxData([{key: '6156a3c9c7f00c0d4ace4744', sign: 1, text: 0}, {key: '6156a3c9c7f00c0d4ace4746', sign: 0, text: 0}])
+  
+            // if (temp) {
+  
+            //   const asisInputValue = tmp(user)
+  
+            //   console.log("asisInputValue.sign:"+asisInputValue.sign)
+            //   const updateNum = asisInputValue.sign + 1 
+            //   console.log("updateNum:"+updateNum)
+            //   updateInputValue(user, {sign:updateNum, text:asisInputValue.text})
+  
+            // } else {
+            //   insertInputValue(user, {sign:1, text:0})
+            // }
+  
+            
+  
+          } else if (action === 'modify') {
+            console.log('this change modified annotations');
+          } else if (action === 'delete') {
+            console.log('deleted annotation:'+ annotations);
+  
+            // annotation 이 동시 삭제되는 경우 처리 : observer 체크 시 
+            annotations.map(annotation => {
+              const name = annotation.custom.name //sample: 6156a3c9c7f00c0d4ace4744_SIGN_
+              const user = name.split('_')[0]
+    
+              const member = boxData.filter(e => e.key === user)[0]
+    
+              if (name.includes('SIGN')) {
+                member.sign = member.sign - 1
+              } else if (name.includes('TEXT')) {
+                member.text = member.text - 1
+              } else if (name.includes('CHECKBOX')) {
+                member.checkbox = member.checkbox - 1
+              } else if (name.includes('AUTONAME')) {
+                member.auto_name = member.auto_name - 1
+              } else if (name.includes('AUTOJOBTITLE')) {
+                member.auto_jobtitle = member.auto_jobtitle - 1
+              } else if (name.includes('AUTOOFFICE')) {
+                member.auto_office = member.auto_office - 1
+              } else if (name.includes('AUTODEPART')) {
+                member.auto_depart = member.auto_depart - 1
+              } else if (name.includes('AUTOSABUN')) {
+                member.auto_sabun = member.auto_sabun - 1
+              } else if (name.includes('AUTODATE')) {
+                member.auto_date = member.auto_date - 1
+              }
+    
+              const newBoxData = boxData.slice()
+              newBoxData[boxData.filter(e => e.key === user).index] = member 
+              
+              setBoxData(newBoxData)
+            });
+  
+          }
+  
+          // 유효성 체크 
+          // var check = false
+          // boxData.map(box => {
+          // //{ key:user.key, sign:0, text:0 };
+          // //observers.filter(v => v != item.key)
+  
+          // //TODO: 체크박스도 조건 추가하기
+          //   // if(box.sign === 0 && box.text === 0 && observers.filter(v => v == box.key).count == 0) { 
+          //   if(box.sign === 0 && box.text === 0) { 
+          //     check = true
+          //   }
+          // });
+          // setDisableNext(check)
+  
+        });
+  
+        // filePicker.current.onchange = e => {
+        //   const file = e.target.files[0];
+        //   console.log("Afile:"+ file)
+        //   if (file) {
+        //     setFileName(file.name.split('.')[0]);
+        //     instance.loadDocument(file);
         //   }
-        // });
-        // setDisableNext(check)
-
+        // };
+  
+        // 내 사인 이미지 가져와서 출력하기
+        const res = await axios.post('/api/sign/signs', {user: _id})
+        if (res.data.success) {
+          const signs = res.data.signs;
+  
+          var signDatas = [];
+          signs.forEach(element => {
+            signDatas.push(element.signData)
+          });
+  
+          if (signDatas.length > 0) {
+            const signatureTool = documentViewer.getTool('AnnotationCreateSignature');
+            documentViewer.addEventListener('documentLoaded', () => {
+              signatureTool.importSignatures(signDatas);
+            });
+          }
+        }
       });
 
-      // filePicker.current.onchange = e => {
-      //   const file = e.target.files[0];
-      //   console.log("Afile:"+ file)
-      //   if (file) {
-      //     setFileName(file.name.split('.')[0]);
-      //     instance.loadDocument(file);
-      //   }
-      // };
+    }
 
-      // 내 사인 이미지 가져와서 출력하기
-      const res = await axios.post('/api/sign/signs', {user: _id})
-      if (res.data.success) {
-        const signs = res.data.signs;
-
-        var signDatas = [];
-        signs.forEach(element => {
-          signDatas.push(element.signData)
-        });
-
-        if (signDatas.length > 0) {
-          const signatureTool = documentViewer.getTool('AnnotationCreateSignature');
-          documentViewer.addEventListener('documentLoaded', () => {
-            signatureTool.importSignatures(signDatas);
-          });
-        }
-      }
-    });
   }, []);
 
   // observers.filter(v => v == box.key).count === 0
@@ -804,9 +901,14 @@ const PrepareDocument = () => {
 
   // 일반전송 : 멤버 아이디로 필드값 저장
   // 대량전송 : 멤버가 아닌 공통값(bulk)으로 저장
-  const addField = (type, point = {}, member = {}, name = '', value = '', flag = {}) => {
+  const addField = (type, point = {}, member = {}, color = '', value = '', flag = {}) => {
 
     console.log('called addField')
+
+    if (USE_WITHPDF) {
+      addBox(type, member, color);
+      return;
+    }
 
     const { Core } = instance;
     const { documentViewer, Annotations } = Core;
@@ -903,6 +1005,211 @@ const PrepareDocument = () => {
     var day = ('0' + date.getDate()).slice(-2);
 
     return year + month + day;
+  }
+
+
+  // WITHPDF 전송
+  const send = async () => {
+    console.log('send called')
+
+    // PageContainer의 loading -> Spinning loading 으로 전환함 
+    // PageContainer의 경우 loading 시 pdfRef가 null이 됨 
+    setLoading(true);  
+
+    // PROCESS
+    // 1. SAVE PDF FILE
+    // 2. SAVE THUMBNAIL
+    // 3. SAVE FILE (첨부파일)
+    // 4. SAVE DB
+    // 5. 임시파일삭제
+    // 6. 초기화 및 화면 이동
+
+    // 1. SAVE PDF FILE
+    const filename = `${_id}${Date.now()}.pdf`;
+    const path = `documents/${getToday()}/`;
+    const file = await pdfRef.current.savePDF(false, false);
+    const formData = new FormData()
+    formData.append('path', path)
+    formData.append('file', file, filename)
+    const res = await axios.post(`/api/storage/upload`, formData)
+    console.log(res)
+
+    // 업로드 후 파일 경로 가져오기  
+    var docRef = ''
+    if (res.data.success){
+      docRef = res.data.file.path 
+    }
+
+    console.log('docRef', docRef);
+
+    // 2. SAVE THUMBNAIL
+    let _thumbnail = await pdfRef.current.getThumbnail(0, 0.3);
+    const resThumbnail = await axios.post('/api/document/addThumbnail', {user: _id, thumbnail: _thumbnail})
+    var thumbnailUrl = '';
+    if (resThumbnail.data.success) {
+      thumbnailUrl = resThumbnail.data.thumbnail 
+    }
+    console.log('thumbnailUrl', thumbnailUrl)
+
+    // 3. SAVE FILE (첨부파일)
+    const attachPaths = []
+    var files = []
+    console.log('attachFiles:', attachFiles)
+    if (attachFiles.length > 0) {
+
+      const formData = new FormData()
+      formData.append('path', 'attachfiles/'+Date.now()+'/');
+
+      attachFiles.forEach(file => formData.append('files', file));
+
+      const resFile = await axios.post(`/api/storage/uploadFiles`, formData)
+      if (resFile.data.success) {
+        // resFile.data.files.map(file => {
+        //   attachPaths.push(file.path)
+        // })
+        files = resFile.data.files
+      }
+    }
+
+
+    // 4. SAVE DB
+    const signed = false;
+    const xfdf = [];
+    const signedBy = [];
+    const signedTime = '';
+    const users = assignees.map(assignee => {
+      return assignee.key;
+    });
+    const items = pdfRef.current.convertBoxToComponent();
+    console.log('converted items', items);
+
+    // 본인 사인이 필요한 경우 바로 사인 유도를 위해 다음페이지에 문서 아이디를 넘겨준다. (일반 요청인 경우에만)
+    var docId = '';
+    var status = 'success';
+    var resultMsg = '서명 요청되었습니다.';
+
+    if (sendType === 'G') { // 일반
+
+      // 순차 전송을 위해 필드 추가
+      var usersOrder = [];
+      var usersTodo = [];
+
+      // SUNCHA: 순차 기능 활성화 
+      var orderType = 'A';
+      assignees.map(user => {
+        usersOrder.push({'user': user.key, 'order': user.order})
+        if (user.order == 0) {
+          usersTodo.push(user.key)
+        }
+        if (user.order > 0) {
+          orderType = 'S';
+        }
+      })
+
+      let body = {
+        user: _id,
+        docTitle: docTitle,
+        // email: email,
+        docRef: docRef,
+        // emails: emails,
+        users: users,
+        xfdf: xfdf, 
+        items: items,
+        isWithPDF: true,
+        signedBy: signedBy,
+        signed: signed,
+        signedTime: signedTime,
+        thumbnail: thumbnailUrl,
+        pageCount: pageCount,
+        observers: observers,
+        // orderType: observers.length > 0 ? 'S':'A', // SUSIN: 수신 기능만 활성화
+        orderType: orderType, //SUNCHA: 순차 기능 활성화 
+        usersOrder: usersOrder,
+        usersTodo: usersTodo,
+        attachFiles: files
+      }
+      console.log("일반 전송")
+      const res2 = await axios.post('/api/document/addDocumentToSign', body)
+      console.log(res2)
+      if (res2.data.success) {
+        docId = res2.data.documentId;
+        status = 'success';
+        resultMsg = '서명 요청이 정상 처리되었습니다.';
+      } else {
+        docId = '';
+        status = 'error';
+        resultMsg = '서명 요청에 실패하였습니다.';
+      }
+
+    } else {  // 대량 전송
+
+      const documentIds = [];
+      async function saveDB(item) {
+        console.log("Bulk 전송:" + item)
+        let body = {
+          user: _id,
+          // docTitle: (documentType === "PC") ? documentTitle : templateTitle,
+          docTitle: docTitle,
+          docType: "B",
+          // email: email,
+          docRef: docRef,
+          // emails: emails,
+          users: [item],
+          xfdf: xfdf, 
+          items: items,
+          isWithPDF: true,
+          signedBy: signedBy,
+          signed: signed,
+          signedTime: signedTime,
+          thumbnail: thumbnailUrl,
+          pageCount: pageCount,
+          observers: observers,
+          attachFiles: files
+        }
+        const res = await axios.post('/api/document/addDocumentToSign', body)
+        if (res.data.success) {
+          const documentId = res.data.documentId;
+          console.log("documentId:"+documentId);
+          documentIds.push(documentId)
+        }
+      }
+
+      const promises = users.map(saveDB);
+      // wait until all promises are resolved
+      await Promise.all(promises);
+
+      console.log("Done saveDocuments !!!");
+
+      let bulk = {
+        user: _id,
+        docTitle: docTitle,
+        // docTitle: (documentType === "PC") ? documentTitle : templateTitle,
+        users: users,
+        docs: documentIds,
+        canceled: false,
+        signed: false
+      }
+
+      console.log("documentIds:"+documentIds);
+      const res = await axios.post('/api/bulk/addBulk', bulk)
+      if (res.data.success) {
+        console.log("Done saveBulk !!!");
+      }
+    }
+
+
+    //5. 임시파일삭제
+    if (documentType === 'PC' || documentType === 'DIRECT') {
+      await axios.post(`/api/storage/deleteFile`, {target: documentTempPath})
+    }
+    
+
+    //6. 초기화 및 화면 이동
+    dispatch(resetAssignAll());
+    setLoading(false);
+
+    navigate('/prepareResult', { state: {status:status, title:resultMsg, docId:docId}}); 
+
   }
 
   const uploadForSigning = async () => {
@@ -1175,14 +1482,116 @@ const PrepareDocument = () => {
     e.preventDefault();
   };
 
+  const handleItemChanged = (action, item) => {
+    console.log(action, item);
+
+    if (action === 'add') {
+
+      let member = boxData.filter(e => e.key === item.uid)[0];
+      if (item.subType === TYPE_SIGN) {
+        member.sign = member.sign + 1;
+      } else if (item.subType === TYPE_TEXT) {
+        
+        if (item.autoInput) {
+          if (item.autoInput === AUTO_NAME) {
+            member.auto_name = member.auto_name + 1;
+          } else if (item.autoInput === AUTO_JOBTITLE) {
+            member.auto_jobtitle = member.auto_jobtitle + 1;
+          } else if (item.autoInput === AUTO_OFFICE) {
+            member.auto_office = member.auto_office + 1;
+          } else if (item.autoInput === AUTO_DEPART) {
+            member.auto_depart = member.auto_depart + 1;
+          } else if (item.autoInput === AUTO_SABUN) {
+            member.auto_sabun = member.auto_sabun + 1;
+          } else if (item.autoInput === AUTO_DATE) {
+            member.auto_date = member.auto_date + 1;
+          }
+        } else {
+          member.text = member.text + 1;
+        }
+        
+      } else if (item.subType === TYPE_CHECKBOX) {
+        member.checkbox = member.checkbox + 1;
+      }
+
+      let newBoxData = boxData.slice();
+      newBoxData[boxData.filter(e => e.key === item.uid).index] = member;
+      setBoxData(newBoxData);
+
+    } else if (action === 'delete') {
+
+      let member = boxData.filter(e => e.key === item.uid)[0];
+      if (item.subType === TYPE_SIGN) {
+        member.sign = member.sign - 1;
+      } else if (item.subType === TYPE_TEXT) {
+
+        if (item.autoInput) {
+          if (item.autoInput === AUTO_NAME) {
+            member.auto_name = member.auto_name - 1;
+          } else if (item.autoInput === AUTO_JOBTITLE) {
+            member.auto_jobtitle = member.auto_jobtitle - 1;
+          } else if (item.autoInput === AUTO_OFFICE) {
+            member.auto_office = member.auto_office - 1;
+          } else if (item.autoInput === AUTO_DEPART) {
+            member.auto_depart = member.auto_depart - 1;
+          } else if (item.autoInput === AUTO_SABUN) {
+            member.auto_sabun = member.auto_sabun - 1;
+          } else if (item.autoInput === AUTO_DATE) {
+            member.auto_date = member.auto_date - 1;
+          }
+        } else {
+          member.text = member.text - 1;
+        }
+
+      } else if (item.subType === TYPE_CHECKBOX) {
+        member.checkbox = member.checkbox - 1;
+      }
+
+      let newBoxData = boxData.slice();
+      newBoxData[boxData.filter(e => e.key === item.uid).index] = member;
+      setBoxData(newBoxData);
+
+    }
+  }
+
+  const addBox = (type, member, color) => {
+    if (type === 'SIGN') {
+      pdfRef.current.addBox(sendType === 'B' ? 'bulk' : member.key, TYPE_SIGN, sendType === 'B' ? `SIGN` : `${member.name}<br>SIGN`, 100, 60, true, color);
+    } else if (type === 'TEXT') {
+      pdfRef.current.addBox(sendType === 'B' ? 'bulk' : member.key, TYPE_TEXT, 'TEXT', 120, 25, true, color);
+    } else if (type === 'CHECKBOX') {
+      pdfRef.current.addBox(sendType === 'B' ? 'bulk' : member.key, TYPE_CHECKBOX, 'CHECKBOX', 25, 25, true, color);
+    } else if (type === 'AUTONAME') {
+      pdfRef.current.addBox(sendType === 'B' ? 'bulk' : member.key, TYPE_TEXT, '이름', 100, 25, true, color, AUTO_NAME);
+    } else if (type === 'AUTOJOBTITLE') {
+      pdfRef.current.addBox(sendType === 'B' ? 'bulk' : member.key, TYPE_TEXT, '직급', 100, 25, true, color, AUTO_JOBTITLE);
+    } else if (type === 'AUTOSABUN') {
+      pdfRef.current.addBox(sendType === 'B' ? 'bulk' : member.key, TYPE_TEXT, '사번', 100, 25, true, color, AUTO_SABUN);
+    } else if (type === 'AUTOOFFICE') {
+      pdfRef.current.addBox(sendType === 'B' ? 'bulk' : member.key, TYPE_TEXT, '회사명', 130, 25, true, color, AUTO_OFFICE);
+    } else if (type === 'AUTODEPART') {
+      pdfRef.current.addBox(sendType === 'B' ? 'bulk' : member.key, TYPE_TEXT, '소속명', 130, 25, true, color, AUTO_DEPART);
+    } else if (type === 'AUTODATE') {
+      pdfRef.current.addBox(sendType === 'B' ? 'bulk' : member.key, TYPE_TEXT, '날짜', 130, 25, true, color, AUTO_DATE);
+    }
+    
+  }
+
+  const onChangeDocTitle = (text) => {
+    if (text === '') return false;
+    (documentType === "PC") ? dispatch(setDocumentTitle(text)) : dispatch(setTemplateTitle(text))
+    setDocTitle(text);
+  }
+
   return (
     // <div className={'prepareDocument'}>
     <div>
-
+    <PageContainerStyle>
     <PageContainer  
       // ghost
       header={{
-        title: (sendType == 'B') ? '서명 요청(대량 전송)' : '서명 요청',
+        // title: (sendType == 'B') ? '서명 요청(대량 전송)' : <Typography.Title editable={{onChange: (text) => {onChangeDocTitle(text)}, tooltip: false}} level={5} style={{ margin: 0 }} >{docTitle}</Typography.Title>,
+        title: <Typography.Title editable={{onChange: (text) => {onChangeDocTitle(text)}, tooltip: false}} level={5} style={{ margin: 0 }} >{docTitle}</Typography.Title>,
         ghost: true,
         breadcrumb: {
           routes: [
@@ -1190,15 +1599,16 @@ const PrepareDocument = () => {
         },
         extra: [
           <Button key="3" icon={<ArrowLeftOutlined />} onClick={() => {navigate(`/assign`);}}></Button>,,
-          <Button key="2" icon={<SendOutlined />} type="primary" onClick={applyFields} disabled={disableNext} loading={loading}>
+          <Button key="2" icon={<SendOutlined />} type="primary" onClick={USE_WITHPDF ? send : applyFields} disabled={disableNext} loading={loading}>
             {formatMessage({id: 'Send'})}
           </Button>,
         ],
       }}
+      style={{height:`calc(100vh + 200px)`}}
       content= { <ProCard style={{ background: '#ffffff'}} layout="center"><StepWrite current={2} /></ProCard> }
-      footer={[
-      ]}
-      loading={loading}
+      // footer={[
+      // ]}
+      // loading={loading}
     >
 
       {/* <RcResizeObserver
@@ -1209,7 +1619,8 @@ const PrepareDocument = () => {
       > */}
         <Row gutter={[24, 24]}>
           {/* <Col span={responsive ? 24 : 5}> */}
-          <Col xl={4} lg={4} md={8} sm={24} xs={24}>
+          {/* <Col flex='250px' xl={6} lg={7} md={7} sm={24} xs={24}> */}
+          <Col flex='250px'>
 
             {/* 일반 발송 */}
             {(sendType === 'G') ? (<div>  
@@ -1219,75 +1630,111 @@ const PrepareDocument = () => {
               grid={{ gutter: 24, lg: 1, md: 1, sm: 2, xs: 2 }}
               // grid={{ gutter: 24, column: responsive ? 2 : 1}}
               dataSource={assignees}
-              renderItem={item =>
+              renderItem={(item, idx) =>
                 <List.Item key={item.key}>
                   {/* <Card size="small" type="inner" title={item.JOB_TITLE ? item.name+' '+item.JOB_TITLE : item.name} style={{ width: '220px' }} extra={ */}  
-                  <Card size="small" type="inner" title={<><Tag color='blue'>{Number(item.order)+1}</Tag> {item.JOB_TITLE ? item.name+' '+item.JOB_TITLE : item.name} </>} style={{ width: '240px' }} extra={
+
+                  <Card size="small" type="inner" title={<><Tag color='blue'>{Number(item.order)+1}</Tag> {item.JOB_TITLE ? item.name+' '+item.JOB_TITLE : item.name} </>} style={{ width: '236px' }} extra={
                     <Tooltip placement="top" title={'문서에 서명 없이 문서 수신만 하는 경우'}>
                     <Checkbox onChange={e => {
 
                       console.log('called observer:'+item.key)
                       console.log('checked = ', e.target.checked);
 
-                      if (e.target.checked) {
-                        // observer 추가 
-                        setObservers([...observers, item.key])
-                        
-                        // boxData 갱신
-                        const member = boxData.filter(e => e.key === item.key)[0]
-                        member.observer = member.observer + 1
-                        const newBoxData = boxData.slice()
-                        newBoxData[boxData.filter(e => e.key === item.key).index] = member 
-                        setBoxData(newBoxData)
-
-                        // annotation 삭제
-                        const { Core } = instance;
-                        const { Annotations, documentViewer } = Core;
-                        const annotationManager = documentViewer.getAnnotationManager();
-                        const annotationsList = annotationManager.getAnnotationsList();
-                        const annotsToDelete = [];
-
-                        annotationsList.map(async (annot, index) => {
-                          console.log("annot.custom.name:"+annot?.custom?.name)
-                          if (annot?.custom?.name.includes(item.key)) {
-                            annotsToDelete.push(annot)
-                          }
-                        })
-
-                        annotationManager.deleteAnnotations(annotsToDelete, null, true);
-
+                      if (USE_WITHPDF) {
+                        if (e.target.checked) {
+                          // observer 추가 
+                          setObservers([...observers, item.key])
+                          
+                          // boxData 갱신
+                          const member = boxData.filter(e => e.key === item.key)[0]
+                          member.observer = member.observer + 1
+                          member.sign = 0;
+                          member.text = 0;
+                          member.checkbox = 0;
+                          const newBoxData = boxData.slice()
+                          newBoxData[boxData.filter(e => e.key === item.key).index] = member 
+                          setBoxData(newBoxData)
+  
+                          // annotation 삭제
+                          pdfRef.current.deleteItemsByUserId(item.key);
+  
+                        } else {
+                          // observer 삭제
+                          setObservers(observers.filter(v => v != item.key))
+                          
+                          // boxData 갱신
+                          const member = boxData.filter(e => e.key === item.key)[0]
+                          member.observer = member.observer - 1
+                          const newBoxData = boxData.slice()
+                          newBoxData[boxData.filter(e => e.key === item.key).index] = member 
+                          setBoxData(newBoxData)
+  
+                        }
                       } else {
-                        // observer 삭제
-                        setObservers(observers.filter(v => v != item.key))
-                        
-                        // boxData 갱신
-                        const member = boxData.filter(e => e.key === item.key)[0]
-                        member.observer = member.observer - 1
-                        const newBoxData = boxData.slice()
-                        newBoxData[boxData.filter(e => e.key === item.key).index] = member 
-                        setBoxData(newBoxData)
-
+                        if (e.target.checked) {
+                          // observer 추가 
+                          setObservers([...observers, item.key])
+                          
+                          // boxData 갱신
+                          const member = boxData.filter(e => e.key === item.key)[0]
+                          member.observer = member.observer + 1
+                          const newBoxData = boxData.slice()
+                          newBoxData[boxData.filter(e => e.key === item.key).index] = member 
+                          setBoxData(newBoxData)
+  
+                          // annotation 삭제
+                          const { Core } = instance;
+                          const { Annotations, documentViewer } = Core;
+                          const annotationManager = documentViewer.getAnnotationManager();
+                          const annotationsList = annotationManager.getAnnotationsList();
+                          const annotsToDelete = [];
+  
+                          annotationsList.map(async (annot, index) => {
+                            console.log("annot.custom.name:"+annot?.custom?.name)
+                            if (annot?.custom?.name.includes(item.key)) {
+                              annotsToDelete.push(annot)
+                            }
+                          })
+                          annotationManager.deleteAnnotations(annotsToDelete, null, true);
+                 
+  
+                        } else {
+                          // observer 삭제
+                          setObservers(observers.filter(v => v != item.key))
+                          
+                          // boxData 갱신
+                          const member = boxData.filter(e => e.key === item.key)[0]
+                          member.observer = member.observer - 1
+                          const newBoxData = boxData.slice()
+                          newBoxData[boxData.filter(e => e.key === item.key).index] = member 
+                          setBoxData(newBoxData)
+  
+                        }
                       }
                     }}
                     checked={observers.filter(v => v === item.key).length > 0}
                     >수신자 지정</Checkbox></Tooltip>
                   }>
+
+                    <div className="absolute left-0 top-0" style={{width:0, height:0, borderBottom: '10px solid transparent', borderLeft: `10px solid ${COLORS[idx]}`, borderRight: '10px solid transparent'}} />
+
                     <Tooltip placement="right" title={'참여자가 사인을 입력할 위치에 넣어주세요.'}>
                       <Badge count={boxData.filter(e => e.key === item.key)[0].sign}>
-                        <Button style={{width:'190px', textAlign:'left'}} disabled={observers.filter(v => v === item.key).length > 0} icon={<Icon component={IconSign} style={{ fontSize: '120%'}} />} onClick={e => { addField('SIGN', {}, item); }}>{formatMessage({id: 'input.sign'})}</Button>
+                        <Button style={{width:'190px', textAlign:'left'}} disabled={observers.filter(v => v === item.key).length > 0} icon={<Icon component={IconSign} style={{ fontSize: '120%'}} />} onClick={e => { addField('SIGN', {}, item, COLORS[idx]); }}>{formatMessage({id: 'input.sign'})}</Button>
                       </Badge>
                     </Tooltip>
                       {/* {boxData.filter(e => e.key === item.key)[0].sign} */}
                       <p></p>
                     <Tooltip placement="right" title={(browser && browser.name.includes('chrom') && parseInt(browser.version) < 87) ? '사용중인 브라우저의 버전이 낮습니다.(버전 87 이상 지원)' : '참여자가 텍스트를 입력할 위치에 넣어주세요.'}>
                       <Badge count={boxData.filter(e => e.key === item.key)[0].text}>
-                        <Button style={{width:'91px', textAlign:'left'}} disabled={observers.filter(v => v === item.key).length > 0 || (browser && browser.name.includes('chrom') && parseInt(browser.version) < 87)} icon={<Icon component={IconText} style={{ fontSize: '120%'}} />} onClick={e => { addField('TEXT', {}, item); }}>{formatMessage({id: 'input.text'})}</Button>
+                        <Button style={{width:'91px', textAlign:'left'}} disabled={observers.filter(v => v === item.key).length > 0 || (browser && browser.name.includes('chrom') && parseInt(browser.version) < 87)} icon={<Icon component={IconText} style={{ fontSize: '120%'}} />} onClick={e => { addField('TEXT', {}, item, COLORS[idx]); }}>{formatMessage({id: 'input.text'})}</Button>
                       </Badge>
                     </Tooltip>
                     &nbsp;&nbsp;&nbsp;
                     <Tooltip placement="right" title={(browser && browser.name.includes('chrom') && parseInt(browser.version) < 87) ? '사용중인 브라우저의 버전이 낮습니다.(버전 87 이상 지원)' : '참여자가 체크박스를 입력할 위치에 넣어주세요.'}>
                       <Badge count={boxData.filter(e => e.key === item.key)[0].checkbox}>
-                        <Button style={{width:'90px', textAlign:'left'}} disabled={observers.filter(v => v === item.key).length > 0 || (browser && browser.name.includes('chrom') && parseInt(browser.version) < 87)} icon={<Icon component={IconCheckbox} style={{ fontSize: '120%'}} />} onClick={e => { addField('CHECKBOX', {}, item); }}>{formatMessage({id: 'input.checkbox'})}</Button>
+                        <Button style={{width:'90px', textAlign:'left'}} disabled={observers.filter(v => v === item.key).length > 0 || (browser && browser.name.includes('chrom') && parseInt(browser.version) < 87)} icon={<Icon component={IconCheckbox} style={{ fontSize: '120%'}} />} onClick={e => { addField('CHECKBOX', {}, item, COLORS[idx]); }}>{formatMessage({id: 'input.checkbox'})}</Button>
                       </Badge>
                     </Tooltip>
                       {/* {boxData.filter(e => e.key === item.key)[0].text} */}
@@ -1348,19 +1795,19 @@ const PrepareDocument = () => {
               <Card size="small" type="inner" title="서명 참여자" style={{ width: '220px' }}>
                     <Tooltip block placement="right" title={'참여자가 사인을 입력할 위치에 넣어주세요.'}>
                       <Badge count={boxData.filter(e => e.key === 'bulk')[0] ? boxData.filter(e => e.key === 'bulk')[0].sign : 0}>
-                        <Button style={{width:'190px', textAlign:'left'}} icon={<Icon component={IconSign} style={{ fontSize: '120%'}} />} onClick={e => { addField('SIGN', {}); }}>{formatMessage({id: 'input.sign'})}</Button>
+                        <Button style={{width:'190px', textAlign:'left'}} icon={<Icon component={IconSign} style={{ fontSize: '120%'}} />} onClick={e => { addField('SIGN', {}, {key: 'bulk'}); }}>{formatMessage({id: 'input.sign'})}</Button>
                       </Badge>
                     </Tooltip>
                     <p></p>
                     <Tooltip placement="right" title={'참여자가 텍스트를 입력할 위치에 넣어주세요.'}>
                       <Badge count={boxData.filter(e => e.key === 'bulk')[0] ? boxData.filter(e => e.key === 'bulk')[0].text : 0}>
-                        <Button style={{width:'91px', textAlign:'left'}} icon={<Icon component={IconText} style={{ fontSize: '120%'}} />} onClick={e => { addField('TEXT', {}); }}>{formatMessage({id: 'input.text'})}</Button>
+                        <Button style={{width:'91px', textAlign:'left'}} icon={<Icon component={IconText} style={{ fontSize: '120%'}} />} onClick={e => { addField('TEXT', {}, {key: 'bulk'}); }}>{formatMessage({id: 'input.text'})}</Button>
                       </Badge>
                     </Tooltip>
                     &nbsp;&nbsp;&nbsp;
                     <Tooltip placement="right" title={'참여자가 체크박스를 입력할 위치에 넣어주세요.'}>
                       <Badge count={boxData.filter(e => e.key === 'bulk')[0] ? boxData.filter(e => e.key === 'bulk')[0].checkbox : 0}>
-                        <Button style={{width:'90px', textAlign:'left'}} icon={<Icon component={IconCheckbox} style={{ fontSize: '120%'}} />} onClick={e => { addField('CHECKBOX', {}); }}>{formatMessage({id: 'input.checkbox'})}</Button>
+                        <Button style={{width:'90px', textAlign:'left'}} icon={<Icon component={IconCheckbox} style={{ fontSize: '120%'}} />} onClick={e => { addField('CHECKBOX', {}, {key: 'bulk'}); }}>{formatMessage({id: 'input.checkbox'})}</Button>
                       </Badge>
                     </Tooltip>
 
@@ -1381,7 +1828,7 @@ const PrepareDocument = () => {
                       </Badge>
                       &nbsp;&nbsp;&nbsp;
                       <Badge count={boxData.filter(e => e.key === 'bulk')[0]?.auto_depart}>
-                        <Button style={{width:'90px', textAlign:'left'}} icon={<Icon component={IconText} style={{ fontSize: '120%'}} />} onClick={e => { addField('AUTODEPART', {}, {key: 'requester1', type: 'AUTODEPART', name: "부서명"}); }}>{formatMessage({id: 'depart'})}</Button>
+                        <Button style={{width:'90px', textAlign:'left'}} icon={<Icon component={IconText} style={{ fontSize: '120%'}} />} onClick={e => { addField('AUTODEPART', {}, {key: 'requester1', type: 'AUTODEPART', name: "팀명"}); }}>{formatMessage({id: 'depart'})}</Button>
                       </Badge>
                       </p>
                       <p>
@@ -1390,7 +1837,7 @@ const PrepareDocument = () => {
                       </Badge>
                       &nbsp;&nbsp;&nbsp;
                       <Badge count={boxData.filter(e => e.key === 'bulk')[0]?.auto_date}>
-                        <Button style={{width:'90px', textAlign:'left'}} icon={<Icon component={IconText} style={{ fontSize: '120%'}} />} onClick={e => { addField('AUTODATE', {}, {key: 'requester1', type: 'AUTODEPART', name: "날짜"}); }}>{formatMessage({id: 'date'})}</Button>
+                        <Button style={{width:'90px', textAlign:'left'}} icon={<Icon component={IconText} style={{ fontSize: '120%'}} />} onClick={e => { addField('AUTODATE', {}, {key: 'requester1', type: 'AUTODATE', name: "날짜"}); }}>{formatMessage({id: 'date'})}</Button>
                       </Badge>
                       </p>
                     </div>
@@ -1416,8 +1863,16 @@ const PrepareDocument = () => {
 
           </Col>
           {/* <Col span={responsive ? 24 : 19}> */}
-          <Col xl={20} lg={20} md={16} sm={24} xs={24}>
-            <div className="webviewer" ref={viewer}></div>
+          {/* <Col flex='auto' xl={18} lg={17} md={17} sm={24} xs={24}> */}
+          <Col flex='auto'>
+
+            {/* <div className="webviewer" ref={viewer}></div> */}
+
+            <Spin tip="로딩중..." spinning={loading}>
+            {USE_WITHPDF ? <PDFViewer ref={pdfRef} isUpload={false} isSave={false} isEditing={true} onItemChanged={handleItemChanged} defaultScale={1.0} />  : <div className="webviewer" ref={viewer}></div>}
+            </Spin>
+
+
           </Col>
         </Row>
 
@@ -1425,7 +1880,7 @@ const PrepareDocument = () => {
 
 
     </PageContainer>
-
+    </PageContainerStyle>
     
     </div>
   );

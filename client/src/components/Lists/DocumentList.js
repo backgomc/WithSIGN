@@ -4,7 +4,6 @@ import axios from 'axios';
 import { v4 as uuidv4 } from 'uuid';
 import { Table, Input, Space, Button, Checkbox, Badge, Tooltip, Select, Typography, Modal, message, TreeSelect, Switch, Radio, Empty } from "antd";
 import Highlighter from 'react-highlight-words';
-import { setPathname } from '../../config/MenuSlice';
 import {
   SearchOutlined,
   FileOutlined,
@@ -27,6 +26,7 @@ import { selectUser } from '../../app/infoSlice';
 import { navigate, Link } from '@reach/router';
 import { setDocToView } from '../ViewDocument/ViewDocumentSlice';
 import { setDocToSign } from '../SignDocument/SignDocumentSlice';
+import { setPathname } from '../../config/MenuSlice';
 import Moment from 'react-moment';
 import moment from "moment";
 import "moment/locale/ko";
@@ -37,11 +37,13 @@ import { PageContainer } from '@ant-design/pro-layout';
 import 'antd/dist/antd.css';
 import RcResizeObserver from 'rc-resize-observer';
 import { useIntl } from "react-intl";
-import { resetDocumentTempPath, setSendType } from '../Assign/AssignSlice';
+import { resetDocumentTempPath, setSendType, setDocumentType } from '../Assign/AssignSlice';
 import banner from '../../assets/images/sub_top2.png';
 import banner_small from '../../assets/images/sub_top2_2.png';
 import styled from 'styled-components';
+import loadash from 'lodash';
 
+const { Search } = Input;
 const CardTitle = styled.div`
   text-overflow: ellipsis;
   overflow: hidden;
@@ -91,7 +93,9 @@ const DocumentList = ({location}) => {
   const [responsive, setResponsive] = useState(false);
   const [tableState, setTableState] = useState({});
 
-  const searchInput = useRef<Input>(null)
+  // const searchInput = useRef<Input>(null)
+  const refSearchInput = useRef();
+  const refSearchInputTable = useRef();
 
   const treeProps = {
     treeData,
@@ -332,116 +336,151 @@ const DocumentList = ({location}) => {
   const handleTableChange = (pagination, filters, sorter) => {
     console.log("handleTableChange called")
     // console.log("status:"+status)
-    console.log("filters.status:"+filters.status)
-    setTableState({filters: filters, sorter: sorter});
-    setStatus(filters.status)
-    
-    fetch({
-      sortField: sorter.field,
-      sortOrder: sorter.order,
-      pagination,
-      ...filters,
-      user: _id,
-      includeBulk: includeBulk
-      // status:status  //필터에 포함되어 있음 
-    });
-  };
+    // console.log("filters"+JSON.stringify(filters))
+    // console.log("refSearchInput.current.value", refSearchInput.current.input.value);
 
-  const insertUser = (org, users, depart_code) => {
-    let filterUser = users.filter(e => e.DEPART_CODE === depart_code);
-    filterUser.map(user => (
-      org.children.push({key: user._id, value: user.SABUN + '|' + user.name + (user.JOB_TITLE ? ' ' + user.JOB_TITLE : ''), title: user.name + (user.JOB_TITLE ? ' ' + user.JOB_TITLE : '')})
-    ));
-  };
+    // TO-BE
+    // [테이블 문서 검색] / [검색바 문서 검색] 구분 처리
+    if (refSearchInput.current.input.value) { // 커스텀 문서 검색에 값이 있는 경우 
+      console.log("커스텀 문서 검색 호출")
+      let _filters = loadash.clone(filters);
+      _filters.docTitle = [refSearchInput.current.input.value];
 
-  const fetchTreeSelect = async (params = {}) => {
-    let users = [];
-    let resp = await axios.post('/api/users/list', params);
-    if (resp.data.success) {
-      users = resp.data.users;
-      setUsers(resp.data.users);
-    }
-    resp = await axios.post('/api/users/orgList', params);
-    if (resp.data.success) {
-      let orgs = resp.data.orgs;
-      let tree = [];
-      setOrgs(orgs);
+      setTableState({filters: _filters, sorter: sorter});
+      setStatus(_filters.status);
 
-      let level1 = orgs.filter(e => e.PARENT_NODE_ID === '');
-      level1.forEach(function(org) {
-        let level2 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE);
-        let org1 = {key: org.DEPART_CODE, value: org.DEPART_CODE + '|' + org.DEPART_NAME, title: org.DEPART_NAME, children: []}
-        insertUser(org1, users, org.DEPART_CODE);
-
-        level2.forEach(function(org) {
-          let org2 = {key: org.DEPART_CODE, value: org.DEPART_CODE + '|' + org.DEPART_NAME, title: org.DEPART_NAME, children: []}
-          insertUser(org2, users, org.DEPART_CODE);
-
-          let level3 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE);
-          level3.forEach(function(org) {
-            let org3 = {key: org.DEPART_CODE, value: org.DEPART_CODE + '|' + org.DEPART_NAME, title: org.DEPART_NAME, children: []}
-            insertUser(org3, users, org.DEPART_CODE);
-
-            let level4 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE);
-            level4.forEach(function(org) {
-              let org4 = {key: org.DEPART_CODE, value: org.DEPART_CODE + '|' + org.DEPART_NAME, title: org.DEPART_NAME, children: []}
-              insertUser(org4, users, org.DEPART_CODE);
-              
-              let level5 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE);
-              level5.forEach(function(org) {
-                let org5 = {key: org.DEPART_CODE, value: org.DEPART_CODE + '|' + org.DEPART_NAME, title: org.DEPART_NAME, children: []}
-                insertUser(org5, users, org.DEPART_CODE);
-
-                let level6 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE);
-                level6.forEach(function(org) {
-                  let org6 = {key: org.DEPART_CODE, value: org.DEPART_CODE + '|' + org.DEPART_NAME, title: org.DEPART_NAME, children: []}
-                  insertUser(org6, users, org.DEPART_CODE);
-                 
-                  let level7 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE);
-                  level7.forEach(function(org) {
-                    let org7 = {key: org.DEPART_CODE, value: org.DEPART_CODE + '|' + org.DEPART_NAME, title: org.DEPART_NAME, children: []}
-                    insertUser(org7, users, org.DEPART_CODE);
-
-                    let level8 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE);
-                    level8.forEach(function(org) {
-                      let org8 = {key: org.DEPART_CODE, value: org.DEPART_CODE + '|' + org.DEPART_NAME, title: org.DEPART_NAME, children: []}
-                      insertUser(org8, users, org.DEPART_CODE);
-
-                      let level9 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE);
-                      level9.forEach(function(org) {
-                        let org9 = {key: org.DEPART_CODE, value: org.DEPART_CODE + '|' + org.DEPART_NAME, title: org.DEPART_NAME, children: []}
-                        insertUser(org9, users, org.DEPART_CODE);
-
-                        let level10 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE);
-                        level10.forEach(function(org) {
-                          let org10 = {key: org.DEPART_CODE, value: org.DEPART_CODE + '|' + org.DEPART_NAME, title: org.DEPART_NAME, children: []}
-                          insertUser(org10, users, org.DEPART_CODE);
-                          org9.children.push(org10);
-                        });
-                        org8.children.push(org9);
-                      });
-                      org7.children.push(org8);
-                    });
-                    org6.children.push(org7);
-                  });
-                  org5.children.push(org6);
-                });
-                org4.children.push(org5);
-              });
-              org3.children.push(org4);
-            });
-            org2.children.push(org3);
-          });
-          org1.children.push(org2);
-        });
-        tree.push(org1);
+      fetch({
+        sortField: sorter.field,
+        sortOrder: sorter.order,
+        pagination,
+        ..._filters,
+        user: _id,
+        includeBulk: includeBulk
       });
-      console.log(tree);
-      setTreeData(tree);
     } else {
-      console.log('ERROR');
+      console.log("일반 검색 호출")
+      setTableState({filters: filters, sorter: sorter});
+      setStatus(filters.status)
+      
+      fetch({
+        sortField: sorter.field,
+        sortOrder: sorter.order,
+        pagination,
+        ...filters,
+        user: _id,
+        includeBulk: includeBulk
+      });
     }
+
+    // AS-IS
+    // setTableState({filters: filters, sorter: sorter});
+    // setStatus(filters.status)
+    
+    // fetch({
+    //   sortField: sorter.field,
+    //   sortOrder: sorter.order,
+    //   pagination,
+    //   ...filters,
+    //   user: _id,
+    //   includeBulk: includeBulk
+    // });
   };
+
+  // const insertUser = (org, users, depart_code) => {
+  //   let filterUser = users.filter(e => e.DEPART_CODE === depart_code);
+  //   filterUser.map(user => (
+  //     org.children.push({key: user._id, value: user.SABUN + '|' + user.name + (user.JOB_TITLE ? ' ' + user.JOB_TITLE : ''), title: user.name + (user.JOB_TITLE ? ' ' + user.JOB_TITLE : '')})
+  //   ));
+  // };
+
+  // const fetchTreeSelect = async (params = {}) => {
+  //   let users = [];
+  //   let resp = await axios.post('/api/users/list', params);
+  //   if (resp.data.success) {
+  //     users = resp.data.users;
+  //     setUsers(resp.data.users);
+  //   }
+  //   resp = await axios.post('/api/users/orgList', params);
+  //   if (resp.data.success) {
+  //     let orgs = resp.data.orgs;
+  //     let tree = [];
+  //     setOrgs(orgs);
+
+  //     let level1 = orgs.filter(e => e.PARENT_NODE_ID === '');
+  //     level1.forEach(function(org) {
+  //       let level2 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE);
+  //       let org1 = {key: org.DEPART_CODE, value: org.DEPART_CODE + '|' + org.DEPART_NAME, title: org.DEPART_NAME, children: []}
+  //       insertUser(org1, users, org.DEPART_CODE);
+
+  //       level2.forEach(function(org) {
+  //         let org2 = {key: org.DEPART_CODE, value: org.DEPART_CODE + '|' + org.DEPART_NAME, title: org.DEPART_NAME, children: []}
+  //         insertUser(org2, users, org.DEPART_CODE);
+
+  //         let level3 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE);
+  //         level3.forEach(function(org) {
+  //           let org3 = {key: org.DEPART_CODE, value: org.DEPART_CODE + '|' + org.DEPART_NAME, title: org.DEPART_NAME, children: []}
+  //           insertUser(org3, users, org.DEPART_CODE);
+
+  //           let level4 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE);
+  //           level4.forEach(function(org) {
+  //             let org4 = {key: org.DEPART_CODE, value: org.DEPART_CODE + '|' + org.DEPART_NAME, title: org.DEPART_NAME, children: []}
+  //             insertUser(org4, users, org.DEPART_CODE);
+              
+  //             let level5 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE);
+  //             level5.forEach(function(org) {
+  //               let org5 = {key: org.DEPART_CODE, value: org.DEPART_CODE + '|' + org.DEPART_NAME, title: org.DEPART_NAME, children: []}
+  //               insertUser(org5, users, org.DEPART_CODE);
+
+  //               let level6 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE);
+  //               level6.forEach(function(org) {
+  //                 let org6 = {key: org.DEPART_CODE, value: org.DEPART_CODE + '|' + org.DEPART_NAME, title: org.DEPART_NAME, children: []}
+  //                 insertUser(org6, users, org.DEPART_CODE);
+                 
+  //                 let level7 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE);
+  //                 level7.forEach(function(org) {
+  //                   let org7 = {key: org.DEPART_CODE, value: org.DEPART_CODE + '|' + org.DEPART_NAME, title: org.DEPART_NAME, children: []}
+  //                   insertUser(org7, users, org.DEPART_CODE);
+
+  //                   let level8 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE);
+  //                   level8.forEach(function(org) {
+  //                     let org8 = {key: org.DEPART_CODE, value: org.DEPART_CODE + '|' + org.DEPART_NAME, title: org.DEPART_NAME, children: []}
+  //                     insertUser(org8, users, org.DEPART_CODE);
+
+  //                     let level9 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE);
+  //                     level9.forEach(function(org) {
+  //                       let org9 = {key: org.DEPART_CODE, value: org.DEPART_CODE + '|' + org.DEPART_NAME, title: org.DEPART_NAME, children: []}
+  //                       insertUser(org9, users, org.DEPART_CODE);
+
+  //                       let level10 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE);
+  //                       level10.forEach(function(org) {
+  //                         let org10 = {key: org.DEPART_CODE, value: org.DEPART_CODE + '|' + org.DEPART_NAME, title: org.DEPART_NAME, children: []}
+  //                         insertUser(org10, users, org.DEPART_CODE);
+  //                         org9.children.push(org10);
+  //                       });
+  //                       org8.children.push(org9);
+  //                     });
+  //                     org7.children.push(org8);
+  //                   });
+  //                   org6.children.push(org7);
+  //                 });
+  //                 org5.children.push(org6);
+  //               });
+  //               org4.children.push(org5);
+  //             });
+  //             org3.children.push(org4);
+  //           });
+  //           org2.children.push(org3);
+  //         });
+  //         org1.children.push(org2);
+  //       });
+  //       tree.push(org1);
+  //     });
+  //     console.log(tree);
+  //     setTreeData(tree);
+  //   } else {
+  //     console.log('ERROR');
+  //   }
+  // };
 
   // 사용자의 부서 정보 조회
   const fetchMyOrgs = (params = {}) => {
@@ -454,7 +493,6 @@ const DocumentList = ({location}) => {
 
   // 사용자별 폴더 목록 조회  
   const fetchFolders = (params = {}) => {
-    console.log('fetchFolders called')
     axios.post('/api/folder/listFolder', params).then(response => {
       console.log(response.data.folders);
       if (response.data.success && response.data.folders.length > 0) {
@@ -489,7 +527,7 @@ const DocumentList = ({location}) => {
     filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
       <div style={{ padding: 8 }}>
         <Input
-          // ref={searchInput}
+          ref={refSearchInputTable}
           placeholder={`Search ${dataIndex}`}
           value={selectedKeys[0]}
           onChange={e => setSelectedKeys(e.target.value ? [e.target.value] : [])}
@@ -506,7 +544,7 @@ const DocumentList = ({location}) => {
           >
             검색
           </Button>
-          <Button onClick={() => handleReset(clearFilters)} size="small" style={{ width: 90 }}>
+          <Button onClick={() => handleReset(clearFilters, confirm)} size="small" style={{ width: 90 }}>
             초기화
           </Button>
           {/* <Button
@@ -540,10 +578,10 @@ const DocumentList = ({location}) => {
     render: text =>
       searchedColumn === dataIndex ? (
         <Highlighter
-          highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
-          searchWords={[setSearchText(searchText)]}
+          // highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
+          searchWords={[searchText]}
           autoEscape
-          textToHighlight={text ? text.toString() : ''}
+          textToHighlight={text ? text : ''}
         />
       ) : (
         text
@@ -551,14 +589,17 @@ const DocumentList = ({location}) => {
   });
 
   const handleSearch = (selectedKeys, confirm, dataIndex) => {
+    // console.log('handleSearch called', selectedKeys, dataIndex)
     confirm();
-    setSearchedColumn(selectedKeys[0])
-    setSearchedColumn(dataIndex)
+    setSearchText(selectedKeys[0]);
+    setSearchedColumn(dataIndex);
   }
 
-  const handleReset = clearFilters => {
+  const handleReset = (clearFilters, confirm) => {
+    // console.log('handleReset called')
     clearFilters();
     setSearchText('');
+    confirm();
   }
 
   const description = (
@@ -627,7 +668,21 @@ const DocumentList = ({location}) => {
       key: 'docTitle',
       ...getColumnSearchProps('docTitle'),
       expandable: true,
-      render: (text,row) =>  <div style={{ wordWrap: 'break-word', wordBreak: 'break-word' }}><FileOutlined /> {text} {row['attachFiles']?.length > 0 && <PaperClipOutlined /> }</div>, // 여러 필드 동시 표시에 사용
+      render: (text,row) =>  <div style={{ wordWrap: 'break-word', wordBreak: 'break-word' }}><FileOutlined /> 
+      
+      {searchedColumn === 'docTitle' ? (
+        
+        <Highlighter
+          highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
+          searchWords={[searchText]}
+          autoEscape
+          textToHighlight={text ? text.toString() : ''}
+        />
+      ) : (
+        text
+      )}
+
+       {row['attachFiles']?.length > 0 && <PaperClipOutlined /> }</div>, // 여러 필드 동시 표시에 사용
       // render: (text,row) =>  <Typography.Paragraph editable style={{ wordWrap: 'break-word', wordBreak: 'break-word' }}><FileOutlined /> {text}</Typography.Paragraph>, // 여러 필드 동시 표시에 사용
     },
     // {
@@ -703,7 +758,7 @@ const DocumentList = ({location}) => {
       // sorter: (a, b) => a.user.name.localeCompare(b.user.name),  // Populate Collection 단위로 정렬되고, 전체 Collection에 적용 안되어 대안 필요
       sorter: false,
       key: 'name',
-      width: responsive ? '87px' : '110px',
+      width: responsive ? '87px' : '113px',
       ...getColumnSearchProps('name'),
       onFilter: (value, record) =>
       record['user']['name']
@@ -778,17 +833,18 @@ const DocumentList = ({location}) => {
       responsive: ["sm"],
       sorter: true,
       key: 'recentTime',
-      width: responsive ? '90px' : '105px',
+      width: responsive ? '90px' : '145px',
       render: (text, row) => {
+        return responsive ?  <font color='#787878'>{moment(row["recentTime"]).fromNow()}</font> : <font color='#787878'><Moment format='YY/MM/DD HH:mm'>{row["recentTime"]}</Moment></font>
           // return <Moment format='YYYY/MM/DD HH:mm'>{row["requestedTime"]}</Moment>
-          return (<font color='#787878'>{moment(row["recentTime"]).fromNow()}</font>)
+          // return (<font color='#787878'>{moment(row["recentTime"]).fromNow()}</font>)
       } 
     },
     {
       title: '폴더',
       dataIndex: 'folders',
       responsive: ['xl'],
-      width: '180px',
+      width: '150px',
       render: (obj) => {
         let result = obj.filter(elem => elem.user._id === _id || elem.sharedTarget.find(item => item.editable && myOrgs && myOrgs.find(e => e === item.target)));
         return result.map(item => (
@@ -824,7 +880,9 @@ const DocumentList = ({location}) => {
                 const docRef = row["docRef"]
                 const docType = row["docType"]
                 const docTitle = row["docTitle"]
-                dispatch(setDocToView({ docRef, docId, docType, docTitle }));
+                const isWithPDF = row["isWithPDF"]
+                const attachFiles = row["attachFiles"]
+                dispatch(setDocToView({ docRef, docId, docType, docTitle, isWithPDF, attachFiles }));
                 navigate('/viewDocument', { state: {pagination: pagination}});
               }}></Button></Tooltip>
             )
@@ -843,7 +901,9 @@ const DocumentList = ({location}) => {
                 const docTitle = row["docTitle"]
                 const downloads = row["downloads"]
                 const status = DOCUMENT_SIGNED
-                dispatch(setDocToView({ docRef, docId, docType, docTitle, status, downloads }));
+                const isWithPDF = row["isWithPDF"]
+                const attachFiles = row["attachFiles"]
+                dispatch(setDocToView({ docRef, docId, docType, docTitle, status, downloads, isWithPDF, attachFiles}));
                 navigate('/viewDocument', { state: {pagination: pagination}});
               }}></Button></Tooltip>
               {/* <a href={row["docRef"]} download={row["docTitle"]+'.pdf'}> 
@@ -866,7 +926,10 @@ const DocumentList = ({location}) => {
                 const usersTodo = row["usersTodo"];
                 const usersOrder = row["usersOrder"];
                 const attachFiles = row["attachFiles"];
-                dispatch(setDocToSign({ docRef, docId, docType, docUser, observers, orderType, usersTodo, usersOrder, attachFiles }));
+                const items = row["items"];
+                const isWithPDF = row["isWithPDF"];
+                const docTitle = row["docTitle"]
+                dispatch(setDocToSign({ docRef, docId, docType, docUser, observers, orderType, usersTodo, usersOrder, attachFiles, items, isWithPDF, docTitle }));
                 navigate(`/signDocument`);
               }}>
                 {/* {(row["observers"] && row["observers"].includes(_id) ? '수신' : '서명')} */}
@@ -882,7 +945,9 @@ const DocumentList = ({location}) => {
                 const docRef = row["docRef"]
                 const docType = row["docType"]
                 const docTitle = row["docTitle"]
-                dispatch(setDocToView({ docRef, docId, docType, docTitle }));
+                const isWithPDF = row["isWithPDF"]
+                const attachFiles = row["attachFiles"]
+                dispatch(setDocToView({ docRef, docId, docType, docTitle, isWithPDF, attachFiles }));
                 navigate('/viewDocument', { state: {pagination: pagination}});
               }}></Button></Tooltip>
             );
@@ -912,7 +977,9 @@ const DocumentList = ({location}) => {
                 const docRef = row["docRef"]
                 const docType = row["docType"]
                 const docTitle = row["docTitle"]
-                dispatch(setDocToView({ docRef, docId, docType, docTitle }));
+                const isWithPDF = row["isWithPDF"]
+                const attachFiles = row["attachFiles"]
+                dispatch(setDocToView({ docRef, docId, docType, docTitle, isWithPDF, attachFiles }));
                 navigate('/viewDocument', { state: {pagination: pagination}});
               }}></Button>
               </Tooltip>
@@ -931,7 +998,9 @@ const DocumentList = ({location}) => {
                 const docTitle = row["docTitle"]
                 const downloads = row["downloads"]
                 const status = DOCUMENT_SIGNED
-                dispatch(setDocToView({ docRef, docId, docType, docTitle, status, downloads }));
+                const isWithPDF = row["isWithPDF"]
+                const attachFiles = row["attachFiles"]
+                dispatch(setDocToView({ docRef, docId, docType, docTitle, status, downloads, isWithPDF, attachFiles }));
                 // navigate('/viewDocument', { state: {pagination:pagination, from: 'documentList'}});
                 console.log('pagination called', pagination);
                 navigate('/viewDocument', { state: {pagination: pagination}});
@@ -969,7 +1038,10 @@ const DocumentList = ({location}) => {
                 const usersTodo = row["usersTodo"];
                 const usersOrder = row["usersOrder"];
                 const attachFiles = row["attachFiles"];
-                dispatch(setDocToSign({ docRef, docId, docType, docUser, observers, orderType, usersTodo, usersOrder, attachFiles }));
+                const items = row["items"];
+                const isWithPDF = row["isWithPDF"];
+                const docTitle = row["docTitle"]
+                dispatch(setDocToSign({ docRef, docId, docType, docUser, observers, orderType, usersTodo, usersOrder, attachFiles, items, isWithPDF, docTitle }));
                 navigate(`/signDocument`);
               }}>
 
@@ -988,7 +1060,9 @@ const DocumentList = ({location}) => {
                 const docRef = row["docRef"]
                 const docType = row["docType"]
                 const docTitle = row["docTitle"]
-                dispatch(setDocToView({ docRef, docId, docType, docTitle }));
+                const isWithPDF = row["isWithPDF"]
+                const attachFiles = row["attachFiles"]
+                dispatch(setDocToView({ docRef, docId, docType, docTitle, isWithPDF, attachFiles }));
                 navigate('/viewDocument', { state: {pagination: pagination}});
               }}></Button></Tooltip>
             );
@@ -1008,7 +1082,6 @@ const DocumentList = ({location}) => {
 
     console.log("useEffect called")
     console.log("includeBulk:"+location.state.includeBulk)
-
     console.log('pagination', location.state.pagination)
     // 뒤로 가기로 왔을때는 화면 재로딩을 하지 않도록 한다.
     // let _pagination = {current:3, pageSize:10, showSizeChanger:true, pageSizeOptions: ["10", "20", "30"]};
@@ -1019,12 +1092,7 @@ const DocumentList = ({location}) => {
     //   pagination.current = 3;
     // };
 
-    if (location.state.status) {
-      setStatus(location.state.status)
-    }
-
-    // 폴더관리 부분 
-    // fixed: includeBulk 시 return 되므로 상단으로 위치 변경 [2022.08.25]
+    // 폴더관리 부분
     fetchFolders({
       user: _id,
       includeOption: true
@@ -1033,6 +1101,10 @@ const DocumentList = ({location}) => {
     fetchMyOrgs({
       user: _id
     });
+
+    if (location.state.status) {
+      setStatus(location.state.status)
+    }
 
     // HOME 에서 대량 발송 건 포함 이동해온 경우 대량 발송 건 포함 useDidMountEffect 서비스로 목록 호출
     if (location.state.includeBulk) {
@@ -1074,6 +1146,39 @@ const DocumentList = ({location}) => {
 
   }, [includeBulk]);
 
+
+  // TODO : 기본 Search 와 연동되게 하기 ... 지금은 페이지 따로 논다 .
+  const onSearch = (value) => {
+    console.log('onSearch called', value);
+    console.log('tableState', tableState);
+
+    let filters;
+    if (tableState.filters) {
+      filters = loadash.cloneDeep(tableState.filters);
+      filters.docTitle = [value];
+    } else {
+      filters = {status:[], docTitle: [value]} 
+    }
+
+    console.log('filters', filters);
+
+    setTableState({filters: filters, sorter: tableState?.sorter});
+    setSearchText(value);
+    setSearchedColumn('docTitle');
+    
+    fetch({
+      sortField: tableState?.sorter?.field,
+      sortOrder: tableState?.sorter?.order,
+      pagination,
+      ...filters,
+      user: _id,
+      includeBulk: includeBulk
+      // status:status  //필터에 포함되어 있음 
+    });
+
+
+  }
+
   return (
     <div>
     <PageContainer
@@ -1105,6 +1210,7 @@ const DocumentList = ({location}) => {
             <Checkbox key={uuidv4()} checked={includeBulk} onChange={(e) => {setIncludeBulk(e.target.checked)}}>대량 전송 포함</Checkbox>,
             <Button key={uuidv4()} icon={<FileAddOutlined />} type="primary" onClick={() => {
               dispatch(setSendType('G'));
+              // dispatch(setDocumentType('PC'));  // PC 탭 먼저 선택
               navigate('/uploadDocument');
               }}>
               서명 요청
@@ -1121,10 +1227,15 @@ const DocumentList = ({location}) => {
         footer={[
         ]}
     >
-      <Space style={{margin: '15px 0px'}}>
+      <div>
+      <Space style={{margin: '15px 0px', float: 'left'}}>
         {`선택한 문서 (${selectedRowKeys.length})`}
         <Typography.Link disabled={!hasSelected} onClick={()=>{setMoveFolderId('');setMoveModal(true);}}><FolderOpenOutlined /> 이동</Typography.Link>
       </Space>
+
+      <div style={{textAlign: 'right'}}><Search ref={refSearchInput} onSearch={onSearch} placeholder="문서명 검색" allowClear style={{width: '220px', marginTop:'10px'}} /></div>
+      </div>
+      
       {/* {hasSelected ? 
         (<Space style={{margin: '15px 0px'}}>
           {`선택한 문서 (${selectedRowKeys.length})`}<Typography.Link onClick={onClickMove}><FolderTwoTone /> 폴더로 이동</Typography.Link>

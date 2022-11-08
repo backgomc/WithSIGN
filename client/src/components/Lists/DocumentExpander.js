@@ -226,7 +226,8 @@ const DocumentExpander = (props) => {
                         const docId = item["_id"]
                         const docRef = item["docRef"]
                         const docTitle = item["docTitle"]
-                        dispatch(setDocToView({ docRef, docId, docTitle }));
+                        const isWithPDF = item["isWithPDF"]
+                        dispatch(setDocToView({ docRef, docId, docTitle, isWithPDF }));
                         navigate(`/viewDocument`);
                     }}>문서조회</Button>
                     )
@@ -238,7 +239,9 @@ const DocumentExpander = (props) => {
                     const docId = item["_id"]
                     const docRef = item["docRef"]
                     const docTitle = item["docTitle"]
-                    dispatch(setDocToView({ docRef, docId, docTitle }));
+                    const isWithPDF = item["isWithPDF"]
+                    const status = DOCUMENT_SIGNED
+                    dispatch(setDocToView({ docRef, docId, docTitle, isWithPDF, status }));
                     navigate(`/viewDocument`);
                 }}>문서조회</Button>
                 )
@@ -248,7 +251,8 @@ const DocumentExpander = (props) => {
                     const docId = item["_id"]
                     const docRef = item["docRef"]
                     const docTitle = item["docTitle"]
-                    dispatch(setDocToView({ docRef, docId, docTitle }));
+                    const isWithPDF = item["isWithPDF"]
+                    dispatch(setDocToView({ docRef, docId, docTitle, isWithPDF }));
                     navigate(`/signDocument`);
                 }}>서명하기</Button>
                 );
@@ -258,7 +262,8 @@ const DocumentExpander = (props) => {
                     const docId = item["_id"]
                     const docRef = item["docRef"]
                     const docTitle = item["docTitle"]
-                    dispatch(setDocToView({ docRef, docId, docTitle }));
+                    const isWithPDF = item["isWithPDF"]
+                    dispatch(setDocToView({ docRef, docId, docTitle, isWithPDF }));
                     navigate(`/viewDocument`);
                 }}>문서조회</Button>
                 );
@@ -438,7 +443,7 @@ const DocumentExpander = (props) => {
 
   <Container>
   {/* style={{borderCollapse:'collapse'}} labelStyle={{border:'1px solid', borderColor:'grey', display:'table-cell'}} contentStyle={{background:'white', border:'1px solid', borderColor:'grey', display:'table-cell'}} */}
-    <ProDescriptions column={2} bordered title={<div><img src={ico_bullet}></img>&nbsp;&nbsp;상세정보</div>} tooltip="" contentStyle={{background:'white'}}>
+    <ProDescriptions column={2} bordered title={<div><img src={ico_bullet} style={{display: 'inline-block'}}></img>&nbsp;&nbsp;상세정보</div>} tooltip="" contentStyle={{background:'white'}}>
       <ProDescriptions.Item label="??" valueType="option">
         {/* <Button key="primary" type="primary">
           다운로드

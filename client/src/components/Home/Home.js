@@ -4,6 +4,7 @@ import { navigate, Link } from '@reach/router';
 import { useIntl } from "react-intl";
 import { selectUser } from '../../app/infoSlice';
 import { setDocToSign } from '../SignDocument/SignDocumentSlice';
+import { setPathname } from '../../config/MenuSlice';
 import { setSendType } from '../Assign/AssignSlice';
 import axios from 'axios';
 import BoardCard from '../Board/BoardCard';
@@ -38,7 +39,7 @@ import iconDocument from '../../assets/images/icon_save2.png';
 import iconCheck from '../../assets/images/icon_check.png';
 import iconManual from '../../assets/images/icon_manual.png';
 import { DocumentType, DocumentTypeText, DocumentTypeBadge, DocumentTypeIcon } from '../Lists/DocumentType';
-import {DOCUMENT_TODO, DOCUMENT_SIGNED, DOCUMENT_TOSIGN, DOCUMENT_SIGNING, DOCUMENT_CANCELED, DOCUMENT_TOCONFIRM, DOCUMENT_TODO_SHORT} from '../../common/Constants';
+import {DOCUMENT_TODO, DOCUMENT_SIGNED, DOCUMENT_TOSIGN, DOCUMENT_SIGNING, DOCUMENT_CANCELED, DOCUMENT_TOCONFIRM, DOCUMENT_TODO_SHORT, DOCUMENT_SIGNING_SHORT} from '../../common/Constants';
 
 import { CheckCard } from '@ant-design/pro-card';
 import BTN01 from '../../assets/images/btn_board01.png';
@@ -831,7 +832,7 @@ const Home = () => {
       <List
       rowKey="id"
       loading={loadingToSign}
-      grid={{ gutter: 24, lg: 3, md: 3, sm: 2, xs: 2 }}
+      grid={{ gutter: 24, lg: 3, md: 3, sm: 2, xs: 1 }}
       dataSource={documentsToSign}
       loadMore={toSignNum > 5 ? loadmore(DOCUMENT_TOSIGN) : ''}
       renderItem={item => (
@@ -840,6 +841,7 @@ const Home = () => {
           <Link to="/signDocument" onClick={() => {
             const docId = item._id;
             const docRef = item.docRef;
+            const docTitle = item.docTitle;
             const docType = item.docType;
             const docUser = item.user;
             const observers = item.observers;
@@ -847,7 +849,11 @@ const Home = () => {
             const usersTodo = item.usersTodo;
             const usersOrder = item.usersOrder;
             const attachFiles = item.attachFiles;
-            dispatch(setDocToSign({ docRef, docId, docType, docUser, observers, orderType, usersTodo, usersOrder, attachFiles }));
+            const items = item.items;
+            const isWithPDF = item.isWithPDF;
+
+            dispatch(setPathname('/documentList'));
+            dispatch(setDocToSign({ docRef, docId, docTitle, docType, docUser, observers, orderType, usersTodo, usersOrder, attachFiles, items, isWithPDF }));
           }}>
             <Badge.Ribbon color={'#54c6e8'} text={(item.observers && item.observers.includes(_id)) ? '수신' : '서명'}>
             <ProCard 
@@ -1052,14 +1058,22 @@ const Home = () => {
     <MyStyle>
     <Row gutter={12}>
 
-     <Col xl={4} lg={4} md={0} sm={0} xs={0}>  
+     <Col xxl={4} xl={0} lg={0} md={0} sm={0} xs={0}>  
      <MyStyle_Total>
      <CheckCard
+        style={{minHeight: '103px'}}
         title="전체"
         avatar={
           <Avatar
             src={imgTotal}
-            size="large"
+            size={{
+              xs: 60,
+              sm: 40,
+              md: 60,
+              lg: 60,
+              xl: 40,
+              xxl: 60,
+            }}
           />
         }
         description={totalNum}
@@ -1084,14 +1098,22 @@ const Home = () => {
       </MyStyle_Total>
       </Col>  
 
-      <Col xl={5} lg={5} md={6} sm={6} xs={12}>
+      <Col xxl={5} xl={6} lg={6} md={6} sm={6} xs={12}>
       <MyStyle_ToSign>
       <CheckCard
+        style={{minHeight: '103px'}}
         title={responsive ? DOCUMENT_TODO_SHORT : DOCUMENT_TODO}
         avatar={
           <Avatar
             src={imgToSign}
-            size="large"
+            size={{
+              xs: 60,
+              sm: 40,
+              md: 60,
+              lg: 60,
+              xl: 50,
+              xxl: 60,
+            }}
           />
         }
         description={toSignNum}
@@ -1116,14 +1138,22 @@ const Home = () => {
       </MyStyle_ToSign>
       </Col>
 
-      <Col xl={5} lg={5} md={6} sm={6} xs={12}>
+      <Col xxl={5} xl={6} lg={6} md={6} sm={6} xs={12}>
       <MyStyle_Signing>
       <CheckCard
-        title={DOCUMENT_SIGNING}
+        style={{minHeight: '103px'}}
+        title={responsive ? DOCUMENT_SIGNING_SHORT : DOCUMENT_SIGNING}
         avatar={
           <Avatar
             src={imgSigning}
-            size="large"
+            size={{
+              xs: 60,
+              sm: 40,
+              md: 60,
+              lg: 60,
+              xl: 50,
+              xxl: 60,
+            }}
           />
         }
         description={signingNum}
@@ -1148,14 +1178,22 @@ const Home = () => {
       </MyStyle_Signing>
       </Col>
 
-      <Col xl={5} lg={5} md={6} sm={6} xs={12}>
+      <Col xxl={5} xl={6} lg={6} md={6} sm={6} xs={12}>
       <MyStyle_Canceled>
       <CheckCard
+        style={{minHeight: '103px'}}
         title={DOCUMENT_CANCELED}
         avatar={
           <Avatar
             src={imgCanceled}
-            size="large"
+            size={{
+              xs: 60,
+              sm: 40,
+              md: 60,
+              lg: 60,
+              xl: 50,
+              xxl: 60,
+            }}
           />
         }
         description={canceledNum}
@@ -1180,14 +1218,22 @@ const Home = () => {
       </MyStyle_Canceled>
       </Col>
 
-      <Col xl={5} lg={5} md={6} sm={6} xs={12}>
+      <Col xxl={5} xl={6} lg={6} md={6} sm={6} xs={12}>
       <MyStyle_Signed>
       <CheckCard
+        style={{minHeight: '103px'}}
         title={DOCUMENT_SIGNED}
         avatar={
           <Avatar
             src={imgSigned}
-            size="large"
+            size={{
+              xs: 60,
+              sm: 40,
+              md: 60,
+              lg: 60,
+              xl: 50,
+              xxl: 60,
+            }}
           />
         }
         description={signedNum}
@@ -1221,12 +1267,14 @@ const Home = () => {
   return (
     <div>
 
-      <RcResizeObserver.Collection
+      <RcResizeObserver
         key="resize-observer"
         onResize={(offset) => {
           setResponsive(offset.width < 1280);
         }}
       >
+      <div>
+
       <div style={{background: 'white',padding:0, marginTop:'-24px', marginLeft:'-24px', marginRight:'-24px', marginBottom:'24px'}}>
         <img src={banner} style={{width: '75%'}}/>
       </div>
@@ -1257,7 +1305,9 @@ const Home = () => {
           <DirectCard></DirectCard>
         </Col>
       </Row>
-      </RcResizeObserver.Collection>
+
+      </div>
+      </RcResizeObserver>
     </div>
   );
 };

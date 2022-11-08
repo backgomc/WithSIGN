@@ -420,7 +420,7 @@ const UploadDocument = () => {
                     setFile(file);
                     
                     form.setFieldsValue({
-                      documentTitle: file.name.replace(/\.[^/.]+$/, ""),
+                      documentTitle: file.name.replace(/\.[^/.]+$/, "").normalize('NFC'),
                     })
             
                     dispatch(setDocumentFile(file));

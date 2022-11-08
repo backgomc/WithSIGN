@@ -217,6 +217,125 @@ router.post('/updateDocumentToSign', (req, res) => {
   });
 })
 
+// WITHPDF
+// 문서 상태 변경 (사인)
+router.post('/update', (req, res) => {
+
+  // TODO 서명자의 IP 정보 남기기
+  // console.log("client IP: " +requestIp.getClientIp(req));
+
+  // console.log(req.body.docId)
+  // console.log(req.body.uid)
+  // console.log(req.body.xfdf)
+  if (!req.body.docId || !req.body.user || !req.body.items) {
+      return res.json({ success: false, message: "input value not enough!" })
+  } 
+
+  const docId = req.body.docId
+  const user = req.body.user
+  const updateItems = req.body.items
+  const usersTodo = req.body.usersTodo
+
+  const time = new Date()
+  const ip = requestIp.getClientIp(req)
+  var isLast = false;
+
+  Document.findOne({ _id: req.body.docId }, (err, document) => {
+    if (document) {
+      let { signedBy, users, items, docRef } = document;
+      
+      console.log(signedBy.some(e => e.user === user))
+      if (!signedBy.some(e => e.user === user)) {
+
+        const signedByArray = [...signedBy, {user:user, signedTime:time, ip:ip}];
+
+        // console.log('before items', items);
+        // update item : 기존 항목은 update 하고 신규 항목은 추가해준다.
+        updateItems.forEach(item => {
+          const idx = items.findIndex(el => el.id === item.id);
+          console.log('idx', idx);
+          if (idx >= 0) {
+            items[idx] = item;
+          } else {
+            items.push(item);
+          }
+        })
+        // console.log('after items', items);
+
+        //S. userTodo 서버 베이스로 변경
+        var todo = [];
+        if (document.orderType == 'S'){
+          if(document.usersTodo?.length > 0) {
+            if(document.usersTodo?.filter(e => e!= user).length > 0) {
+              todo = document.usersTodo?.filter(e => e!= user)
+            } else {
+              const arr = document.usersOrder?.filter(e => e.user == document.usersTodo[0])
+              if (arr?.length > 0) {
+                todo = document.usersOrder?.filter(e => e.order == arr[0].order +1).map(e => e.user)
+              }
+            }
+          }
+        }
+        console.log("todo", todo)
+        //E
+
+        Document.updateOne({ _id: docId }, {items: items, signedBy:signedByArray, usersTodo:todo, recentTime:time}, (err, result) => {
+          if (err) {
+            console.log(err);
+            return res.json({ success: false, message: err })
+          } else {
+            
+            if (signedByArray.length === users.length) {
+              // const time = new Date();
+              isLast = true
+              
+              Document.updateOne({ _id: docId }, 
+                {signed: true, signedTime:time}, (err, result) => {
+                  if (err) {
+                    console.log(err);
+                    return res.json({ success: false, message: err })
+                  }
+              });
+              
+              // 문서 완료 시 요청자에게 쪽지 보내기 : 일반 전송만 (대량 전송 제외)
+              if (document.docType == 'G') {
+                console.log('쪽지 전송 OK: 완료')
+                restful.callNotify(null, document.user,'서명(수신) 완료 알림', '['+document.docTitle+']' + ' 의 서명(수신)이 완료되었습니다.');
+              } 
+
+            } else {
+              if (document.orderType == 'S') {
+                
+                if (usersTodo?.length > 0) {
+
+                  // 22.02.07: 동차에 서명할 사람이 여러 명인 경우 최초에만 메시지 발송하기
+                  var arr = document.usersOrder?.filter(e => e.user == usersTodo[0])
+                  if (arr?.length > 0) {
+                    var sameOrderArr = document.usersOrder?.filter(e => e.order == arr[0].order)
+                    if (sameOrderArr?.length == usersTodo?.length) { // 같은 차례에 처음 메시지를 보낸다고 판단 => 메시지 발송
+                      // 메시지 발송하기 
+                      console.log('쪽지 전송 OK: 순차 전송')
+                      restful.callNotify(document.user, usersTodo,'서명(수신) 요청 알림', '['+document.docTitle+']' + ' 서명(수신) 요청 건이 있습니다.');
+                    } else {
+                      console.log('쪽지 전송 NO: 이미 쪽지 보냄')
+                    }
+                  }
+
+                  // 쪽지 보내기 (순차 발송 - 서명 대상자에게)
+                  // restful.callNotify(document.user, usersTodo,'서명(수신) 요청 알림', '['+document.docTitle+']' + ' 서명(수신) 요청 건이 있습니다.');
+                }
+              }
+            }
+
+            return res.json({ success: true, docRef: docRef, items: items, isLast: isLast })
+        }
+        })
+      }
+    }
+  });
+})
+
+
 // 문서 취소 : updateDocumentToSign
 router.post('/updateDocumentCancel', (req, res) => {
 

@@ -40,7 +40,9 @@ router.post('/addTemplate', (req, res) => {
 })
 
 // 템플릿 목록
-// type:C(회사 템플릿)
+// type:C (신청서)
+// type:G (회사 템플릿)
+// type:M (개인)
 router.post('/templates', (req, res) => {
 
   const uid = req.body.uid
@@ -50,14 +52,23 @@ router.post('/templates', (req, res) => {
 
   var andParam = {};
   var orParam = {};
-  const type = req.body.type 
-  if (type && type === 'C') { // 회사
+  const type = req.body.type;
+  // const COMPANY_CODE = req.body.COMPANY_CODE; 
+
+  // if (COMPANY_CODE) {
+  //   andParam['COMPANY_CODE'] = COMPANY_CODE;
+  // }
+
+  if (type && type === 'C') { // 신청서
     andParam['type'] = 'C'
+  } else if (type && type === 'G') { // 회사
+    andParam['type'] = 'G'
   } else if (type && type === 'T') { // 전체
-    orParam = [{"user": uid}, {"type": 'C'}];
+    orParam = [{"user": uid}, {"type": 'C'}, {"type": 'G'}];
   } else { // 개인
     andParam['user'] = uid
-    andParam['type'] = {$ne : 'C'}
+    // andParam['type'] = {$ne : 'C'}
+    andParam['type'] = 'M'
   }
 
   console.log('req.body.docTitle:'+req.body.docTitle)
@@ -173,21 +184,52 @@ router.post('/updateTemplate', (req, res) => {
 
   if (!req.body._id || !req.body.user ) return res.json({ success: false, message: 'input value not enough!' });
 
-  // 경로 치환
-  var ref = req.body.customRef.replace(/(\\)/g,'/');
+  if (req.body.isWithPDF) {
 
-  var directRef = '';
-  if (req.body.directRef) {
-    directRef = req.body.directRef.replace(/(\\)/g,'/');
+    Template.updateOne(
+      { '_id': req.body._id, 'user': req.body.user },
+      { 'users': req.body.users, 'observers': req.body.observers, 'orderType': req.body.orderType, 'usersOrder': req.body.usersOrder, 'usersTodo': req.body.usersTodo, 'signees': req.body.signees, 'hasRequester': req.body.hasRequester, 'requesters': req.body.requesters, 'items': req.body.items, 'docTitle': req.body.docTitle },
+      (err) => {
+        if (err) return res.json({ success: false, message: err });
+        return res.json({ success: true});
+    });
+  } else {
+    // 경로 치환
+    var ref = req.body.customRef.replace(/(\\)/g,'/');
+
+    var directRef = '';
+    if (req.body.directRef) {
+      directRef = req.body.directRef.replace(/(\\)/g,'/');
+    }
+
+    Template.updateOne(
+      { '_id': req.body._id, 'user': req.body.user },
+      { 'customRef': ref, 'directRef': directRef, 'users': req.body.users, 'observers': req.body.observers, 'orderType': req.body.orderType, 'usersOrder': req.body.usersOrder, 'usersTodo': req.body.usersTodo, 'signees': req.body.signees, 'hasRequester': req.body.hasRequester, 'requesters': req.body.requesters, 'xfdfIn': req.body.xfdfIn },
+      (err) => {
+        if (err) return res.json({ success: false, message: err });
+        return res.json({ success: true});
+    });
   }
 
-  Template.updateOne(
-    { '_id': req.body._id, 'user': req.body.user },
-    { 'customRef': ref, 'directRef': directRef, 'users': req.body.users, 'observers': req.body.observers, 'orderType': req.body.orderType, 'usersOrder': req.body.usersOrder, 'usersTodo': req.body.usersTodo, 'signees': req.body.signees, 'hasRequester': req.body.hasRequester, 'requesters': req.body.requesters, 'xfdfIn': req.body.xfdfIn },
-    (err) => {
-      if (err) return res.json({ success: false, message: err });
-      return res.json({ success: true});
-  });
 });
+
+// 게시글 상세
+router.post('/detail', (req, res) => {
+  if (!req.body.templateId) {
+    return res.json({ success: false, message: "input value not enough!" })
+  }
+  const templateId = req.body.templateId
+  
+  Template.findOne({ _id: templateId })
+  .populate({
+    path: "user", 
+    select: {name: 1, JOB_TITLE: 2}
+  })
+  .then((template, err) => {
+    if (err) return res.json({success: false, error: err});
+    return res.json({ success: true, template: template })
+  });
+})
+
 
 module.exports = router;

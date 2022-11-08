@@ -9,11 +9,20 @@ import { PageContainer } from '@ant-design/pro-layout';
 import WebViewer from '@pdftron/webviewer';
 import 'antd/dist/antd.css';
 import '@ant-design/pro-card/dist/card.css';
-import { LICENSE_KEY } from '../../config/Config';
+import { LICENSE_KEY, USE_WITHPDF } from '../../config/Config';
 import {
   ArrowLeftOutlined,
   DownloadOutlined
 } from '@ant-design/icons';
+import PDFViewer from "@niceharu/withpdf";
+import styled from 'styled-components';
+const PageContainerStyle = styled.div`
+.ant-pro-page-container-children-content {
+  margin-top: 0px !important; 
+  margin-left: 0px !important; 
+  margin-right: 0px !important;
+}
+`;
 
 const PreviewPDF = ({location}) => {
 
@@ -29,55 +38,62 @@ const PreviewPDF = ({location}) => {
   const user = useSelector(selectUser);
   const { _id } = user;
   const viewer = useRef(null);
+  const pdfRef = useRef();
+
+  const initWithPDF = async () => {
+    await pdfRef.current.uploadPDF(docRef);
+  }
 
   useEffect(() => {
 
-    // FILE Thumbnail 추출 
-    WebViewer(
-      {
-        path: 'webviewer',
-        licenseKey: LICENSE_KEY,
-        disabledElements: [
-          'ribbons',
-          'toggleNotesButton',
-          'searchButton',
-          'menuButton',
-          'contextMenuPopup',
-        ],
-      },
-      viewer.current,
-    )
-    .then(instance => {
+    if (USE_WITHPDF) {
+      initWithPDF();
+    } else {
+      // FILE Thumbnail 추출 
+      WebViewer(
+        {
+          path: 'webviewer',
+          licenseKey: LICENSE_KEY,
+          disabledElements: [
+            'ribbons',
+            'toggleNotesButton',
+            'searchButton',
+            'menuButton',
+            'contextMenuPopup',
+          ],
+        },
+        viewer.current,
+      )
+      .then(instance => {
 
-      // const { docViewer, CoreControls } = instance;
-      const { Core, UI } = instance;
-      const { documentViewer } = Core;
+        // const { docViewer, CoreControls } = instance;
+        const { Core, UI } = instance;
+        const { documentViewer } = Core;
 
-      // set local font 
-      Core.setCustomFontURL("/webfonts/");
+        // set local font 
+        Core.setCustomFontURL("/webfonts/");
 
-      // set language
-      UI.setLanguage('ko');
+        // set language
+        UI.setLanguage('ko');
 
-      setInstance(instance)
+        setInstance(instance)
 
-      // set file url
-      const URL = '/' + docRef;      
-      UI.loadDocument(URL);
-      
-      documentViewer.addEventListener('documentLoaded', () => {
-        console.log('documentLoaded called');
+        // set file url
+        const URL = '/' + docRef;      
+        UI.loadDocument(URL);
+        
+        documentViewer.addEventListener('documentLoaded', () => {
+          console.log('documentLoaded called');
+        });
       });
-    });
+    }
 
   }, []);
 
 
   return (
-    <div
-    style={{
-    }}
-    >
+    <div>
+      <PageContainerStyle>
       <PageContainer
       loading={loading}
       ghost
@@ -102,14 +118,15 @@ const PreviewPDF = ({location}) => {
           </Button>
         ],
       }}
-      footer={[
-      ]}
+      style={{height:`calc(100vh - 72px)`}}
+      // footer={[
+      // ]}
     >
-      <br></br>
 
-      <div className="webviewer" ref={viewer} style={{}}></div>  
+      {USE_WITHPDF ? <PDFViewer ref={pdfRef} isUpload={false} isSave={false} isEditing={false} headerSpace={128} />  : <div className="webviewer" ref={viewer}></div>}
+
     </PageContainer>
-    
+    </PageContainerStyle>
   </div>
   )
 

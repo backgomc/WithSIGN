@@ -3,7 +3,7 @@ import axios from 'axios';
 import { useSelector } from 'react-redux';
 import { navigate, Link } from '@reach/router';
 // import { Box, Column, Heading, Row, Stack, Button } from 'gestalt';
-import { Row, Col, Button, Badge } from 'antd';
+import { Row, Col, Button, Badge, List } from 'antd';
 import { selectDocToView } from './ViewDocumentSlice';
 import { selectUser, selectHistory } from '../../app/infoSlice';
 import WebViewer from '@pdftron/webviewer';
@@ -15,9 +15,26 @@ import { PageContainer } from '@ant-design/pro-layout';
 import ProCard from '@ant-design/pro-card';
 import 'antd/dist/antd.css';
 import '@ant-design/pro-card/dist/card.css';
-import { DownloadOutlined, ArrowLeftOutlined, CheckCircleTwoTone } from '@ant-design/icons';
-import { LICENSE_KEY } from '../../config/Config';
-import {DOCUMENT_SIGNED, DOCUMENT_TOSIGN, DOCUMENT_SIGNING, DOCUMENT_CANCELED, DOCUMENT_TOCONFIRM, DOCUMENT_TODO} from '../../common/Constants';
+import { DownloadOutlined, ArrowLeftOutlined, CheckCircleTwoTone, PaperClipOutlined, PrinterOutlined } from '@ant-design/icons';
+import { LICENSE_KEY, USE_WITHPDF } from '../../config/Config';
+import {DOCUMENT_SIGNED, DOCUMENT_TOSIGN, DOCUMENT_SIGNING, DOCUMENT_CANCELED, DOCUMENT_TOCONFIRM, DOCUMENT_TODO, TYPE_SIGN, TYPE_IMAGE, TYPE_TEXT, TYPE_CHECKBOX} from '../../common/Constants';
+import PDFViewer from "@niceharu/withpdf";
+import styled from 'styled-components';
+
+// const PageContainerStyle = styled.div`
+// .ant-row {
+//   margin-top: -24px !important; 
+//   margin-left: -35px !important; 
+//   margin-right: -24px !important;
+// } 
+// `;
+const PageContainerStyle = styled.div`
+.ant-pro-page-container-children-content {
+  margin-top: 0px !important; 
+  margin-left: 0px !important; 
+  margin-right: 0px !important;
+}
+`;
 
 const ViewDocument = ({location}) => {
   const [instance, setInstance] = useState(null);
@@ -30,108 +47,152 @@ const ViewDocument = ({location}) => {
   const user = useSelector(selectUser);
   const history = useSelector(selectHistory);
 
-  const { docRef, docTitle, docId, status, downloads } = doc;
+  const { docRef, docTitle, docId, status, downloads, isWithPDF, attachFiles } = doc;
   const { _id } = user;
   const { formatMessage } = useIntl();
 
   const viewer = useRef(null);
+  const pdfRef = useRef();
 
+
+  const initWithPDF = async () => {
+    await pdfRef.current.uploadPDF(docRef, docTitle);
+
+    console.log('status', status)
+    if (status !== DOCUMENT_SIGNED) { // items import (완료되지 않은 경우)
+      let param = {
+        docId: docId,
+      }
+      let items;
+      const res = await axios.post('/api/document/document', param)
+      if (res.data.success) {
+        items = res.data.document.items;
+      }
+  
+      let renewItems = items.map(item => {
+        item.required = false;
+        item.disable = true;
+        item.borderColor = 'transparent';
+        
+        if ((item.type === (TYPE_SIGN || TYPE_IMAGE)) && !item.payload) {
+          item.hidden = true;
+        }
+        if (item.type === TYPE_TEXT) {
+          if (item.lines.length < 1 || item.lines[0].length < 1) {
+            item.hidden = true;
+          }
+        }
+        if (item.type === TYPE_CHECKBOX && !item.checked) {
+          item.hidden = true;
+        }
+        return item;
+      })
+      await pdfRef.current.importItems(renewItems);
+    }
+
+  }
 
   useEffect(() => {
 
-    WebViewer(
-      {
-        path: 'webviewer',
-        licenseKey: LICENSE_KEY,
-        disabledElements: [
-          'ribbons',
-          'toggleNotesButton',
-          // 'viewControlsButton',
-          // 'panToolButton',
-          // 'selectToolButton', 
-          'searchButton',
-          // 'menuButton',
-          'commentsButton',
-          'contextMenuPopup'
-        ],
-      },
-      viewer.current,
-    ).then(async instance => {
+    if (isWithPDF || (USE_WITHPDF && status === DOCUMENT_SIGNED)) {
+      initWithPDF();
+    } else {
 
-      // const { annotManager, Annotations, CoreControls } = instance;
-      const { Core, UI } = instance;
-      const { annotationManager, Annotations } = Core;
-
-      // select only the view group
-      UI.setToolbarGroup('toolbarGroup-View');
-      Core.setCustomFontURL("/webfonts/");
-      // instance.setToolbarGroup('toolbarGroup-Insert');
-
-      annotationManager.setReadOnly(true);
-
-      setInstance(instance);
-
-      // load document
-      // const storageRef = storage.ref();
-      // const URL = await storageRef.child(docRef).getDownloadURL();
-      // console.log(URL);
-
-      // DISTO
-      const URL = '/' + docRef;
-      console.log("URL:"+URL);      
-      UI.loadDocument(URL, { filename: docTitle+'.pdf' });
-
-      const normalStyles = (widget) => {
-        if (widget instanceof Annotations.TextWidgetAnnotation) {
-          return {
-            // 'background-color': '#a5c7ff',
-            color: 'black',
-          };
-        } else if (widget instanceof Annotations.SignatureWidgetAnnotation) {
-          return {
-            // border: '1px solid #a5c7ff',
-          };
-        } else if (widget instanceof Annotations.CheckButtonWidgetAnnotation) {
-          return {
-            // border: '1px solid #a5c7ff',
-          };
-        }
-        
-      };
-
-      // TODO annotation 수정 안되게 하기
-      annotationManager.addEventListener('annotationChanged', (annotations, action, { imported }) => {
-
-        console.log('annotationChanged called')
-        if (imported && action === 'add') {
-          annotations.forEach(function(annot) {
-            console.log('annot', annot)
-            annot.NoMove = true;
-            annot.NoDelete = true;
-            annot.ReadOnly = true;
-            if (annot instanceof Annotations.WidgetAnnotation) {
-              Annotations.WidgetAnnotation.getCustomStyles = normalStyles;
-
-              console.log('annot.fieldName:'+annot.fieldName);
-              // if (!annot.fieldName.startsWith(_id)) { 
+      WebViewer(
+        {
+          path: 'webviewer',
+          licenseKey: LICENSE_KEY,
+          disabledElements: [
+            'ribbons',
+            'toggleNotesButton',
+            // 'viewControlsButton',
+            // 'panToolButton',
+            // 'selectToolButton', 
+            'searchButton',
+            // 'menuButton',
+            'commentsButton',
+            'contextMenuPopup'
+          ],
+        },
+        viewer.current,
+      ).then(async instance => {
+  
+        // const { annotManager, Annotations, CoreControls } = instance;
+        const { Core, UI } = instance;
+        const { annotationManager, Annotations } = Core;
+  
+        // select only the view group
+        UI.setToolbarGroup('toolbarGroup-View');
+        Core.setCustomFontURL("/webfonts/");
+        // instance.setToolbarGroup('toolbarGroup-Insert');
+  
+        annotationManager.setReadOnly(true);
+  
+        setInstance(instance);
+  
+        // load document
+        // const storageRef = storage.ref();
+        // const URL = await storageRef.child(docRef).getDownloadURL();
+        // console.log(URL);
+  
+        // DISTO
+        const URL = '/' + docRef;
+        console.log("URL:"+URL);      
+        UI.loadDocument(URL, { filename: docTitle+'.pdf' });
+  
+        const normalStyles = (widget) => {
+          if (widget instanceof Annotations.TextWidgetAnnotation) {
+            return {
+              // 'background-color': '#a5c7ff',
+              color: 'black',
+            };
+          } else if (widget instanceof Annotations.SignatureWidgetAnnotation) {
+            return {
+              // border: '1px solid #a5c7ff',
+            };
+          } else if (widget instanceof Annotations.CheckButtonWidgetAnnotation) {
+            return {
+              // border: '1px solid #a5c7ff',
+            };
+          }
+          
+        };
+  
+        // TODO annotation 수정 안되게 하기
+        annotationManager.addEventListener('annotationChanged', (annotations, action, { imported }) => {
+  
+          console.log('annotationChanged called')
+          if (imported && action === 'add') {
+            annotations.forEach(function(annot) {
+              console.log('annot', annot)
+              annot.NoMove = true;
+              annot.NoDelete = true;
+              annot.ReadOnly = true;
+              if (annot instanceof Annotations.WidgetAnnotation) {
+                Annotations.WidgetAnnotation.getCustomStyles = normalStyles;
+  
+                console.log('annot.fieldName:'+annot.fieldName);
+                // if (!annot.fieldName.startsWith(_id)) { 
+                  // annot.Hidden = true;
+                  // annot.Listable = false;
+                // }
+                // 모든 입력 필드 숨기기
                 // annot.Hidden = true;
-                // annot.Listable = false;
-              // }
-              // 모든 입력 필드 숨기기
-              // annot.Hidden = true;
-              annot.fieldFlags.set('ReadOnly', true);
-              if (annot.fieldName.includes('SIGN')) { // SIGN annotation 숨김처리
-                annot.Hidden = true;
+                annot.fieldFlags.set('ReadOnly', true);
+                if (annot.fieldName.includes('SIGN')) { // SIGN annotation 숨김처리
+                  annot.Hidden = true;
+                }
+                // if (annot.fieldName.includes('CHECKBOX')) { // CHECKBOX annotation 숨김처리
+                //   annot.Hidden = true;
+                // }
               }
-              // if (annot.fieldName.includes('CHECKBOX')) { // CHECKBOX annotation 숨김처리
-              //   annot.Hidden = true;
-              // }
-            }
-          });
-        }
+            });
+          }
+        });
+        
       });
-      
-    });
+    }
+    
   }, [docRef, _id]);
 
   const download = () => {
@@ -142,13 +203,49 @@ const ViewDocument = ({location}) => {
     navigate(history ? history : '/documentList');
   }
 
+  const listAttachFiles = (
+    <List
+    size="small"
+    split={false}
+    dataSource={attachFiles}
+    itemLayout="horizontal"
+    renderItem={item =>
+        <List.Item.Meta
+            avatar={<PaperClipOutlined />}
+            description={ <a href={item.path} download={item.originalname} style={{color:'gray'}}>{item.originalname}</a> }
+        />
+    }
+    />
+  )
+
+  function printPdfByUrl (pdfUrl) {
+    var iframe = document.createElement('iframe');
+    iframe.style.display = "none";
+    iframe.src = pdfUrl;
+    document.body.appendChild(iframe);
+    iframe.contentWindow.focus();
+    iframe.contentWindow.print();
+  }
+
+  const printPdfByFile = async () => {
+    // 현재 화면에 출력된 컴포넌트 기준으로 PDF를 신규로 생성하여 PRINT 진행
+    const mergedFile = await pdfRef.current.savePDF(true, false);
+
+    var iframe = document.createElement('iframe');
+    iframe.style.display = "none";
+    iframe.src = URL.createObjectURL(mergedFile);;
+    document.body.appendChild(iframe);
+    iframe.contentWindow.focus();
+    iframe.contentWindow.print();
+  }
+    
   return (
     <div>
-
+    <PageContainerStyle>
     <PageContainer      
       // ghost
       header={{
-        title: "문서 조회",
+        title: docTitle ? docTitle : "문서 조회",
         ghost: true,
         breadcrumb: {
           routes: [
@@ -174,8 +271,11 @@ const ViewDocument = ({location}) => {
           // <a href={process.env.REACT_APP_STORAGE_DIR+docRef} download={docTitle+'.pdf'}> 
             // <Button key="3" loading={loadingDownload['1']} href={docRef} download={docTitle+'.pdf'} type="primary" icon={<DownloadOutlined />} onClick={()=> {
           
+          <Button icon={<PrinterOutlined />} onClick={()=> {
+            (status == DOCUMENT_SIGNED) ? printPdfByUrl('/api/storage/documents/'+docId) : printPdfByFile()
+          }}></Button>,  
           // 서명 완료된 문서만 다운로드 되도록 수정 
-          (status == DOCUMENT_SIGNED) ? <Badge count={downloads.find(e => e === _id)||chkeckDownload?<CheckCircleTwoTone />:0}><Button key="3" loading={loadingDownload['1']} href={'/api/storage/documents/'+docId} download={docTitle+'.pdf'} type="primary" icon={<DownloadOutlined />} onClick={()=> {
+          (status == DOCUMENT_SIGNED) ? <Badge count={downloads?.find(e => e === _id)||chkeckDownload?<CheckCircleTwoTone />:0}><Button key="3" loading={loadingDownload['1']} href={'/api/storage/documents/'+docId} download={docTitle+'.pdf'} type="primary" icon={<DownloadOutlined />} onClick={()=> {
             axios.post('/api/document/updateDownloads', {docId:docId, usrId:_id});
             setCheckDownload(true);
             setLoadingDownload( { "1" : true } );
@@ -187,25 +287,28 @@ const ViewDocument = ({location}) => {
           </Button></Badge> : ''
         ],
       }}
+      style={{height:`calc(100vh - 72px)`}}
+      content= {attachFiles?.length > 0 && listAttachFiles}
       // content= {}
-      footer={[
-      ]}
+      // footer={[
+      // ]}
       loading={loading}
     >
-      <RcResizeObserver
+      {/* <RcResizeObserver
         key="resize-observer"
         onResize={(offset) => {
           setResponsive(offset.width < 596);
         }}
-      >
-        <Row gutter={[24, 24]}>
-          <Col span={24}>
-          <div className="webviewer" ref={viewer}></div>
-          </Col>
-        </Row>
+      > */}
+        {/* <Row gutter={[24, 24]}>
+          <Col span={24}> */}
+          {(isWithPDF || (USE_WITHPDF && status === DOCUMENT_SIGNED)) ? <PDFViewer ref={pdfRef} isUpload={false} isSave={false} isEditing={false} defaultScale={1.0} headerSpace={attachFiles?.length > 0 ? 128 + attachFiles?.length * 30 : 128}></PDFViewer> : <div className="webviewer" ref={viewer}></div>}
+          {/* </Col>
+        </Row> */}
 
-      </RcResizeObserver>
+      {/* </RcResizeObserver> */}
     </PageContainer> 
+    </PageContainerStyle>
 
       {/* <Box display="flex" direction="row" flex="grow">
         <Column span={2}>

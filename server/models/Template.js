@@ -12,7 +12,7 @@ const templateSchema = mongoose.Schema({
     docRef: {
         type: String
     },
-    type: {
+    type: { // C(신청서), M(개인), G(회사)
         type: String
     },
     registeredTime: {
@@ -64,6 +64,15 @@ const templateSchema = mongoose.Schema({
     xfdfIn: {
         type: String
     },
+    isWithPDF: {    //withPDF 로 생성한 템플릿인지 유무
+        type: Boolean, default: false 
+    },
+    items: {
+        type: Array
+    },
+    COMPANY_CODE: {
+        type: String
+    }
 })
 
 // 경로 치환

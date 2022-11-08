@@ -100,6 +100,12 @@ const documentSchema = mongoose.Schema({
     }],
     downloads: {
         type: Array
+    },
+    items: {
+        type: Array
+    },
+    isWithPDF: {
+        type: Boolean, default: false 
     }
 })
 

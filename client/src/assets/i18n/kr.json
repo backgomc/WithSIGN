@@ -86,7 +86,7 @@
 	"name": "이름",
 	"jobtitle": "직급",
 	"office": "회사명",
-	"depart": "부서명",
+	"depart": "소속명",
 	"sabun": "사번",
 	"date": "날짜",
 	"submit": "신청/제출"

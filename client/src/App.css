@@ -2,6 +2,11 @@ body {
   font-family: "Noto Sans CJK KR";
 }
 
+svg { 
+  display: inline;
+  vertical-align: baseline; 
+}
+
 @font-face {
   font-family: 'NanumGothic';
   src: url("assets/font/NanumGothic.ttf")

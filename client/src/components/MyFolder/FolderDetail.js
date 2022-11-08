@@ -8,13 +8,13 @@ import { v4 as uuidv4 } from 'uuid';
 import axios from 'axios';
 import Moment from 'react-moment';
 import 'moment/locale/ko';
+import { setPathname } from '../../config/MenuSlice';
 import { DOCUMENT_SIGNED } from '../../common/Constants';
 import { Tooltip, Modal, Input, Space, Button, message, Typography, Table, Radio, Badge, Tabs, List, TreeSelect, Switch, Empty, Select, Divider } from 'antd';
 import { SearchOutlined, TeamOutlined, FileOutlined, ArrowLeftOutlined, AppstoreOutlined , EllipsisOutlined, UnorderedListOutlined , DownloadOutlined, CheckCircleTwoTone, FolderOpenFilled, FolderOpenTwoTone, SwapOutlined, DeleteOutlined, FolderOpenOutlined } from '@ant-design/icons';
 import { PageContainer } from '@ant-design/pro-layout';
 import ProCard from '@ant-design/pro-card';
 import RcResizeObserver from 'rc-resize-observer';
-import { setPathname } from '../../config/MenuSlice';
 import 'antd/dist/antd.css';
 import '@ant-design/pro-list/dist/list.css';
 import '@ant-design/pro-card/dist/card.css';
@@ -229,7 +229,8 @@ const FolderDetail = ({location}) => {
                       const docTitle = row['docTitle'];
                       const downloads = row['downloads'];
                       const status = row['signed'] ? DOCUMENT_SIGNED : '';
-                      dispatch(setDocToView({ docRef, docId, docType, docTitle, status, downloads }));
+                      const isWithPDF = true;
+                      dispatch(setDocToView({ docRef, docId, docType, docTitle, status, downloads, isWithPDF }));
                       navigate('/viewDocument');
                     }
                   }
@@ -500,7 +501,7 @@ const FolderDetail = ({location}) => {
   };
 
   useEffect(() => {
-    console.log('useEffect() FolderDetail called');
+    console.log('useEffect()');
 
     // 좌측 메뉴 선택
     dispatch(setPathname('/myFolder'));
@@ -617,7 +618,8 @@ const FolderDetail = ({location}) => {
                           const docTitle = item['docTitle'];
                           const downloads = item['downloads'];
                           const status = item['signed'] ? DOCUMENT_SIGNED:'';
-                          dispatch(setDocToView({ docRef, docId, docType, docTitle, status, downloads }));
+                          const isWithPDF = true;
+                          dispatch(setDocToView({ docRef, docId, docType, docTitle, status, downloads, isWithPDF }));
                           navigate('/viewDocument');
                         }
                       }

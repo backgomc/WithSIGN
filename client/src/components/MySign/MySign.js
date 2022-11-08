@@ -192,7 +192,7 @@ const MySign = () => {
     <List
       rowKey="id"
       loading={loading}
-      grid={{ gutter: 24, lg: 3, md: 2, sm: 1, xs: 1 }}
+      grid={{ gutter: 24, xxl: 4,xl: 3, lg: 2, md: 2, sm: 2, xs: 1 }}
       dataSource={['', ...data]}
       renderItem={item => (item ? (
         <List.Item key={item._id}>
@@ -209,19 +209,21 @@ const MySign = () => {
             colSpan="300px" 
             layout="center" 
             bordered
-            style={{ minWidth: "300px" }}
+            direction="column"
+            style={{ minWidth: "280px", height: "192px", marginBottom: '70px' }}
+            // bodyStyle={{ padding: '25px'}}
             actions={[
               <Button type="text" danger icon={<DeleteOutlined />} onClick={e => { deleteSign(item._id) }}>삭제</Button>,
               <Button type="text" icon={<DownloadOutlined />} onClick={e => { downloadSign(item.signData) }}>다운로드</Button>
             ]}>
             <img
-              src={item.signData} height="130px"
+              src={item.signData} style={{ height: '100%'}}
             />
           </ProCard>
         </List.Item>
         ) : (
           <List.Item>
-            <Button type="dashed" style={{ height: "236px", width: "100%", minWidth: "300px" }} onClick={() => {showModal();}}>
+            <Button type="dashed" style={{ height: "250px", width: "100%", minWidth: "280px" }} onClick={() => {showModal();}}>
               <PlusOutlined /> 사인 등록
             </Button>
           </List.Item>
