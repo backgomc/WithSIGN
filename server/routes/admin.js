@@ -614,7 +614,7 @@ router.post('/templates/list', ValidateToken, async (req, res) => {
   }
 
   // 공통 템플릿
-  searchStr['type'] = 'C';
+  // searchStr['type'] = 'C';
 
   console.log(searchStr);
 
