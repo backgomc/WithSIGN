@@ -75,7 +75,7 @@ const UploadTemplate = ({location}) => {
     
     if (USE_WITHPDF) {
       await pdfRef.current.uploadPDF(docRef);
-      const _thumbnail = await pdfRef.current.getThumbnail(0, 0.5);
+      const _thumbnail = await pdfRef.current.getThumbnail(0, 0.6);
       setThumbnail(_thumbnail);
     } else {
       if(instance && docRef) {

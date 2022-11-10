@@ -2,7 +2,7 @@ import 'core-js/stable';
 import 'regenerator-runtime/runtime';
 import 'react-app-polyfill/ie11';
 import 'react-app-polyfill/stable';
-import 'fast-text-encoding/text';
+// import 'fast-text-encoding/text';
 import 'proxy-polyfill';
 import React from 'react';
 import ReactDOM from 'react-dom';

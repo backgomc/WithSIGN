@@ -418,12 +418,15 @@ const UploadDocument = () => {
                     }
 
                     setFile(file);
-                    
+                    setDocumentFile(file);
+
                     form.setFieldsValue({
                       documentTitle: file.name.replace(/\.[^/.]+$/, "").normalize('NFC'),
                     })
             
-                    dispatch(setDocumentFile(file));
+                    dispatch(selectDocumentFile);
+
+                    // dispatch(setDocumentFile(file));
             
                     return false;
                   }

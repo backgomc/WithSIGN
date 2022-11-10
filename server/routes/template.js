@@ -188,7 +188,7 @@ router.post('/updateTemplate', (req, res) => {
 
     Template.updateOne(
       { '_id': req.body._id, 'user': req.body.user },
-      { 'users': req.body.users, 'observers': req.body.observers, 'orderType': req.body.orderType, 'usersOrder': req.body.usersOrder, 'usersTodo': req.body.usersTodo, 'signees': req.body.signees, 'hasRequester': req.body.hasRequester, 'requesters': req.body.requesters, 'items': req.body.items, 'docTitle': req.body.docTitle },
+      { 'users': req.body.users, 'observers': req.body.observers, 'orderType': req.body.orderType, 'usersOrder': req.body.usersOrder, 'usersTodo': req.body.usersTodo, 'signees': req.body.signees, 'hasRequester': req.body.hasRequester, 'requesters': req.body.requesters, 'items': req.body.items, 'docTitle': req.body.docTitle, 'isWithPDF': true },
       (err) => {
         if (err) return res.json({ success: false, message: err });
         return res.json({ success: true});

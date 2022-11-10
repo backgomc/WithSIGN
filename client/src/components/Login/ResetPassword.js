@@ -1,14 +1,16 @@
-import React, { useState, useEffect } from 'react'
+import React, { useEffect } from 'react'
 import axios from 'axios';
+import { v4 as uuidv4 } from 'uuid';
 import Header from './Header';
 import { useDispatch } from 'react-redux';
-import { navigate, Link } from '@reach/router';
-import { message, Checkbox, Button, Form, Input, Card, Modal } from 'antd';
-import { LockOutlined, UserOutlined } from '@ant-design/icons';
-import ProForm, { ProFormText, ProFormSelect, ProFormDependency } from '@ant-design/pro-form';
+import { navigate } from '@reach/router';
+import { message, Button, Form, Card } from 'antd';
+import { LockOutlined } from '@ant-design/icons';
+import ProForm, { ProFormText } from '@ant-design/pro-form';
 import styles from './login.module.css';
+import { setPathname } from '../../config/MenuSlice';
+import { setUser } from '../../app/infoSlice';
 import { useIntl } from "react-intl";
-import { PageContainer } from '@ant-design/pro-layout';
 import 'antd/dist/antd.css';
 import '@ant-design/pro-form/dist/form.css';
 import '@ant-design/pro-card/dist/card.css';
@@ -18,6 +20,7 @@ function ResetPassword({location}) {
     const dispatch = useDispatch();
     const { formatMessage } = useIntl();
     const user = location.state ? location.state.user : '';
+    const passwordStatus = location.state ? location.state.passwordStatus : 'I';
     const [formPassword] = Form.useForm();
 
     useEffect(() => {
@@ -36,41 +39,69 @@ function ResetPassword({location}) {
     };
 
     const onFinishPassword = async (values) => {
-      console.log(values)
+      // console.log(values)
   
       // 비밀번호 변경 API Call
       let param = {
-          user: user,
-          currentPassword: 'temp',
-          isNew: true,
-          password: values.password
-  
-      }  
+        user: user,
+        currentPassword: 'temp',
+        isNew: true,
+        password: values
+      }
+      
+
       const res = await axios.post('/api/users/updatePassword', param)
   
       if (res.data.success) {
         message.success({content: '비밀번호가 변경되었습니다.', style: {marginTop: '70vh'}});  
         navigate('/login');
       } else {
-        message.error({content: '비밀번호 변경에 실패하였습니다.', style: {marginTop: '70vh'}});  
+        message.error({content: res.data.message?res.data.message:'비밀번호 변경에 실패하였습니다.', style: {marginTop: '70vh'}});  
       }
     }
 
+    const continuePassword = async () => {
+      
+      let param = {
+        user: user
+      }
+
+      const res = await axios.post('/api/users/continuePassword', param)
+
+      if (res.data.success) {
+        axios.get('/api/users/auth').then(response => {
+          if (response.data.isAuth) {
+            dispatch(setUser(response.data));
+            dispatch(setPathname('/'));
+          } else {
+            navigate('/login');
+          }
+        });
+      } else {
+        message.error({content: res.data.message?res.data.message:'비밀번호 변경에 실패하였습니다.', style: {marginTop: '70vh'}});  
+      }
+    }
 
   const updatePassword = (
     <Card
     // bodyStyle={{ paddingLeft: 58 }}
-    title={'신규 비밀번호를 설정해주세요.'}
+    title={passwordStatus==='E'?'비밀번호 변경안내':'새로운 비밀번호로 설정해주세요.'}
     >
       <ProForm
         form={formPassword}
-        onFinish={onFinishPassword}
+        // onFinish={onFinishPassword}
         validateMessages={validateMessages}
         submitter={{
           // Configure the button text
-          searchConfig: {
-            resetText: '초기화',
-            submitText: '비밀번호 변경',
+          // searchConfig: {
+          //   resetText: '초기화',
+          //   submitText: '비밀번호 변경',
+          // },
+          render: (props, doms) => {
+            return [
+              <Button key={uuidv4()} type="primary" onClick={()=>{onFinishPassword(props.form.getFieldValue('password'))}}>비밀번호 변경</Button>,
+              passwordStatus==='E'?(<Button key={uuidv4()} type="primary" onClick={continuePassword}>다음에 변경하기</Button>):(<div></div>)
+            ];
           }
         }}
 
@@ -98,7 +129,7 @@ function ResetPassword({location}) {
         /> */}
 
         <ProFormText.Password
-          width="lg"
+          width="md"
           name="password"
           label="새 비밀번호"
           fieldProps={{
@@ -114,10 +145,11 @@ function ResetPassword({location}) {
               pattern: /^(?=.*[A-Za-z])(?=.*\d)(?=.*[!-/:-@\[-`{-~])[A-Za-z\d!-/:-@\[-`{-~]{8,}$/
             },
           ]}
+          allowClear
         /> 
 
         <ProFormText.Password
-          width="lg"
+          width="md"
           name="confirmPassword"
           label="새 비밀번호 확인"
           fieldProps={{
@@ -142,6 +174,7 @@ function ResetPassword({location}) {
               },
             }),
           ]}
+          allowClear
         />
       </ProForm>
 
@@ -151,6 +184,8 @@ function ResetPassword({location}) {
 
     return user ? (
         <>
+        {process.env.NODE_ENV==='development'?<div style={{position: 'fixed', textAlign: 'center', width: '100%', color: 'red', zIndex: '10000', fontSize: 'xx-large', pointerEvents: 'none'}}>LOCAL</div>:''}
+        {process.env.REACT_APP_MODE==='TEST' ?<div style={{position: 'fixed', textAlign: 'center', width: '100%', color: 'red', zIndex: '10000', fontSize: 'xx-large', pointerEvents: 'none'}}>TEST</div> :''}
         <Header></Header>
         <div className={styles.middleCard}>
           {updatePassword}

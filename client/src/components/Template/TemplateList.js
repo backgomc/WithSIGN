@@ -537,12 +537,12 @@ const TemplateList = () => {
 
   }
 
-  const confirmToPrepare = (item) => {
+  const confirmToPrepare = (item, isReset) => {
     console.log(item.signees);
     confirm({
-      title: '참여자 설정',
+      title: isReset ? 'PDF편집툴 변경으로 인해 입력항목 재설정이 필요합니다.' : '참여자 설정',
       icon: <QuestionCircleTwoTone />,
-      content: '참여자 및 입력 항목을 등록 또는 수정 하시겠습니까?',
+      content: isReset ? '지금 바로 재설정을 하시겠습니까?' : '참여자 및 입력 항목을 등록 또는 수정 하시겠습니까?',
       okText: '네',
       okType: 'confirm',
       cancelText: '아니오',
@@ -643,11 +643,11 @@ const TemplateList = () => {
           content={
             <div>
             <Tooltip placement="bottom" title={'하나의 문서에 여러 참여자의 서명을 받는 경우'}>
-              <Button onClick={e => { signTemplate(item, 'G') }}>일반 요청</Button>
+              <Button onClick={e => { !item.isWithPDF && hasUsers(item) ? confirmToPrepare(item, true) : signTemplate(item, 'G') }}>일반 요청</Button>
             </Tooltip>
             &nbsp;&nbsp;
             <Tooltip placement="bottom" title={'한 문서를 여러 명에게 보내 개별 문서에 각각 서명 받을 필요가 있을 경우 (개별 동의서, 보안서약서 등)'}>
-              <Button onClick={e => { signTemplate(item, 'B') }}>대량 요청</Button>
+              <Button onClick={e => { !item.isWithPDF  && hasUsers(item) ? confirmToPrepare(item, true) : signTemplate(item, 'B') }}>대량 요청</Button>
             </Tooltip>
             {/* {item.hasRequester &&
             <Tooltip placement="bottom" title={'바로 담당자에게 작성하여 제출하는 경우'}>
@@ -721,6 +721,15 @@ const TemplateList = () => {
   }
 
 
+  // 템플릿이 참여자 설정을 했는지 유무 
+  const hasUsers = (item) => {
+    if (item.hasRequester || (item.users && item.users.length > 0)) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
   // type: C(신청서), M(개인), G(회사)
   const CustomLabel = (item) => {
     let label = '';
@@ -728,7 +737,7 @@ const TemplateList = () => {
     // if (item.type !== 'C' || (item.type === 'C' && user.role)) {
     if (item.user?._id === _id || user.role ) {
       if (item.hasRequester || (item.users && item.users.length > 0)) {
-        text = '파일 + 참여자';
+        text = !item.isWithPDF ? '입력항목 재설정 필요' : '파일 + 참여자';
       } else {
         text = '파일';
       }
@@ -736,7 +745,7 @@ const TemplateList = () => {
         <div style={{
             // transform: 'skew(0deg, 200deg)',
             fontSize: '1rem',
-            backgroundColor: '#000000AA',
+            backgroundColor: !item.isWithPDF ? '#f50' : '#000000AA',
             color: 'white',
             textAlign: 'center',
             width: '280px'  // 280px
@@ -788,6 +797,7 @@ const TemplateList = () => {
     // pagination={pagination}
     renderItem={item => (
       <List.Item key={item._id}>
+        {/* <Badge.Ribbon color={!item.isWithPDF && hasUsers(item) ? '#f50' : (item.type && item.type == 'C') ? '#519BE3' : 'green'} text={!item.isWithPDF && hasUsers(item) ? '재설정' : (item.type && item.type == 'C') ? '신청' : '개인'}> */}
         <Badge.Ribbon color={(item.type && item.type == 'C') ? '#519BE3' : 'green'} text={(item.type && item.type == 'C') ? '신청' : '개인'}>
         <ProCard 
           hoverable
@@ -989,6 +999,7 @@ const TemplateList = () => {
       });
     }
   }
+
 
   useEffect(() => {
 

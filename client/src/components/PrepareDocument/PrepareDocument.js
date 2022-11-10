@@ -1043,7 +1043,7 @@ const PrepareDocument = () => {
     console.log('docRef', docRef);
 
     // 2. SAVE THUMBNAIL
-    let _thumbnail = await pdfRef.current.getThumbnail(0, 0.3);
+    let _thumbnail = await pdfRef.current.getThumbnail(0, 0.6);
     const resThumbnail = await axios.post('/api/document/addThumbnail', {user: _id, thumbnail: _thumbnail})
     var thumbnailUrl = '';
     if (resThumbnail.data.success) {

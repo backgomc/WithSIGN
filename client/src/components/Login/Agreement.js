@@ -225,8 +225,8 @@ function Agreement({location}) {
     return user ? (
         <>
         <Header></Header>
-        <br></br><br></br><br></br>
-        <div className={styles.middle}>
+        {/* <br></br><br></br><br></br> */}
+        {/* <div className={styles.middle}> */}
         <PageContainer
           ghost
           header={{
@@ -238,7 +238,7 @@ function Agreement({location}) {
               ],
             },
             extra: [       
-            <Button onClick={() => {navigate('/');}}>
+            <Button onClick={() => {window.history.back()}}>
               이전
             </Button>,    
             <Button type="primary" onClick={fetchAgree} disabled={disableNext}>
@@ -254,9 +254,9 @@ function Agreement({location}) {
           {modalTerms}
           {modalPrivacy}
           {modalPolicy}
-
+          <br></br>
         </PageContainer>
-        </div>
+        {/* </div> */}
 
         <div className={styles['footer']}>
           WITH SIGN © NH INFORMATION SYSTEM 2021

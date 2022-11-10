@@ -5,10 +5,11 @@
   "dependencies": {
     "@ant-design/charts": "^1.2.14",
     "@ant-design/pro-card": "^1.18.1",
+    "@ant-design/pro-components": "^1.1.5",
     "@ant-design/pro-descriptions": "^1.10.9",
-    "@ant-design/pro-layout": "^6.21.1",
+    "@ant-design/pro-layout": "^6.24.0",
     "@ant-design/pro-list": "^1.19.0",
-    "@ant-design/pro-table": "^2.41.0",
+    "@ant-design/pro-table": "^2.48.0",
     "@fortawesome/fontawesome-svg-core": "^6.1.1",
     "@fortawesome/free-brands-svg-icons": "^6.1.1",
     "@fortawesome/free-regular-svg-icons": "^6.1.1",
@@ -44,6 +45,7 @@
     "gestalt": "^1.58.1",
     "http-proxy-middleware": "^1.0.3",
     "less-watch-compiler": "^1.16.3",
+    "loadash": "^1.0.0",
     "lodash-es": "^4.17.21",
     "lodash.difference": "^4.5.0",
     "prismjs": "^1.25.0",
@@ -99,5 +101,8 @@
     "less": "^4.1.2",
     "less-loader": "9.0",
     "react-app-rewired": "^2.1.8"
+  },
+  "resolutions": {
+    "@react-pdf/font": "2.2.0"
   }
 }

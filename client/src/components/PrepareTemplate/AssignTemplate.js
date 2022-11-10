@@ -635,7 +635,7 @@ const sortView = (
             </Button>,
           ],
         }}
-        content= { <ProCard style={{ background: '#ffffff'}} layout='center'><StepWrite current={1} /></ProCard> }
+        content= { <ProCard style={{ background: '#ffffff'}} layout='center'><StepWrite current={0} /></ProCard> }
         footer={[
         ]}
       >

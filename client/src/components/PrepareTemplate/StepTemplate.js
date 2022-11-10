@@ -22,12 +22,15 @@ const StepTemplate = (props) => {
     const [curr, setCurr] = useState(0);
     
     const onChange = current => {
-        if (current == 0) {
-            dispatch(resetAssignAll());
-            navigate('/templateList');
-        } else if (current == 1) {
+        // if (current == 0) {
+        //     dispatch(resetAssignAll());
+        //     navigate('/templateList');
+        // } else if (current == 1) {
+        //     navigate('/assignTemplate');
+        // }
+        if (current == 1) {
             navigate('/assignTemplate');
-        }
+        } 
     };
 
     useEffect(() => {
@@ -36,8 +39,8 @@ const StepTemplate = (props) => {
 
     return (
         <StepStyle>
-            <Steps size="small" current={curr} onChange={onChange}>
-                <Step title="템플릿 등록" description="문서 업로드" />
+            <Steps size="default" current={curr} onChange={onChange}>
+                {/* <Step title="템플릿 등록" description="문서 업로드" /> */}
                 <Step title="참여자 설정" description="서명(수신) 참여자 선택 (최대 20명)" />
                 <Step title="입력 설정" description="참여자 입력 항목 지정" />
             </Steps>

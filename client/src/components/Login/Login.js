@@ -2,41 +2,43 @@ import React, { useState, useRef } from 'react'
 import axios from 'axios';
 import { useDispatch } from 'react-redux';
 import { navigate, Link } from '@reach/router';
-// import { loginUser } from '../../api/api'
 import { setUser } from '../../app/infoSlice';
-import { selectPathname, setPathname } from '../../config/MenuSlice';
-import Header from './Header';
-import { Checkbox, Button, Form, Input } from 'antd';
-import Icon, { UserOutlined, EyeOutlined, LockOutlined } from '@ant-design/icons';
-// import logo from '../../assets/images/logo.svg';
+import { setPathname } from '../../config/MenuSlice';
+// import logo from '../../assets/images/logo_nhforms1.png';
+import title from '../../assets/images/logo_withsign.png';
 import styles from './login.module.css';
-// import './login.css';
-// const FormItem = Form.Item;
+import {
+  AlipayCircleOutlined,
+  LockOutlined,
+  MobileOutlined,
+  TaobaoCircleOutlined,
+  UserOutlined,
+  WeiboCircleOutlined,
+} from '@ant-design/icons';
+import {
+  LoginForm,
+  ProFormCaptcha,
+  ProFormCheckbox,
+  ProFormText,
+} from '@ant-design/pro-components';
 import { useCookies } from 'react-cookie';
-import { useIntl } from 'react-intl';
+import { useIntl } from "react-intl";
+import styled from 'styled-components';
+const LoginStyle = styled.div`
+    position: fixed;
+    top: 30%;
+    left: 50%;
+    transform: translate(-50%, -30%);
+    .ant-pro-form-login-header {
+    margin-bottom: 15px !important; 
+    }
+`;
 
-function Login() {
+
+function Login(props) {
     const dispatch = useDispatch();
     const { formatMessage } = useIntl();
-
     const [cookies, setCookie, removeCookie] = useCookies(['SABUN']);
-
-    // const inputRef = useRef(null);
-    // const [Email, setEmail] = useState("")
-    // const [Password, setPassword] = useState("")
-
-    // const emitEmptyEmail = () => {
-    //     inputRef.current.focus();
-    //     setEmail('');
-    //   };
-    
-    // const onEmailHandler = (event) => {
-    //     setEmail(event.currentTarget.value)
-    // }
-
-    // const onPasswordHandler = (event) => {
-    //     setPassword(event.currentTarget.value)
-    // }
 
     const onFinish = (values) => {
         if (values.remember) {
@@ -66,89 +68,86 @@ function Login() {
         });
     }
 
-    // const gotoLogin = (event) => {
-    //     event.preventDefault();
-
-    //     let body = {
-    //         email: Email,
-    //         password: Password
-    //     }
-
-    //     axios.post('/api/users/login', body).then(response => {
-
-    //         console.log(response)
-    //         if (response.data.success) {
-    //             navigate('/');
-    //             dispatch(setUser(response.data.user));
-    //         } else {
-    //             alert('Login Failed')
-    //         }
-    //       });
-
-    // }
-
-    // const userEmailSuffix = Email ? <Icon type="close-circle" onClick={emitEmptyEmail} /> : null;
-
-
     return (
-        <>
-        <Header></Header>
-        <div className={styles.content}>
-            <Form
-            name="normal_login"
-            className="login-form"
-            initialValues={{
-                SABUN: cookies.SABUN,
-                remember: (cookies.SABUN)?true:false
+      <div style={{ backgroundColor: 'white' }}>
+        {process.env.NODE_ENV==='development'?<div style={{position: 'fixed', textAlign: 'center', width: '100%', color: 'red', zIndex: '10000', fontSize: 'xx-large', pointerEvents: 'none'}}>LOCAL</div>:''}
+        {process.env.REACT_APP_MODE==='TEST' ?<div style={{position: 'fixed', textAlign: 'center', width: '100%', color: 'red', zIndex: '10000', fontSize: 'xx-large', pointerEvents: 'none'}}>TEST</div> :''}
+        <LoginStyle>
+        <LoginForm
+        //   logo={logo}
+          title={<img src={title} />}
+          subTitle=""
+          // actions={
+          //   <Space>
+          //     其他登录方式
+          //     <AlipayCircleOutlined style={iconStyles} />
+          //     <TaobaoCircleOutlined style={iconStyles} />
+          //     <WeiboCircleOutlined style={iconStyles} />
+          //   </Space>
+          // }
+          initialValues={{
+            SABUN: cookies.SABUN,
+            remember: (cookies.SABUN)?true:false
+        }}
+          onFinish={onFinish}
+          submitter={{ searchConfig: { submitText: formatMessage({id: 'Login'}) } }}
+        >
+          <>
+            <ProFormText
+              name="SABUN"
+              fieldProps={{
+                size: 'large',
+                prefix: <UserOutlined className={'prefixIcon'} />,
+              }}
+              placeholder={'사번'}
+              rules={[
+                {
+                  required: true,
+                  message: formatMessage({id: 'input.SABUN'}),
+                },
+              ]}
+            />
+            <ProFormText.Password
+              name="password"
+              fieldProps={{
+                size: 'large',
+                prefix: <LockOutlined className={'prefixIcon'} />,
+              }}
+              placeholder={'Password'}
+              rules={[
+                {
+                  required: true,
+                  message: formatMessage({id: 'input.password'}),
+                },
+              ]}
+            />
+          </>
+
+          <div
+            style={{
+              marginBottom: 24,
             }}
-            onFinish={onFinish}
+          >
+            <ProFormCheckbox noStyle name="autoLogin">
+              {formatMessage({id: 'RememberMe'})}
+            </ProFormCheckbox>
+            <div
+              style={{
+                float: 'right',
+              }}
             >
-            <h3>{formatMessage({id: 'Login'})}</h3>
-                <Form.Item
-                    name="SABUN"
-                    rules={[
-                    {
-                        required: true,
-                        message: formatMessage({id: 'input.SABUN'}),
-                    },
-                    ]}
-                >
-                    <Input prefix={<UserOutlined className="site-form-item-icon" />} size="large" placeholder="사번"/>
-                </Form.Item>
-                <Form.Item
-                    name="password"
-                    rules={[
-                    {
-                        required: true,
-                        message: formatMessage({id: 'input.password'}),
-                    },
-                    ]}
-                >
-                    <Input
-                    prefix={<LockOutlined className="site-form-item-icon" />}
-                    type="password"
-                    placeholder="Password"
-                    size="large"
-                    />
-                    {/* <Input.Password  /> */}
-                </Form.Item>
-                <Form.Item name="remember" valuePropName="checked" style={{display: 'inline-block'}}>
-                    <Checkbox>{formatMessage({id: 'RememberMe'})}</Checkbox>
-                </Form.Item>
-                {/* <a className={styles['login-form-forgot']} href="/initPassword">{formatMessage({id: 'ForgotPassword'})}</a> */}
-                <Link to="/initPassword" className={styles['login-form-forgot']} >{formatMessage({id: 'ForgotPassword'})}</Link>
-                <Form.Item>
-                    <Button type="primary" htmlType="submit" className={styles['login-form-button']} size="large">{formatMessage({id: 'Login'})}</Button>
-                    {/* {formatMessage({id: 'Or'})} <Link to="/register">{formatMessage({id: 'Regist'})}</Link> */}
-                </Form.Item>
-            </Form>
-        </div>
-        <div className={styles['footer']}>
-        {/* © CopyRight 2021. NONGHYUP ALL Rights Reserved. */}
-        {/* 임시NH */}
-          © 2021 NH INFORMATION SYSTEM CO.,LTD. ALL RIGHT RESERVED
-        </div>
-      </>
+              <Link to="/initPassword">
+              {formatMessage({id: 'ForgotPassword'})}
+              </Link>
+              {/* <Link to="/register">
+              {formatMessage({id: 'Regist'})}
+              </Link> */}
+            </div>
+          </div>
+        </LoginForm>
+        </LoginStyle>
+      </div>
+
     )
 }
 

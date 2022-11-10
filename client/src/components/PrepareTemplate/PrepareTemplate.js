@@ -54,7 +54,8 @@ const PrepareTemplate = () => {
   const templateFileName = useSelector(selectTemplateFileName);
   const preObserver = useSelector(selectObservers);
   const assignees = useSelector(selectSignees);
-  const isWithPDF = useSelector(selectIsWithPDF);
+  // const isWithPDF = useSelector(selectIsWithPDF);
+  const isWithPDF = true;   // 무조건 WithPDF 로 편집하도록 함
   const templateTitle = useSelector(selectTemplateTitle);
   const [documentTitle, setDocumentTitle] = useState(templateTitle);
 
