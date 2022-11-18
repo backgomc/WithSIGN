@@ -112,7 +112,7 @@ router.post('/excel', (req, res) => {
 // 인증 여부 확인
 router.get('/auth', ValidateToken, (req, res) => {
   var uid = req.body.systemId;
-  User.findOne({ '_id': uid }, (err, user) => {
+  User.findOne({ '_id': uid, 'use': true }, (err, user) => {
     if (err) return res.json({ success: false, error: err });
     if (!user) {
       return res.json({
@@ -149,7 +149,7 @@ router.post('/sso', (req, res) => {
   }
   console.log('uid: '+ uid);
 
-  User.findOne({ 'uid': uid }, (err, user) => {
+  User.findOne({ 'uid': uid, 'use': true }, (err, user) => {
     if (err) return res.json({ success: false, error: err });
     if (user) {
       // 토큰 생성
@@ -182,7 +182,7 @@ router.post('/refresh', renewalToken, (req, res) => {
   var _id = req.body.systemId;
   var _tk = req.body.accessTk;
   console.log(_tk);
-  User.findOne({ '_id': _id, 'adminJWT': req.headers['refresh-token'] }, (err, user) => {
+  User.findOne({ '_id': _id, 'use': true, 'adminJWT': req.headers['refresh-token'] }, (err, user) => {
     // console.log(user);
     if (err) return res.json({ success: false, error: err });
     if (!user) return res.json({ success: false, message: 'No User!!' });
@@ -218,7 +218,7 @@ router.post('/login', (req, res) => {
   console.log('uid: '+ uid);
 
   // 사용자 검색 (사번 또는 이메일)
-  User.findOne({ 'uid': uid }, (err, user) => {
+  User.findOne({ 'uid': uid, 'use': true }, (err, user) => {
     if (err) return res.json({ success: false, error: err });
     if (!user || user.role !== 1) {
       return res.json({
@@ -273,7 +273,7 @@ router.post('/logout', ValidateToken, (req, res) => {
 ///////////////////////////////////////////////////////////////////////// 사용자/부서 관리 시작 /////////////////////////////////////////////////////////////////////////
 // 사용자 관리 > 목록
 router.post('/user/list', ValidateToken, async (req, res) => {
-console.log(req.cookies);
+
   // 페이징 처리
   var current = req.body.pagination.current;
   var pageSize = req.body.pagination.pageSize;
@@ -306,48 +306,71 @@ console.log(req.cookies);
 
   // 부서명
   if (req.body.org && req.body.org != '') {
-    condition.push({'orgInfo.DEPART_NAME': new RegExp(req.body.org[0], 'i')});
+    // condition.push({'orgInfo.DEPART_NAME': new RegExp(req.body.org[0], 'i')});
+    let orgs = await Org.find({'DEPART_NAME': new RegExp(req.body.org[0], 'i')}, {'DEPART_CODE': 1}).exec();
+    condition.push({'DEPART_CODE': {$in: orgs.map(e => e.DEPART_CODE)}});
   }
 
+  // 미사용
+  if ( !req.body.includeUnused ) condition.push({'use': true});
+  
   if (condition.length > 0) searchStr = {$and: condition}
   console.log(searchStr);
 
   // 전체 건수
-  var totalCount = await User.aggregate([
-    {
-      $lookup: {
-        from: 'orgs',
-        localField: 'DEPART_CODE',
-        foreignField: 'DEPART_CODE',
-        as: 'orgInfo'
-      }
-    },
-    {
-      $match: searchStr
-    }
-  ]);
+  var totalCount = await User.countDocuments(searchStr).exec();
+  // var totalCount = await User.aggregate([
+  //   {
+  //     $lookup: {
+  //       from: 'orgs',
+  //       localField: 'DEPART_CODE',
+  //       foreignField: 'DEPART_CODE',
+  //       as: 'orgInfo'
+  //     }
+  //   },
+  //   {
+  //     $lookup: {
+  //       from: 'orgs', 
+  //       localField: 'COMPANY_CODE', 
+  //       foreignField: 'DEPART_CODE', 
+  //       as: 'companyInfo'
+  //     }
+  //   },
+  //   {
+  //     $match: searchStr
+  //   }
+  // ]);
   
-  User
-    .aggregate([
-      {
-        $lookup: {
-          from: 'orgs',
-          localField: 'DEPART_CODE',
-          foreignField: 'DEPART_CODE',
-          as: 'orgInfo'
-        }
-      },
-      {
-        $match: searchStr
-      }
-    ])
+  // User
+  //   .aggregate([
+  //     {
+  //       $lookup: {
+  //         from: 'orgs',
+  //         localField: 'DEPART_CODE',
+  //         foreignField: 'DEPART_CODE',
+  //         as: 'orgInfo'
+  //       }
+  //     },
+  //     {
+  //       $lookup: {
+  //         from: 'orgs', 
+  //         localField: 'COMPANY_CODE', 
+  //         foreignField: 'DEPART_CODE', 
+  //         as: 'companyInfo'
+  //       }
+  //     },
+  //     {
+  //       $match: searchStr
+  //     }
+  //   ])
+  User.find(searchStr)
     .sort({ [order]: dir })   //asc:오름차순 desc:내림차순
     .skip(Number(start))
     .limit(Number(pageSize))
     .exec((err, users) => {
       // console.log(users);
       if (err) return res.json({ success: false, error: err });
-      return res.json({ success: true, users: users, total: totalCount.length });
+      return res.json({ success: true, users: users, total: totalCount });
     });
 });
 
@@ -383,12 +406,16 @@ router.post('/user/sync', ValidateToken, async (req, res) => {
   if (result && result.status && result.status == 200) {
     return res.json({ success: true });
   } else {
-    return res.json({ success: false });
+    return res.json({ success: false, message: result.message });
   }
 });
 
 // 부서 관리 > 연계 호출
 router.post('/org/list', ValidateToken, (req, res) => {
+  Org.find({}).sort({ ['DISPLAY_ORDER']: 'asc' }).exec(function(err, results) {
+    if (err) return next(err);
+    res.send({success: true, orgs: results});
+  });
 });
 
 // 부서 관리 > 연계 호출
@@ -413,7 +440,7 @@ router.post('/org/sync', ValidateToken, async (req, res) => {
   if (result && result.status && result.status == 200) {
     return res.json({ success: true });
   } else {
-    return res.json({ success: false });
+    return res.json({ success: false, message: result.message });
   }
 });
 ///////////////////////////////////////////////////////////////////////// 사용자/부서 관리 종료 /////////////////////////////////////////////////////////////////////////
@@ -615,6 +642,12 @@ router.post('/templates/list', ValidateToken, async (req, res) => {
 
   // 공통 템플릿
   // searchStr['type'] = 'C';
+  
+  // 유형
+  if (req.body.type) {
+    searchStr['type'] = req.body.type;
+  }
+
 
   console.log(searchStr);
 
@@ -627,7 +660,7 @@ router.post('/templates/list', ValidateToken, async (req, res) => {
     .limit(Number(pageSize))
     .populate({
       path: 'user',
-      select: { name: 1, JOB_TITLE: 2 }
+      select: { name: 1, SABUN: 1, JOB_TITLE: 1, DEPART_CODE: 1 }
     })
     .exec((err, data) => {
       if (err) return res.json({ success: false, error: err });
@@ -694,6 +727,15 @@ router.post('/templates/delete', ValidateToken, (req, res) => {
   });
 });
 
+// 템플릿 관리 > 변경(생성자)
+router.post('/templates/update', ValidateToken, (req, res) => {
+  if (!req.body.docId || !req.body.usrId) return res.json({ success: false, message: 'input value not enough!' });
+  Template.updateOne({ '_id': req.body.docId }, {'user': req.body.usrId}, (err) => {
+    if (err) return res.json({ success: false, message: err });
+    return res.json({ success: true});
+  });
+});
+
 // 템플릿 관리 > 업로드(임시파일)
 router.post('/templates/upload', ValidateToken, upload.single('file'), async (req, res) => {
   if (req.file) {
@@ -702,7 +744,6 @@ router.post('/templates/upload', ValidateToken, upload.single('file'), async (re
   } else {
       return res.json({ success: false, message: 'file upload failed'});
   }
-  
 });
 ///////////////////////////////////////////////////////////////////////// 템플릿 문서 관리 종료 /////////////////////////////////////////////////////////////////////////
 
@@ -885,7 +926,7 @@ router.post('/board/addComment', ValidateToken, (req, res) => {
 // 게시판 관리 > 댓글 삭제
 router.post('/board/delComment', ValidateToken, (req, res) => {
   if (!req.body.boardId || !req.body.commentId) {
-    return res.json({ success: false, message: "input value not enough!" });
+    return res.json({ success: false, message: 'input value not enough!' });
   }
   Board.updateOne({ '_id': req.body.boardId }, { $pull: { 'comments': {'_id': req.body.commentId} } }, (err) => {
     if (err) return res.json({ success: false, message: err });
