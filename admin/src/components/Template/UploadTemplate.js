@@ -13,8 +13,9 @@ import '@ant-design/pro-card/dist/card.css';
 import 'antd/dist/antd.css';
 import '@ant-design/pro-form/dist/form.css';
 import blankImg from '../../assets/images/blank.png';
-import WebViewer from '@pdftron/webviewer';
-import { LICENSE_KEY } from '../../config/Config';
+import PDFViewer from '@niceharu/withpdf';
+// import WebViewer from '@pdftron/webviewer';
+// import { LICENSE_KEY } from '../../config/Config';
 
 const UploadTemplate = () => {
 
@@ -27,6 +28,7 @@ const UploadTemplate = () => {
   const [disableNext, setDisableNext] = useState(true);
   const [tempFilePath, setTempFilePath] = useState(null);
   const [thumbnail, setThumbnail] = useState(null);
+  const pdfRef = useRef();
   const viewer = useRef(null);
   const user = useSelector(selectUser);
   const { _id } = user;
@@ -57,31 +59,31 @@ const UploadTemplate = () => {
 
   useEffect(() => {
     // Thumbnail
-    WebViewer(
-      {
-        path: 'webviewer',
-        licenseKey: LICENSE_KEY,
-        disabledElements: ['ribbons', 'toggleNotesButton', 'searchButton', 'menuButton' ],
-      },
-      viewer.current
-    ).then(instance => {
-      setInstance(instance);
-      const { Core, UI } = instance;
-      const { documentViewer } = Core;
-      Core.setCustomFontURL('/webfonts/');
+    // WebViewer(
+    //   {
+    //     path: 'webviewer',
+    //     licenseKey: LICENSE_KEY,
+    //     disabledElements: ['ribbons', 'toggleNotesButton', 'searchButton', 'menuButton' ],
+    //   },
+    //   viewer.current
+    // ).then(instance => {
+    //   setInstance(instance);
+    //   const { Core, UI } = instance;
+    //   const { documentViewer } = Core;
+    //   Core.setCustomFontURL('/webfonts/');
 
-      documentViewer.addEventListener('documentLoaded', () => {
-        const doc = documentViewer.getDocument();
+    //   documentViewer.addEventListener('documentLoaded', () => {
+    //     const doc = documentViewer.getDocument();
 
-        doc.loadCanvasAsync(({
-          pageNumber: 1,
-          width: 300,
-          drawComplete: async (thumbnail) => {
-            setThumbnail(thumbnail.toDataURL());
-          }
-        }));
-      });
-    });
+    //     doc.loadCanvasAsync(({
+    //       pageNumber: 1,
+    //       width: 300,
+    //       drawComplete: async (thumbnail) => {
+    //         setThumbnail(thumbnail.toDataURL());
+    //       }
+    //     }));
+    //   });
+    // });
   }, []);
 
   useEffect(() => {
@@ -234,7 +236,7 @@ const UploadTemplate = () => {
         </ProCard>
       </ProCard>
     </PageContainer>
-    <div className="webviewer" ref={viewer} style={{display:'none'}}></div>
+    <div style={{display:'none'}} ><PDFViewer ref={pdfRef} /></div>
   </div>
   )
 };

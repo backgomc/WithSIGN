@@ -1,4 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
+import { v4 as uuidv4 } from 'uuid';
 // import { useSelector } from 'react-redux';
 import { useIntl } from "react-intl";
 // import { navigate } from '@reach/router';
@@ -8,9 +9,10 @@ import { DownloadOutlined, ArrowLeftOutlined } from '@ant-design/icons';
 import 'antd/dist/antd.css';
 import '@ant-design/pro-card/dist/card.css';
 // import { selectUser, selectHistory } from '../../app/infoSlice';
-import { LICENSE_KEY } from '../../config/Config';
-import WebViewer from '@pdftron/webviewer';
-import './ViewDocument.css';
+import PDFViewer from '@niceharu/withpdf';
+// import { LICENSE_KEY } from '../../config/Config';
+// import WebViewer from '@pdftron/webviewer';
+// import './ViewDocument.css';
 
 const ViewDocument = ({location}) => {
 
@@ -19,56 +21,61 @@ const ViewDocument = ({location}) => {
   // const user = useSelector(selectUser);
   // const history = useSelector(selectHistory);
 
-  const { docRef, docTitle, _id } = location.state.docInfo;
+  const { docRef, docTitle, _id, attachFiles } = location.state.docInfo;
   const { formatMessage } = useIntl();
-
+  const pdfRef = useRef();
   const viewer = useRef(null);
 
+  const initWithPDF = async () => {
+    await pdfRef.current.uploadPDF(docRef, docTitle);
+  }
+
   useEffect(() => {
-    WebViewer({
-      path: 'webviewer',
-      licenseKey: LICENSE_KEY,
-      disabledElements: [
-        'ribbons',
-        'toggleNotesButton',
-        // 'viewControlsButton',
-        // 'panToolButton',
-        // 'selectToolButton', 
-        'searchButton',
-        // 'menuButton',
-        'commentsButton',
-        'contextMenuPopup'
-      ]
-    },
-    viewer.current
-    ).then(async instance => {
-      const { Core, UI } = instance;
-      const { annotationManager, Annotations } = Core;
+    initWithPDF();
+    // WebViewer({
+    //   path: 'webviewer',
+    //   licenseKey: LICENSE_KEY,
+    //   disabledElements: [
+    //     'ribbons',
+    //     'toggleNotesButton',
+    //     // 'viewControlsButton',
+    //     // 'panToolButton',
+    //     // 'selectToolButton', 
+    //     'searchButton',
+    //     // 'menuButton',
+    //     'commentsButton',
+    //     'contextMenuPopup'
+    //   ]
+    // },
+    // viewer.current
+    // ).then(async instance => {
+    //   const { Core, UI } = instance;
+    //   const { annotationManager, Annotations } = Core;
 
-      UI.setToolbarGroup('toolbarGroup-View');
-      Core.setCustomFontURL('/webfonts/');
-      annotationManager.setReadOnly(true);
+    //   UI.setToolbarGroup('toolbarGroup-View');
+    //   Core.setCustomFontURL('/webfonts/');
+    //   annotationManager.setReadOnly(true);
 
-      annotationManager.addEventListener('annotationChanged', (annotations, action, { imported }) => {
-        if (imported) {
-          annotations.forEach(function(annot) {
-            annot.NoMove = true;
-            annot.NoDelete = true;
-            annot.ReadOnly = true;
-            if (annot instanceof Annotations.WidgetAnnotation) {
-              annot.fieldFlags.set('ReadOnly', true);
-              if (annot.fieldName.includes('SIGN')) { // SIGN annotation 숨김처리
-                annot.Hidden = true;
-              }
-            }
-          });
-        }
-      });
+    //   annotationManager.addEventListener('annotationChanged', (annotations, action, { imported }) => {
+    //     if (imported) {
+    //       annotations.forEach(function(annot) {
+    //         annot.NoMove = true;
+    //         annot.NoDelete = true;
+    //         annot.ReadOnly = true;
+    //         if (annot instanceof Annotations.WidgetAnnotation) {
+    //           annot.fieldFlags.set('ReadOnly', true);
+    //           if (annot.fieldName.includes('SIGN')) { // SIGN annotation 숨김처리
+    //             annot.Hidden = true;
+    //           }
+    //         }
+    //       });
+    //     }
+    //   });
 
-      const URL = '/' + docRef;
-      console.log('URL:'+URL);
-      UI.loadDocument(URL, { filename: docTitle+'.pdf' });
-    });
+    //   const URL = '/' + docRef;
+    //   console.log('URL:'+URL);
+    //   UI.loadDocument(URL, { filename: docTitle+'.pdf' });
+    // });
     return () => {
       setLoadingDownload([]);
     } // cleanup
@@ -86,8 +93,8 @@ const ViewDocument = ({location}) => {
             ],
           },
           extra: [
-            <Button key="2" icon={<ArrowLeftOutlined />} onClick={() => window.history.back()}></Button>,
-            <Button key="3" loading={loadingDownload['1']} href={'/admin/document/down/documents/'+_id} download={docTitle+'.pdf'} type="primary" icon={<DownloadOutlined />} onClick={()=> {
+            <Button key={uuidv4()} icon={<ArrowLeftOutlined />} onClick={() => window.history.back()}></Button>,
+            <Button key={uuidv4()} loading={loadingDownload['1']} href={'/admin/document/down/documents/'+_id} download={docTitle+'.pdf'} type="primary" icon={<DownloadOutlined />} onClick={()=> {
               setLoadingDownload( { "1" : true } )
               setTimeout(() => {
                 setLoadingDownload( { "1" : false})
@@ -101,11 +108,7 @@ const ViewDocument = ({location}) => {
         footer={[
         ]}
       >
-        <Row gutter={[24, 24]}>
-          <Col span={24}>
-            <div className='webviewer' ref={viewer}></div>
-          </Col>
-        </Row>
+        <div><PDFViewer ref={pdfRef} isUpload={false} isSave={false} isEditing={false} defaultScale={1.0} headerSpace={attachFiles?.length > 0 ? 128 + attachFiles?.length * 30 : 128}/></div>
       </PageContainer> 
     </div>
   );

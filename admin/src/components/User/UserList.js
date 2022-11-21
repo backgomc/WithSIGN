@@ -2,8 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { useIntl } from 'react-intl';
 import Highlighter from 'react-highlight-words';
-import { Table, Input, Space, Button, Modal, Popconfirm } from 'antd';
-import { ExclamationCircleOutlined, SearchOutlined } from '@ant-design/icons';
+import { Table, Input, Space, Button, Modal, Popconfirm, message, Upload, Checkbox } from 'antd';
+import { ExclamationCircleOutlined, SearchOutlined, UploadOutlined, PaperClipOutlined } from '@ant-design/icons';
 import { PageContainer } from '@ant-design/pro-layout';
 import { TableDropdown } from '@ant-design/pro-table';
 import axiosInterceptor from '../../config/AxiosConfig';
@@ -24,16 +24,23 @@ const UserList = () => {
   const [searchText, setSearchText] = useState('');
   const [searchName, setSearchName] = useState('');
   const [searchOrg, setSearchOrg] = useState('');
+  const [orgList, setOrgList] = useState([]);
+  const [includeUnused, setIncludeUnused] = useState(false);
+  const [filters, setFilters] = useState({});
+  const [sorter, setSorter] = useState({});
   // const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   // const [hasSelected, setHasSelected] = useState(selectedRowKeys.length > 0);
   
   const handleTableChange = (pagination, filters, sorter) => {
     console.log('handleTableChange called');
+    setFilters(filters);
+    setSorter(sorter);
     fetch({
       sortField: sorter.field,
       sortOrder: sorter.order,
       pagination,
-      ...filters
+      ...filters,
+      includeUnused: includeUnused
     });
   };
 
@@ -45,7 +52,7 @@ const UserList = () => {
           placeholder={`Search ${dataIndex}`}
           value={selectedKeys[0]}
           onChange={e => setSelectedKeys(e.target.value ? [e.target.value] : [])}
-          onPressEnter={() => handleSearch(selectedKeys, confirm, dataIndex)}
+          onPressEnter={e => {e.stopPropagation();handleSearch(selectedKeys, confirm, dataIndex);}}
           style={{ marginBottom: 8, display: 'block' }}
         />
         <Space>
@@ -59,39 +66,52 @@ const UserList = () => {
           >
             검색
           </Button>
-          <Button key={uuidv4()} onClick={() => handleReset(clearFilters, dataIndex)} size="small" style={{ width: 90 }}>
+          <Button key={uuidv4()} onClick={() => handleReset(clearFilters, confirm, dataIndex)} size="small" style={{ width: 90 }}>
             초기화
           </Button>
         </Space>
       </div>
     ),
     filterIcon: filtered => <SearchOutlined style={{ color: filtered ? '#1890ff' : undefined }} />,
-    render: text =>
-      searchedColumn === dataIndex ? (
-        <Highlighter
-          highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
-          searchWords={[setSearchText(searchText)]}
-          autoEscape
-          textToHighlight={text ? text.toString() : ''}
-        />
-      ) : (
-        text
-      ),
+    render: (text, row) => {
+      let dispText = text;
+      if ( dataIndex === 'com' ) dispText = orgList.find(e => e.DEPART_CODE === row.COMPANY_CODE)?orgList.find(e => e.DEPART_CODE === row.COMPANY_CODE).DEPART_NAME:'';
+      if ( dataIndex === 'org' ) dispText = orgList.find(e => e.DEPART_CODE === row.DEPART_CODE)?orgList.find(e => e.DEPART_CODE === row.DEPART_CODE).DEPART_NAME:'';
+      return (
+        searchedColumn === dataIndex ? (
+          <Highlighter
+            highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
+            searchWords={[searchText]}
+            autoEscape
+            textToHighlight={dispText ? dispText.toString() : ''}
+          />
+        ) : (
+          dispText
+        )
+      );
+    }
   });
 
   const handleSearch = (selectedKeys, confirm, dataIndex) => {
-    confirm();
-    setSearchedColumn(selectedKeys[0]);
+    setSearchText(selectedKeys[0]);
     setSearchedColumn(dataIndex);
     if (dataIndex==='name') setSearchName(selectedKeys[0]);
     if (dataIndex==='org') setSearchOrg(selectedKeys[0]);
+    confirm();
   }
 
-  const handleReset = (clearFilters, dataIndex) => {
+  const handleReset = (clearFilters, confirm, dataIndex) => {
     clearFilters();
     setSearchText('');
     if (dataIndex==='name') setSearchName('');
     if (dataIndex==='org') setSearchOrg('');
+    confirm();
+  }
+
+  const fetchOrgList = async () => {
+    axiosInterceptor.post('/admin/org/list').then(response => {
+      if (response.data.success) setOrgList(response.data.orgs);
+    });
   }
 
   const fetch = async (params = {}) => {
@@ -120,7 +140,11 @@ const UserList = () => {
       fetch({
         name: [searchName],
         org: [searchOrg],
-        pagination
+        sortField: sorter.field,
+        sortOrder: sorter.order,
+        pagination,
+        ...filters,
+        includeUnused: includeUnused
       });
     });
   };
@@ -146,11 +170,17 @@ const UserList = () => {
     const res = await axiosInterceptor.post('/admin/org/sync');
     console.log(res);
     if (res && res.data && res.data.success && res.data.success === true) {
-      // 성공
+      alert('부서 정보 동기화 성공');
     } else {
       alert('ERP 부서 정보로 갱신 실패');
     }
-    fetch({ pagination });
+    fetch({
+      sortField: sorter.field,
+      sortOrder: sorter.order,
+      pagination,
+      ...filters,
+      includeUnused: includeUnused
+    });
   }
 
   const syncUsr = async () => {
@@ -159,11 +189,17 @@ const UserList = () => {
     const res = await axiosInterceptor.post('/admin/user/sync');
     console.log(res);
     if (res && res.data && res.data.success && res.data.success === true) {
-      // 성공
+      alert('직원 정보 동기화 성공');
     } else {
       alert('ERP 직원 정보로 갱신 실패');
     }
-    fetch({ pagination });
+    fetch({
+      sortField: sorter.field,
+      sortOrder: sorter.order,
+      pagination,
+      ...filters,
+      includeUnused: includeUnused
+    });
   }
 
   const initPasswd = async (key, record) => {
@@ -219,7 +255,7 @@ const UserList = () => {
 
   const sendPush = async (record) => {
     confirm({
-      title: '테스트 알림(아이프로넷 쪽지/With 메시지) 전송 하시겠습니까?',
+      title: '테스트 알림(NH With 메시지) 전송 하시겠습니까?',
       icon: <ExclamationCircleOutlined />,
       // content: '',
       okText: '네',
@@ -278,9 +314,9 @@ const UserList = () => {
       title: '소속',
       key: 'org',
       ...getColumnSearchProps('org'),
-      render: (row) => {
-        return (row['orgInfo'].length>0?<font>{row['orgInfo'][0]['DEPART_NAME']}</font>:'');
-      },
+      // render: (row) => {
+      //   return orgList.find(e => e.DEPART_CODE === row.DEPART_CODE)?orgList.find(e => e.DEPART_CODE === row.DEPART_CODE).DEPART_NAME:'';
+      // },
       align: 'center'
     },
     {
@@ -321,7 +357,9 @@ const UserList = () => {
 
   useEffect(() => {
     console.log('useEffect called');
+    fetchOrgList();
     fetch({
+      includeUnused: includeUnused,
       pagination
     });
     return () => {
@@ -334,6 +372,9 @@ const UserList = () => {
       setSearchText('');
       setSearchName('');
       setSearchOrg('');
+      setIncludeUnused(false);
+      setFilters({});
+      setSorter({});
     } // cleanup
   }, []);
 
@@ -349,8 +390,18 @@ const UserList = () => {
               
             ],
           },
-          extra: [           
-            <Popconfirm key={uuidv4()} title="수동으로 ERP 부서 정보로 갱신하시겠습니까？" okText="네" cancelText="아니오" visible={syncOrgPopup} onConfirm={syncOrg} onCancel={() => {setSyncOrgPopup(false);}}>
+          extra: [
+            <Checkbox key={uuidv4()} checked={includeUnused} onChange={e => {
+              setIncludeUnused(e.target.checked);
+              fetch({
+                sortField: sorter.field,
+                sortOrder: sorter.order,
+                pagination,
+                ...filters,
+                includeUnused: e.target.checked
+              });
+            }}>미사용 포함</Checkbox>,
+            <Popconfirm key={uuidv4()} title="수동으로 ERP 부서 정보로 갱신하시겠습니까？" okText="네" cancelText="아니오" open={syncOrgPopup} onConfirm={syncOrg} onCancel={() => {setSyncOrgPopup(false);}}>
               <Button key={uuidv4()} type="primary" danger onClick={()=>{setSyncOrgPopup(true);}}>
                 부서 동기화
               </Button>

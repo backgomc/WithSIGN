@@ -670,7 +670,11 @@ router.post('/templates/list', ValidateToken, async (req, res) => {
 
 // 템플릿 관리 > 상세
 router.post('/templates/info', ValidateToken, (req, res) => {
-  return res.json({ success: true, message: '/templates/info' });
+  if (!req.body.templateId) return res.json({ success: false, message: 'input value not enough!' });
+  Template.findOne({ _id: req.body.templateId }).then((template, err) => {
+    if (err) return res.json({success: false, error: err});
+    return res.json({ success: true, template: template })
+  });
 });
 
 // 템플릿 관리 > 등록
@@ -936,89 +940,145 @@ router.post('/board/delComment', ValidateToken, (req, res) => {
 
 // -- 통계 --
 router.post('/statistic', ValidateToken, async (req, res) => {
-  var usrStat = await User.aggregate([
-    {
-      '$group': {
-        '_id': '', 
-        'totalPage': {
-          '$sum': '$paperless'
-        }, 
-        'totalCount': {
-          '$sum': '$docCount'
-        }
+
+  var usrStatMQL = [];
+  var docStatMQL = [];
+  var docStatByUserMQL = [];
+  var docStatByDateMQL = [];
+
+
+  ///////////////// usrStatMQL /////////////////
+  if (req.body.code && req.body.code !== '') {
+    usrStatMQL.push({$match: {'COMPANY_CODE': req.body.code}});
+  }
+  usrStatMQL.push({
+    '$group': {
+      '_id': '',
+      'totalPage': {
+        '$sum': '$paperless'
+      },
+      'totalCount': {
+        '$sum': '$docCount'
       }
     }
-  ]);
-  var docStat = await Document.aggregate([
-    {
-      '$match': {
-        'signed': true
-      }
-    }, {
-      '$group': {
-        '_id': '', 
-        'totalPage': {
-          '$sum': '$pageCount'
-        }, 
-        'totalCount': {
-          '$sum': 1
-        }
+  });
+  var usrStat = await User.aggregate(usrStatMQL);
+
+
+  ///////////////// docStatMQL /////////////////
+  docStatMQL.push({
+    '$lookup': {
+      'from': 'users',
+      'localField': 'users',
+      'foreignField': '_id',
+      'as': 'usrInfo'
+    }
+  });
+  if (req.body.code && req.body.code !== '') docStatMQL.push({'$match': {'signed': true, 'usrInfo.COMPANY_CODE': req.body.code}});
+  else docStatMQL.push({'$match': {'signed': true}});
+  docStatMQL.push({
+    '$group': {
+      '_id': '',
+      'totalPage': {
+        '$sum': '$pageCount'
+      },
+      'totalCount': {
+        '$sum': 1
       }
     }
-  ]);
-  var docStatByUser = await Document.aggregate([
-    {
-      '$match': {
-        'signed': true
-      }
-    }, {
-      '$group': {
-        '_id': '$user', 
-        'totalPage': {
-          '$sum': '$pageCount'
-        }, 
-        'totalCount': {
-          '$sum': 1
-        }
-      }
-    }, {
-      '$lookup': {
-        'from': 'users', 
-        'localField': '_id', 
-        'foreignField': '_id', 
-        'as': 'usrInfo'
-      }
-    }, {
-      '$lookup': {
-        'from': 'orgs', 
-        'localField': 'usrInfo.DEPART_CODE', 
-        'foreignField': 'DEPART_CODE', 
-        'as': 'orgInfo'
+  });
+  var docStat = await Document.aggregate(docStatMQL);
+  if (docStat.length === 0) docStat.push({ _id: '', totalPage: 0, totalCount: 0 });
+
+
+  ///////////////// docStatByUserMQL /////////////////
+  docStatByUserMQL.push({
+    '$lookup': {
+      'from': 'users',
+      'localField': 'users',
+      'foreignField': '_id',
+      'as': 'usrInfo'
+    }
+  });
+  if (req.body.code && req.body.code !== '') docStatByUserMQL.push({'$match': {'signed': true, 'usrInfo.COMPANY_CODE': req.body.code}});
+  else docStatByUserMQL.push({'$match': {'signed': true}});
+  docStatByUserMQL.push({
+    '$group': {
+      '_id': '$user',
+      'totalPage': {
+        '$sum': '$pageCount'
+      },
+      'totalCount': {
+        '$sum': 1
       }
     }
-  ]);
-  var docStatByDate = await Document.aggregate([
-    {
-      '$match': {
-        'signed': true
-      }
-    }, {
-      '$group': {
-        '_id': {
-          '$dateToString': {
-            'format': '%Y-%m', 
-            'date': {$add: ['$signedTime', 9*3600*1000]}
-          }
-        }, 
-        'totalPage': {
-          '$sum': '$pageCount'
-        }, 
-        'totalCount': {
-          '$sum': 1
+  });
+  docStatByUserMQL.push({
+    '$lookup': {
+      'from': 'users',
+      'localField': '_id',
+      'foreignField': '_id',
+      'as': 'usrInfo'
+    }
+  });
+  docStatByUserMQL.push({
+    '$lookup': {
+      'from': 'orgs',
+      'localField': 'usrInfo.DEPART_CODE',
+      'foreignField': 'DEPART_CODE',
+      'as': 'orgInfo'
+    }
+  });
+  docStatByUserMQL.push({
+    '$project': {
+      'key': '$_id',
+      'totalPage': 1,
+      'totalCount': 1,
+      'usrInfo': 1,
+      'orgInfo': 1
+    }
+  });
+
+  var docStatByUser = await Document.aggregate(docStatByUserMQL);
+
+
+  ///////////////// docStatByDateMQL /////////////////
+  docStatByDateMQL.push({
+    '$lookup': {
+      'from': 'users',
+      'localField': 'users',
+      'foreignField': '_id',
+      'as': 'usrInfo'
+    }
+  });
+  if (req.body.code && req.body.code !== '') docStatByDateMQL.push({'$match': {'signed': true, 'usrInfo.COMPANY_CODE': req.body.code}});
+  else docStatByDateMQL.push({'$match': {'signed': true}});
+  docStatByDateMQL.push({
+    '$group': {
+      '_id': {
+        '$dateToString': {
+          'format': '%Y-%m',
+          'date': {$add: ['$signedTime', 9*3600*1000]}
         }
+      },
+      'totalPage': {
+        '$sum': '$pageCount'
+      },
+      'totalCount': {
+        '$sum': 1
       }
     }
-  ]);
+  });
+  docStatByDateMQL.push({
+    '$project': {
+      'key': '$_id',
+      'totalPage': 1,
+      'totalCount': 1
+    }
+  });
+  var docStatByDate = await Document.aggregate(docStatByDateMQL);
+
+
   return res.json({ success: true, usrStat: usrStat, docStat: docStat, docStatByUser: docStatByUser, docStatByDate: docStatByDate});
 });
 ///////////////////////////////////////////////////////////////////////// 게시판 정보 관리 종료 /////////////////////////////////////////////////////////////////////////

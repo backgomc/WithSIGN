@@ -27,7 +27,7 @@ const SystemManage = () => {
           placeholder={`Search ${dataIndex}`}
           value={selectedKeys[0]}
           onChange={e => setSelectedKeys(e.target.value ? [e.target.value] : [])}
-          onPressEnter={() => handleSearch(selectedKeys, confirm, dataIndex)}
+          onPressEnter={e => {e.stopPropagation();handleSearch(selectedKeys, confirm, dataIndex);}}
           style={{ marginBottom: 8, display: 'block' }}
         />
         <Space>
@@ -41,7 +41,7 @@ const SystemManage = () => {
           >
             검색
           </Button>
-          <Button key={uuidv4()} onClick={() => handleReset(clearFilters, dataIndex)} size="small" style={{ width: 90 }}>
+          <Button key={uuidv4()} onClick={() => handleReset(clearFilters, confirm, dataIndex)} size="small" style={{ width: 90 }}>
             초기화
           </Button>
         </Space>
@@ -55,14 +55,15 @@ const SystemManage = () => {
   });
 
   const handleSearch = (selectedKeys, confirm, dataIndex) => {
-    confirm();
     setSearchedColumn(dataIndex);
     setSearchText(selectedKeys[0]);
+    confirm();
   }
 
-  const handleReset = (clearFilters, dataIndex) => {
+  const handleReset = (clearFilters, confirm, dataIndex) => {
     clearFilters();
     setSearchText(searchText);
+    confirm();
   }
 
   const columnsByUser = [
@@ -186,6 +187,7 @@ const SystemManage = () => {
       >
         <br></br>
         <List
+          rowKey={uuidv4()}
           grid={{ gutter: 16, column: 2 }}
           dataSource={docStat}
           renderItem={item => (
@@ -194,8 +196,9 @@ const SystemManage = () => {
             </List.Item>
           )}
         />
-        <Table columns={columnsByDate} dataSource={docStatByDate} pagination={pagination} onChange={setPagination}/>
+        <Table columns={columnsByDate} dataSource={docStatByDate} pagination={pagination} onChange={setPagination} style={{ marginBottom: '1rem' }}/>
         <List
+          rowKey={uuidv4()}
           grid={{ gutter: 16, column: 2 }}
           dataSource={usrStat}
           renderItem={item => (
@@ -204,8 +207,8 @@ const SystemManage = () => {
             </List.Item>
           )}
         />
-        <Table columns={columnsByUser} dataSource={docStatByUser} pagination={pagination} onChange={setPagination}/>
-        <button onClick={handleExcel}>엑셀 내보내기!!</button>
+        <Table columns={columnsByUser} dataSource={docStatByUser} pagination={pagination} onChange={setPagination} style={{ marginBottom: '1rem' }}/>
+        <Button key={uuidv4()} onClick={handleExcel}>엑셀 내보내기!!</Button>
       </PageContainer>
     </div>
   );
