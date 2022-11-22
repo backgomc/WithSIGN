@@ -47,7 +47,7 @@ const DocumentExpander = (props) => {
         if ((item.signedBy.some(e => e.user === user._id))) {
             return  (
                 <Timeline.Item key={uuidv4()} dot={<CheckCircleOutlined className="timeline-clock-icon" />} color="gray">
-                    <font color='#A7A7A9'><b>{user.name} {user.JOB_TITLE}</b> {(item.observers && item.observers.includes(user._id)) ? '문서 수신' : '서명 완료'}</font>
+                    <font color='#A7A7A9'><b>{user.name} {user.JOB_TITLE}</b> {orgInfos.filter(e => e.DEPART_CODE === user.DEPART_CODE).length > 0 ? '['+orgInfos.filter(e => e.DEPART_CODE === user.DEPART_CODE)[0].DEPART_NAME+']' : ''} {(item.observers && item.observers.includes(user._id)) ? '문서 수신' : '서명 완료'}</font>
                     &nbsp;&nbsp;&nbsp;
                     <Tag color="#BABABC">
                         <Moment format='YYYY/MM/DD HH:mm'>{item.signedBy.filter(e => e.user === user._id)[0].signedTime}</Moment>
@@ -57,7 +57,7 @@ const DocumentExpander = (props) => {
         } else if ((item.canceledBy.some(e => e.user === user._id))) {
             return (
                 <Timeline.Item key={uuidv4()} dot={<CloseCircleOutlined className="timeline-clock-icon"/>} color="red">
-                    <font color="#A7A7A9"><b>{user.name} {user.JOB_TITLE}</b> {(item.observers && item.observers.includes(user._id)) ? '수신 취소' : '서명 취소'}</font>
+                    <font color="#A7A7A9"><b>{user.name} {user.JOB_TITLE}</b> {orgInfos.filter(e => e.DEPART_CODE === user.DEPART_CODE).length > 0 ? '['+orgInfos.filter(e => e.DEPART_CODE === user.DEPART_CODE)[0].DEPART_NAME+']' : ''} {(item.observers && item.observers.includes(user._id)) ? '수신 취소' : '서명 취소'}</font>
                     &nbsp;&nbsp;&nbsp;
                     <Tooltip placement="right" title={item.canceledBy.filter(e => e.user === user._id)[0].message}>
                         <Tag color="#BABABC">
@@ -70,7 +70,7 @@ const DocumentExpander = (props) => {
         } else {
             return (
                 <Timeline.Item key={uuidv4()} dot={item.usersOrder?.filter(e => e.user == user._id).length > 0 ? <Tag color='blue'>{item.usersOrder.filter(e => e.user == user._id)[0]?.order + 1}</Tag> : <ClockCircleOutlined className="timeline-clock-icon" />}>
-                    <font color="#1890FF"><b>{user.name} {user.JOB_TITLE}</b> {(item.observers && item.observers.includes(user._id)) ? '수신 필요' : '서명 필요'}</font>
+                    <font color="#1890FF"><b>{user.name} {user.JOB_TITLE}</b> {orgInfos.filter(e => e.DEPART_CODE === user.DEPART_CODE).length > 0 ? '['+orgInfos.filter(e => e.DEPART_CODE === user.DEPART_CODE)[0].DEPART_NAME+']' : ''} {(item.observers && item.observers.includes(user._id)) ? '수신 필요' : '서명 필요'}</font>
                 </Timeline.Item>
             )
         }
@@ -121,7 +121,7 @@ const DocumentExpander = (props) => {
                         <br></br>
                         <Timeline>
                             <Timeline.Item color="gray">
-                                <font color='#A7A7A9'><b>{item.user.name} {item.user.JOB_TITLE}</b> 서명 요청</font>
+                                <font color='#A7A7A9'><b>{item.user.name} {item.user.JOB_TITLE}</b> {orgInfos.filter(e => e.DEPART_CODE === item.user.DEPART_CODE).length > 0 ? '['+orgInfos.filter(e => e.DEPART_CODE === item.user.DEPART_CODE)[0].DEPART_NAME+']' : ''} 서명 요청</font>
                                 &nbsp;&nbsp;&nbsp;
                                 <Tag color="#BABABC">
                                     <Moment format='YYYY/MM/DD HH:mm'>{item.requestedTime}</Moment>
