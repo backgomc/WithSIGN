@@ -104,16 +104,16 @@ const DocumentExpander = (props) => {
             {/* <Container> */}
                 <ProDescriptions column={2} bordered title={<div><img src={ico_bullet} alt="icon bullet"></img>&nbsp;&nbsp;&nbsp;상세정보</div>} contentStyle={{background:'white'}}>
                     <ProDescriptions.Item valueType="option">{buttonList}</ProDescriptions.Item>
-                    <ProDescriptions.Item span={2} label={<b>문서명</b>}>{item.docTitle}</ProDescriptions.Item>
+                    {/* <ProDescriptions.Item span={2} label={<b>문서명</b>}>{item.docTitle}</ProDescriptions.Item> */}
                     <ProDescriptions.Item label={<b>요청자</b>}>
                         {item.user.name} {item.user.JOB_TITLE} {orgInfos.filter(e => e.DEPART_CODE === item.user.DEPART_CODE).length > 0 ? '['+orgInfos.filter(e => e.DEPART_CODE === item.user.DEPART_CODE)[0].DEPART_NAME+']' : ''}
                     </ProDescriptions.Item>
-                    <ProDescriptions.Item label={<b>참여자</b>}>
+                    {/* <ProDescriptions.Item label={<b>참여자</b>}>
                         {item.users.map((user, index) => (getSignInfo(user)))}
-                    </ProDescriptions.Item>
-                    <ProDescriptions.Item label={<b>진행 상태</b>}>
+                    </ProDescriptions.Item> */}
+                    {/* <ProDescriptions.Item label={<b>진행 상태</b>}>
                         <DocumentTypeBadge document={item}/>
-                    </ProDescriptions.Item>
+                    </ProDescriptions.Item> */}
                     <ProDescriptions.Item label={<b>요청시간</b>}>
                         <Moment format='YYYY/MM/DD HH:mm'>{item.requestedTime}</Moment>
                     </ProDescriptions.Item>
