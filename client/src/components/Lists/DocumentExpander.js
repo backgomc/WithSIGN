@@ -450,22 +450,22 @@ const DocumentExpander = (props) => {
         </Button> */}
         {buttonList}
       </ProDescriptions.Item>
-      <ProDescriptions.Item span={2} label={<b>문서명</b>}>
+      {/* <ProDescriptions.Item span={2} label={<b>문서명</b>}>
         {item.docTitle}
-      </ProDescriptions.Item>
+      </ProDescriptions.Item> */}
       <ProDescriptions.Item label={<b>요청자</b>} tooltip="서명을 진행하기 위해 문서를 업로드하고 서명에 참여하는 서명 참여자들에게 문서를 전송한 사람">
         {item.user.name} {item.user.JOB_TITLE} {orgInfos.filter(e => e.DEPART_CODE == item.user.DEPART_CODE).length > 0 ? '['+orgInfos.filter(e => e.DEPART_CODE == item.user.DEPART_CODE)[0].DEPART_NAME+']' : ''}
       </ProDescriptions.Item>
-      <ProDescriptions.Item label={<b>참여자</b>} tooltip="서명 요청자에 의해 문서에 서명해야 하는 사람">
+      {/* <ProDescriptions.Item label={<b>참여자</b>} tooltip="서명 요청자에 의해 문서에 서명해야 하는 사람">
         {
             item.users.map((user, index) => (
                 getSignInfo(user)
             ))
         }
-      </ProDescriptions.Item>
-      <ProDescriptions.Item label={<b>진행 상태</b>}>
+      </ProDescriptions.Item> */}
+      {/* <ProDescriptions.Item label={<b>진행 상태</b>}>
         <DocumentTypeBadge uid={_id} document={item} />
-      </ProDescriptions.Item>
+      </ProDescriptions.Item> */}
 
       <ProDescriptions.Item label={<b>요청시간</b>}>
         <Moment format='YYYY/MM/DD HH:mm'>{item.requestedTime}</Moment>
