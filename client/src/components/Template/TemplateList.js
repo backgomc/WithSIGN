@@ -745,7 +745,7 @@ const TemplateList = () => {
         <div style={{
             // transform: 'skew(0deg, 200deg)',
             fontSize: '1rem',
-            backgroundColor: !item.isWithPDF ? '#f50' : '#000000AA',
+            backgroundColor: (item.hasRequester || (item.users && item.users.length > 0))  && !item.isWithPDF ? '#f50' : '#000000AA',
             color: 'white',
             textAlign: 'center',
             width: '280px'  // 280px

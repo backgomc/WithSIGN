@@ -64,7 +64,9 @@ const UploadDocument = () => {
       setFileList(newFileList)
 
       // 첨부파일 셋팅
-      dispatch(setAttachFiles(newFileList));
+      // dispatch(setAttachFiles(newFileList));
+      setAttachFiles(newFileList)
+      dispatch(selectAttachFiles);
     },
     beforeUpload: file => {
 
@@ -85,7 +87,9 @@ const UploadDocument = () => {
       setFileList([...fileList, file])
 
       // 첨부파일 셋팅
-      dispatch(setAttachFiles([...fileList, file]));
+      // dispatch(setAttachFiles([...fileList, file]));
+      setAttachFiles([...fileList, file])
+      dispatch(selectAttachFiles);
 
       return false;
     },
