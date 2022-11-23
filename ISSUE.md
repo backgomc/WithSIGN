@@ -17,3 +17,8 @@ pdf 가 한장인 경우 PDF뷰어 높이가 여백이 많이 생기는 문제 
 * [7] 유효성 체크 문제 > 서명 값만 현재 유효성 체크를 하고 있어 텍스트 박스는 유효성 체크를 안해서 누락되는 문제가 발생
 * [8] 모바일 화면에서 문서뷰가 안되는 문제
 > 다운로드 체크 필드가 모바일 사이즈의 경우 안넘어와서 나타났던 문제
+* [9] ERROR [3/7] RUN apt-get update && apt-get install -y openjdk-11-jdk (At least one invalid signature was encountered. )
+> docker 용량 문제로 install 이 안되는 문제, 아래 명령어를 통해 container 용량을 정리해준다.
+> docker image prune -f
+> docker container prune -f
+ 

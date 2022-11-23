@@ -174,14 +174,19 @@ const UploadDocument = () => {
 
   }, [documentTitle, documentFile, documentType, templateTitle, templateRef_C, templateRef_M]);
 
-  useEffect(() => {
-    console.log(tab)
-    if (tab === 'tab3') {
-      templateRef_C.current.initTemplateUI();
-    } else if (tab === 'tab2') {
-      templateRef_M.current.initTemplateUI();
-    }
-  }, [tab])
+  // useEffect(() => {
+  //   console.log(tab)
+  //   // if (tab === 'tab3') {
+  //   //   templateRef_C.current.initTemplateUI();
+  //   // } else if (tab === 'tab2') {
+  //   //   templateRef_M.current.initTemplateUI();
+  //   // }
+
+  //   if (tab === 'tab2') {
+  //     templateRef_M.current.initTemplateUI();
+  //   }
+
+  // }, [tab])
 
   useEffect(() => {
     console.log('useEffect[file] called')

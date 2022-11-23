@@ -272,7 +272,8 @@ const ViewDocument = ({location}) => {
             // <Button key="3" loading={loadingDownload['1']} href={docRef} download={docTitle+'.pdf'} type="primary" icon={<DownloadOutlined />} onClick={()=> {
           
           <Button icon={<PrinterOutlined />} onClick={()=> {
-            (status == DOCUMENT_SIGNED) ? printPdfByUrl('/api/storage/documents/'+docId) : printPdfByFile()
+            // (status == DOCUMENT_SIGNED) ? printPdfByUrl('/api/storage/documents/'+docId) : printPdfByFile()
+            printPdfByFile()  // DRM 문제로 서명완료시도 현재 파일을 출력하도록 변경
           }}></Button>,  
           // 서명 완료된 문서만 다운로드 되도록 수정 
           (status == DOCUMENT_SIGNED) ? <Badge count={downloads?.find(e => e === _id)||chkeckDownload?<CheckCircleTwoTone />:0}><Button key="3" loading={loadingDownload['1']} href={'/api/storage/documents/'+docId} download={docTitle+'.pdf'} type="primary" icon={<DownloadOutlined />} onClick={()=> {

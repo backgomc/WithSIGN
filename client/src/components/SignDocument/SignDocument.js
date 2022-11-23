@@ -526,8 +526,11 @@ const SignDocument = () => {
     let param = {
       docId: docId,
       user: _id,
-      message: cancelMessage.current.resizableTextArea.props.value  
+      message: cancelMessage.current.resizableTextArea.textArea.value
+      // message: cancelMessage.current.resizableTextArea.props.value  
     }
+
+
 
     const res = await axios.post('/api/document/updateDocumentCancel', param)
 

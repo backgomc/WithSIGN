@@ -372,3 +372,9 @@ db.documents.find( {$and: [
 # thumbnail 해상도 올리기 0.3 -> 0.6
 # 서명 입력이 안되는 문제 -> NHForms에 yarn.lock 을 가져와서 컴파일 함 
 
+
+# 2.0.6
+# 서명 취소 오류 해결 (API 가 바뀐듯)
+# 서명 박스 최소 사이즈 줄이기 
+# 인쇄 기능 DRM 문제 해결
+# upload 시 개인 템플릿 선택시 오류
