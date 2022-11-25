@@ -59,7 +59,7 @@ const Assign = ({location}) => {
   const [orgs, setOrgs] = useState([]);
   const pathname = useSelector(selectPathname);
 
-  const [documentFile, setDocumentFile] = useState(location?.state.documentFile ? location?.state.documentFile : []);
+  const [documentFile, setDocumentFile] = useState(location?.state.documentFile ? location?.state.documentFile : null);
   const [attachFiles, setAttachFiles] = useState(location?.state.attachFiles ? location?.state.attachFiles : []);
 
   const insertUser = (org, users, depart_code) => {

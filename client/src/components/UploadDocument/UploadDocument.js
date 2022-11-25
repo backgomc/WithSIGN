@@ -73,7 +73,7 @@ const UploadDocument = ({location}) => {
 
   const documentTitle = useSelector(selectDocumentTitle);
   // const documentFile = useSelector(selectDocumentFile);
-  const [documentFile, setDocumentFile] = useState(location?.state.documentFile ? location?.state.documentFile : []);
+  const [documentFile, setDocumentFile] = useState(location?.state.documentFile ? location?.state.documentFile : null);
   const [attachFiles, setAttachFiles] = useState(location?.state.attachFiles ? location?.state.attachFiles : []);
   
 

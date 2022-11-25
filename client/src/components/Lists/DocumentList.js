@@ -37,7 +37,7 @@ import { PageContainer } from '@ant-design/pro-layout';
 import 'antd/dist/antd.css';
 import RcResizeObserver from 'rc-resize-observer';
 import { useIntl } from "react-intl";
-import { resetDocumentTempPath, setSendType, setDocumentType } from '../Assign/AssignSlice';
+import { resetDocumentTempPath, setSendType, setDocumentType, resetAssignAll } from '../Assign/AssignSlice';
 import banner from '../../assets/images/sub_top2.png';
 import banner_small from '../../assets/images/sub_top2_2.png';
 import styled from 'styled-components';
@@ -1209,6 +1209,7 @@ const DocumentList = ({location}) => {
             // />,    
             <Checkbox key={uuidv4()} checked={includeBulk} onChange={(e) => {setIncludeBulk(e.target.checked)}}>대량 전송 포함</Checkbox>,
             <Button key={uuidv4()} icon={<FileAddOutlined />} type="primary" onClick={() => {
+              dispatch(resetAssignAll());
               dispatch(setSendType('G'));
               // dispatch(setDocumentType('PC'));  // PC 탭 먼저 선택
               navigate('/uploadDocument');

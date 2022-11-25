@@ -81,7 +81,7 @@ const PrepareDocument = ({location}) => {
   const [observers, setObservers] = useState([]);
   // const [inputValue, _setInputValue] = useState([new Map()]);
 
-  const [documentFile, setDocumentFile] = useState(location?.state.documentFile ? location?.state.documentFile : []);
+  const [documentFile, setDocumentFile] = useState(location?.state.documentFile ? location?.state.documentFile : null);
   const [attachFiles, setAttachFiles] = useState(location?.state.attachFiles ? location?.state.attachFiles : []);
 
   // event 안에서는 최신 state 값을 못 불러와서 ref 사용
