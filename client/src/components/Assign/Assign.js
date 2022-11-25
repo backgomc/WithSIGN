@@ -40,7 +40,7 @@ const GroupTitle = styled.div`
 const { Meta } = Card;
 const { Search } = Input;
 
-const Assign = () => {
+const Assign = ({location}) => {
 
   const dispatch = useDispatch();
   const { formatMessage } = useIntl();
@@ -58,6 +58,9 @@ const Assign = () => {
   const [users, setUsers] = useState([]);
   const [orgs, setOrgs] = useState([]);
   const pathname = useSelector(selectPathname);
+
+  const [documentFile, setDocumentFile] = useState(location?.state.documentFile ? location?.state.documentFile : []);
+  const [attachFiles, setAttachFiles] = useState(location?.state.attachFiles ? location?.state.attachFiles : []);
 
   const insertUser = (org, users, depart_code) => {
     const _users = users.filter(e => e.DEPART_CODE === depart_code)
@@ -160,7 +163,10 @@ const Assign = () => {
         /*********************** E. 순차 서명 관련 전처리  ******************/
       }
 
-      navigate(`/prepareDocument`);
+      // navigate(`/prepareDocument`);
+
+      navigate('/prepareDocument', { state: {attachFiles: attachFiles, documentFile: documentFile} })
+
       // 임시 
       // navigate(`/assignSort`);
     } else {
@@ -508,13 +514,13 @@ const sortView = (
             ],
           },
           extra: [
-            <Button key="3" icon={<ArrowLeftOutlined />} onClick={() => {documentType === 'DIRECT' ? navigate(`/templateList`) : navigate(`/uploadDocument`)}}></Button>,
+            <Button key="3" icon={<ArrowLeftOutlined />} onClick={() => {documentType === 'DIRECT' ? navigate(`/templateList`) : navigate(`/uploadDocument`, { state: {attachFiles: attachFiles, documentFile: documentFile} })}}></Button>,
             <Button key="2" icon={<ArrowRightOutlined />} type="primary" onClick={() => handlePrepare()} disabled={disableNext}>
               {formatMessage({id: 'Next'})}
             </Button>,
           ],
         }}
-        content= { <ProCard style={{ background: '#ffffff'}} layout="center"><StepWrite current={1} /></ProCard> }
+        content= { <ProCard style={{ background: '#ffffff'}} layout="center"><StepWrite current={1} documentFile={documentFile} attachFiles={attachFiles} /></ProCard> }
         footer={[
         ]}
       >

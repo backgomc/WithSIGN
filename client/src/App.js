@@ -8,7 +8,8 @@ import { view as Header } from './components/Header';
 import Assign from './components/Assign/Assign';
 import AssignSort from './components/Assign/AssignSort';
 import UploadDocument from './components/UploadDocument/UploadDocument';
-import Preparation from './components/Preparation';
+// import Preparation from './components/Preparation';
+import PrepareDocument from './components/PrepareDocument/PrepareDocument';
 import SignList from './components/Lists/SignList';
 import SignedList from './components/Lists/SignedList';
 import DocumentList from './components/Lists/DocumentList';
@@ -208,7 +209,7 @@ const App = () => {
       <Assign path="/assign" />
       <AssignSort path="/assignSort" />
       <UploadDocument path="/uploadDocument" />
-      <Preparation path="/prepareDocument" />
+      <PrepareDocument path="/prepareDocument" />
       <SignList path="/signList" />
       <SignedList path="/signedList" />
       <DocumentList path="/documentList" />

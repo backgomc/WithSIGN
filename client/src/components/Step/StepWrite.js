@@ -21,7 +21,7 @@ const StepWrite = (props) => {
     const sendType = useSelector(selectSendType);
 
     const { Step } = Steps
-    const { current } = props
+    const { current, documentFile, attachFiles } = props
 
     const [curr, setCurr] = useState(0);
     
@@ -29,10 +29,10 @@ const StepWrite = (props) => {
     const onChange = current => {
         console.log('onChange:', current);
         if (current == 0) {
-            navigate(`/uploadDocument`);
+            navigate(`/uploadDocument`, { state: {attachFiles: attachFiles, documentFile: documentFile} });
         } else if (current == 1) {
             if (docuTitle != null) {
-                navigate(`/assign`);
+                navigate(`/assign`, { state: {attachFiles: attachFiles, documentFile: documentFile} });
             }
         }
     };

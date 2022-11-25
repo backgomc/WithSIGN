@@ -70,7 +70,7 @@ const { Dragger } = Upload;
 const { detect } = require('detect-browser');
 const browser = detect();
 
-const PrepareDocument = () => {
+const PrepareDocument = ({location}) => {
   const [instance, setInstance] = useState(null);
   const [dropPoint, setDropPoint] = useState(null);
   // const [fileName, setFileName] = useState(null);
@@ -80,6 +80,9 @@ const PrepareDocument = () => {
   const [pageCount, setPageCount] = useState(0);
   const [observers, setObservers] = useState([]);
   // const [inputValue, _setInputValue] = useState([new Map()]);
+
+  const [documentFile, setDocumentFile] = useState(location?.state.documentFile ? location?.state.documentFile : []);
+  const [attachFiles, setAttachFiles] = useState(location?.state.attachFiles ? location?.state.attachFiles : []);
 
   // event 안에서는 최신 state 값을 못 불러와서 ref 사용
   // const inputValueRef = useRef(inputValue);
@@ -91,8 +94,8 @@ const PrepareDocument = () => {
   const dispatch = useDispatch();
   const { formatMessage } = useIntl();
 
-  const attachFiles = useSelector(selectAttachFiles);
-  const documentFile = useSelector(selectDocumentFile);
+  // const attachFiles = useSelector(selectAttachFiles);
+  // const documentFile = useSelector(selectDocumentFile);
   const documentTitle = useSelector(selectDocumentTitle);
   const documentType = useSelector(selectDocumentType);
   const template = useSelector(selectTemplate);
@@ -1055,7 +1058,12 @@ const PrepareDocument = () => {
     const attachPaths = []
     var files = []
     console.log('attachFiles:', attachFiles)
-    if (attachFiles.length > 0) {
+
+    // let deserialzie_attachFiles = JSON.parse(attachFiles);
+    // console.log('deserialzie_attachFiles:', deserialzie_attachFiles)
+
+
+    if (attachFiles?.length > 0) {
 
       const formData = new FormData()
       formData.append('path', 'attachfiles/'+Date.now()+'/');
@@ -1598,14 +1606,14 @@ const PrepareDocument = () => {
           ],
         },
         extra: [
-          <Button key="3" icon={<ArrowLeftOutlined />} onClick={() => {navigate(`/assign`);}}></Button>,,
+          <Button key="3" icon={<ArrowLeftOutlined />} onClick={() => {navigate(`/assign`, { state: {attachFiles: attachFiles, documentFile: documentFile} });}}></Button>,,
           <Button key="2" icon={<SendOutlined />} type="primary" onClick={USE_WITHPDF ? send : applyFields} disabled={disableNext} loading={loading}>
             {formatMessage({id: 'Send'})}
           </Button>,
         ],
       }}
       style={{height:`calc(100vh + 200px)`}}
-      content= { <ProCard style={{ background: '#ffffff'}} layout="center"><StepWrite current={2} /></ProCard> }
+      content= { <ProCard style={{ background: '#ffffff'}} layout="center"><StepWrite current={2} documentFile={documentFile} attachFiles={attachFiles} /></ProCard> }
       // footer={[
       // ]}
       // loading={loading}

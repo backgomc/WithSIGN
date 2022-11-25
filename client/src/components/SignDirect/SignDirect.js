@@ -23,7 +23,7 @@ import 'antd/dist/antd.css';
 import '@ant-design/pro-card/dist/card.css';
 import { LICENSE_KEY, USE_WITHPDF } from '../../config/Config';
 import { selectDirect, setDirectTempPath } from './DirectSlice';
-import { setDocumentTempPath, selectTemplateTitle, setTemplateTitle, setAttachFiles, selectAttachFiles, selectIsWithPDF } from '../Assign/AssignSlice';
+import { setDocumentTempPath, selectTemplateTitle, setTemplateTitle, selectIsWithPDF } from '../Assign/AssignSlice';
 import moment from 'moment';
 import 'moment/locale/ko';
 import ProForm, { ProFormUploadButton } from '@ant-design/pro-form';
@@ -92,7 +92,7 @@ const SignDirect = () => {
   const [allCheck, setAllCheck] = useState(false);
   const [pageCount, setPageCount] = useState(0);
   const [textSign, setTextSign] = useState(formatMessage({id: 'sign.complete'}))
-  const [fileList, setFileList] = useState(useSelector(selectAttachFiles)); // 첨부 파일 (max:3개)
+  const [fileList, setFileList] = useState([]); // 첨부 파일 (max:3개)
   const [selectUsers, setSelectUsers] = useState([]);
   const [userKey, setUserKey] = useState();
   const [thumbnail, setThumbnail] = useState(null);
@@ -939,8 +939,8 @@ const SignDirect = () => {
 
       // 첨부파일 셋팅
       // dispatch(setAttachFiles(newFileList));
-      setAttachFiles(newFileList)
-      dispatch(selectAttachFiles);
+      // setAttachFiles(newFileList)
+      // dispatch(selectAttachFiles);
     },
     beforeUpload: file => {
 
@@ -962,8 +962,8 @@ const SignDirect = () => {
 
       // 첨부파일 셋팅
       // dispatch(setAttachFiles([...fileList, file]));
-      setAttachFiles([...fileList, file])
-      dispatch(selectAttachFiles);
+      // setAttachFiles([...fileList, file])
+      // dispatch(selectAttachFiles);
 
       return false;
     },

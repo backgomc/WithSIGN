@@ -8,7 +8,7 @@ import { Tabs, Upload, message, Input, Space, Form, Button } from 'antd';
 // import { InboxOutlined, CheckOutlined } from '@ant-design/icons';
 import StepWrite from '../Step/StepWrite';
 import { useIntl } from "react-intl";
-import { setSignees, setObservers, setDocumentFile, setDocumentTitle, selectDocumentTitle, setDocumentTempPath, selectDocumentFile, setTemplate, setTemplateType, setDocumentType, selectDocumentType, selectTemplate, selectTemplateTitle, setTemplateTitle, selectSendType, selectTemplateType, resetTemplate, resetTemplateTitle, setAttachFiles, selectAttachFiles } from '../Assign/AssignSlice';
+import { setSignees, setObservers, setDocumentFile, setDocumentTitle, selectDocumentTitle, setDocumentTempPath, selectDocumentFile, setTemplate, setTemplateType, setDocumentType, selectDocumentType, selectTemplate, selectTemplateTitle, setTemplateTitle, selectSendType, selectTemplateType, resetTemplate, resetTemplateTitle } from '../Assign/AssignSlice';
 import { PageContainer } from '@ant-design/pro-layout';
 import ProCard from '@ant-design/pro-card';
 import ProForm, { ProFormUploadDragger, ProFormText, ProFormUploadButton } from '@ant-design/pro-form';
@@ -25,7 +25,32 @@ import { ReactComponent as XLS_ICON} from '../../assets/images/excel-icon.svg';
 
 import Icon, { ReloadOutlined, ArrowRightOutlined } from '@ant-design/icons';
 
-const UploadDocument = () => {
+function stringifyFile(files) {
+  var myArray = [];
+  var file = {};
+
+  // manually create a new file obj for each File in the FileList
+  for(var i = 0; i < files.length; i++){
+
+    file = {
+        'uid'        : files[i].uid,
+        'lastModified'    : files[i].lastModified,
+        'lastModifiedDate': files[i].lastModifiedDate,
+        'name'       : files[i].name,
+        'size'       : files[i].size,
+        'type'       : files[i].type,
+        'percent'    : files[i].percent
+    } 
+
+    //add the file obj to your array
+    myArray.push(file)
+  }
+
+  //stringify array
+  return JSON.stringify(myArray);
+}
+
+const UploadDocument = ({location}) => {
 
   const dispatch = useDispatch();
   const { formatMessage } = useIntl();
@@ -36,18 +61,22 @@ const UploadDocument = () => {
 
   const [instance, setInstance] = useState(null);
   const [file, setFile] = useState(null);
-  const [fileList, setFileList] = useState(useSelector(selectAttachFiles)); // 첨부 파일 (max:3개)
+  // const [fileList, setFileList] = useState(useSelector(selectAttachFiles)); // 첨부 파일 (max:3개)
   const [hiddenFileUpload, setHiddenFileUpload] = useState(false);
   const [hiddenForm, setHiddenForm] = useState(true);
   const [disableNext, setDisableNext] = useState(true);
   const [tab, setTab] = useState("tab1");
   const [loading, setLoading] = useState(false);
-
+  
   const user = useSelector(selectUser);
   const { email, _id } = user;
 
   const documentTitle = useSelector(selectDocumentTitle);
-  const documentFile = useSelector(selectDocumentFile);
+  // const documentFile = useSelector(selectDocumentFile);
+  const [documentFile, setDocumentFile] = useState(location?.state.documentFile ? location?.state.documentFile : []);
+  const [attachFiles, setAttachFiles] = useState(location?.state.attachFiles ? location?.state.attachFiles : []);
+  
+
   const documentType = useSelector(selectDocumentType);
   const template = useSelector(selectTemplate);
   const templateTitle = useSelector(selectTemplateTitle);
@@ -58,21 +87,24 @@ const UploadDocument = () => {
     onRemove: file => {
       console.log('onRemove called', file)
 
-      const index = fileList.indexOf(file);
-      const newFileList = fileList.slice();
+      const index = attachFiles.indexOf(file);
+      const newFileList = attachFiles.slice();
       newFileList.splice(index, 1);
-      setFileList(newFileList)
+      // setFileList(newFileList)
 
       // 첨부파일 셋팅
       // dispatch(setAttachFiles(newFileList));
-      setAttachFiles(newFileList)
-      dispatch(selectAttachFiles);
+
+      setAttachFiles(newFileList);
+
+      // setAttachFiles(newFileList)
+      // dispatch(selectAttachFiles);
     },
     beforeUpload: file => {
 
       console.log('beforeUpload called', file)
 
-      if(fileList.length > 2) {
+      if(attachFiles.length > 2) {
         message.error('첨부파일 개수는 3개까지 가능합니다!');
         return Upload.LIST_IGNORE;
       }
@@ -84,16 +116,26 @@ const UploadDocument = () => {
       }
       
       file.url = URL.createObjectURL(file)  // 업로드 전에 preview 를 위해 추가
-      setFileList([...fileList, file])
+      // setFileList([...stateFiles, file])
 
       // 첨부파일 셋팅
+      console.log([...attachFiles, file])
+      console.log('AAA')
+      // let lastFiles = JSON.stringify([...fileList, file]);  //직렬화 1번 방법 (X)
+      
+      // let lastFiles = stringifyFile([...fileList, file]); // 직렬화 2번 방법 (X)
+      // dispatch(setAttachFiles(lastFiles));
+
+      setAttachFiles([...attachFiles, file]); //state 방식 변경
+
       // dispatch(setAttachFiles([...fileList, file]));
-      setAttachFiles([...fileList, file])
-      dispatch(selectAttachFiles);
+
+      // setAttachFiles([...fileList, file])
+      // dispatch(selectAttachFiles);
 
       return false;
     },
-    fileList,
+    attachFiles,
     onPreview: async file => {
       console.log('aa', file)
       // let src = file.url;
@@ -138,6 +180,9 @@ const UploadDocument = () => {
 
   useEffect(() => {
 
+    console.log('attachFiles', attachFiles)
+    console.log('documentFile', documentFile)
+
     console.log("UploadDocument useEffect called !")
     if (documentType === 'PC') {
       setTab("tab1")
@@ -150,6 +195,12 @@ const UploadDocument = () => {
       if (documentFile) {
         form.setFieldsValue({
           dragger: [documentFile]
+        })
+      }
+
+      if (attachFiles?.length > 0) {
+        form.setFieldsValue({
+          attachFile: attachFiles
         })
       }
 
@@ -204,12 +255,15 @@ const UploadDocument = () => {
     dispatch(setDocumentType('PC'))
     dispatch(setDocumentTitle(values.documentTitle))
 
-    navigate('/assign')
+    // navigate('/assign')
+    navigate('/assign', { state: {attachFiles: attachFiles, documentFile: documentFile} })
+
   }
 
   const templateNext = () => {
     dispatch(setTemplateTitle(templateTitle));
-    navigate('/assign');
+    // navigate('/assign');
+    navigate('/assign', { state: {attachFiles: attachFiles, documentFile: documentFile} })
   }
 
   const templateChanged = (template) => {
@@ -309,7 +363,7 @@ const UploadDocument = () => {
           </Button>,
         ],
       }}
-      content= { <ProCard style={{ background: '#ffffff' }} layout="center"><StepWrite current={0} /></ProCard> }
+      content= { <ProCard style={{ background: '#ffffff' }} layout="center"><StepWrite current={0} documentFile={documentFile} attachFiles={attachFiles} /></ProCard> }
       footer={[
         // <Button key="3" onClick={() => form.resetFields()}>초기화</Button>,
         // <Button key="2" type="primary" onClick={() => (tab === "tab1") ? form.submit() : templateNext()} disabled={disableNext}>
@@ -433,7 +487,7 @@ const UploadDocument = () => {
                       documentTitle: file.name.replace(/\.[^/.]+$/, "").normalize('NFC'),
                     })
             
-                    dispatch(selectDocumentFile);
+                    // dispatch(selectDocumentFile);
 
                     // dispatch(setDocumentFile(file));
             
