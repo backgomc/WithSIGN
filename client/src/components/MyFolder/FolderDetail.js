@@ -203,6 +203,7 @@ const FolderDetail = ({location}) => {
       title: '수정 일시',
       dataIndex: 'recentTime',
       sorter: true,
+      defaultSortOrder: 'descend',
       key: 'recentTime',
       width: '180px',
       sorter: (a, b) => a.recentTime.localeCompare(b.recentTime),
