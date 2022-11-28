@@ -9,7 +9,7 @@ import { CheckCircleOutlined, CloseCircleOutlined, ClockCircleOutlined, Download
 import '@ant-design/pro-card/dist/card.css';
 import '@ant-design/pro-descriptions/dist/descriptions.css';
 import 'antd/dist/antd.css';
-import { DocumentTypeBadge, DocumentType, DOCUMENT_SIGNED } from './DocumentType';
+import { DocumentType, DOCUMENT_SIGNED } from './DocumentType';
 // import AuditCertify from '../Document/AuditCertify';
 
 import ico_bullet from '../../assets/images/table_bullet.png';
@@ -35,13 +35,13 @@ const DocumentExpander = (props) => {
         }
     }
 
-    const getSignInfo = (user) => {
-        return (
-            <div key={uuidv4()}>
-                {user.name} {user.JOB_TITLE} {orgInfos.filter(e => e.DEPART_CODE === user.DEPART_CODE).length > 0 ? '['+orgInfos.filter(e => e.DEPART_CODE === user.DEPART_CODE)[0].DEPART_NAME+']' : ''}
-            </div>
-        )
-    }
+    // const getSignInfo = (user) => {
+    //     return (
+    //         <div key={uuidv4()}>
+    //             {user.name} {user.JOB_TITLE} {orgInfos.filter(e => e.DEPART_CODE === user.DEPART_CODE).length > 0 ? '['+orgInfos.filter(e => e.DEPART_CODE === user.DEPART_CODE)[0].DEPART_NAME+']' : ''}
+    //         </div>
+    //     )
+    // }
 
     const activeHistory = (user) => {
         if ((item.signedBy.some(e => e.user === user._id))) {
@@ -69,7 +69,7 @@ const DocumentExpander = (props) => {
             )
         } else {
             return (
-                <Timeline.Item key={uuidv4()} dot={item.usersOrder?.filter(e => e.user == user._id).length > 0 ? <Tag color='blue'>{item.usersOrder.filter(e => e.user == user._id)[0]?.order + 1}</Tag> : <ClockCircleOutlined className="timeline-clock-icon" />}>
+                <Timeline.Item key={uuidv4()} dot={item.usersOrder?.filter(e => e.user === user._id).length > 0 ? <Tag color='blue'>{item.usersOrder.filter(e => e.user === user._id)[0]?.order + 1}</Tag> : <ClockCircleOutlined className="timeline-clock-icon" />}>
                     <font color="#1890FF"><b>{user.name} {user.JOB_TITLE}</b> {orgInfos.filter(e => e.DEPART_CODE === user.DEPART_CODE).length > 0 ? '['+orgInfos.filter(e => e.DEPART_CODE === user.DEPART_CODE)[0].DEPART_NAME+']' : ''} {(item.observers && item.observers.includes(user._id)) ? '수신 필요' : '서명 필요'}</font>
                 </Timeline.Item>
             )
@@ -102,7 +102,7 @@ const DocumentExpander = (props) => {
     return (
         <div>
             {/* <Container> */}
-                <ProDescriptions column={2} bordered title={<div><img src={ico_bullet} alt="icon bullet"></img>&nbsp;&nbsp;&nbsp;상세정보</div>} contentStyle={{background:'white'}}>
+                <ProDescriptions column={2} bordered title={<div><img src={ico_bullet} style={{display: 'inline-block'}} alt={'상세정보'}></img>&nbsp;&nbsp;상세정보</div>} contentStyle={{background:'white'}}>
                     <ProDescriptions.Item valueType="option">{buttonList}</ProDescriptions.Item>
                     {/* <ProDescriptions.Item span={2} label={<b>문서명</b>}>{item.docTitle}</ProDescriptions.Item> */}
                     <ProDescriptions.Item label={<b>요청자</b>}>

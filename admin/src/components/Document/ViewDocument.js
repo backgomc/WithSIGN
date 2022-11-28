@@ -3,9 +3,9 @@ import { v4 as uuidv4 } from 'uuid';
 // import { useSelector } from 'react-redux';
 import { useIntl } from "react-intl";
 // import { navigate } from '@reach/router';
-import { Row, Col, Button } from 'antd';
+import { Button, List } from 'antd';
 import { PageContainer } from '@ant-design/pro-layout';
-import { DownloadOutlined, ArrowLeftOutlined } from '@ant-design/icons';
+import { DownloadOutlined, ArrowLeftOutlined, PaperClipOutlined } from '@ant-design/icons';
 import 'antd/dist/antd.css';
 import '@ant-design/pro-card/dist/card.css';
 // import { selectUser, selectHistory } from '../../app/infoSlice';
@@ -21,13 +21,29 @@ const ViewDocument = ({location}) => {
   // const user = useSelector(selectUser);
   // const history = useSelector(selectHistory);
 
-  const { docRef, docTitle, _id, attachFiles } = location.state.docInfo;
+  const { docRef, docTitle, _id, attachFiles, items } = location.state.docInfo;
   const { formatMessage } = useIntl();
   const pdfRef = useRef();
-  const viewer = useRef(null);
+  // const viewer = useRef(null);
+
+  const listAttachFiles = (
+    <List
+      size="small"
+      split={false}
+      dataSource={attachFiles}
+      itemLayout="horizontal"
+      renderItem={item => <List.Item.Meta avatar={<PaperClipOutlined />} description={<a href={item.path} download={item.originalname} style={{color:'gray'}}>{item.originalname}</a> }/>}
+    />
+  )
 
   const initWithPDF = async () => {
     await pdfRef.current.uploadPDF(docRef, docTitle);
+    const convItems = pdfRef.current.convertBoxToComponent(items);
+    let drawItems = convItems.map(item => {
+      item.disable = true;
+      return item;
+    });
+    await pdfRef.current.importItems(drawItems);
   }
 
   useEffect(() => {
@@ -104,7 +120,7 @@ const ViewDocument = ({location}) => {
             </Button>
           ],
         }}
-        // content= {}
+        content= {attachFiles?.length > 0 && listAttachFiles}
         footer={[
         ]}
       >

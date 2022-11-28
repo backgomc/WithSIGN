@@ -22,14 +22,14 @@ const UploadTemplate = () => {
   const { formatMessage } = useIntl();
   const [form] = Form.useForm();
 
-  const [instance, setInstance] = useState(null)
+  // const [instance, setInstance] = useState(null)
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [disableNext, setDisableNext] = useState(true);
   const [tempFilePath, setTempFilePath] = useState(null);
   const [thumbnail, setThumbnail] = useState(null);
   const pdfRef = useRef();
-  const viewer = useRef(null);
+  // const viewer = useRef(null);
   const user = useSelector(selectUser);
   const { _id } = user;
 
@@ -51,10 +51,10 @@ const UploadTemplate = () => {
       setTempFilePath(docRef);
     }
     
-    if (instance && docRef) {
-      const URL = '/' + docRef;
-      instance.docViewer.loadDocument(URL);
-    }
+    // if (instance && docRef) {
+    //   const URL = '/' + docRef;
+    //   instance.docViewer.loadDocument(URL);
+    // }
   };
 
   useEffect(() => {

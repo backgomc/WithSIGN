@@ -3,7 +3,7 @@ import Moment from 'react-moment';
 import axiosInterceptor from '../../config/AxiosConfig';
 import { Table, Input, Space, Button, Tooltip } from 'antd';
 import Highlighter from 'react-highlight-words';
-import { SearchOutlined,FileOutlined } from '@ant-design/icons';
+import { SearchOutlined, FileOutlined, PaperClipOutlined } from '@ant-design/icons';
 import { navigate } from '@reach/router';
 import { DocumentType, DocumentTypeBadge, DOCUMENT_SIGNED, DOCUMENT_SIGNING, DOCUMENT_CANCELED, DOCUMENT_DELETED } from './DocumentType';
 import DocumentExpander from './DocumentExpander';
@@ -75,48 +75,25 @@ const DocumentList = () => {
           >
             검색
           </Button>
-          <Button onClick={() => handleReset(clearFilters)} size='small' style={{ width: 90 }}>
+          <Button onClick={() => handleReset(clearFilters, confirm, dataIndex)} size='small' style={{ width: 90 }}>
             초기화
           </Button>
         </Space>
       </div>
     ),
     filterIcon: filtered => <SearchOutlined style={{ color: filtered ? '#1890ff' : undefined }} />,
-    // DB 필터링 사용 시는 주석처리
-    // onFilter: (value, record) =>
-    //   record[dataIndex]
-    //     ? record[dataIndex].toString().toLowerCase().includes(value.toLowerCase())
-    //     : '',
-    onFilterDropdownVisibleChange: visible => {
-      if (visible) {
-        // setTimeout(() => searchInput.select(), 100);
-        // setTimeout(
-        //   () => searchInput && searchInput.current && searchInput.current.select()
-        // )
-      }
-    },
-    render: text =>
-      searchedColumn === dataIndex ? (
-        <Highlighter
-          highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
-          searchWords={[setSearchText(searchText)]}
-          autoEscape
-          textToHighlight={text ? text.toString() : ''}
-        />
-      ) : (
-        text
-      ),
   });
 
   const handleSearch = (selectedKeys, confirm, dataIndex) => {
-    confirm();
-    setSearchedColumn(selectedKeys[0]);
+    setSearchText(selectedKeys[0]);
     setSearchedColumn(dataIndex);
+    confirm();
   }
 
-  const handleReset = clearFilters => {
+  const handleReset = (clearFilters, confirm, dataIndex) => {
     clearFilters();
     setSearchText('');
+    confirm();
   }
 
   const columns = [
@@ -127,7 +104,20 @@ const DocumentList = () => {
       key: 'docTitle',
       ...getColumnSearchProps('docTitle'),
       expandable: true,
-      render: (text) =>  <div style={{ wordWrap: 'break-word', wordBreak: 'break-word' }}><FileOutlined /> {text}</div>, // 여러 필드 동시 표시에 사용
+      render: (text, row) =>
+        <div style={{wordWrap:'break-word', wordBreak:'break-word', display:'flex', alignItems:'center'}}><FileOutlined style={{height:'1rem'}}/>
+          { searchedColumn === 'docTitle' ? (
+            <Highlighter
+              highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
+              searchWords={[searchText]}
+              autoEscape
+              textToHighlight={text ? text.toString() : ''}
+            />
+          ) : (
+            text
+          )}
+          {row['attachFiles']?.length > 0 && <PaperClipOutlined style={{height:'1rem'}}/>}
+        </div>
     },
     {
       title: '상태',
@@ -175,13 +165,19 @@ const DocumentList = () => {
       record['user']['name']
         ? record['user']['name'].toString().toLowerCase().includes(value.toLowerCase())
         : '',
-      render: (text, row) => {
-        return (
-          <React.Fragment>
-          {row['user']['name']} {row['user']['JOB_TITLE']}
-          </React.Fragment>
-        )
-      } 
+      render: (text, row) =>
+        <React.Fragment>
+          { searchedColumn === 'name' ? (
+            <Highlighter
+              highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
+              searchWords={[searchText]}
+              autoEscape
+              textToHighlight={text ? text + ' ' + row['user']['JOB_TITLE'] : ''}
+            />
+          ) : (
+            text + ' ' + row['user']['JOB_TITLE']
+          )}
+        </React.Fragment>
     },
     {
       title: '최근 활동',

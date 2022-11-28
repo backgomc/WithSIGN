@@ -2,7 +2,7 @@ import React, { useRef, useEffect } from 'react';
 import { useIntl } from "react-intl";
 import { navigate } from '@reach/router';
 import { v4 as uuidv4 } from 'uuid';
-import { Row, Col, Button } from 'antd';
+import { Button } from 'antd';
 import { PageContainer } from '@ant-design/pro-layout';
 import { DownloadOutlined, ArrowLeftOutlined } from '@ant-design/icons';
 import 'antd/dist/antd.css';
@@ -21,7 +21,7 @@ const AuditCertify = ({location}) => {
   const { docTitle } = location.state.docInfo;
   const { formatMessage } = useIntl();
   const pdfRef = useRef();
-  const viewer = useRef(null);
+  // const viewer = useRef(null);
 
   const initWithPDF = async () => {
     let auditDocument = <AuditDocument item={location.state.docInfo} />;

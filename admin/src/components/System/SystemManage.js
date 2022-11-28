@@ -16,7 +16,7 @@ const SystemManage = () => {
   const [docStat, setDocStat] = useState([]);
   const [docStatByUser, setDocStatByUser] = useState([]);
   const [docStatByDate, setDocStatByDate] = useState([]);
-  const [searchedColumn, setSearchedColumn] = useState('');
+  // const [searchedColumn, setSearchedColumn] = useState('');
   const [searchText, setSearchText] = useState('');
   const { formatMessage } = useIntl();
   
@@ -55,7 +55,7 @@ const SystemManage = () => {
   });
 
   const handleSearch = (selectedKeys, confirm, dataIndex) => {
-    setSearchedColumn(dataIndex);
+    // setSearchedColumn(dataIndex);
     setSearchText(selectedKeys[0]);
     confirm();
   }
