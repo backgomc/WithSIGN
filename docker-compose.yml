@@ -28,7 +28,7 @@ services:
   web:
     build: # Dockerfile 빌드
       context: ./client # Dockerfile 빌드 경로
-    image: nhsign-client:2.0.7
+    image: nhsign-client:2.0.8
     container_name: nhsign-client # 컨테이너 명
     restart: "on-failure"
     ports:
