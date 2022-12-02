@@ -1,5 +1,5 @@
 import React, {useEffect, useRef} from 'react';
-import ReactPDF, { Page, Text, View, Document, StyleSheet, PDFViewer, Font, PDFDownloadLink, usePDF } from '@react-pdf/renderer';
+import ReactPDF, { Page, Text, View, Document, StyleSheet, Font, PDFDownloadLink, usePDF } from '@react-pdf/renderer';
 import { Row, Col, Button } from "antd";
 import { PageContainer } from '@ant-design/pro-layout';
 import { useIntl } from "react-intl";
@@ -14,11 +14,20 @@ import { navigate } from '@reach/router';
 
 import { ArrowLeftOutlined, DownloadOutlined } from '@ant-design/icons';
 
-import { LICENSE_KEY } from '../../config/Config';
+import { LICENSE_KEY, USE_WITHPDF } from '../../config/Config';
 import WebViewer from '@pdftron/webviewer';
 import { pdf } from '@react-pdf/renderer';
 import { saveAs } from 'file-saver';
 import AuditDocument from './AuditDocument';
+import PDFViewer from "@niceharu/withpdf";
+import styled from 'styled-components';
+const PageContainerStyle = styled.div`
+.ant-pro-page-container-children-content {
+  margin-top: 0px !important; 
+  margin-left: 0px !important; 
+  margin-right: 0px !important;
+}
+`;
 
 const asPdf = pdf([]);
 // Font.register({ family: "Nanum Gothic", src: font });
@@ -190,37 +199,51 @@ const Audit = ({location}) => {
   const { docTitle } = location.state.docInfo;
 
   const viewer = useRef(null);
+  const pdfRef = useRef();
+
+  const initWithPDF = async () => {
+
+    let auditDocument = <AuditDocument item={location.state.docInfo} />;
+    asPdf.updateContainer(auditDocument);
+    await pdfRef.current.uploadPDF(await asPdf.toBlob(), docTitle+'_진본확인.pdf');
+  }
 
   useEffect(() => {
-    WebViewer({
-      path: 'webviewer',
-      licenseKey: LICENSE_KEY,
-      disabledElements: [
-        'ribbons',
-        'toggleNotesButton',
-        'viewControlsButton',
-        'panToolButton',
-        'selectToolButton', 
-        'searchButton',
-        'menuButton',
-        'commentsButton',
-        'contextMenuPopup'
-      ]
-    },
-    viewer.current
-    ).then(async instance => {
-      // const { annotManager, CoreControls } = instance;
-      const { Core, UI } = instance;
-      const { annotationManager } = Core;
 
-      UI.setToolbarGroup('toolbarGroup-View');
-      Core.setCustomFontURL('/webfonts/');
-      annotationManager.setReadOnly(true);
-
-      let auditDocument = <AuditDocument item={location.state.docInfo} />;
-      asPdf.updateContainer(auditDocument);
-      UI.loadDocument(await asPdf.toBlob(), { filename: docTitle+'_진본확인.pdf' });
-    });
+    if (USE_WITHPDF) {
+      initWithPDF();
+    } else {
+      WebViewer({
+        path: 'webviewer',
+        licenseKey: LICENSE_KEY,
+        disabledElements: [
+          'ribbons',
+          'toggleNotesButton',
+          'viewControlsButton',
+          'panToolButton',
+          'selectToolButton', 
+          'searchButton',
+          'menuButton',
+          'commentsButton',
+          'contextMenuPopup'
+        ]
+      },
+      viewer.current
+      ).then(async instance => {
+        // const { annotManager, CoreControls } = instance;
+        const { Core, UI } = instance;
+        const { annotationManager } = Core;
+  
+        UI.setToolbarGroup('toolbarGroup-View');
+        Core.setCustomFontURL('/webfonts/');
+        annotationManager.setReadOnly(true);
+  
+        let auditDocument = <AuditDocument item={location.state.docInfo} />;
+        asPdf.updateContainer(auditDocument);
+        UI.loadDocument(await asPdf.toBlob(), { filename: docTitle+'_진본확인.pdf' });
+      });  
+    }
+    
   }, []);
 
   // const [instance, updateInstance] = usePDF({ document: MyDocument });
@@ -331,6 +354,7 @@ const Audit = ({location}) => {
   return (
     
     <div>
+    <PageContainerStyle>
     <PageContainer
         // ghost
         // loading={loading}
@@ -356,8 +380,9 @@ const Audit = ({location}) => {
             }}>{formatMessage({id: 'document.download'})}</Button>
           ],
         }}
-        footer={[
-        ]}
+        style={{height:`calc(100vh - 72px)`}}
+        // footer={[
+        // ]}
     >
         {/* <div
           style={{
@@ -371,12 +396,15 @@ const Audit = ({location}) => {
             <MyDocument />
           </PDFViewer>
         </div> */}
-        <Row gutter={[24, 24]}>
-          <Col span={24}>
-            <div className='webviewer' ref={viewer}></div>
-          </Col>
-        </Row>
+        {/* <Row gutter={[24, 24]}>
+          <Col span={24}> */}
+
+            {USE_WITHPDF ? <PDFViewer ref={pdfRef} isUpload={false} isSave={false} isEditing={false} headerSpace={128} />  : <div className="webviewer" ref={viewer}></div>}
+
+          {/* </Col>
+        </Row> */}
     </PageContainer>
+    </PageContainerStyle>
     </div>
 
   );

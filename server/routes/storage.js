@@ -51,6 +51,8 @@ const storage = multer.diskStorage({
         //     console.log("req.body.docId:"+req.body.docId)
         // })
 
+        // console.log('file.originalname', file.originalname)
+
         cb(null, file.originalname);
     }
 })
@@ -448,6 +450,7 @@ const storageBoard = multer.diskStorage({
 // 게시판 파일 업로드 (다건 지원)
 router.post('/uploadFiles', upload.array('files'), async (req, res) => {
 
+    console.log('req.files', req.files);
     if (req.files) {
         return res.json({ success: true, files: req.files })
     } else {
