@@ -65,10 +65,20 @@ const DocumentExpander = (props) => {
     const [responsive, setResponsive] = useState(false);
     const [loadingCancel, setLoadingCancel] = useState(false);
     const [loadingOrgInfos, setLoadingOrgInfos] = useState(false);
+    const [myOrgs, setMyOrgs] = useState();
     const [orgInfos, setOrgInfos] = useState([]);
     const { item } = props
     const user = useSelector(selectUser);
     const { _id } = user;
+
+    // 사용자의 부서 정보 조회
+    const fetchMyOrgs = (params = {}) => {
+        axios.post('/api/users/myOrgs', params).then(response => {
+        if (response.data.success) {
+            setMyOrgs(response.data.orgs);
+        }
+        });
+    };
 
     const fetchCancel = async (docId) => {
         console.log('fetchCancel called')
@@ -384,9 +394,9 @@ const DocumentExpander = (props) => {
     )
 
     useEffect(() => {
-        console.log("DocumentExpander useEffect called")
+        console.log("DocumentExpander useEffect called");
         fetchOrgInfos();
-        
+        fetchMyOrgs({user: _id});
     }, []);
 
       
@@ -485,11 +495,11 @@ const DocumentExpander = (props) => {
                 }
             </Timeline>
       </ProDescriptions.Item>
-      {item.folders.length > 0 && item.folders.find(folder => folder.shared) ?
+      {item.folders.length > 0 && item.folders.find(folder => folder.shared && folder.sharedTarget.find(item => myOrgs && myOrgs.find(e => e === item.target))) ?
         <ProDescriptions.Item span={2} label={<b>공유 현황</b>}>
             {item.folders.map(folder => {
                 let docTitle = folder.docs.find(e => e._id === item._id).alias;
-                return (folder.shared ? (
+                return (folder.shared && folder.sharedTarget.find(item => myOrgs && myOrgs.find(e => e === item.target)) ? (
                     <div>
                         <Space>
                             {folder.user._id === _id ? <FolderOpenTwoTone /> : <FolderOpenFilled />}
