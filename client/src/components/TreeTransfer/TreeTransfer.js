@@ -1,10 +1,11 @@
-import React, { Component } from 'react';
+import React, { Component, useRef } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import Button from 'antd/lib/button';
 import Checkbox from 'antd/lib/checkbox';
 import Input from 'antd/lib/input';
-import Tree from 'antd/lib/tree';
+// import Tree from 'antd/lib/tree';
+import { Tree } from 'antd';
 import Alert from 'antd/lib/alert';
 import Spin from 'antd/lib/spin';
 import uniq from 'lodash.uniq';
@@ -19,6 +20,7 @@ const Search = Input.Search;
 class TreeTransfer extends Component {
   constructor(props) {
     super(props);
+    this.treeRef = React.createRef();
     const { treeNode, listData, leafKeys } = this.generate(props);
     const treeCheckedKeys = listData.map(({key}) => key);
     this.state = {
@@ -60,9 +62,11 @@ class TreeTransfer extends Component {
 
     const loop = data => data.map(item => {
       const { [rowChildren]: children, [rowKey]: key, [rowTitle]: title, ...otherProps } = item;
+
       if (children === undefined) {
         leafKeys.push(key);
         let nodeTitle = title;
+
         if (showSearch && treeSearchKey && treeSearchKey.length > 0) { // if tree searching
           if (title.indexOf(treeSearchKey) > -1) {
             expandedKeys.push(key);
@@ -81,8 +85,27 @@ class TreeTransfer extends Component {
         }
         return <TreeNode key={key} title={nodeTitle} isLeaf {...otherProps} />;
       } else {
+        //S. 조직명 검색 되도록 처리
+        let nodeTitle = title;
+        // console.log('nodeTitle', nodeTitle);
+
+        if (showSearch && treeSearchKey && treeSearchKey.length > 0) { // if tree searching
+          if (title.indexOf(treeSearchKey) > -1) {
+            expandedKeys.push(key);
+            const idx = title.indexOf(treeSearchKey);
+            nodeTitle = (
+              <span>
+                {title.substr(0, idx)}
+                <span style={{ color: 'black', background: 'yellow' }}>{treeSearchKey}</span>
+                {title.substr(idx + treeSearchKey.length)}
+              </span>
+            );
+          }
+        }
+        // E
+
         return (
-          <TreeNode key={key} title={title} {...otherProps}>
+          <TreeNode key={key} title={nodeTitle} {...otherProps}>
             {loop(children)}
           </TreeNode>
         );
@@ -99,20 +122,28 @@ class TreeTransfer extends Component {
 
   // tree checkbox checked
   treeOnCheck = (checkedKeys, e) => {
+    console.log('treeOnCheck called')
     if (e.checked) {
+      console.log('e.checked called')
       if (this.props.onLoadData && hasUnLoadNode([e.node])) {
         this.setState({
           unLoadAlert: true
         });
       } else {
+        console.log('leafkeys', this.state.leafKeys)
         this.setState({
-          treeCheckedKeys: checkedKeys.filter(key => this.state.leafKeys.indexOf(key) > -1),
+          // treeCheckedKeys: checkedKeys.filter(key => this.state.leafKeys.indexOf(key) > -1),
+          treeCheckedKeys: checkedKeys,
+          treeCheckedKeysLeaf: checkedKeys.filter(key => this.state.leafKeys.indexOf(key) > -1),
           unLoadAlert: false
         });
       }
-    } else {
+    } else {   
+      console.log('e.checked else called')
       this.setState({
-        treeCheckedKeys: checkedKeys.filter(key => this.state.leafKeys.indexOf(key) > -1),
+        // treeCheckedKeys: checkedKeys.filter(key => this.state.leafKeys.indexOf(key) > -1),
+        treeCheckedKeys: checkedKeys,
+        treeCheckedKeysLeaf: checkedKeys.filter(key => this.state.leafKeys.indexOf(key) > -1),
         unLoadAlert: false
       });
     }
@@ -133,6 +164,7 @@ class TreeTransfer extends Component {
 
   // left tree search 
   onTreeSearch = (value) => {
+        
     this.setState({
       treeSearchKey: value
     }, () => {
@@ -160,9 +192,21 @@ class TreeTransfer extends Component {
     });
   }
 
+  // componentDidUpdate() {
+  //   console.log('componentDidUpdate called');
+
+  //   //TODO: 검색한 항목의 위치로 scroll 이동
+  //   // console.log('Searched Called', value);
+  //   setTimeout(() => {
+  //     console.log('setTimeout called');
+  //     this.treeRef.current.scrollTo({ key: '000064019', align: "top" });
+  //   }, 1000);
+
+  // }
+
   render() {
     const { className, treeLoading, sourceTitle, targetTitle, showSearch, onLoadData } = this.props;
-    const { treeNode, listData, leafKeys, treeCheckedKeys, listCheckedKeys, treeExpandedKeys, treeAutoExpandParent, listSearchKey, unLoadAlert } = this.state;
+    const { treeNode, listData, leafKeys, treeCheckedKeys, treeCheckedKeysLeaf, listCheckedKeys, treeExpandedKeys, treeAutoExpandParent, listSearchKey, unLoadAlert } = this.state;
 
     const treeTransferClass = classNames({
       'lucio-tree-transfer': true,
@@ -176,7 +220,7 @@ class TreeTransfer extends Component {
 
     const treeProps = {
       checkable: true,
-      checkedKeys: treeCheckedKeys,
+      checkedKeys: treeCheckedKeys, // 이게 원인 ... 체크한거 취소할때 필요함
       onCheck: this.treeOnCheck,
       expandedKeys: treeExpandedKeys,
       autoExpandParent: treeAutoExpandParent,
@@ -199,12 +243,12 @@ class TreeTransfer extends Component {
       type: 'primary',
       icon: <RightOutlined />,
       size: 'small',
-      disabled: difference(treeCheckedKeys, listData.map(({key}) => key)).length === 0 && difference(listData.map(({key}) => key), treeCheckedKeys).length === 0,
+      disabled: difference(treeCheckedKeysLeaf, listData.map(({key}) => key)).length === 0 && difference(listData.map(({key}) => key), treeCheckedKeysLeaf).length === 0,
       onClick: () => {
         this.setState({
           unLoadAlert: false
         });
-        this.props.onChange && this.props.onChange(this.state.treeCheckedKeys, 'right');
+        this.props.onChange && this.props.onChange(this.state.treeCheckedKeysLeaf, 'right');
       }
     };
 
@@ -226,7 +270,7 @@ class TreeTransfer extends Component {
       <div className={treeTransferClass}>
         <div className="tree-transfer-panel tree-transfer-panel-left">
           <div className="tree-transfer-panel-header">
-            <span className="tree-transfer-panel-header-select">{`${treeCheckedKeys.length > 0 ? `${treeCheckedKeys.length}/` : ''}${leafKeys.length}`} 명</span>
+            <span className="tree-transfer-panel-header-select">{`${treeCheckedKeysLeaf?.length > 0 ? `${treeCheckedKeysLeaf?.length}/` : ''}${leafKeys.length}`} 명</span>
             <span className="tree-transfer-panel-header-title">{sourceTitle}</span>
           </div>
           <div className={treeTransferPanelBodyClass}>
@@ -234,7 +278,7 @@ class TreeTransfer extends Component {
             <Spin spinning={treeLoading} size="small">
               {unLoadAlert ? <div className="tree-transfer-panel-body-alert"><Alert message="데이터 불러 오는 중..." banner /></div> : null}
               <div className="tree-transfer-panel-body-content">  
-                <Tree {...treeProps}>
+                <Tree {...treeProps} ref={this.treeRef}>
                   {treeNode}
                 </Tree>
               </div>
