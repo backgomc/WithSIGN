@@ -39,7 +39,7 @@ import iconDocument from '../../assets/images/icon_save2.png';
 import iconCheck from '../../assets/images/icon_check.png';
 import iconManual from '../../assets/images/icon_manual.png';
 import { DocumentType, DocumentTypeText, DocumentTypeBadge, DocumentTypeIcon } from '../Lists/DocumentType';
-import {DOCUMENT_TODO, DOCUMENT_SIGNED, DOCUMENT_TOSIGN, DOCUMENT_SIGNING, DOCUMENT_CANCELED, DOCUMENT_TOCONFIRM, DOCUMENT_TODO_SHORT, DOCUMENT_SIGNING_SHORT} from '../../common/Constants';
+import {DOCUMENT_TODO, DOCUMENT_SIGNED, DOCUMENT_TOSIGN, DOCUMENT_SIGNING, DOCUMENT_CANCELED, DOCUMENT_TOCONFIRM, DOCUMENT_TODO_SHORT, DOCUMENT_SIGNING_SHORT, DOCUMENT_CANCELED_SHORT} from '../../common/Constants';
 
 import { CheckCard } from '@ant-design/pro-card';
 import BTN01 from '../../assets/images/btn_board01.png';
@@ -1182,7 +1182,7 @@ const Home = () => {
       <MyStyle_Canceled>
       <CheckCard
         style={{minHeight: '103px'}}
-        title={DOCUMENT_CANCELED}
+        title={responsive ? DOCUMENT_CANCELED_SHORT : DOCUMENT_CANCELED}
         avatar={
           <Avatar
             src={imgCanceled}
