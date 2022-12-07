@@ -56,7 +56,7 @@ import { ReactComponent as IconCheckbox} from '../../assets/images/checkbox.svg'
 import loadash from 'lodash';
 import PDFViewer from "@niceharu/withpdf";
 import {TYPE_SIGN, TYPE_IMAGE, TYPE_TEXT, TYPE_BOX, TYPE_CHECKBOX, COLORS, AUTO_NAME, AUTO_JOBTITLE, AUTO_OFFICE, AUTO_DEPART, AUTO_SABUN, AUTO_DATE} from '../../common/Constants';
-import styled from 'styled-components';
+import styled, { useTheme } from 'styled-components';
 const PageContainerStyle = styled.div`
 .ant-pro-page-container-children-content {
   margin-top: 5px !important; 
@@ -218,6 +218,10 @@ const PrepareDocument = ({location}) => {
           if(assignees.some(user => user.key === item.uid)) {
             newItems.push(item);
           }
+        }
+
+        if (!item.uid) { // 참여자에 속하지 않는 일반 컴포넌트인 경우 그냥 추가해준다.
+          newItems.push(item);
         }
 
       })
