@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { useIntl } from 'react-intl';
 import Highlighter from 'react-highlight-words';
-import { Table, Input, Space, Button, Modal, Popconfirm, message, Upload, Checkbox, Tag } from 'antd';
+import { Table, Input, Space, Button, Modal, Popconfirm, message, Upload, Checkbox } from 'antd';
 import { ExclamationCircleOutlined, SearchOutlined, UploadOutlined, PaperClipOutlined } from '@ant-design/icons';
 import { PageContainer } from '@ant-design/pro-layout';
 import { TableDropdown } from '@ant-design/pro-table';
@@ -10,9 +10,9 @@ import axiosInterceptor from '../../config/AxiosConfig';
 
 const { confirm } = Modal;
 
-const UserList = () => {
+const FolderManage = () => {
   
-  // console.log('UserList');
+  console.log('FolderManage');
   
   const { formatMessage } = useIntl();
   const [pagination, setPagination] = useState({current:1, pageSize:10, showSizeChanger: true});
@@ -24,7 +24,9 @@ const UserList = () => {
   const [searchText, setSearchText] = useState('');
   const [searchName, setSearchName] = useState('');
   const [searchOrg, setSearchOrg] = useState('');
+  const [searchCom, setSearchCom] = useState('');
   const [orgList, setOrgList] = useState([]);
+  const [fileList, setFileList] = useState([]);
   const [includeUnused, setIncludeUnused] = useState(false);
   const [filters, setFilters] = useState({});
   const [sorter, setSorter] = useState({});
@@ -97,6 +99,7 @@ const UserList = () => {
     setSearchedColumn(dataIndex);
     if (dataIndex==='name') setSearchName(selectedKeys[0]);
     if (dataIndex==='org') setSearchOrg(selectedKeys[0]);
+    if (dataIndex==='com') setSearchCom(selectedKeys[0]);
     confirm();
   }
 
@@ -105,6 +108,7 @@ const UserList = () => {
     setSearchText('');
     if (dataIndex==='name') setSearchName('');
     if (dataIndex==='org') setSearchOrg('');
+    if (dataIndex==='com') setSearchCom('');
     confirm();
   }
 
@@ -140,6 +144,7 @@ const UserList = () => {
       fetch({
         name: [searchName],
         org: [searchOrg],
+        com: [searchCom],
         sortField: sorter.field,
         sortOrder: sorter.order,
         pagination,
@@ -159,7 +164,7 @@ const UserList = () => {
       thumbnail: record.thumbnail
     }
     axiosInterceptor.post('/admin/user/sendPush', param).then(response => {
-      alert('테스트 알림(아이프로넷 쪽지/With 메시지) 전송 결과 : ' + response.data.success);
+      alert('테스트 알림(NH With 메시지) 전송 결과 : ' + response.data.success);
       setLoading(false);
     });
   };
@@ -170,9 +175,10 @@ const UserList = () => {
     const res = await axiosInterceptor.post('/admin/org/sync');
     console.log(res);
     if (res && res.data && res.data.success && res.data.success === true) {
+      setFileList([]);
       alert('부서 정보 동기화 성공');
     } else {
-      alert('ERP 부서 정보로 갱신 실패');
+      alert((res.data.message)?res.data.message:'부서 정보 동기화 실패');
     }
     fetch({
       sortField: sorter.field,
@@ -189,9 +195,10 @@ const UserList = () => {
     const res = await axiosInterceptor.post('/admin/user/sync');
     console.log(res);
     if (res && res.data && res.data.success && res.data.success === true) {
+      setFileList([]);
       alert('직원 정보 동기화 성공');
     } else {
-      alert('ERP 직원 정보로 갱신 실패');
+      alert((res.data.message)?res.data.message:'직원 정보 동기화 실패');
     }
     fetch({
       sortField: sorter.field,
@@ -238,7 +245,7 @@ const UserList = () => {
 
   const setStatus = async (key, record) => {
     confirm({
-      title: '사용자 상태를 변경 처리 하시겠습니까?',
+      title: key.toString().startsWith('mng')?'담당자 권한을 부여 하시겠습니까?':'사용자 상태를 변경 처리 하시겠습니까?',
       icon: <ExclamationCircleOutlined />,
       // content: '',
       okText: '네',
@@ -283,6 +290,9 @@ const UserList = () => {
     if (key === 'push') {
       sendPush(record);
     }
+    if (key.toString().startsWith('mng')) {
+      setStatus(key, record);
+    }
   }
 
   const columns = [
@@ -294,20 +304,12 @@ const UserList = () => {
       sorter: true
     },
     {
-      title: '이름',
-      dataIndex: 'name',
-      key: 'name',
-      ...getColumnSearchProps('name'),
-      align: 'center',
-      sorter: true
-    },
-    {
-      title: '상태',
-      render: (row) => {
-        return (
-          !row['use']?<Tag color="red">미사용</Tag>:row['role']>0?<Tag color="blue">관리자</Tag>:''
-        );
-      },
+      title: '회사',
+      key: 'com',
+      ...getColumnSearchProps('com'),
+      // render: (row) => {
+      //   return orgList.find(e => e.DEPART_CODE === row.COMPANY_CODE)?orgList.find(e => e.DEPART_CODE === row.COMPANY_CODE).DEPART_NAME:'';
+      // },
       align: 'center'
     },
     {
@@ -320,11 +322,47 @@ const UserList = () => {
       align: 'center'
     },
     {
+      title: '이름',
+      dataIndex: 'name',
+      key: 'name',
+      ...getColumnSearchProps('name'),
+      align: 'center',
+      sorter: true
+    },
+    {
       title: '직명',
       key: 'JOB_TITLE',
       dataIndex: 'JOB_TITLE',
       align: 'center',
       sorter: true
+    },
+    {
+      title: '권한',
+      render: (row) => {
+        switch (row['manager_flag']) {
+          case 1:
+            return '주무OA'
+          case 2:
+            return '팀OA'
+          case 4:
+            return '사무소장'
+          default:
+            return ''
+        }
+      },
+      align: 'center'
+    },
+    {
+      title: '양식'
+    },
+    {
+      title: '상태',
+      render: (row) => {
+        return (
+          !row['use']?<font color='red'>미사용</font>:row['role']>0?<font color='blue'>관리자</font>:''
+        );
+      },
+      align: 'center'
     },
     {
       title: '관리',
@@ -338,7 +376,12 @@ const UserList = () => {
             { key: 'init', name: '비밀번호 초기화' },
             { key: 'flag', name: '사용자 상태 변경' },
             { key: 'auth', name: '관리자 권한 변경' },
-            { key: 'push', name: '테스트 알림 전송' }
+            { key: 'push', name: '테스트 알림 전송' },
+            { key: 'none', name: '============' },
+            { key: 'mng4', name: '권한 → 사무소장' },
+            { key: 'mng1', name: '권한 → 주무OA' },
+            { key: 'mng2', name: '권한 → 팀OA' },
+            { key: 'mng0', name: '권한 회수' }
           ]}
         />,
       ],
@@ -372,6 +415,7 @@ const UserList = () => {
       setSearchText('');
       setSearchName('');
       setSearchOrg('');
+      setSearchCom('');
       setIncludeUnused(false);
       setFilters({});
       setSorter({});
@@ -383,42 +427,19 @@ const UserList = () => {
       <PageContainer
         ghost
         header={{
-          title: formatMessage({id: 'user.manage'}),
+          title: formatMessage({id: 'folder.manage'}),
           ghost: false,
           breadcrumb: {
             routes: [
               
             ],
           },
-          extra: [
-            <Checkbox key={uuidv4()} checked={includeUnused} onChange={e => {
-              setIncludeUnused(e.target.checked);
-              fetch({
-                sortField: sorter.field,
-                sortOrder: sorter.order,
-                pagination,
-                ...filters,
-                includeUnused: e.target.checked
-              });
-            }}>미사용 포함</Checkbox>,
-            <Popconfirm key={uuidv4()} title="수동으로 ERP 부서 정보로 갱신하시겠습니까？" okText="네" cancelText="아니오" open={syncOrgPopup} onConfirm={syncOrg} onCancel={() => {setSyncOrgPopup(false);}}>
-              <Button key={uuidv4()} type="primary" danger onClick={()=>{setSyncOrgPopup(true);}}>
-                부서 동기화
-              </Button>
-            </Popconfirm>,
-            <Popconfirm key={uuidv4()} title="수동으로 ERP 직원 정보로 갱신하시겠습니까？" okText="네" cancelText="아니오" open={syncUsrPopup} onConfirm={syncUsr} onCancel={() => {setSyncUsrPopup(false);}}>
-              <Button key={uuidv4()} type="primary" danger onClick={()=>{setSyncUsrPopup(true);}}>
-                직원 동기화
-              </Button>
-            </Popconfirm>
-          ]
-        }}
-        // content={description}
-        // footer={[
-        // ]}
+          
+        }}        
       >
         <br></br>
-        <Table
+        작업중
+        {/* <Table
           rowKey={ item => { return item._id } }
           columns={columns}
           dataSource={data}
@@ -426,10 +447,10 @@ const UserList = () => {
           loading={loading}
           // rowSelection={rowSelection}
           onChange={handleTableChange}
-        />
+        /> */}
       </PageContainer>
     </div>
   );
 };
 
-export default UserList;
+export default FolderManage;

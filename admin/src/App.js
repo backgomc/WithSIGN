@@ -13,11 +13,13 @@ import BoardList from './components/Board/BoardList';
 import BoardDetail from './components/Board/BoardDetail';
 import BoardWrite from './components/Board/BoardWrite';
 import BoardModify from './components/Board/BoardModify';
+import FolderManage from './components/Folder/FolderManage';
 import SystemManage from './components/System/SystemManage';
 import DocumentList from './components/Document/DocumentList';
 import ViewDocument from './components/Document/ViewDocument';
 import AuditCertify from './components/Document/AuditCertify';
 import TemplateList from './components/Template/TemplateList';
+import ViewTemplate from './components/Template/ViewTemplate';
 import UploadTemplate from './components/Template/UploadTemplate';
 import Footer from './components/Footer/Footer';
 import Header from './components/Header/Header';
@@ -100,6 +102,8 @@ const App = () => {
       height: '100vh',
     }}
     >
+      {process.env.NODE_ENV==='development'?<div style={{position: 'fixed', textAlign: 'center', width: '100%', color: 'red', zIndex: '10000', fontSize: 'xx-large', pointerEvents: 'none'}}>LOCAL</div>:''}
+      {process.env.REACT_APP_MODE==='TEST' ?<div style={{position: 'fixed', textAlign: 'center', width: '100%', color: 'red', zIndex: '10000', fontSize: 'xx-large', pointerEvents: 'none'}}>TEST</div> :''}
       <ProLayout
         title={<img src={LogoText} alt="WithSIGN"/>}
         // logo="https://gw.alipayobjects.com/mdn/rms_b5fcc5/afts/img/A*1NHAQYduQiQAAAAAAAAAAABkARQnAQ" 로고 이미지
@@ -147,11 +151,13 @@ const App = () => {
           <BoardDetail path="/boardDetail" />
           <BoardWrite path="/boardWrite" />
           <BoardModify path="/boardModify" />
+          <FolderManage path="/folderManage" />
           <SystemManage path="/systemManage" />
           <DocumentList path="/documentList" />
           <ViewDocument path="/viewDocument" />
           <AuditCertify path="/auditCertify" />
           <TemplateList path="/templateList" />
+          <ViewTemplate path="/viewTemplate" />
           <UploadTemplate path="/uploadTemplate" />
         </Router>
         <OnRouteChange action={() => { window.scrollTo(0, 0) }} />

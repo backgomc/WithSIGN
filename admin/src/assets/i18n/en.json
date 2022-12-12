@@ -27,6 +27,7 @@
 	"document.sign": "Sign Documents",
 	"document.signed": "Signed Documents",
 	"document.list": "My Documents",
+	"document.apply": "Apply",
 	"document.template": "template",
 	"Dashboard": "Dashboard",
 	"Login": "Login",
@@ -71,6 +72,7 @@
 	"Sign": "Sign",
 	"sign.complete": "Complete signing",
 	"document.download": "Download",
+	"document.modify": "Modify",
 	"excel.download": "EXCEL Download",
 	"sign.management": "Sign Management",
 	"sign.cancel": "cancel signing",
@@ -84,6 +86,8 @@
 	"board.manage": "Board",
 	"board.insert": "Board",
 	"board.update": "Board",
+	"code.manage": "Code",
+	"folder.manage": "Folder",
 	"system.manage": "System",
 	"name": "이름"
 }

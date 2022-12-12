@@ -105,7 +105,7 @@ const DocumentList = () => {
       ...getColumnSearchProps('docTitle'),
       expandable: true,
       render: (text, row) =>
-        <div style={{wordWrap:'break-word', wordBreak:'break-word', display:'flex', alignItems:'center'}}><FileOutlined style={{height:'1rem'}}/>
+        <div style={{wordWrap:'break-word', wordBreak:'break-word', display:'flex', alignItems:'center'}}><FileOutlined style={{marginRight:'0.5rem'}}/>
           { searchedColumn === 'docTitle' ? (
             <Highlighter
               highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}

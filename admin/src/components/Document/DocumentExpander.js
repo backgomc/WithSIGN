@@ -3,9 +3,9 @@ import Moment from 'react-moment';
 import axios from 'axios';
 import { v4 as uuidv4 } from 'uuid';
 import { navigate } from '@reach/router';
-import { Tooltip, Tag, Timeline, Button, Alert } from 'antd';
+import { Tooltip, Tag, Timeline, Button, Alert, List } from 'antd';
 import ProDescriptions from '@ant-design/pro-descriptions';
-import { CheckCircleOutlined, CloseCircleOutlined, ClockCircleOutlined, DownloadOutlined } from '@ant-design/icons';
+import { CheckCircleOutlined, CloseCircleOutlined, ClockCircleOutlined, DownloadOutlined, PaperClipOutlined } from '@ant-design/icons';
 import '@ant-design/pro-card/dist/card.css';
 import '@ant-design/pro-descriptions/dist/descriptions.css';
 import 'antd/dist/antd.css';
@@ -117,7 +117,7 @@ const DocumentExpander = (props) => {
                     <ProDescriptions.Item label={<b>요청시간</b>}>
                         <Moment format='YYYY/MM/DD HH:mm'>{item.requestedTime}</Moment>
                     </ProDescriptions.Item>
-                    <ProDescriptions.Item label={<b>진행 현황</b>}>
+                    <ProDescriptions.Item label={<b>진행 현황</b>} span="2">
                         <br></br>
                         <Timeline>
                             <Timeline.Item color="gray">
@@ -130,6 +130,23 @@ const DocumentExpander = (props) => {
                                 {item.users.map((user) => (activeHistory(user)))}
                         </Timeline>
                     </ProDescriptions.Item>
+                    {item.attachFiles?.length > 0 ?       
+                    <ProDescriptions.Item label={<b>첨부 파일</b>} span="2">
+                        <List
+                        size="small"
+                        split={false}
+                        dataSource={item.attachFiles}
+                        // header={`첨부파일 ${item.attachFiles.length}`}
+                        // bordered
+                        itemLayout="horizontal"
+                        renderItem={item =>
+                            <List.Item.Meta
+                                avatar={<PaperClipOutlined />}
+                                description={ <a href={item.path} download={item.originalname} style={{color:'gray'}}>{item.originalname}</a> }
+                            />
+                        }
+                        />
+                </ProDescriptions.Item> : <></>}
                 </ProDescriptions>
             {/* </Container> */}
         </div>

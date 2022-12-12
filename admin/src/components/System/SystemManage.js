@@ -4,7 +4,8 @@ import * as ExcelJS from 'exceljs';
 import { get } from 'lodash-es';
 import { saveAs } from 'file-saver';
 import { v4 as uuidv4 } from 'uuid';
-import { Table, List, Card, Input, Space, Button } from 'antd';
+import Highlighter from 'react-highlight-words';
+import { Table, List, Card, Input, Space, Button, Select } from 'antd';
 import { PageContainer } from '@ant-design/pro-layout';
 import { SearchOutlined } from '@ant-design/icons';
 import { useIntl } from 'react-intl';
@@ -16,7 +17,7 @@ const SystemManage = () => {
   const [docStat, setDocStat] = useState([]);
   const [docStatByUser, setDocStatByUser] = useState([]);
   const [docStatByDate, setDocStatByDate] = useState([]);
-  // const [searchedColumn, setSearchedColumn] = useState('');
+  const [searchedColumn, setSearchedColumn] = useState('');
   const [searchText, setSearchText] = useState('');
   const { formatMessage } = useIntl();
   
@@ -51,11 +52,22 @@ const SystemManage = () => {
     onFilter: (value, record) => {
       return get(record, dataIndex).toString().toLowerCase().includes(value.toLowerCase());
     },
-    render: (text) => text
+    render: text => {
+      return searchedColumn[2] === dataIndex[2] ? (
+        <Highlighter
+          highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
+          searchWords={[searchText]}
+          autoEscape
+          textToHighlight={text ? text.toString() : ''}
+        />
+      ) : (
+        text
+      )
+    }
   });
 
   const handleSearch = (selectedKeys, confirm, dataIndex) => {
-    // setSearchedColumn(dataIndex);
+    setSearchedColumn(dataIndex);
     setSearchText(selectedKeys[0]);
     confirm();
   }
