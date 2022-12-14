@@ -1,11 +1,16 @@
 import React from 'react';
-import { CopyOutlined, FileAddOutlined, SoundOutlined, FileTextOutlined, SettingOutlined } from '@ant-design/icons';
+import { CodeSandboxOutlined, FolderOpenOutlined, ReadOutlined, UserSwitchOutlined, SoundOutlined, FileTextOutlined, SettingOutlined } from '@ant-design/icons';
 
 export default function Menus(formatMessage) {
   const data = {
     route: {
       path: '/',
       routes: [
+        {
+          path: '/folderManage',
+          name: formatMessage({id: 'folder.manage'}),
+          icon: <FolderOpenOutlined />,
+        },
         {
           path: '/documentList',
           name: formatMessage({id: 'document.manage'}),
@@ -14,12 +19,12 @@ export default function Menus(formatMessage) {
         {
           path: '/templateList',
           name: formatMessage({id: 'template.manage'}),
-          icon: <CopyOutlined />,
+          icon: <ReadOutlined />,
         },
         {
           path: '/userList',
           name: formatMessage({id: 'user.manage'}),
-          icon: <FileAddOutlined />,
+          icon: <UserSwitchOutlined />,
         },
         {
           path: '/boardList',

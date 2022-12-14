@@ -60,7 +60,8 @@ const FolderList = () => {
   const [selectFolderId, setSelectFolderId] = useState('');
   const [loading, setLoading] = useState(false);
   const [responsive, setResponsive] = useState(false);
-  
+  const [btnDisabled, setBtnDisabled] = useState(true);
+
   const treeProps = {
     treeData,
     value: treeValue,
@@ -233,51 +234,51 @@ const FolderList = () => {
       let level1 = orgs.filter(e => e.PARENT_NODE_ID === '');
       level1.forEach(function(org) {
         let level2 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE);
-        let org1 = {key: org.DEPART_CODE, value: org.DEPART_CODE + '|' + org.DEPART_NAME, title: org.DEPART_NAME, children: []}
+        let org1 = {value: org.DEPART_CODE + '|' + org.DEPART_NAME, title: org.DEPART_NAME, children: []}
         insertUser(org1, users, org.DEPART_CODE);
 
         level2.forEach(function(org) {
-          let org2 = {key: org.DEPART_CODE, value: org.DEPART_CODE + '|' + org.DEPART_NAME, title: org.DEPART_NAME, children: []}
+          let org2 = {value: org.DEPART_CODE + '|' + org.DEPART_NAME, title: org.DEPART_NAME, children: []}
           insertUser(org2, users, org.DEPART_CODE);
 
           let level3 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE);
           level3.forEach(function(org) {
-            let org3 = {key: org.DEPART_CODE, value: org.DEPART_CODE + '|' + org.DEPART_NAME, title: org.DEPART_NAME, children: []}
+            let org3 = {value: org.DEPART_CODE + '|' + org.DEPART_NAME, title: org.DEPART_NAME, children: []}
             insertUser(org3, users, org.DEPART_CODE);
 
             let level4 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE);
             level4.forEach(function(org) {
-              let org4 = {key: org.DEPART_CODE, value: org.DEPART_CODE + '|' + org.DEPART_NAME, title: org.DEPART_NAME, children: []}
+              let org4 = {value: org.DEPART_CODE + '|' + org.DEPART_NAME, title: org.DEPART_NAME, children: []}
               insertUser(org4, users, org.DEPART_CODE);
               
               let level5 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE);
               level5.forEach(function(org) {
-                let org5 = {key: org.DEPART_CODE, value: org.DEPART_CODE + '|' + org.DEPART_NAME, title: org.DEPART_NAME, children: []}
+                let org5 = {value: org.DEPART_CODE + '|' + org.DEPART_NAME, title: org.DEPART_NAME, children: []}
                 insertUser(org5, users, org.DEPART_CODE);
 
                 let level6 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE);
                 level6.forEach(function(org) {
-                  let org6 = {key: org.DEPART_CODE, value: org.DEPART_CODE + '|' + org.DEPART_NAME, title: org.DEPART_NAME, children: []}
+                  let org6 = {value: org.DEPART_CODE + '|' + org.DEPART_NAME, title: org.DEPART_NAME, children: []}
                   insertUser(org6, users, org.DEPART_CODE);
                  
                   let level7 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE);
                   level7.forEach(function(org) {
-                    let org7 = {key: org.DEPART_CODE, value: org.DEPART_CODE + '|' + org.DEPART_NAME, title: org.DEPART_NAME, children: []}
+                    let org7 = {value: org.DEPART_CODE + '|' + org.DEPART_NAME, title: org.DEPART_NAME, children: []}
                     insertUser(org7, users, org.DEPART_CODE);
 
                     let level8 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE);
                     level8.forEach(function(org) {
-                      let org8 = {key: org.DEPART_CODE, value: org.DEPART_CODE + '|' + org.DEPART_NAME, title: org.DEPART_NAME, children: []}
+                      let org8 = {value: org.DEPART_CODE + '|' + org.DEPART_NAME, title: org.DEPART_NAME, children: []}
                       insertUser(org8, users, org.DEPART_CODE);
 
                       let level9 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE);
                       level9.forEach(function(org) {
-                        let org9 = {key: org.DEPART_CODE, value: org.DEPART_CODE + '|' + org.DEPART_NAME, title: org.DEPART_NAME, children: []}
+                        let org9 = {value: org.DEPART_CODE + '|' + org.DEPART_NAME, title: org.DEPART_NAME, children: []}
                         insertUser(org9, users, org.DEPART_CODE);
 
                         let level10 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE);
                         level10.forEach(function(org) {
-                          let org10 = {key: org.DEPART_CODE, value: org.DEPART_CODE + '|' + org.DEPART_NAME, title: org.DEPART_NAME, children: []}
+                          let org10 = {value: org.DEPART_CODE + '|' + org.DEPART_NAME, title: org.DEPART_NAME, children: []}
                           insertUser(org10, users, org.DEPART_CODE);
                           org9.children.push(org10);
                         });
@@ -304,28 +305,27 @@ const FolderList = () => {
     } else {
       console.log('ERROR');
     }
+    setBtnDisabled(false);
   };
 
   const insertUser = (org, users, depart_code) => {
     let filterUser = users.filter(e => e.DEPART_CODE === depart_code);
     filterUser.map(user => (
-      org.children.push({key: user._id, value: user.SABUN + '|' + user.name + (user.JOB_TITLE ? ' ' + user.JOB_TITLE : ''), title: user.name + (user.JOB_TITLE ? ' ' + user.JOB_TITLE : '')})
+      org.children.push({value: user.SABUN + '|' + user.name + (user.JOB_TITLE ? ' ' + user.JOB_TITLE : ''), title: user.name + (user.JOB_TITLE ? ' ' + user.JOB_TITLE : '')})
     ));
   };
 
   useEffect(() => {
-    console.log('useEffect() FolderList called');
-    fetchFolders({
-      user: _id,
-      includeOption: includeOption
-    });
-
+    console.log('useEffect()');
     fetchMyOrgs({
       user: _id
     });
-
     fetchTreeSelect({
       OFFICE_CODE: '7831'
+    });
+    fetchFolders({
+      user: _id,
+      includeOption: includeOption
     });
   }, [includeOption]);
 
@@ -343,7 +343,7 @@ const FolderList = () => {
           <Button key={uuidv4()} type="text" disabled={disabled} icon={<SettingOutlined />} onClick={(e)=>{e.stopPropagation();onClickManage(item)}}>설정</Button>
         </Tooltip>,
         <Tooltip placement="bottom" title={disabled?'권한이 없습니다.':''}>
-          <Button key={uuidv4()} type="text" disabled={disabled} icon={<TeamOutlined />} onClick={(e)=>{e.stopPropagation();onClickShare(item)}}>공유</Button>
+          <Button loading={btnDisabled} key={uuidv4()} type="text" disabled={disabled} icon={<TeamOutlined />} onClick={(e)=>{e.stopPropagation();onClickShare(item)}}>공유</Button>
         </Tooltip>
       ];
     // }
@@ -438,7 +438,7 @@ const FolderList = () => {
         </RcResizeObserver>
       </PageContainer>
       <Modal
-        visible={manageModal}
+        open={manageModal}
         width={480}
         title="폴더"
         onCancel={()=>{setManageModal(false)}}
@@ -460,7 +460,7 @@ const FolderList = () => {
         {selectFolderId ? <Space style={{padding: '13px 0px 0px 13px'}}><WarningFilled style={{color: 'orange'}} /><Typography.Text type="warning">폴더 삭제 시 문서는 [내 문서함]에서 확인할 수 있습니다.</Typography.Text></Space> : <></>}
       </Modal>
       <Modal
-        visible={shareModal}
+        open={shareModal}
         width={480}
         title="공유"
         onCancel={()=>{setShareModal(false)}}

@@ -26,10 +26,9 @@ const TemplateList = () => {
   const [pagination, setPagination] = useState({current:1, pageSize:10, showSizeChanger: true});
   const [loading, setLoading] = useState(false);
   const [visiblePopconfirm, setVisiblePopconfirm] = useState(false);
-  const [users, setUsers] = useState([]);
+  // const [users, setUsers] = useState([]);
   const [orgs, setOrgs] = useState([]);
   const [treeValue, setTreeValue] = useState();
-  const [treeKey, setTreeKey] = useState();
   const [treeData, setTreeData] = useState();
   const [shareModal, setShareModal] = useState(false);
 
@@ -40,7 +39,6 @@ const TemplateList = () => {
     value: treeValue,
     onChange: (value) => {
       setTreeValue(value);
-      setTreeKey(value.split('|')[0]);
     },
     treeCheckable: false,
     showSearch: true,
@@ -78,8 +76,8 @@ const TemplateList = () => {
         setLoading(false);
 
       } else {
-          setLoading(false);
-          console.log(response.data.error);
+        setLoading(false);
+        console.log(response.data.error);
       }
 
     }).catch(error => { console.log(error);});
@@ -87,11 +85,12 @@ const TemplateList = () => {
 
   // 전체부서 트리 구조 조회
   const fetchTreeSelect = async () => {
+    setLoading(true);
     let users = [];
     let resp = await axiosInterceptor.post('/admin/user/tree');
     if (resp.data.success) {
       users = resp.data.users;
-      setUsers(resp.data.users);
+      // setUsers(resp.data.users);
     }
     resp = await axiosInterceptor.post('/admin/org/list');
     if (resp.data.success) {
@@ -99,30 +98,34 @@ const TemplateList = () => {
       setOrgs(orgs);
       
       let tree = [];
-      const level1 = orgs.filter(e => e.PARENT_NODE_ID === "");
+      const level1 = orgs.filter(e => e.PARENT_NODE_ID === '');
       level1.forEach(org => {
-        let org1 = {key: org.DEPART_CODE, value: org.DEPART_CODE + '|' + org.DEPART_NAME, title: org.DEPART_NAME, children: [], selectable: false}
+        let org1 = {value: org.DEPART_CODE + '|' + org.DEPART_NAME, title: org.DEPART_NAME, children: [], selectable: false}
         insertUser(org1, users, org.DEPART_CODE);
         let level2 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE);
         if (level2) callRecursive(org1, level2, users, orgs)
         tree.push(org1)
       })
       setTreeData(tree);
+      setLoading(false);
+      console.log(tree);
     } else {
+      setLoading(false);
       console.log('ERROR');
     }
+    fetch({pagination});
   };
 
   const insertUser = (org, users, depart_code) => {
     let filterUser = users.filter(e => e.DEPART_CODE === depart_code);
     filterUser.map(user => (
-      org.children.push({key: user._id, value: user._id + '|' + user.SABUN + '|' + user.name + (user.JOB_TITLE ? ' ' + user.JOB_TITLE : ''), title: user.name + (user.JOB_TITLE ? ' ' + user.JOB_TITLE : '')})
+      org.children.push({value: user._id + '|' + user.SABUN + '|' + user.name + (user.JOB_TITLE ? ' ' + user.JOB_TITLE : ''), title: user.name + (user.JOB_TITLE ? ' ' + user.JOB_TITLE : '')})
     ));
   };
 
   const callRecursive = (currentOrg, level, users, orgs) => {
     level.forEach(org => {
-      let current = {key: org.DEPART_CODE, value: org.DEPART_CODE + '|' + org.DEPART_NAME, title: org.DEPART_NAME, children: [], selectable: false}
+      let current = {value: org.DEPART_CODE + '|' + org.DEPART_NAME, title: org.DEPART_NAME, children: [], selectable: false}
       insertUser(current, users, org.DEPART_CODE);
       currentOrg.children?.push(current);
       let subLevel = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE)
@@ -159,7 +162,7 @@ const TemplateList = () => {
 
     let param = {
       docId: selectedRowKeys,
-      usrId: treeKey
+      usrId: treeValue.split('|')[0]
     }
 
     const res = await axiosInterceptor.post('/admin/templates/update', param);
@@ -170,7 +173,6 @@ const TemplateList = () => {
     }
 
     setSelectedRowKeys([]);
-    setTreeKey([]);
     setShareModal(false);
     fetch({
       pagination
@@ -187,7 +189,7 @@ const TemplateList = () => {
     }
     if (key === 'change') {
       setSelectedRowKeys([record._id]);
-      setTreeValue(record.user._id + '|' + record.user.SABUN + '|' + record.user.name + ' ' + record.user.JOB_TITLE); // 코드 기반 DISP 조립
+      setTreeValue(record.user._id + '|' + record.user.SABUN + '|' + record.user.name + (record.user.JOB_TITLE?' '+record.user.JOB_TITLE:'')); // 코드 기반 DISP 조립
       setShareModal(true);
     }
   }
@@ -363,9 +365,6 @@ const TemplateList = () => {
 
   useEffect(() => {
     fetchTreeSelect();
-    fetch({
-      pagination
-    });
     return () => {
       setSearchText('');
       setSearchedColumn('');

@@ -6,6 +6,7 @@ const restful = require('../common/restful');
 const { ADMIN_DOCUMENT_SIGNED, ADMIN_DOCUMENT_CANCELED, ADMIN_DOCUMENT_DELETED } = require('../common/constants');
 const { hexCrypto, generateRandomPass } = require('../common/utils');
 const { Board } = require('../models/Board');
+const { Folder } = require('../models/Folder');
 const { Document } = require('../models/Document');
 const { Template } = require('../models/Template');
 const { Org } = require('../models/Org');
@@ -84,7 +85,7 @@ const upload = multer({storage});
 // /admin/board/attach
 // /admin/board/addComment
 // /admin/board/delComment
-// -- 통계 --
+// -- 시스템 통계 --
 // /admin/statistic
 
 // 시스템 연계 확인용
@@ -295,7 +296,7 @@ router.post('/user/list', ValidateToken, async (req, res) => {
     }
   }
 
-  // 단어검색 
+  // 단어검색
   var searchStr = {};
   var condition = [];
   
@@ -307,7 +308,7 @@ router.post('/user/list', ValidateToken, async (req, res) => {
   // 부서명
   if (req.body.org && req.body.org != '') {
     // condition.push({'orgInfo.DEPART_NAME': new RegExp(req.body.org[0], 'i')});
-    let orgs = await Org.find({'DEPART_NAME': new RegExp(req.body.org[0], 'i')}, {'DEPART_CODE': 1}).exec();
+    var orgs = await Org.find({'DEPART_NAME': new RegExp(req.body.org[0], 'i')}, {'DEPART_CODE': 1}).exec();
     condition.push({'DEPART_CODE': {$in: orgs.map(e => e.DEPART_CODE)}});
   }
 
@@ -372,6 +373,14 @@ router.post('/user/list', ValidateToken, async (req, res) => {
       if (err) return res.json({ success: false, error: err });
       return res.json({ success: true, users: users, total: totalCount });
     });
+});
+
+// 사용자 관리 > 트리
+router.post('/user/tree', ValidateToken, (req, res) => {
+  User.find({use: true},{name:1, SABUN:1, DEPART_CODE:1, JOB_TITLE:1}).sort({ ['JOB_CODE']: 'asc' }).exec(function(err, results) {
+    if (err) return next(err);
+    res.send({success: true, users: results});
+  });
 });
 
 // 사용자 관리 > 상세
@@ -475,7 +484,7 @@ router.post('/document/list', ValidateToken, async (req, res) => {
     }
   }
 
-  // 단어검색 
+  // 단어검색
   var searchStr = {};
 
   // 문서명
@@ -620,7 +629,7 @@ router.post('/templates/list', ValidateToken, async (req, res) => {
     }
   }
 
-  // 단어검색 
+  // 단어검색
   var searchStr = {};
 
   // 템플릿 이름
@@ -778,7 +787,7 @@ router.post('/board/list', ValidateToken, async (req, res) => {
     }
   }
 
-  // 단어검색 
+  // 단어검색
   var searchStr = {};
 
   // 템플릿 이름
@@ -937,8 +946,11 @@ router.post('/board/delComment', ValidateToken, (req, res) => {
     return res.json({ success: true});
   });
 });
+///////////////////////////////////////////////////////////////////////// 게시판 정보 관리 종료 /////////////////////////////////////////////////////////////////////////
 
-// -- 통계 --
+
+
+///////////////////////////////////////////////////////////////////////// 시스템 통계 정보 시작 /////////////////////////////////////////////////////////////////////////
 router.post('/statistic', ValidateToken, async (req, res) => {
 
   var usrStatMQL = [];
@@ -1081,6 +1093,94 @@ router.post('/statistic', ValidateToken, async (req, res) => {
 
   return res.json({ success: true, usrStat: usrStat, docStat: docStat, docStatByUser: docStatByUser, docStatByDate: docStatByDate});
 });
-///////////////////////////////////////////////////////////////////////// 게시판 정보 관리 종료 /////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////// 시스템 통계 정보 종료 /////////////////////////////////////////////////////////////////////////
+
+
+
+///////////////////////////////////////////////////////////////////////// 폴더 관리 시작 /////////////////////////////////////////////////////////////////////////
+// 폴더 목록 조회
+router.post('/folder/list', ValidateToken, async (req, res) => {
+  
+  // 페이징 처리
+  var current = req.body.pagination.current;
+  var pageSize = req.body.pagination.pageSize;
+  var start = 0;
+  if (current > 1) {
+    start = (current - 1) * pageSize;
+  }
+
+  var order = 'folderName';
+  var dir = 'asc';
+  if (req.body.sortField) {
+    order = req.body.sortField;
+  }
+  if (req.body.sortOrder) {
+    if (req.body.sortOrder == 'ascend') {
+      dir = 'asc';
+    } else {
+      dir = 'desc';
+    }
+  }
+
+  // 단어검색
+  var searchStr = {};
+
+  // 템플릿 이름
+  if (req.body.folderName) {
+    var regex = new RegExp(req.body.folderName[0], 'i');
+    searchStr['folderName'] = new RegExp(regex, 'i');
+  }
+
+  // 생성자
+  if (req.body.name) {
+    var userIds = [];
+    var regex = new RegExp(req.body.name[0], 'i');
+    var dataList = await User.find({ 'name': regex }).exec();
+    for (var idx in dataList) {
+      userIds.push(dataList[idx]['_id']);
+    }
+    searchStr['user'] = { $in: userIds };
+  }
+
+  console.log(searchStr);
+
+  // 전체 건수
+  var totalCount = await Folder.countDocuments(searchStr).exec();
+
+  Folder.find(searchStr)
+    .sort({ [order]: dir })   //asc:오름차순 desc:내림차순
+    .skip(Number(start))
+    .limit(Number(pageSize))
+    .populate({
+      path: 'user',
+      select: { name: 1, SABUN: 1, JOB_TITLE: 1, DEPART_CODE: 1 }
+    })
+    .exec((err, data) => {
+      if (err) return res.json({ success: false, error: err });
+      return res.json({ success: true, folders: data, total: totalCount });
+    });
+});
+
+// 폴더 관리 변경(생성자|공유자)
+router.post('/folder/update/:flag', ValidateToken, async (req, res) => {
+  if ( req.params.flag === 'owner' ) {
+    if (!req.body.folderId || !req.body.usrId) return res.json({ success: false, message: 'input value not enough!' });
+    Folder.updateOne({ '_id': req.body.folderId }, {'user': req.body.usrId}, (err) => {
+      if (err) return res.json({ success: false, message: err });
+      return res.json({ success: true});
+    });
+  } else if ( req.params.flag === 'share' ) {
+    if (!req.body.folderId || !req.body.targets) return res.json({ success: false, message: 'input value not enough!' });
+    let targets = req.body.targets.map(data => ({target: data.split('|')[0], editable: req.body.editable}));
+    let shared = (req.body.targets.length > 0) ? true : false;
+    Folder.findOneAndUpdate({ '_id': req.body.folderId}, {'shared': shared, 'sharedTarget': targets}, (err, folder) => {
+      if (err) return res.json({ success: false, err });
+      return res.status(200).send({success: true});
+    });
+  } else {
+    return res.status(200).send({success: false});
+  }
+});
+///////////////////////////////////////////////////////////////////////// 폴더 관리 종료 /////////////////////////////////////////////////////////////////////////
 
 module.exports = router;

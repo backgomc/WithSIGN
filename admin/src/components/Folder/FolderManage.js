@@ -2,37 +2,113 @@ import React, { useEffect, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { useIntl } from 'react-intl';
 import Highlighter from 'react-highlight-words';
-import { Table, Input, Space, Button, Modal, Popconfirm, message, Upload, Checkbox } from 'antd';
-import { ExclamationCircleOutlined, SearchOutlined, UploadOutlined, PaperClipOutlined } from '@ant-design/icons';
+import { Table, Input, Space, Button, Modal, TreeSelect, Switch, Typography, Tooltip } from 'antd';
+import { FolderOpenOutlined, SearchOutlined, TeamOutlined, FileOutlined } from '@ant-design/icons';
 import { PageContainer } from '@ant-design/pro-layout';
 import { TableDropdown } from '@ant-design/pro-table';
 import axiosInterceptor from '../../config/AxiosConfig';
 
-const { confirm } = Modal;
+const { SHOW_PARENT } = TreeSelect;
 
 const FolderManage = () => {
-  
-  console.log('FolderManage');
   
   const { formatMessage } = useIntl();
   const [pagination, setPagination] = useState({current:1, pageSize:10, showSizeChanger: true});
   const [loading, setLoading] = useState(false);
   const [searchedColumn, setSearchedColumn] = useState('');
-  const [syncOrgPopup, setSyncOrgPopup] = useState(false);
-  const [syncUsrPopup, setSyncUsrPopup] = useState(false);
-  const [data, setData] = useState([]);
   const [searchText, setSearchText] = useState('');
-  const [searchName, setSearchName] = useState('');
-  const [searchOrg, setSearchOrg] = useState('');
-  const [searchCom, setSearchCom] = useState('');
+  const [data, setData] = useState([]);
+  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [orgList, setOrgList] = useState([]);
-  const [fileList, setFileList] = useState([]);
-  const [includeUnused, setIncludeUnused] = useState(false);
   const [filters, setFilters] = useState({});
   const [sorter, setSorter] = useState({});
-  // const [selectedRowKeys, setSelectedRowKeys] = useState([]);
-  // const [hasSelected, setHasSelected] = useState(selectedRowKeys.length > 0);
+  const [users, setUsers] = useState([]);
+  const [orgs, setOrgs] = useState([]);
+  const [ownerTreeValue, setOwnerTreeValue] = useState();
+  const [ownerTreeData, setOwnerTreeData] = useState();
+  const [ownerModal, setOwnerModal] = useState(false);
+  const [shareTreeValue, setShareTreeValue] = useState();
+  const [shareTreeData, setShareTreeData] = useState();
+  const [shareModal, setShareModal] = useState(false);
+  const [editable, setEditable] = useState(false);
   
+  const ownerTreeProps = {
+    treeData: ownerTreeData,
+    value: ownerTreeValue,
+    onChange: (value) => {setOwnerTreeValue(value);},
+    treeCheckable: false,
+    showSearch: true,
+    showArrow: true,
+    showCheckedStrategy: SHOW_PARENT,
+    placeholder: '임직원 검색',
+    size: 'middle',
+    style: {
+      width: '90%',
+      marginTop: '10px'
+    },
+  };
+
+  const shareTreeProps = {
+    treeData: shareTreeData,
+    value: shareTreeValue,
+    onChange: (value) => {setShareTreeValue(value);},
+    treeCheckable: true,
+    showArrow: true,
+    showCheckedStrategy: SHOW_PARENT,
+    placeholder: '부서 또는 직원 검색',
+    size: 'middle',
+    style: {
+      width: '90%',
+      marginTop: '10px'
+    },
+  };
+
+  // 생성자 수정
+  const updateOwner = async () => {
+    let param = {
+      folderId: selectedRowKeys,
+      usrId: ownerTreeValue.split('|')[0]
+    }
+    const res = await axiosInterceptor.post('/admin/folder/update/owner', param);
+    if (res.data.success) {
+      alert('생성자 변경 성공');
+    } else {
+      alert('생성자 변경 실패');
+    }
+    setSelectedRowKeys([]);
+    setOwnerModal(false);
+    fetch({
+      sortField: sorter.field,
+      sortOrder: sorter.order,
+      pagination,
+      ...filters
+    });
+  }
+
+  // 공유자 수정
+  const updateShare = async () => {
+    setLoading(true);
+    let params = {
+      folderId: selectedRowKeys,
+      editable: editable,
+      targets: shareTreeValue
+    }
+    const res = await axiosInterceptor.post('/admin/folder/update/share', params);
+    if (res.data.success) {
+      alert('공유자 변경 성공');
+    } else {
+      alert('공유자 변경 실패');
+    }
+    setSelectedRowKeys([]);
+    setShareModal(false);
+    fetch({
+      sortField: sorter.field,
+      sortOrder: sorter.order,
+      pagination,
+      ...filters
+    });
+  }
+
   const handleTableChange = (pagination, filters, sorter) => {
     console.log('handleTableChange called');
     setFilters(filters);
@@ -41,8 +117,7 @@ const FolderManage = () => {
       sortField: sorter.field,
       sortOrder: sorter.order,
       pagination,
-      ...filters,
-      includeUnused: includeUnused
+      ...filters
     });
   };
 
@@ -74,57 +149,142 @@ const FolderManage = () => {
         </Space>
       </div>
     ),
-    filterIcon: filtered => <SearchOutlined style={{ color: filtered ? '#1890ff' : undefined }} />,
-    render: (text, row) => {
-      let dispText = text;
-      if ( dataIndex === 'com' ) dispText = orgList.find(e => e.DEPART_CODE === row.COMPANY_CODE)?orgList.find(e => e.DEPART_CODE === row.COMPANY_CODE).DEPART_NAME:'';
-      if ( dataIndex === 'org' ) dispText = orgList.find(e => e.DEPART_CODE === row.DEPART_CODE)?orgList.find(e => e.DEPART_CODE === row.DEPART_CODE).DEPART_NAME:'';
-      return (
-        searchedColumn === dataIndex ? (
-          <Highlighter
-            highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
-            searchWords={[searchText]}
-            autoEscape
-            textToHighlight={dispText ? dispText.toString() : ''}
-          />
-        ) : (
-          dispText
-        )
-      );
-    }
+    filterIcon: filtered => <SearchOutlined style={{ color: filtered ? '#1890ff' : undefined }} />
   });
 
   const handleSearch = (selectedKeys, confirm, dataIndex) => {
-    setSearchText(selectedKeys[0]);
     setSearchedColumn(dataIndex);
-    if (dataIndex==='name') setSearchName(selectedKeys[0]);
-    if (dataIndex==='org') setSearchOrg(selectedKeys[0]);
-    if (dataIndex==='com') setSearchCom(selectedKeys[0]);
+    setSearchText(selectedKeys[0]);
     confirm();
   }
 
-  const handleReset = (clearFilters, confirm, dataIndex) => {
+  const handleReset = (clearFilters, confirm) => {
     clearFilters();
-    setSearchText('');
-    if (dataIndex==='name') setSearchName('');
-    if (dataIndex==='org') setSearchOrg('');
-    if (dataIndex==='com') setSearchCom('');
+    setSearchText(searchText);
     confirm();
   }
 
-  const fetchOrgList = async () => {
-    axiosInterceptor.post('/admin/org/list').then(response => {
-      if (response.data.success) setOrgList(response.data.orgs);
+  // 전체부서 트리 구조 조회
+  const fetchTreeSelect = async () => {
+    let users = [];
+    let resp = await axiosInterceptor.post('/admin/user/tree');
+    if (resp.data.success) {
+      users = resp.data.users;
+      setUsers(resp.data.users);
+    }
+    resp = await axiosInterceptor.post('/admin/org/list');
+    if (resp.data.success) {
+      let orgs = resp.data.orgs;
+      setOrgs(orgs);
+      
+      let tree = [];
+      const level1 = orgs.filter(e => e.PARENT_NODE_ID === '');
+      level1.forEach(org => {
+        let org1 = {value: org.DEPART_CODE + '|' + org.DEPART_NAME, title: org.DEPART_NAME, children: [], selectable: false}
+        insertOwnerUser(org1, users, org.DEPART_CODE);
+        let level2 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE);
+        if (level2) callRecursive(org1, level2, users, orgs)
+        tree.push(org1)
+      });
+      setOwnerTreeData(tree);
+
+      tree = [];
+      level1.forEach(function(org) {
+        let level2 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE);
+        let org1 = {value: org.DEPART_CODE + '|' + org.DEPART_NAME, title: org.DEPART_NAME, children: []}
+        insertShareUser(org1, users, org.DEPART_CODE);
+        level2.forEach(function(org) {
+          let org2 = {value: org.DEPART_CODE + '|' + org.DEPART_NAME, title: org.DEPART_NAME, children: []}
+          insertShareUser(org2, users, org.DEPART_CODE);
+          let level3 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE);
+          level3.forEach(function(org) {
+            let org3 = {value: org.DEPART_CODE + '|' + org.DEPART_NAME, title: org.DEPART_NAME, children: []}
+            insertShareUser(org3, users, org.DEPART_CODE);
+            let level4 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE);
+            level4.forEach(function(org) {
+              let org4 = {value: org.DEPART_CODE + '|' + org.DEPART_NAME, title: org.DEPART_NAME, children: []}
+              insertShareUser(org4, users, org.DEPART_CODE);
+              let level5 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE);
+              level5.forEach(function(org) {
+                let org5 = {value: org.DEPART_CODE + '|' + org.DEPART_NAME, title: org.DEPART_NAME, children: []}
+                insertShareUser(org5, users, org.DEPART_CODE);
+                let level6 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE);
+                level6.forEach(function(org) {
+                  let org6 = {value: org.DEPART_CODE + '|' + org.DEPART_NAME, title: org.DEPART_NAME, children: []}
+                  insertShareUser(org6, users, org.DEPART_CODE);
+                  let level7 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE);
+                  level7.forEach(function(org) {
+                    let org7 = {value: org.DEPART_CODE + '|' + org.DEPART_NAME, title: org.DEPART_NAME, children: []}
+                    insertShareUser(org7, users, org.DEPART_CODE);
+                    let level8 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE);
+                    level8.forEach(function(org) {
+                      let org8 = {value: org.DEPART_CODE + '|' + org.DEPART_NAME, title: org.DEPART_NAME, children: []}
+                      insertShareUser(org8, users, org.DEPART_CODE);
+                      let level9 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE);
+                      level9.forEach(function(org) {
+                        let org9 = {value: org.DEPART_CODE + '|' + org.DEPART_NAME, title: org.DEPART_NAME, children: []}
+                        insertShareUser(org9, users, org.DEPART_CODE);
+                        let level10 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE);
+                        level10.forEach(function(org) {
+                          let org10 = {value: org.DEPART_CODE + '|' + org.DEPART_NAME, title: org.DEPART_NAME, children: []}
+                          insertShareUser(org10, users, org.DEPART_CODE);
+                          org9.children.push(org10);
+                        });
+                        org8.children.push(org9);
+                      });
+                      org7.children.push(org8);
+                    });
+                    org6.children.push(org7);
+                  });
+                  org5.children.push(org6);
+                });
+                org4.children.push(org5);
+              });
+              org3.children.push(org4);
+            });
+            org2.children.push(org3);
+          });
+          org1.children.push(org2);
+        });
+        tree.push(org1);
+      });
+      setShareTreeData(tree);
+    } else {
+      console.log('ERROR');
+    }
+  };
+
+  const callRecursive = (currentOrg, level, users, orgs) => {
+    level.forEach(org => {
+      let current = {value: org.DEPART_CODE + '|' + org.DEPART_NAME, title: org.DEPART_NAME, children: [], selectable: false}
+      insertOwnerUser(current, users, org.DEPART_CODE);
+      currentOrg.children?.push(current);
+      let subLevel = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE)
+      if (subLevel && subLevel.length > 0) callRecursive(current, subLevel, users, orgs);
     });
-  }
+  };
+
+  const insertOwnerUser = (org, users, depart_code) => {
+    let filterUser = users.filter(e => e.DEPART_CODE === depart_code);
+    filterUser.map(user => (
+      org.children.push({value: user._id + '|' + user.SABUN + '|' + user.name + (user.JOB_TITLE ? ' ' + user.JOB_TITLE : ''), title: user.name + (user.JOB_TITLE ? ' ' + user.JOB_TITLE : '')})
+    ));
+  };
+
+  const insertShareUser = (org, users, depart_code) => {
+    let filterUser = users.filter(e => e.DEPART_CODE === depart_code);
+    filterUser.map(user => (
+      org.children.push({value: user.SABUN + '|' + user.name + (user.JOB_TITLE ? ' ' + user.JOB_TITLE : ''), title: user.name + (user.JOB_TITLE ? ' ' + user.JOB_TITLE : '')})
+    ));
+  };
 
   const fetch = async (params = {}) => {
     setLoading(true);
-    axiosInterceptor.post('/admin/user/list', params).then(response => {
+    axiosInterceptor.post('/admin/folder/list', params).then(response => {
       if (response.data.success) {
-        const users = response.data.users;
+        let folders = response.data.folders;
         setPagination({...params.pagination, total:response.data.total});
-        setData(users);
+        setData(folders);
         setLoading(false);
       } else {
         setLoading(false);
@@ -133,233 +293,97 @@ const FolderManage = () => {
     });
   };
 
-  const fetchUpdate = async (key, record) => {
-    setLoading(true);
-    let param = {
-      k: key,
-      i: record._id
-    }
-    axiosInterceptor.post('/admin/user/update', param).then(response => {
-      // alert(' 결과 : ' + response.data.success);
-      fetch({
-        name: [searchName],
-        org: [searchOrg],
-        com: [searchCom],
-        sortField: sorter.field,
-        sortOrder: sorter.order,
-        pagination,
-        ...filters,
-        includeUnused: includeUnused
-      });
-    });
-  };
-
-  const fetchSendPush = async (record) => {
-    console.log(record);
-    setLoading(true);
-    let param = {
-      recvInfo: record._id,
-      title: '테스트 알림 전송',
-      content: '전자서명시스템에서 보낸 테스트 알림입니다.',
-      thumbnail: record.thumbnail
-    }
-    axiosInterceptor.post('/admin/user/sendPush', param).then(response => {
-      alert('테스트 알림(NH With 메시지) 전송 결과 : ' + response.data.success);
-      setLoading(false);
-    });
-  };
-
-  const syncOrg = async () => {
-    setSyncOrgPopup(false);
-    setLoading(true);
-    const res = await axiosInterceptor.post('/admin/org/sync');
-    console.log(res);
-    if (res && res.data && res.data.success && res.data.success === true) {
-      setFileList([]);
-      alert('부서 정보 동기화 성공');
-    } else {
-      alert((res.data.message)?res.data.message:'부서 정보 동기화 실패');
-    }
-    fetch({
-      sortField: sorter.field,
-      sortOrder: sorter.order,
-      pagination,
-      ...filters,
-      includeUnused: includeUnused
-    });
-  }
-
-  const syncUsr = async () => {
-    setSyncUsrPopup(false);
-    setLoading(true);
-    const res = await axiosInterceptor.post('/admin/user/sync');
-    console.log(res);
-    if (res && res.data && res.data.success && res.data.success === true) {
-      setFileList([]);
-      alert('직원 정보 동기화 성공');
-    } else {
-      alert((res.data.message)?res.data.message:'직원 정보 동기화 실패');
-    }
-    fetch({
-      sortField: sorter.field,
-      sortOrder: sorter.order,
-      pagination,
-      ...filters,
-      includeUnused: includeUnused
-    });
-  }
-
-  const initPasswd = async (key, record) => {
-    confirm({
-      title: '비밀번호를 초기화 하시겠습니까?',
-      icon: <ExclamationCircleOutlined />,
-      // content: '',
-      okText: '네',
-      okType: 'danger',
-      cancelText: '아니오',
-      onOk() {
-        fetchUpdate(key, record);
-      },
-      onCancel() {
-        console.log('Cancel');
-      }
-    });
-  }
-
-  const authority = async (key, record) => {
-    confirm({
-      title: '관리자 권한을 변경 처리 하시겠습니까?',
-      icon: <ExclamationCircleOutlined />,
-      // content: '',
-      okText: '네',
-      okType: 'danger',
-      cancelText: '아니오',
-      onOk() {
-        fetchUpdate(key, record);
-      },
-      onCancel() {
-        console.log('Cancel');
-      }
-    });
-  }
-
-  const setStatus = async (key, record) => {
-    confirm({
-      title: key.toString().startsWith('mng')?'담당자 권한을 부여 하시겠습니까?':'사용자 상태를 변경 처리 하시겠습니까?',
-      icon: <ExclamationCircleOutlined />,
-      // content: '',
-      okText: '네',
-      okType: 'danger',
-      cancelText: '아니오',
-      onOk() {
-        fetchUpdate(key, record);
-      },
-      onCancel() {
-        console.log('Cancel');
-      }
-    });
-  }
-
-  const sendPush = async (record) => {
-    confirm({
-      title: '테스트 알림(NH With 메시지) 전송 하시겠습니까?',
-      icon: <ExclamationCircleOutlined />,
-      // content: '',
-      okText: '네',
-      okType: 'danger',
-      cancelText: '아니오',
-      onOk() {
-        fetchSendPush(record);
-      },
-      onCancel() {
-        console.log('Cancel');
-      }
-    });
-  }
-
   const selectAction = async (key, record) => {
-    if (key === 'init') {
-      initPasswd(key, record);
+    if (key === 'owner') {
+      setSelectedRowKeys([record._id]);
+      setOwnerTreeValue(record.user._id + '|' + record.user.SABUN + '|' + record.user.name + (record.user.JOB_TITLE?' '+record.user.JOB_TITLE:'')); // 코드 기반 DISP 조립
+      setOwnerModal(true);
     }
-    if (key === 'flag') {
-      setStatus(key, record);
-    }
-    if (key === 'auth') {
-      authority(key, record);
-    }
-    if (key === 'push') {
-      sendPush(record);
-    }
-    if (key.toString().startsWith('mng')) {
-      setStatus(key, record);
+    if (key === 'share') {
+      setSelectedRowKeys([record._id]);
+      // 권한 표시
+      setEditable(record.sharedTarget.find(e => e.editable)?true:false);
+      // 코드 기반 DISP 조립
+      let targetTreeValue = record.sharedTarget.map(element => {
+        let disp = '';
+        let data = orgs.find(e => e.DEPART_CODE === element.target);
+        if (data) {
+          disp = '|' + data.DEPART_NAME;
+        } else {
+          data = users.find(e => e.SABUN === element.target);
+          if (data) disp = '|' + data.name + (data.JOB_TITLE?' '+data.JOB_TITLE:'');
+        } 
+        return element.target + disp;
+      });
+      setShareTreeValue(targetTreeValue);      // setTreeValue(['A11000|경영전략부', 'P2000002|이원삼 대표이사']);
+      setShareModal(true);
     }
   }
 
   const columns = [
     {
-      title: '사번',
-      dataIndex: 'SABUN',
-      responsive: ['sm'],
-      align: 'center',
-      sorter: true
+      title: '폴더명',
+      dataIndex: 'folderName',
+      sorter: true,
+      key: 'folderName',
+      ...getColumnSearchProps('folderName'),
+      render: (text, row) =>
+        <div style={{wordWrap:'break-word', wordBreak:'break-word', display:'flex', alignItems:'center'}}><FolderOpenOutlined style={{marginRight:'0.5rem'}}/>
+          { searchedColumn === 'folderName' ? (
+            <Highlighter
+              highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
+              searchWords={[searchText]}
+              autoEscape
+              textToHighlight={text ? text.toString() : ''}
+            />
+          ) : (
+            text
+          )}
+        </div>
     },
     {
-      title: '회사',
-      key: 'com',
-      ...getColumnSearchProps('com'),
-      // render: (row) => {
-      //   return orgList.find(e => e.DEPART_CODE === row.COMPANY_CODE)?orgList.find(e => e.DEPART_CODE === row.COMPANY_CODE).DEPART_NAME:'';
-      // },
-      align: 'center'
-    },
-    {
-      title: '소속',
-      key: 'org',
-      ...getColumnSearchProps('org'),
-      // render: (row) => {
-      //   return orgList.find(e => e.DEPART_CODE === row.DEPART_CODE)?orgList.find(e => e.DEPART_CODE === row.DEPART_CODE).DEPART_NAME:'';
-      // },
-      align: 'center'
-    },
-    {
-      title: '이름',
-      dataIndex: 'name',
+      title: '생성자',
+      dataIndex: ['user', 'name'],
+      sorter: false,
       key: 'name',
       ...getColumnSearchProps('name'),
-      align: 'center',
-      sorter: true
+      onFilter: (value, record) =>
+      record['user']['name']
+        ? record['user']['name'].toString().toLowerCase().includes(value.toLowerCase())
+        : '',
+      render: (text, row) =>
+        <React.Fragment>
+          { searchedColumn === 'name' ? (
+            <Highlighter
+              highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
+              searchWords={[searchText]}
+              autoEscape
+              textToHighlight={text ? text + ' ' + row['user']['JOB_TITLE'] : ''}
+            />
+          ) : (
+            text + ' ' + row['user']['JOB_TITLE']
+          )}
+        </React.Fragment>
     },
     {
-      title: '직명',
-      key: 'JOB_TITLE',
-      dataIndex: 'JOB_TITLE',
-      align: 'center',
-      sorter: true
-    },
-    {
-      title: '권한',
-      render: (row) => {
-        switch (row['manager_flag']) {
-          case 1:
-            return '주무OA'
-          case 2:
-            return '팀OA'
-          case 4:
-            return '사무소장'
-          default:
-            return ''
+      title: '문서',
+      render: (_, row) => {
+        if ( row['docs'].length > 0 ) {
+          let tooltipCont = '';
+          for ( let item of row['docs'] ) {
+            tooltipCont = tooltipCont + '▦ ' + item['alias'] + '\n';
+          }
+          return <Tooltip title={tooltipCont} overlayStyle={{whiteSpace:'pre-line'}}><FileOutlined style={{marginRight:'0.5rem'}}/>{row['docs'][0]['alias'] + ` 외 ${row['docs'].length - 1}건`}</Tooltip>;
+        } else {
+          return '없음';
         }
-      },
-      align: 'center'
+      }
     },
     {
-      title: '양식'
-    },
-    {
-      title: '상태',
+      title: '공유',
       render: (row) => {
         return (
-          !row['use']?<font color='red'>미사용</font>:row['role']>0?<font color='blue'>관리자</font>:''
+          row['shared']?<TeamOutlined/>:''
         );
       },
       align: 'center'
@@ -370,18 +394,10 @@ const FolderManage = () => {
       render: (text, record, _, action) => [
         <TableDropdown
           key="actionGroup"
-          // onSelect={() => {console.log(text);action?.reload();}}
           onSelect={(key) => selectAction(key, record)}
           menus={[
-            { key: 'init', name: '비밀번호 초기화' },
-            { key: 'flag', name: '사용자 상태 변경' },
-            { key: 'auth', name: '관리자 권한 변경' },
-            { key: 'push', name: '테스트 알림 전송' },
-            { key: 'none', name: '============' },
-            { key: 'mng4', name: '권한 → 사무소장' },
-            { key: 'mng1', name: '권한 → 주무OA' },
-            { key: 'mng2', name: '권한 → 팀OA' },
-            { key: 'mng0', name: '권한 회수' }
+            { key: 'owner', name: '생성자 변경' },
+            { key: 'share', name: '공유자 변경' }
           ]}
         />,
       ],
@@ -389,36 +405,17 @@ const FolderManage = () => {
     }
   ];
 
-  // const rowSelection = {
-  //   selectedRowKeys,
-  //   onChange : selectedRowKeys => {
-  //     // console.log('selectedRowKeys changed: ', selectedRowKeys);
-  //     setSelectedRowKeys(selectedRowKeys);
-  //     setHasSelected(selectedRowKeys.length > 0);
-  //   }
-  // };
-
   useEffect(() => {
-    console.log('useEffect called');
-    fetchOrgList();
+    fetchTreeSelect();
     fetch({
-      includeUnused: includeUnused,
       pagination
     });
     return () => {
+      setSearchText('');
+      setSearchedColumn('');
+      setData([]);
       setPagination({current:1, pageSize:10, showSizeChanger: true});
       setLoading(false);
-      setSearchedColumn('');
-      setSyncOrgPopup(false);
-      setSyncUsrPopup(false);
-      setData([]);
-      setSearchText('');
-      setSearchName('');
-      setSearchOrg('');
-      setSearchCom('');
-      setIncludeUnused(false);
-      setFilters({});
-      setSorter({});
     } // cleanup
   }, []);
 
@@ -438,17 +435,50 @@ const FolderManage = () => {
         }}        
       >
         <br></br>
-        작업중
-        {/* <Table
+        <Table
           rowKey={ item => { return item._id } }
           columns={columns}
           dataSource={data}
           pagination={pagination}
           loading={loading}
-          // rowSelection={rowSelection}
           onChange={handleTableChange}
-        /> */}
-      </PageContainer>
+        />
+    </PageContainer>
+    <Modal
+        open={ownerModal}
+        width={480}
+        title="생성자 변경"
+        onCancel={()=>{setOwnerModal(false)}}
+        footer={[
+          <Button key={uuidv4()} type="primary" onClick={updateOwner}>
+            저장
+          </Button>
+        ]}
+    >
+      <TreeSelect {...ownerTreeProps} style={{width:'100%'}} />
+    </Modal>
+    <Modal
+        open={shareModal}
+        width={480}
+        title="공유자 변경"
+        onCancel={()=>{setShareModal(false)}}
+        footer={[
+          <Button key={uuidv4()} type="primary" onClick={updateShare}>
+            저장
+          </Button>
+        ]}
+      >
+        <Space>
+          <Typography.Text>공유자 권한</Typography.Text>
+          <Switch
+            checkedChildren="문서 수정 및 폴더 설정 가능"
+            unCheckedChildren="문서 읽기만 가능"
+            checked={editable}
+            onChange={() => setEditable(!editable)}
+          />
+        </Space>
+        <TreeSelect {...shareTreeProps} />
+      </Modal>
     </div>
   );
 };
