@@ -28,12 +28,12 @@ const ViewTemplate = ({location}) => {
 
   const initWithPDF = async () => {
     await pdfRef.current.uploadPDF(docRef);
-    const convItems = pdfRef.current.convertBoxToComponent(items);
-    let drawItems = convItems.map(item => {
-      item.disable = true;
-      return item;
-    });
-    await pdfRef.current.importItems(drawItems);
+    // const convItems = pdfRef.current.convertBoxToComponent(items);
+    // let drawItems = convItems.map(item => {
+    //   item.disable = true;
+    //   return item;
+    // });
+    await pdfRef.current.importItems(items);
   }
 
   useEffect(() => {
