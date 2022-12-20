@@ -373,7 +373,7 @@ const FolderManage = () => {
           for ( let item of row['docs'] ) {
             tooltipCont = tooltipCont + '▦ ' + item['alias'] + '\n';
           }
-          return <Tooltip title={tooltipCont} overlayStyle={{whiteSpace:'pre-line'}}><FileOutlined style={{marginRight:'0.5rem'}}/>{row['docs'][0]['alias'] + ` 외 ${row['docs'].length - 1}건`}</Tooltip>;
+          return <Tooltip title={tooltipCont} overlayStyle={{whiteSpace:'pre'}}><FileOutlined style={{marginRight:'0.5rem'}}/>{row['docs'][0]['alias'] + ` 외 ${row['docs'].length - 1}건`}</Tooltip>;
         } else {
           return '없음';
         }
