@@ -141,6 +141,27 @@ const DocumentExpander = (props) => {
             }
         });
     }
+
+    // 요청취소 with 메시지 
+    const fetchCancelSigning = async (docId) => {
+        setLoadingCancel(true);
+        
+        let param = {
+            docId: docId,
+            user: _id,
+            message: '요청 취소'
+        }
+
+        const res = await axios.post('/api/document/updateCancelSigning', param)
+
+        setLoadingCancel(false);
+
+        if (res.data.success) {
+            navigate('/resultPage', { state: {status:'success', headerTitle:'요청 취소 결과', title:'요청 취소에 성공하였습니다.'}}); 
+        } else {
+            navigate('/resultPage', { state: {status:'error', headerTitle:'요청 취소 결과', title:'요청 취소에 실패하였습니다.', subTitle:'관리자에게 문의하세요!'}}); 
+        }
+    }
     
     const sendPush = async () => {
         confirm({
@@ -186,6 +207,23 @@ const DocumentExpander = (props) => {
             cancelText: '아니오',
             onOk() {
                 fetchCancel(docId);
+            },
+            onCancel() {
+                console.log('Cancel');
+            },
+        });    
+    }
+
+    const cancelSigning = async (docId) => {
+        confirm({
+            title: '서명 요청 취소',
+            icon: <ExclamationCircleOutlined />,
+            content: '서명 요청을 취소하시겠습니까?',
+            okText: '네',
+            okType: 'danger',
+            cancelText: '아니오',
+            onOk() {
+                fetchCancelSigning(docId);
             },
             onCancel() {
                 console.log('Cancel');
@@ -386,6 +424,12 @@ const DocumentExpander = (props) => {
                 // </Popconfirm>
                  : <></>
             }
+
+            {(DocumentType({uid: _id, document: item}) === DOCUMENT_SIGNING && item.user._id === _id && item.signedBy.length === 1 && item.signedBy.filter(el => el.user === _id).length === 1) ?
+               <Button icon={<CloseOutlined style={{color:'red'}} />} onClick={e => { cancelSigning(item._id) }}>요청 취소</Button>
+                 : <></>
+            }
+
             {(DocumentType({uid: _id, document: item}) === DOCUMENT_CANCELED && item.user._id === _id) ?
                 <Button danger icon={<DeleteOutlined />} onClick={e => { deleteDocument(); }}>문서 폐기</Button>
                  : <></>
