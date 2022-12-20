@@ -206,7 +206,12 @@ const PrepareDocument = ({location}) => {
       console.log('assignees', assignees)
       // 일반 전송인 경우 requester 는 제외
       let newItems = [];  
-      template.items.forEach(item => {
+
+
+      // Uncaught (in promise) Error: Invariant failed: A state mutation was detected between dispatches 오류로 copy해서 쓰도록 함
+      let asisItems = loadash.cloneDeep(template.items);
+
+      asisItems.forEach(item => {
 
         if (sendType === 'B') {
           if(template.requesters?.some(user => user.key === item.uid)) {

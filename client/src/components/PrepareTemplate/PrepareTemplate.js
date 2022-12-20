@@ -47,7 +47,7 @@ const PrepareTemplate = () => {
   const [loading, setLoading] = useState(false);
   const [pageCount, setPageCount] = useState(0);
   const [observers, setObservers] = useState([]);
-  const [template, setTemplate] = useState();
+  // const [template, setTemplate] = useState();
   
   const templateId = useSelector(selectTemplateId);
   const templateRef = useSelector(selectTemplateRef);
@@ -124,8 +124,8 @@ const PrepareTemplate = () => {
     }
     const res = await axios.post('/api/template/detail', param);
     if (res.data.success) {
-      const _template = res.data.template;
-      setTemplate(_template);
+      let _template = res.data.template;
+      // setTemplate(_template);
 
       await pdfRef.current.uploadPDF(_template.docRef);
       await pdfRef.current.importItems(_template.items);
