@@ -396,5 +396,28 @@ db.documents.find( {$and: [
 # 양식함에 일반 컴포넌트의 경우 문서 요청시 사라짐
 
 # 2.1.0
-# 본인의 서명만 완료된 경우 요청 취소 기능 추가 -> 요청 취소시 서명 취소 상태로 변경 (sever/client 동시 배포 필요)
-* 사용자 등록 후 좌측에 사람을 빼고 우측 이동 시 맨오른쪽에 사람이 빠지지 않는다.
+- [x] 본인의 서명만 완료된 경우 요청 취소 기능 추가 -> 요청 취소시 서명 취소 상태로 변경 (sever/client 동시 배포 필요)
+- [x] 서명 취소 시 서명 요청자에게  푸시 알림 발송
+- [ ] withPDF 업데이트
+- [ ] 사용자 등록 후 좌측에 사람을 빼고 우측 이동 시 맨오른쪽에 사람이 빠지지 않는다.
+- [ ] 템플릿 UI 고도화
+- [ ] jwtToken 적용
+- [x] 서명 참여자 검색 시 자동스크롤 기능 추가 
+
+
+# 로그인 JWT 토큰 방식으로 변경 
+ 1. [서버] jwt 토큰 생성/갱신/검증 모듈 생성 : adminAuth.js 참조
+ 2. [서버] 토큰 갱신 서비스 생성 : users /refresh 
+ 3. [서버] 로그인 서비스 적용 : users /login
+          - accessToken, refreshToken 신규 생성
+          - accessToken 쿠키 저장
+          - refreshToken 응답 값 추가
+ 4. [서버] logout 서비스 적용 : users /logout 
+ 5. [서버] sso 서비스 적용 : users /sso
+ 6. [서버] 서비스 통신 시 토큰 검증 전처리 : 검증 필요 서비스들 모두 적용 
+ 7.  [클라이언트] login 시 토큰 추가 로직 추가 : Login.js
+ 8.  [클라이언트] logout 시 토큰 삭제 로직 추가 : Profile.js, view.js (Header.js 참조)
+ 9.  [클라이언트] auth 인증 시 토큰 로직 추가 (토큰 갱신, 토큰 localstorage 저장, 통합 로그인 처리) : App.js 
+ 10. [클라이언트] axiosInterceptor 추가 (토큰 유효성 검증 결과 선처리, 만약 검증 실패 응답 시 토큰 갱신 서비스 호출)
+ 11. [클라이언트] 토큰 검증이 필요한 모든 axios 서비스를 axiosInterceptor로 변경 (login, logout, auth 같은 인증 서비스들은 제외)
+

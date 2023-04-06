@@ -225,7 +225,7 @@ const App = () => {
       <Sign path="/signDocument" />
       <ViewDocument path="/viewDocument" />
       <Setting path="/setting" />
-      <Test path="/test" />
+      <Test2 path="/test" />
       <BoardList path="/boardList" />
       <BoardDetail path="/boardDetail" />
       <Audit path="/audit" />

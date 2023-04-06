@@ -83,6 +83,7 @@ class TreeTransfer extends Component {
         if (target.indexOf(key) > -1) {
           listData.push({ key, title });
         }
+
         return <TreeNode key={key} title={nodeTitle} isLeaf {...otherProps} />;
       } else {
         //S. 조직명 검색 되도록 처리
@@ -165,9 +166,14 @@ class TreeTransfer extends Component {
   // left tree search 
   onTreeSearch = (value) => {
         
+    console.log('onTreeSearch called')
+
     this.setState({
       treeSearchKey: value
     }, () => {
+
+      console.log('SEARCH CALLED', this.state.treeSearchKey);
+
       if (this.props.onLoadData && this.props.onTreeSearch) { // async search
         this.props.onTreeSearch(value);
       } else {
@@ -180,9 +186,22 @@ class TreeTransfer extends Component {
           treeCheckedKeys,
           treeExpandedKeys: uniq([...treeCheckedKeys, ...expandedKeys]),
           treeAutoExpandParent: true, 
+        }, () => {
+          console.log('TREE DRAW FINISH !')
+          console.log('expandedKeys', expandedKeys)
+
+          // 검색 항목으로 스크롤 이동
+          if (expandedKeys?.length > 0) {
+            setTimeout(() => {
+              console.log('setTimeout called');
+              this.treeRef.current.scrollTo({ key: expandedKeys[0], align: "top" });
+            }, 1000);
+          }
+
         });
       }
     });
+
   }
 
   // right list search 
@@ -192,17 +211,28 @@ class TreeTransfer extends Component {
     });
   }
 
-  // componentDidUpdate() {
-  //   console.log('componentDidUpdate called');
+  componentDidUpdate(prevProps, prevState) {
+    // console.log('prevProps', prevProps);
+    // console.log('prevState', prevState);
+    // console.log('this.state.treeSearchKey', this.state.treeSearchKey);
+    // console.log('prevState.treeSearchKey:', prevState.treeSearchKey);
 
-  //   //TODO: 검색한 항목의 위치로 scroll 이동
-  //   // console.log('Searched Called', value);
-  //   setTimeout(() => {
-  //     console.log('setTimeout called');
-  //     this.treeRef.current.scrollTo({ key: '000064019', align: "top" });
-  //   }, 1000);
+    // //TODO: 검색한 항목의 위치로 scroll 이동
+    // if (prevState.treeSearchKey !== this.state.treeSearchKey) {
+    //   setTimeout(() => {
+    //     console.log('setTimeout called');
+    //     // this.treeRef.current.scrollTo({ key: '22220', align: "top" });
+    //     let searchKey = this.props.source.filter(el => el.title === this.state.treeSearchKey)[0]?.key;
+    //     console.log('props', this.props)
+    //     console.log('rowKey', this.props.rowKey)
+    //     console.log('rowTitle', this.props.rowTitle)
+        
 
-  // }
+    //     this.treeRef.current.scrollTo({ key: searchKey, align: "top" });
+    //   }, 1000);
+    // }
+
+  }
 
   render() {
     const { className, treeLoading, sourceTitle, targetTitle, showSearch, onLoadData } = this.props;
@@ -215,6 +245,11 @@ class TreeTransfer extends Component {
 
     const treeTransferPanelBodyClass = classNames({
       'tree-transfer-panel-body': true,
+      'tree-transfer-panel-body-has-search': showSearch,
+    });
+
+    const treeTransferPanelBodyRightClass = classNames({
+      'tree-transfer-panel-body-right': true,
       'tree-transfer-panel-body-has-search': showSearch,
     });
 
@@ -278,7 +313,7 @@ class TreeTransfer extends Component {
             <Spin spinning={treeLoading} size="small">
               {unLoadAlert ? <div className="tree-transfer-panel-body-alert"><Alert message="데이터 불러 오는 중..." banner /></div> : null}
               <div className="tree-transfer-panel-body-content">  
-                <Tree {...treeProps} ref={this.treeRef}>
+                <Tree {...treeProps} ref={this.treeRef} height={390}>
                   {treeNode}
                 </Tree>
               </div>
@@ -295,7 +330,7 @@ class TreeTransfer extends Component {
             <span className="tree-transfer-panel-header-select">{`${listCheckedKeys.length > 0 ? `${listCheckedKeys.length}/` : ''}${listData.length}`} 명</span>
             <span className="tree-transfer-panel-header-title">{targetTitle}</span>
           </div>
-          <div className={treeTransferPanelBodyClass}>
+          <div className={treeTransferPanelBodyRightClass}>
             {showSearch ? <div className="tree-transfer-panel-body-search"><Search placeholder="이름 검색" onSearch={this.onListSearch} /></div> : null}
             <ul className="tree-transfer-panel-body-content">
               {

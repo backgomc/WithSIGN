@@ -42,11 +42,17 @@
   position: absolute;
   right: 12px;
 }
-.lucio-tree-transfer .tree-transfer-panel-body {
+.lucio-tree-transfer .tree-transfer-panel-body-right {
   height: 100%;
   font-size: 14px;
   position: relative;
   overflow: auto;
+}
+.lucio-tree-transfer .tree-transfer-panel-body {
+  height: 100%;
+  font-size: 14px;
+  position: relative;
+  overflow: hidden;
 }
 .lucio-tree-transfer .tree-transfer-panel-body .ant-alert {
   font-size: 14px;

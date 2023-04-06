@@ -368,6 +368,13 @@ router.post('/updateDocumentCancel', (req, res) => {
             return res.json({ success: true })
           }
         })
+
+        // 문서 서명 취소 시 요청자에게 쪽지 보내기 : 일반 전송만 (대량 전송 제외)
+        if (document.docType == 'G') {
+          console.log('쪽지 전송 OK: 서명 취소')
+          restful.callNotify(null, document.user,'서명(수신) 취소 알림', '['+document.docTitle+']' + ' 의 서명(수신)이 취소되었습니다.');
+        } 
+
       } else {
         return res.json({ success: false, message: "이미 서명취소 처리되었습니다." })
       }

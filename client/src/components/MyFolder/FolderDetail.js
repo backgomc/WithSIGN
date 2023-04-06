@@ -171,7 +171,7 @@ const FolderDetail = ({location}) => {
       sorter: true,
       key: 'docTitle',
       ...getColumnSearchProps(['docTitle']),
-      sorter: (a, b) => a.docTitle.localeCompare(b.docTitle),
+      sorter: (a, b) => a.docTitle?.localeCompare(b.docTitle),
       render: (text, row) => {
         return (
           <Space>
@@ -194,7 +194,7 @@ const FolderDetail = ({location}) => {
       sorter: true,
       key: 'requestedTime',
       width: '180px',
-      sorter: (a, b) => a.requestedTime.localeCompare(b.requestedTime),
+      sorter: (a, b) => a.requestedTime?.localeCompare(b.requestedTime),
       render: (text, row) => {
         return <Moment format="YYYY/MM/DD HH:mm">{row['requestedTime']}</Moment>
       }
@@ -206,7 +206,7 @@ const FolderDetail = ({location}) => {
       defaultSortOrder: 'descend',
       key: 'recentTime',
       width: '180px',
-      sorter: (a, b) => a.recentTime.localeCompare(b.recentTime),
+      sorter: (a, b) => a.recentTime?.localeCompare(b.recentTime),
       render: (text, row) => {
         return <Moment format="YYYY/MM/DD HH:mm">{row['recentTime']}</Moment>
       }

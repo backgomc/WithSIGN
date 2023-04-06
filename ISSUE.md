@@ -21,4 +21,5 @@ pdf 가 한장인 경우 PDF뷰어 높이가 여백이 많이 생기는 문제 
 > docker 용량 문제로 install 이 안되는 문제, 아래 명령어를 통해 container 용량을 정리해준다.
 > docker image prune -f
 > docker container prune -f
- 
+* [10] Uncaught (in promise) Error: Invariant failed: A state mutation was detected between dispatches
+> redux state 값을 mutable 하게 변경하여 나타난 오류로 객체를 copy 하여 사용하여 해결함.
