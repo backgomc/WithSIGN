@@ -52,8 +52,12 @@ const storage = multer.diskStorage({
         // })
 
         // console.log('file.originalname', file.originalname)
-
-        cb(null, file.originalname);
+        if (req.body.path.includes('attachfiles')) {
+            let newFileName = new Date().valueOf() + path.extname(file.originalname)
+            cb(null, newFileName);
+        } else {
+            cb(null, file.originalname);    
+        }
     }
 })
 
