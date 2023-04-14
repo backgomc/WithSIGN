@@ -6,10 +6,8 @@ import 'antd/dist/antd.css';
 import { Button } from 'antd';
 import { useIntl } from "react-intl";
 import { PageContainer } from '@ant-design/pro-layout';
-import WebViewer from '@pdftron/webviewer';
 import 'antd/dist/antd.css';
 import '@ant-design/pro-card/dist/card.css';
-import { LICENSE_KEY, USE_WITHPDF } from '../../config/Config';
 import {
   ArrowLeftOutlined,
   DownloadOutlined
@@ -45,51 +43,8 @@ const PreviewPDF = ({location}) => {
   }
 
   useEffect(() => {
-
-    if (USE_WITHPDF) {
-      initWithPDF();
-    } else {
-      // FILE Thumbnail 추출 
-      WebViewer(
-        {
-          path: 'webviewer',
-          licenseKey: LICENSE_KEY,
-          disabledElements: [
-            'ribbons',
-            'toggleNotesButton',
-            'searchButton',
-            'menuButton',
-            'contextMenuPopup',
-          ],
-        },
-        viewer.current,
-      )
-      .then(instance => {
-
-        // const { docViewer, CoreControls } = instance;
-        const { Core, UI } = instance;
-        const { documentViewer } = Core;
-
-        // set local font 
-        Core.setCustomFontURL("/webfonts/");
-
-        // set language
-        UI.setLanguage('ko');
-
-        setInstance(instance)
-
-        // set file url
-        const URL = '/' + docRef;      
-        UI.loadDocument(URL);
-        
-        documentViewer.addEventListener('documentLoaded', () => {
-          console.log('documentLoaded called');
-        });
-      });
-    }
-
+    initWithPDF();
   }, []);
-
 
   return (
     <div>
@@ -123,7 +78,7 @@ const PreviewPDF = ({location}) => {
       // ]}
     >
 
-      {USE_WITHPDF ? <PDFViewer ref={pdfRef} isUpload={false} isSave={false} isEditing={false} headerSpace={128} />  : <div className="webviewer" ref={viewer}></div>}
+      <PDFViewer ref={pdfRef} isUpload={false} isSave={false} isEditing={false} headerSpace={128} />
 
     </PageContainer>
     </PageContainerStyle>

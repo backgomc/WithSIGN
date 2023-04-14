@@ -37,8 +37,6 @@ import { selectDocumentTempPath,
 
 import { selectDirectTempPath, selectDirectTitle } from '../SignDirect/DirectSlice';
 import { selectUser } from '../../app/infoSlice';
-import WebViewer from '@pdftron/webviewer';
-// import 'gestalt/dist/gestalt.css';
 import './PrepareDocument.css';
 import StepWrite from '../Step/StepWrite'
 import { useIntl } from 'react-intl';
@@ -48,7 +46,6 @@ import ProCard from '@ant-design/pro-card';
 import 'antd/dist/antd.css';
 import '@ant-design/pro-card/dist/card.css';
 import logo from '../../assets/images/logo.svg';
-import { LICENSE_KEY, USE_WITHPDF } from '../../config/Config';
 import { ReactComponent as IconSign} from '../../assets/images/sign.svg';
 import { ReactComponent as IconText} from '../../assets/images/text.svg';
 import { ReactComponent as IconCheckbox} from '../../assets/images/checkbox.svg';
@@ -193,9 +190,7 @@ const PrepareDocument = ({location}) => {
     const res = await axios.post('/api/sign/signs', param);
     if (res.data.success) {
       const signs = res.data.signs;
-      if (USE_WITHPDF) {
-        pdfRef.current.setSigns(signs);
-      }
+      pdfRef.current.setSigns(signs);
     }
   }
 
@@ -286,385 +281,7 @@ const PrepareDocument = ({location}) => {
         return assignees.some(v => value == v.key);
       }));
     }
-
-    if (USE_WITHPDF) {
-      initWithPDF();
-
-    } else {
-
-      WebViewer(
-        {
-          path: 'webviewer',
-          licenseKey: LICENSE_KEY,
-          disabledElements: [
-            'ribbons',
-            'toggleNotesButton',
-            'searchButton',
-            'menuButton',
-          ],
-        },
-        viewer.current,
-      ).then(async instance => {
-        // const { iframeWindow, docViewer, CoreControls, Annotations } = instance;  // v6
-        const { Core, UI } = instance;
-        const { documentViewer, Annotations, Tools } = Core;
-        // select only the view group
-        // toolbarGroup-View, toolbarGroup-Annotate, toolbarGroup-Shapes, toolbarGroup-Insert, toolbarGroup-Measure, toolbarGroup-Edit, toolbarGroup-FillAndSign
-        // instance.setToolbarGroup('toolbarGroup-FillAndSign');
-        // instance.setToolbarGroup('toolbarGroup-Annotate');
-  
-        // instance.setHeaderItems(function(header) {
-        //   // get the tools overlay
-        //   const toolsOverlay = header.getHeader('toolbarGroup-Annotate').get('toolsOverlay');
-        //   header.getHeader('toolbarGroup-Annotate').delete('toolsOverlay');
-        //   // add the line tool to the top header
-        //   header.getHeader('default').push({
-        //     type: 'toolGroupButton',
-        //     toolGroup: 'lineTools',
-        //     dataElement: 'lineToolGroupButton',
-        //     title: 'annotation.line',
-        //   });
-        //   // add the tools overlay to the top header
-        //   // header.push(toolsOverlay);
-        // });
-  
-      
-        // set the ribbons(상단 그룹) and second header
-        UI.enableElements(['ribbons']);
-        UI.disableElements(['toolbarGroup-View', 'toolbarGroup-Annotate', 'toolbarGroup-Shapes', 'toolbarGroup-Insert', 'toolbarGroup-Measure', 'toolbarGroup-Edit', 'toolbarGroup-Forms', 'annotationCommentButton', 'linkButton', 'contextMenuPopup']);
-        UI.disableTools([Tools.ToolNames.FORM_FILL_CROSS, Tools.ToolNames.FORM_FILL_CHECKMARK, Tools.ToolNames.FORM_FILL_DOT]);
-        // instance.disableTools([ 'AnnotationCreateSticky', 'AnnotationCreateFreeText' ]); // hides DOM element + disables shortcut
-        // instance.enableFeatures([instance.Feature.Annotations]);
-        // instance.enableFeatures([instance.Feature.Ribbons]);
-        
-        UI.setToolbarGroup('toolbarGroup-View');
-  
-        // set local font 
-        Core.setCustomFontURL('/webfonts/');
-  
-        // set language
-        UI.setLanguage('ko');
-  
-        // copy 방지 
-        UI.disableFeatures([instance.UI.Feature.Copy]);
-  
-        // 포커스 
-        documentViewer.setToolMode(documentViewer.getTool('Pan'));
-  
-    
-        setInstance(instance);
-  
-        const iframeDoc = UI.iframeWindow.document.body;
-        iframeDoc.addEventListener('dragover', dragOver);
-        iframeDoc.addEventListener('drop', e => {
-          drop(e, instance);
-        });
-  
-        if (documentType === 'TEMPLATE') {
-          // /storage/... (O) storage/...(X)
-          UI.loadDocument('/'+template.docRef);
-        } else if (documentType === 'TEMPLATE_CUSTOM') {
-          // /storage/... (O) storage/...(X)
-          UI.loadDocument('/'+template.customRef);
-        } else if (documentType === 'PC' || documentType === 'DIRECT') {
-          UI.loadDocument('/'+documentTempPath);
-        }
-  
-        const annotationManager = documentViewer.getAnnotationManager();
-  
-        documentViewer.addEventListener('documentLoaded', async () => {
-          console.log('documentLoaded called');
-          
-          // 디폴트 설정
-          // docViewer.setToolMode(docViewer.getTool('AnnotationCreateFreeText'));
-  
-          // 페이지 저장
-          setPageCount(documentViewer.getPageCount());
-  
-          const doc = documentViewer.getDocument();
-          // const pageIdx = 1;
-  
-          // doc.loadThumbnailAsync(pageIdx, (thumbnail) => {
-          //   // thumbnail is a HTMLCanvasElement or HTMLImageElement
-          //   console.log("loadThumbnailAsync called")
-          //   // console.log('thumbnail:'+thumbnail.toDataURL());
-  
-          //   setThumbnail(thumbnail.toDataURL())
-          // });
-  
-          doc.loadCanvasAsync(({
-            pageNumber: 1,
-            // zoom: 0.21, // render at twice the resolution //mac: 0.21 window: ??
-            width: 300,  // 윈도우 기준으로 맞춤. 맥에서는 해상도가 더 크게 나옴
-            drawComplete: async (thumbnail) => {
-              // const pageNumber = 1;
-              // optionally comment out "drawAnnotations" below to exclude annotations
-              // await instance.docViewer.getAnnotationManager().drawAnnotations(pageNumber, thumbnail);
-              // thumbnail is a HTMLCanvasElement or HTMLImageElement
-              // console.log('thumbnail:'+thumbnail.toDataURL());
-              setThumbnail(thumbnail.toDataURL())
-            }
-          }));
-  
-        });
-  
-        // const normalStyles = (widget) => {
-        //   if (widget instanceof Annotations.TextWidgetAnnotation) {
-        //     return {
-        //       border: '1px solid #a5c7ff',
-        //       'background-color': '#a5c7ff',
-        //       color: 'black',
-        //     };
-        //   } else if (widget instanceof Annotations.SignatureWidgetAnnotation) {
-        //     return {
-        //       border: '1px solid #a5c7ff',
-        //     };
-        //   }
-        // };
-  
-        // Annotations.WidgetAnnotation.getCustomStyles = normalStyles;
-  
-        annotationManager.addEventListener('annotationChanged', async (annotations, action, info) => {
-  
-          console.log('called annotationChanged:'+ action);
-  
-          // const { documentViewer, Font } = instance;
-          let firstChk = false;
-  
-          annotations.forEach(async function(annot) {
-            console.log('annot', annot.fieldName);
-            console.log(annot.getCustomData('id'));
-            // 템플릿 항목 설정 체크
-            if ((annot.getCustomData('id') && annot.getCustomData('id').endsWith('CUSTOM'))) {
-              let name = annot.getCustomData('id'); // sample: 6156a3c9c7f00c0d4ace4744_SIGN_CUSTOM, 6156a3c9c7f00c0d4ace4744_SIGN_16570691999435
-              let user = name.split('_')[0];
-              let type = name.split('_')[1];
-              
-              firstChk = true;
-  
-  
-              let member = boxData.filter(e => e.key === user)[0];
-  
-              // user 가 requester 이면 현재 본인으로 매핑해준다. => 대량발송만 매핑하도록 변경, 일반발송은 신청서 방식으로 대체
-              if (user === 'requester1') {
-                if (sendType === 'B') {
-                  member = boxData.filter(e => e.key === 'bulk')?.[0];
-                  if (!type.includes("AUTO")) annot.setContents(type);
-                } else {
-                  // member = boxData.filter(e => e.key === _id)?.[0];
-                  // if (!type.includes("AUTO")) annot.setContents(myname+(type==='SIGN'?'\n'+type:' '+type));
-                }
-              }
-              console.log(member);
-  
-              if (member) {
-                if ((browser && browser.name.includes('chrom') && parseInt(browser.version) < 87) && name.includes('TEXT')) {
-                  // 브라우저 버전이 87보다 낮을 경우 삭제
-                  annotationManager.deleteAnnotation(annot);
-                } else {
-                  if (name.includes('SIGN')) {
-                    member.sign = member.sign + 1;
-                  } else if (name.includes('TEXT')) {
-                    member.text = member.text + 1;
-                  } else if (name.includes('CHECKBOX')) {
-                    member.checkbox = member.checkbox + 1;
-                  } else if (name.includes('AUTONAME')) {
-                    member.auto_name = member.auto_name + 1;
-                  } else if (name.includes('AUTOJOBTITLE')) {
-                    member.auto_jobtitle = member.auto_jobtitle + 1;
-                  } else if (name.includes('AUTOOFFICE')) {
-                    member.auto_office = member.auto_office + 1;
-                  } else if (name.includes('AUTODEPART')) {
-                    member.auto_depart = member.auto_depart + 1;
-                  } else if (name.includes('AUTOSABUN')) {
-                    member.auto_sabun = member.auto_sabun + 1;
-                  } else if (name.includes('AUTODATE')) {
-                    member.auto_date = member.auto_date + 1;
-                  }
-                  let newBoxData = boxData.slice();
-                  newBoxData[boxData.filter(e => e.key === user).index] = member;
-                  setBoxData(newBoxData);
-  
-                  if (annot.getCustomData('fontSize')) {
-                    annot.FontSize = annot.getCustomData('fontSize');
-                  } 
-    
-                  // annotation 구분값 복원
-                  // annot.FontSize = '' + 18.0 / docViewer.getZoom() + 'px';
-                  annot.custom = {
-                    type,
-                    name : `${member.key}_${type}_`
-                  }
-                  annot.deleteCustomData('id');
-                }
-              // } else if (user === 'requester') {
-              //   console.log('requester field')
-  
-              } else {
-                // boxData 와 일치하는 annotation 없을 경우 삭제
-                annotationManager.deleteAnnotation(annot);
-              }
-            }
-          });
-  
-          // 자유 텍스트 상단 짤리는 문제 ...
-          console.log(annotations[0].Subject, annotations[0].ToolName, annotations[0].TextAlign);
-         
-          if (annotations[0].ToolName && annotations[0].ToolName.startsWith('AnnotationCreateFreeText') && action === 'add') {
-            // annotations[0].TextAlign = 'center'
-            annotations[0].setPadding(new Annotations.Rect(0, 0, 0, 2)); // left bottom right top 
-            annotations[0].Font = 'monospace';
-          }
-          
-  
-          // 최초 실행 또는 applyFields 에서 호출 시는 아래가 호출되지 않도록 처리 
-          if (firstChk || !annotations[0].custom) {
-            return;
-          } 
-  
-          // 해당 메서드에서는 state 값을 제대로 못불러온다 ... 
-          // Ref 를 써서 해결 ...
-          if (action === 'add') {
-            console.log('added annotation');
-  
-            const name = annotations[0].custom.name; //sample: 6156a3c9c7f00c0d4ace4744_SIGN_
-            const user = name.split('_')[0]
-  
-            const member = boxData.filter(e => e.key === user)[0]
-  
-            if (name.includes('SIGN')) {
-              member.sign = member.sign + 1
-            } else if (name.includes('TEXT')) {
-              member.text = member.text + 1
-            } else if (name.includes('CHECKBOX')) {
-              member.checkbox = member.checkbox + 1
-            } else if (name.includes('AUTONAME')) {
-              member.auto_name = member.auto_name + 1
-            } else if (name.includes('AUTOJOBTITLE')) {
-              member.auto_jobtitle = member.auto_jobtitle + 1
-            } else if (name.includes('AUTOOFFICE')) {
-              member.auto_office = member.auto_office + 1
-            } else if (name.includes('AUTODEPART')) {
-              member.auto_depart = member.auto_depart + 1
-            } else if (name.includes('AUTOSABUN')) {
-              member.auto_sabun = member.auto_sabun + 1
-            } else if (name.includes('AUTODATE')) {
-              member.auto_date = member.auto_date + 1
-            }
-  
-            const newBoxData = boxData.slice()
-            newBoxData[boxData.filter(e => e.key === user).index] = member 
-            
-            setBoxData(newBoxData)
-  
-  
-            // 0: {key: '6156a3c9c7f00c0d4ace4744', sign: 0, text: 0}
-            // 1: {key: '6156a3c9c7f00c0d4ace4746', sign: 0, text: 0}
-  
-  
-            // setBoxData( (prev) => [...prev, {key:123, sign:1, text:2}] );
-            // setBoxData([{key: '6156a3c9c7f00c0d4ace4744', sign: 1, text: 0}, {key: '6156a3c9c7f00c0d4ace4746', sign: 0, text: 0}])
-  
-            // if (temp) {
-  
-            //   const asisInputValue = tmp(user)
-  
-            //   console.log("asisInputValue.sign:"+asisInputValue.sign)
-            //   const updateNum = asisInputValue.sign + 1 
-            //   console.log("updateNum:"+updateNum)
-            //   updateInputValue(user, {sign:updateNum, text:asisInputValue.text})
-  
-            // } else {
-            //   insertInputValue(user, {sign:1, text:0})
-            // }
-  
-            
-  
-          } else if (action === 'modify') {
-            console.log('this change modified annotations');
-          } else if (action === 'delete') {
-            console.log('deleted annotation:'+ annotations);
-  
-            // annotation 이 동시 삭제되는 경우 처리 : observer 체크 시 
-            annotations.map(annotation => {
-              const name = annotation.custom.name //sample: 6156a3c9c7f00c0d4ace4744_SIGN_
-              const user = name.split('_')[0]
-    
-              const member = boxData.filter(e => e.key === user)[0]
-    
-              if (name.includes('SIGN')) {
-                member.sign = member.sign - 1
-              } else if (name.includes('TEXT')) {
-                member.text = member.text - 1
-              } else if (name.includes('CHECKBOX')) {
-                member.checkbox = member.checkbox - 1
-              } else if (name.includes('AUTONAME')) {
-                member.auto_name = member.auto_name - 1
-              } else if (name.includes('AUTOJOBTITLE')) {
-                member.auto_jobtitle = member.auto_jobtitle - 1
-              } else if (name.includes('AUTOOFFICE')) {
-                member.auto_office = member.auto_office - 1
-              } else if (name.includes('AUTODEPART')) {
-                member.auto_depart = member.auto_depart - 1
-              } else if (name.includes('AUTOSABUN')) {
-                member.auto_sabun = member.auto_sabun - 1
-              } else if (name.includes('AUTODATE')) {
-                member.auto_date = member.auto_date - 1
-              }
-    
-              const newBoxData = boxData.slice()
-              newBoxData[boxData.filter(e => e.key === user).index] = member 
-              
-              setBoxData(newBoxData)
-            });
-  
-          }
-  
-          // 유효성 체크 
-          // var check = false
-          // boxData.map(box => {
-          // //{ key:user.key, sign:0, text:0 };
-          // //observers.filter(v => v != item.key)
-  
-          // //TODO: 체크박스도 조건 추가하기
-          //   // if(box.sign === 0 && box.text === 0 && observers.filter(v => v == box.key).count == 0) { 
-          //   if(box.sign === 0 && box.text === 0) { 
-          //     check = true
-          //   }
-          // });
-          // setDisableNext(check)
-  
-        });
-  
-        // filePicker.current.onchange = e => {
-        //   const file = e.target.files[0];
-        //   console.log("Afile:"+ file)
-        //   if (file) {
-        //     setFileName(file.name.split('.')[0]);
-        //     instance.loadDocument(file);
-        //   }
-        // };
-  
-        // 내 사인 이미지 가져와서 출력하기
-        const res = await axios.post('/api/sign/signs', {user: _id})
-        if (res.data.success) {
-          const signs = res.data.signs;
-  
-          var signDatas = [];
-          signs.forEach(element => {
-            signDatas.push(element.signData)
-          });
-  
-          if (signDatas.length > 0) {
-            const signatureTool = documentViewer.getTool('AnnotationCreateSignature');
-            documentViewer.addEventListener('documentLoaded', () => {
-              signatureTool.importSignatures(signDatas);
-            });
-          }
-        }
-      });
-
-    }
+    initWithPDF();
 
   }, []);
 
@@ -695,319 +312,12 @@ const PrepareDocument = ({location}) => {
 
   }, [boxData]);
 
-
-  const applyFields = async () => {
-
-    console.log('applyFields called');
-    // setLoading(true);
-
-    const { Core } = instance;
-    const { Annotations, documentViewer } = Core;
-    const annotationManager = documentViewer.getAnnotationManager();
-    const fieldManager = annotationManager.getFieldManager();
-    const annotationsList = annotationManager.getAnnotationsList();
-    const annotsToDelete = [];
-    const annotsToDraw = [];
-
-    await Promise.all(
-      annotationsList.map(async (annot, index) => {
-        let inputAnnot;
-        let field;
-
-        if (typeof annot.custom !== 'undefined') {
-          // create a form field based on the type of annotation
-          if (annot.custom.type === 'TEXT') {
-            console.log("annot.custom.name:"+annot.custom.name)
-            field = new Annotations.Forms.Field(
-              // annot.getContents() + Date.now() + index,
-              annot.custom.name + Date.now() + index,
-              {
-                type: 'Tx',
-                value: annot.custom.value,
-                // flags: [Annotations.WidgetFlags.MULTILINE, Annotations.WidgetFlags.DO_NOT_SCROLL, Annotations.WidgetFlags.DO_NOT_SPELL_CHECK]
-              },
-            );
-            inputAnnot = new Annotations.TextWidgetAnnotation(field);
-
-            // 폰트 설정
-            const fontOptions = {
-              name: annot.Font,
-              size: parseInt(annot.FontSize.replace('pt', '').replace('px', ''))
-            }
-            const font = new Annotations.Font(fontOptions)
-            inputAnnot.set({'font': font})
-            inputAnnot.setCustomData('font', annot.Font);
-            inputAnnot.setCustomData('fontSize', annot.FontSize);
-            inputAnnot.setCustomData('textAlign', annot.TextAlign);
-            inputAnnot.setCustomData('textVerticalAlign', annot.TextVerticalAlign);
-            if (annot.getRichTextStyle() && annot.getRichTextStyle()[0]) {
-              inputAnnot.setCustomData('fontStyle', annot.getRichTextStyle()[0]['font-style']);
-              inputAnnot.setCustomData('fontWeight', annot.getRichTextStyle()[0]['font-weight']);
-              inputAnnot.setCustomData('textDecoration', annot.getRichTextStyle()[0]['text-decoration']);
-            }
-
-          } else if (annot.custom.type === 'SIGN') {
-            console.log("annot.custom.name:"+annot.custom.name)
-            field = new Annotations.Forms.Field(
-              // annot.getContents() + Date.now() + index,
-              annot.custom.name + Date.now() + index,
-              {
-                type: 'Sig',
-              },
-            );
-            inputAnnot = new Annotations.SignatureWidgetAnnotation(field, {
-              appearance: '_DEFAULT',
-              appearances: {
-                _DEFAULT: {
-                  Normal: {
-                    data:
-                      'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAYdEVYdFNvZnR3YXJlAHBhaW50Lm5ldCA0LjEuMWMqnEsAAAANSURBVBhXY/j//z8DAAj8Av6IXwbgAAAAAElFTkSuQmCC',
-                    offset: {
-                      x: 100,
-                      y: 100,
-                    },
-                  },
-                },
-              },
-            });
-
-          } else if (annot.custom.type === 'CHECKBOX') {
-              console.log("annot.custom.name:"+annot.custom.name)
-              field = new Annotations.Forms.Field(
-                annot.custom.name + Date.now() + index,
-                {
-                  type: 'Btn',
-                  value: annot.custom.value,
-                },
-              );
-              inputAnnot = new Annotations.CheckButtonWidgetAnnotation(field);
-
-          } else if (annot.custom.type === 'DATE') {
-            field = new Annotations.Forms.Field(
-              // annot.getContents() + Date.now() + index,
-              annot.custom.name + Date.now() + index,
-              {
-                type: 'Tx',
-                value: 'm-d-yyyy',
-                // Actions need to be added for DatePickerWidgetAnnotation to recognize this field.
-                actions: {
-                  F: [
-                    {
-                      name: 'JavaScript',
-                      // You can customize the date format here between the two double-quotation marks
-                      // or leave this blank to use the default format
-                      javascript: 'AFDate_FormatEx("mmm d, yyyy");',
-                    },
-                  ],
-                  K: [
-                    {
-                      name: 'JavaScript',
-                      // You can customize the date format here between the two double-quotation marks
-                      // or leave this blank to use the default format
-                      javascript: 'AFDate_FormatEx("mmm d, yyyy");',
-                    },
-                  ],
-                },
-              },
-            );
-  
-            inputAnnot = new Annotations.DatePickerWidgetAnnotation(field);
-
-
-          } else if (annot.custom.type === 'CHECKBOX') {
-            console.log("annot.custom.name:"+annot.custom.name)
-            field = new Annotations.Forms.Field(
-              annot.custom.name + Date.now() + index,
-              {
-                type: 'Btn',
-                value: annot.custom.value,
-              },
-            );
-            inputAnnot = new Annotations.CheckButtonWidgetAnnotation(field);
-
-          } else if (annot.custom.type === 'AUTONAME' ||
-                    annot.custom.type === 'AUTOJOBTITLE' ||
-                    annot.custom.type === 'AUTOOFFICE' ||
-                    annot.custom.type === 'AUTODEPART' ||
-                    annot.custom.type === 'AUTOSABUN' ||
-                    annot.custom.type === 'AUTODATE') {
-            console.log("auto annot.custom.name:"+annot.custom.name)
-            field = new Annotations.Forms.Field(
-              // annot.getContents() + Date.now() + index,
-              annot.custom.name + Date.now() + index,
-              {
-                type: 'Tx',
-                value: annot.custom.value,
-              },
-            );
-
-            inputAnnot = new Annotations.TextWidgetAnnotation(field);
-
-            // 폰트 설정
-            const fontOptions = {
-              name: annot.Font,
-              size: parseInt(annot.FontSize.replace('pt', '').replace('px', ''))
-            }
-            const font = new Annotations.Font(fontOptions)
-            inputAnnot.set({'font': font})
-
-          } else {
-            // exit early for other annotations
-            annotationManager.deleteAnnotation(annot, false, true); // prevent duplicates when importing xfdf
-            return;
-          }
-        } else {
-          // exit early for other annotations
-          return;
-        }
-
-        // set position
-        inputAnnot.PageNumber = annot.getPageNumber();
-        inputAnnot.X = annot.getX();
-        inputAnnot.Y = annot.getY();
-        inputAnnot.rotation = annot.Rotation;
-        if (annot.Rotation === 0 || annot.Rotation === 180) {
-          inputAnnot.Width = annot.getWidth();
-          inputAnnot.Height = annot.getHeight();
-        } else {
-          inputAnnot.Width = annot.getHeight();
-          inputAnnot.Height = annot.getWidth();
-        }
-
-        // delete original annotation
-        annotsToDelete.push(annot);
-
-        // customize styles of the form field
-        Annotations.WidgetAnnotation.getCustomStyles = function (widget) {
-          if (widget instanceof Annotations.SignatureWidgetAnnotation) {
-            return {
-              border: '1px solid #a5c7ff',
-            };
-          }
-
-          if (widget instanceof Annotations.CheckButtonWidgetAnnotation) {
-            return {
-              border: '1px solid #a5c7ff',
-            };
-          }
-
-        };
-        Annotations.WidgetAnnotation.getCustomStyles(inputAnnot);
-
-        // draw the annotation the viewer
-        annotationManager.addAnnotation(inputAnnot);
-        fieldManager.addField(field);
-        annotsToDraw.push(inputAnnot);
-      }),
-    );
-
-    // delete old annotations
-    annotationManager.deleteAnnotations(annotsToDelete, null, true);
-
-    // refresh viewer
-    await annotationManager.drawAnnotationsFromList(annotsToDraw);
-    await uploadForSigning();
-
-    // setLoading(false);
-  };
-
   // 일반전송 : 멤버 아이디로 필드값 저장
   // 대량전송 : 멤버가 아닌 공통값(bulk)으로 저장
   const addField = (type, point = {}, member = {}, color = '', value = '', flag = {}) => {
-
     console.log('called addField')
-
-    if (USE_WITHPDF) {
-      addBox(type, member, color);
-      return;
-    }
-
-    const { Core } = instance;
-    const { documentViewer, Annotations } = Core;
-    const annotationManager = documentViewer.getAnnotationManager();
-    const doc = documentViewer.getDocument();
-    const displayMode = documentViewer.getDisplayModeManager().getDisplayMode();
-    const page = displayMode.getSelectedPages(point, point);
-    if (!!point.x && page.first == null) {
-      return; //don't add field to an invalid page location
-    }
-    const page_idx =
-      page.first !== null ? page.first : documentViewer.getCurrentPage();
-    const page_info = doc.getPageInfo(page_idx);
-    const page_point = displayMode.windowToPage(point, page_idx);
-    const zoom = documentViewer.getZoomLevel();
-
-    var textAnnot = new Annotations.FreeTextAnnotation();
-    textAnnot.PageNumber = page_idx;
-    const rotation = documentViewer.getCompleteRotation(page_idx) * 90;
-    textAnnot.Rotation = rotation;
-    if (rotation === 270 || rotation === 90) {
-      textAnnot.Width = 50.0 / zoom;
-      textAnnot.Height = 250.0 / zoom;
-    } else {
-      if (type == 'SIGN') {
-        textAnnot.Width = 90.0 / zoom;
-        textAnnot.Height = 60.0 / zoom;
-      } else if (type == 'TEXT') {
-        textAnnot.Width = 120.0 / zoom;
-        textAnnot.Height = 25.0 / zoom;
-      } else if (type == 'CHECKBOX') {
-        textAnnot.Width = 25.0 / zoom;
-        textAnnot.Height = 25.0 / zoom;
-      } else if (type.includes('AUTONAME') || type.includes('AUTOJOBTITLE') || type.includes('AUTOSABUN')) {
-        textAnnot.Width = 90.0 / zoom;
-        textAnnot.Height = 25.0 / zoom;
-      } else if (type.includes('AUTODATE') || type.includes('AUTOOFFICE') || type.includes('AUTODEPART')) {
-        textAnnot.Width = 140.0 / zoom;
-        textAnnot.Height = 25.0 / zoom;
-      } else {
-        textAnnot.Width = 250.0 / zoom;
-        textAnnot.Height = 30.0 / zoom;
-      }
-    }
-    textAnnot.X = (page_point.x || page_info.width / 2) - textAnnot.Width / 2;
-    textAnnot.Y = (page_point.y || page_info.height / 2) - textAnnot.Height / 2;
-
-    textAnnot.setPadding(new Annotations.Rect(0, 0, 0, 0));
-    textAnnot.custom = {
-      type,
-      value,
-      flag,
-      // name: `${assignee}_${type}_`,  //TODO 이름_type으로 
-      // name: `${assignee.value}_${type}_`
-      // name: `${member.key}_${type}_`
-      name: (sendType === 'B') ? `bulk_${type}_` : `${member.key}_${type}_`
-    };
-
-    // set the type of annot
-
-    if (type.includes("AUTO")) {
-      textAnnot.setContents(member.name);
-      textAnnot.FillColor = new Annotations.Color(211, 211, 211, 0.5);
-      textAnnot.TextColor = new Annotations.Color(73, 73, 73);
-      textAnnot.StrokeColor = new Annotations.Color(73, 73, 73);
-      textAnnot.TextAlign = 'left'; //텍스트는 좌측정렬
-    } else {
-      textAnnot.setContents((sendType === 'B') ? type : member.name+(type==='SIGN'?'\n'+type:' '+type));
-      textAnnot.FillColor = new Annotations.Color(211, 211, 211, 0.5);
-      textAnnot.TextColor = new Annotations.Color(0, 165, 228);
-      textAnnot.StrokeColor = new Annotations.Color(0, 165, 228);
-      if (type === 'SIGN') {
-        textAnnot.TextAlign = 'center';
-      } else {
-        textAnnot.TextAlign = 'left'; //텍스트는 좌측정렬
-      }
-    }
-
-    // textAnnot.FontSize = '' + 18.0 / zoom + 'px';
-    textAnnot.FontSize = '' + 13.0 + 'px';
-    textAnnot.StrokeThickness = 1;
-    textAnnot.Author = annotationManager.getCurrentUser();
-
-    annotationManager.deselectAllAnnotations();
-    annotationManager.addAnnotation(textAnnot, true);
-    annotationManager.redrawAnnotation(textAnnot);
-    annotationManager.selectAnnotation(textAnnot);
+    addBox(type, member, color);
+    return;
   };
 
   const getToday = () => {
@@ -1288,10 +598,6 @@ const PrepareDocument = ({location}) => {
       thumbnailUrl = resThumbnail.data.thumbnail 
     }
 
-
-
-
-
     // 2-1. 첨부파일 저장히기 
     const attachPaths = []
     var files = []
@@ -1311,11 +617,6 @@ const PrepareDocument = ({location}) => {
         files = resFile.data.files
       }
     }
-
-
-
-
-
 
     // 3. SAVE DOCUMENT
     const signed = false;
@@ -1616,7 +917,7 @@ const PrepareDocument = ({location}) => {
         },
         extra: [
           <Button key="3" icon={<ArrowLeftOutlined />} onClick={() => {navigate(`/assign`, { state: {attachFiles: attachFiles, documentFile: documentFile} });}}></Button>,,
-          <Button key="2" icon={<SendOutlined />} type="primary" onClick={USE_WITHPDF ? send : applyFields} disabled={disableNext} loading={loading}>
+          <Button key="2" icon={<SendOutlined />} type="primary" onClick={send} disabled={disableNext} loading={loading}>
             {formatMessage({id: 'Send'})}
           </Button>,
         ],
@@ -1658,76 +959,33 @@ const PrepareDocument = ({location}) => {
                       console.log('called observer:'+item.key)
                       console.log('checked = ', e.target.checked);
 
-                      if (USE_WITHPDF) {
-                        if (e.target.checked) {
-                          // observer 추가 
-                          setObservers([...observers, item.key])
-                          
-                          // boxData 갱신
-                          const member = boxData.filter(e => e.key === item.key)[0]
-                          member.observer = member.observer + 1
-                          member.sign = 0;
-                          member.text = 0;
-                          member.checkbox = 0;
-                          const newBoxData = boxData.slice()
-                          newBoxData[boxData.filter(e => e.key === item.key).index] = member 
-                          setBoxData(newBoxData)
-  
-                          // annotation 삭제
-                          pdfRef.current.deleteItemsByUserId(item.key);
-  
-                        } else {
-                          // observer 삭제
-                          setObservers(observers.filter(v => v != item.key))
-                          
-                          // boxData 갱신
-                          const member = boxData.filter(e => e.key === item.key)[0]
-                          member.observer = member.observer - 1
-                          const newBoxData = boxData.slice()
-                          newBoxData[boxData.filter(e => e.key === item.key).index] = member 
-                          setBoxData(newBoxData)
-  
-                        }
+                      if (e.target.checked) {
+                        // observer 추가 
+                        setObservers([...observers, item.key])
+                        
+                        // boxData 갱신
+                        const member = boxData.filter(e => e.key === item.key)[0]
+                        member.observer = member.observer + 1
+                        member.sign = 0;
+                        member.text = 0;
+                        member.checkbox = 0;
+                        const newBoxData = boxData.slice()
+                        newBoxData[boxData.filter(e => e.key === item.key).index] = member 
+                        setBoxData(newBoxData)
+
+                        // annotation 삭제
+                        pdfRef.current.deleteItemsByUserId(item.key);
+
                       } else {
-                        if (e.target.checked) {
-                          // observer 추가 
-                          setObservers([...observers, item.key])
-                          
-                          // boxData 갱신
-                          const member = boxData.filter(e => e.key === item.key)[0]
-                          member.observer = member.observer + 1
-                          const newBoxData = boxData.slice()
-                          newBoxData[boxData.filter(e => e.key === item.key).index] = member 
-                          setBoxData(newBoxData)
-  
-                          // annotation 삭제
-                          const { Core } = instance;
-                          const { Annotations, documentViewer } = Core;
-                          const annotationManager = documentViewer.getAnnotationManager();
-                          const annotationsList = annotationManager.getAnnotationsList();
-                          const annotsToDelete = [];
-  
-                          annotationsList.map(async (annot, index) => {
-                            console.log("annot.custom.name:"+annot?.custom?.name)
-                            if (annot?.custom?.name.includes(item.key)) {
-                              annotsToDelete.push(annot)
-                            }
-                          })
-                          annotationManager.deleteAnnotations(annotsToDelete, null, true);
-                 
-  
-                        } else {
-                          // observer 삭제
-                          setObservers(observers.filter(v => v != item.key))
-                          
-                          // boxData 갱신
-                          const member = boxData.filter(e => e.key === item.key)[0]
-                          member.observer = member.observer - 1
-                          const newBoxData = boxData.slice()
-                          newBoxData[boxData.filter(e => e.key === item.key).index] = member 
-                          setBoxData(newBoxData)
-  
-                        }
+                        // observer 삭제
+                        setObservers(observers.filter(v => v != item.key))
+                        
+                        // boxData 갱신
+                        const member = boxData.filter(e => e.key === item.key)[0]
+                        member.observer = member.observer - 1
+                        const newBoxData = boxData.slice()
+                        newBoxData[boxData.filter(e => e.key === item.key).index] = member 
+                        setBoxData(newBoxData)
                       }
                     }}
                     checked={observers.filter(v => v === item.key).length > 0}
@@ -1886,7 +1144,7 @@ const PrepareDocument = ({location}) => {
             {/* <div className="webviewer" ref={viewer}></div> */}
 
             <Spin tip="로딩중..." spinning={loading}>
-            {USE_WITHPDF ? <PDFViewer ref={pdfRef} isUpload={false} isSave={false} isEditing={true} onItemChanged={handleItemChanged} defaultScale={1.0} />  : <div className="webviewer" ref={viewer}></div>}
+              <PDFViewer ref={pdfRef} isUpload={false} isSave={false} isEditing={true} onItemChanged={handleItemChanged} defaultScale={1.0} />
             </Spin>
 
 

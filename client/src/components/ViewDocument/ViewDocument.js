@@ -2,12 +2,9 @@ import React, { useRef, useEffect, useState } from 'react';
 import axios from 'axios';
 import { useSelector } from 'react-redux';
 import { navigate, Link } from '@reach/router';
-// import { Box, Column, Heading, Row, Stack, Button } from 'gestalt';
 import { Row, Col, Button, Badge, List } from 'antd';
 import { selectDocToView } from './ViewDocumentSlice';
 import { selectUser, selectHistory } from '../../app/infoSlice';
-import WebViewer from '@pdftron/webviewer';
-// import 'gestalt/dist/gestalt.css';
 import './ViewDocument.css';
 import { useIntl } from "react-intl";
 import RcResizeObserver from 'rc-resize-observer';
@@ -16,7 +13,6 @@ import ProCard from '@ant-design/pro-card';
 import 'antd/dist/antd.css';
 import '@ant-design/pro-card/dist/card.css';
 import { DownloadOutlined, ArrowLeftOutlined, CheckCircleTwoTone, PaperClipOutlined, PrinterOutlined } from '@ant-design/icons';
-import { LICENSE_KEY, USE_WITHPDF } from '../../config/Config';
 import {DOCUMENT_SIGNED, DOCUMENT_TOSIGN, DOCUMENT_SIGNING, DOCUMENT_CANCELED, DOCUMENT_TOCONFIRM, DOCUMENT_TODO, TYPE_SIGN, TYPE_IMAGE, TYPE_TEXT, TYPE_CHECKBOX} from '../../common/Constants';
 import PDFViewer from "@niceharu/withpdf";
 import styled from 'styled-components';
@@ -93,106 +89,7 @@ const ViewDocument = ({location}) => {
   }
 
   useEffect(() => {
-
-    if (isWithPDF || (USE_WITHPDF && status === DOCUMENT_SIGNED)) {
-      initWithPDF();
-    } else {
-
-      WebViewer(
-        {
-          path: 'webviewer',
-          licenseKey: LICENSE_KEY,
-          disabledElements: [
-            'ribbons',
-            'toggleNotesButton',
-            // 'viewControlsButton',
-            // 'panToolButton',
-            // 'selectToolButton', 
-            'searchButton',
-            // 'menuButton',
-            'commentsButton',
-            'contextMenuPopup'
-          ],
-        },
-        viewer.current,
-      ).then(async instance => {
-  
-        // const { annotManager, Annotations, CoreControls } = instance;
-        const { Core, UI } = instance;
-        const { annotationManager, Annotations } = Core;
-  
-        // select only the view group
-        UI.setToolbarGroup('toolbarGroup-View');
-        Core.setCustomFontURL("/webfonts/");
-        // instance.setToolbarGroup('toolbarGroup-Insert');
-  
-        annotationManager.setReadOnly(true);
-  
-        setInstance(instance);
-  
-        // load document
-        // const storageRef = storage.ref();
-        // const URL = await storageRef.child(docRef).getDownloadURL();
-        // console.log(URL);
-  
-        // DISTO
-        const URL = '/' + docRef;
-        console.log("URL:"+URL);      
-        UI.loadDocument(URL, { filename: docTitle+'.pdf' });
-  
-        const normalStyles = (widget) => {
-          if (widget instanceof Annotations.TextWidgetAnnotation) {
-            return {
-              // 'background-color': '#a5c7ff',
-              color: 'black',
-            };
-          } else if (widget instanceof Annotations.SignatureWidgetAnnotation) {
-            return {
-              // border: '1px solid #a5c7ff',
-            };
-          } else if (widget instanceof Annotations.CheckButtonWidgetAnnotation) {
-            return {
-              // border: '1px solid #a5c7ff',
-            };
-          }
-          
-        };
-  
-        // TODO annotation 수정 안되게 하기
-        annotationManager.addEventListener('annotationChanged', (annotations, action, { imported }) => {
-  
-          console.log('annotationChanged called')
-          if (imported && action === 'add') {
-            annotations.forEach(function(annot) {
-              console.log('annot', annot)
-              annot.NoMove = true;
-              annot.NoDelete = true;
-              annot.ReadOnly = true;
-              if (annot instanceof Annotations.WidgetAnnotation) {
-                Annotations.WidgetAnnotation.getCustomStyles = normalStyles;
-  
-                console.log('annot.fieldName:'+annot.fieldName);
-                // if (!annot.fieldName.startsWith(_id)) { 
-                  // annot.Hidden = true;
-                  // annot.Listable = false;
-                // }
-                // 모든 입력 필드 숨기기
-                // annot.Hidden = true;
-                annot.fieldFlags.set('ReadOnly', true);
-                if (annot.fieldName.includes('SIGN')) { // SIGN annotation 숨김처리
-                  annot.Hidden = true;
-                }
-                // if (annot.fieldName.includes('CHECKBOX')) { // CHECKBOX annotation 숨김처리
-                //   annot.Hidden = true;
-                // }
-              }
-            });
-          }
-        });
-        
-      });
-    }
-    
+    initWithPDF();
   }, [docRef, _id]);
 
   const download = () => {
@@ -295,19 +192,9 @@ const ViewDocument = ({location}) => {
       // ]}
       loading={loading}
     >
-      {/* <RcResizeObserver
-        key="resize-observer"
-        onResize={(offset) => {
-          setResponsive(offset.width < 596);
-        }}
-      > */}
-        {/* <Row gutter={[24, 24]}>
-          <Col span={24}> */}
-          {(isWithPDF || (USE_WITHPDF && status === DOCUMENT_SIGNED)) ? <PDFViewer ref={pdfRef} isUpload={false} isSave={false} isEditing={false} defaultScale={1.0} headerSpace={attachFiles?.length > 0 ? 128 + attachFiles?.length * 30 : 128}></PDFViewer> : <div className="webviewer" ref={viewer}></div>}
-          {/* </Col>
-        </Row> */}
 
-      {/* </RcResizeObserver> */}
+        <PDFViewer ref={pdfRef} isUpload={false} isSave={false} isEditing={false} defaultScale={1.0} headerSpace={attachFiles?.length > 0 ? 128 + attachFiles?.length * 30 : 128}></PDFViewer>
+
     </PageContainer> 
     </PageContainerStyle>
 

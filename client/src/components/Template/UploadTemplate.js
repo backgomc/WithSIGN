@@ -15,8 +15,7 @@ import ProForm, { ProFormUploadDragger, ProFormText, ProFormRadio } from '@ant-d
 import '@ant-design/pro-card/dist/card.css';
 import 'antd/dist/antd.css';
 import '@ant-design/pro-form/dist/form.css';
-import WebViewer from '@pdftron/webviewer';
-import { LICENSE_KEY, USE_WITHPDF } from '../../config/Config';
+import { USE_WITHPDF } from '../../config/Config';
 import Icon, { CheckCircleTwoTone } from '@ant-design/icons';
 import { ReactComponent as PDF_ICON} from '../../assets/images/pdf-icon.svg';
 import { ReactComponent as DOC_ICON} from '../../assets/images/word-icon.svg';
@@ -73,71 +72,13 @@ const UploadTemplate = ({location}) => {
       setTempFilePath(docRef)
     }
     
-    if (USE_WITHPDF) {
-      await pdfRef.current.uploadPDF(docRef);
-      const _thumbnail = await pdfRef.current.getThumbnail(0, 0.6);
-      setThumbnail(_thumbnail);
-    } else {
-      if(instance && docRef) {
-        const URL = '/' + docRef;      
-        instance.docViewer.loadDocument(URL);
-      }
-    }
+    await pdfRef.current.uploadPDF(docRef);
+    const _thumbnail = await pdfRef.current.getThumbnail(0, 0.6);
+    setThumbnail(_thumbnail);
 
   };
 
   useEffect(() => {
-
-    if (USE_WITHPDF) {
-
-    } else {
-      // FILE Thumbnail 추출 
-      WebViewer(
-        {
-          path: 'webviewer',
-          licenseKey: LICENSE_KEY,
-          disabledElements: [
-            'ribbons',
-            'toggleNotesButton',
-            'searchButton',
-            'menuButton',
-          ],
-        },
-        viewer.current,
-      )
-      .then(instance => {
-        setInstance(instance)
-
-        // const { docViewer, CoreControls } = instance;
-        const { Core, UI } = instance;
-        const { documentViewer } = Core;
-        Core.setCustomFontURL("/webfonts/");
-        
-        documentViewer.addEventListener('documentLoaded', () => {
-          console.log('documentLoaded called');
-          const doc = documentViewer.getDocument();
-          const pageIdx = 1;
-
-          doc.loadCanvasAsync(({
-            pageNumber: 1,
-            // zoom: 0.21, // render at twice the resolution //mac: 0.21 window: ??
-            width: 300,  // mac 300
-            drawComplete: async (thumbnail) => {
-              // const pageNumber = 1;
-              // optionally comment out "drawAnnotations" below to exclude annotations
-              // await instance.docViewer.getAnnotationManager().drawAnnotations(pageNumber, thumbnail);
-              // thumbnail is a HTMLCanvasElement or HTMLImageElement
-              console.log('thumbnail:'+thumbnail.toDataURL());
-              setThumbnail(thumbnail.toDataURL())
-            }
-          }));
-
-        });
-
-      });
-    }
-
-
   }, []);
 
   useEffect(() => {
@@ -367,42 +308,7 @@ const UploadTemplate = ({location}) => {
                     form.setFieldsValue({
                       documentTitle: file.name.replace(/\.[^/.]+$/, "").normalize('NFC'),  // MAC 에서 파일 업로드 시 한글 자소 분리 문제로 NFD 방식을 NFC로 변경 
                     })
-
-                    // FILE Thumbnail 추출 
-                    // WebViewer(
-                    //   {
-                    //     path: 'webviewer',
-                    //     disabledElements: [
-                    //       'ribbons',
-                    //       'toggleNotesButton',
-                    //       'searchButton',
-                    //       'menuButton',
-                    //     ],
-                    //   },
-                    //   viewer.current,
-                    // )
-                    // .then(instance => {
-                    //   const { docViewer } = instance;
-                
-                    //   instance.docViewer.loadDocument(file);
-                      
-                    //   docViewer.on('documentLoaded', () => {
-                    //     console.log('documentLoaded called');
-                    //     const doc = docViewer.getDocument();
-                    //     const pageIdx = 1;
-                
-                
-                    //     doc.loadThumbnailAsync(pageIdx, (thumbnail) => {
-                    //       // thumbnail is a HTMLCanvasElement or HTMLImageElement
-                    //       console.log("loadThumbnailAsync called")
-                    //       console.log('thumbnail:'+thumbnail.toDataURL());
-                
-                    //       setThumbnail(thumbnail.toDataURL())
-                    //     });
-                
-                    //   });
-                    // });
-                        
+                     
                     return false;
                   }
                 }}
@@ -450,7 +356,7 @@ const UploadTemplate = ({location}) => {
       </ProCard>
     </PageContainer>
     
-    {USE_WITHPDF ? <div  style={{display:'none'}} ><PDFViewer ref={pdfRef} /></div> : <div className="webviewer" ref={viewer} style={{display:'none'}}></div>}
+    <div style={{display:'none'}} ><PDFViewer ref={pdfRef} /></div>
 
   </div>
   )

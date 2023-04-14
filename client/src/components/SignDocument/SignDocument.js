@@ -4,16 +4,11 @@ import SignaturePad from 'react-signature-canvas';
 import { v4 as uuidv4 } from 'uuid';
 import axios from 'axios';
 import { navigate } from '@reach/router';
-// import { Box, Column, Heading, Row, Stack, Button } from 'gestalt';
 import { Input, Row, Col, Modal, Checkbox, Button, List, Spin } from 'antd';
 import { selectDocToSign } from './SignDocumentSlice';
 import { selectUser } from '../../app/infoSlice';
-import { mergeAnnotations } from '../MergeAnnotations/MergeAnnotations';
-import WebViewer from '@pdftron/webviewer';
-// import 'gestalt/dist/gestalt.css';
 import './SignDocument.css';
 import { useIntl } from "react-intl";
-// import RcResizeObserver from 'rc-resize-observer';
 import { PageContainer } from '@ant-design/pro-layout';
 import ProCard, { CheckCard } from '@ant-design/pro-card';
 import {
@@ -21,7 +16,7 @@ import {
 } from '@ant-design/icons';
 import 'antd/dist/antd.css';
 import '@ant-design/pro-card/dist/card.css';
-import { LICENSE_KEY, USE_WITHPDF } from '../../config/Config';
+// import { LICENSE_KEY, USE_WITHPDF } from '../../config/Config';
 import moment from 'moment';
 import 'moment/locale/ko';
 import PDFViewer from "@niceharu/withpdf";
@@ -172,293 +167,8 @@ const SignDocument = () => {
     }
 
     fetchSigns();
+    initWithPDF();
 
-    if (isWithPDF) {
-      initWithPDF();
-
-    } else {
-      WebViewer(
-        {
-          path: 'webviewer',
-          licenseKey: LICENSE_KEY,
-          disabledElements: [
-            'ribbons',
-            'toggleNotesButton',
-            'viewControlsButton',
-            'panToolButton',
-            'selectToolButton', 
-            'searchButton',
-            'menuButton',
-            'rubberStampToolGroupButton',
-            'stampToolGroupButton',
-            'fileAttachmentToolGroupButton',
-            'calloutToolGroupButton',
-            'undo',
-            'redo',
-            'eraserToolButton',
-            'signatureToolGroupButton',
-            'viewControlsOverlay',
-            // 'toolsOverlay',  // 서명 도구 상호 작용시 필요
-            'annotationPopup',
-            'annotationStylePopup',
-            'toolStylePopup',   // 서명 목록 팝업
-            'stylePopup',
-            'textPopup',
-            'contextMenuPopup',
-            'annotationNoteConnectorLine'
-          ],
-        },
-        viewer.current,
-      ).then(async instance => {
-        // const { docViewer, annotManager, Annotations, CoreControls } = instance;
-        const { Core, UI } = instance;
-        const { documentViewer, annotationManager, Annotations } = Core;
-        setAnnotationManager(annotationManager);
-  
-        setWebViewInstance(instance);
-  
-        const signatureTool = documentViewer.getTool('AnnotationCreateSignature');
-        signatureTool.addEventListener('locationSelected', async () => {
-          setSignModal(true);
-          UI.disableElements(['signatureModal', 'toolbarGroup-Insert']);
-        });
-  
-        // set language
-        UI.setLanguage('ko');
-  
-        // select only the insert group
-        // instance.disableElements(['header']);
-        UI.setToolbarGroup('toolbarGroup-View');
-        Core.setCustomFontURL("/webfonts/");
-  
-        // load document
-        // const storageRef = storage.ref();
-        // const URL = await storageRef.child(docRef).getDownloadURL();
-        
-        // DISTO
-        const URL = '/' + docRef;
-        UI.loadDocument(URL);
-  
-        setInstance(instance);
-  
-        documentViewer.addEventListener('documentLoaded', () => {
-          console.log('documentLoaded called');
-          setPageCount(documentViewer.getPageCount());
-  
-          // 밸류 자동 셋팅
-          documentViewer.getAnnotationsLoadedPromise().then(() => {
-            // iterate over fields
-            const fieldManager = annotationManager.getFieldManager();
-            fieldManager.forEachField(field => {
-              console.log(field.getValue());
-              console.log('fieldName', field.name);
-  
-              if (field.name?.startsWith(_id) || field.name?.startsWith('bulk')) { 
-                if (field.name?.includes('AUTONAME')) {
-                  field.setValue(name);
-                } else if (field.name?.includes('AUTOJOBTITLE')) {
-                  field.setValue(JOB_TITLE);
-                } else if (field.name?.includes('AUTOSABUN')) {
-                  field.setValue(SABUN);
-                } else if (field.name?.includes('AUTODATE')) {
-                  field.setValue(moment().format('YYYY년 MM월 DD일'));
-                } else if (field.name?.includes('AUTOOFFICE')) {
-                  field.setValue(OFFICE_NAME);
-                } else if (field.name?.includes('AUTODEPART')) {
-                  field.setValue(DEPART_NAME);
-                }
-              }
-              
-            });
-          });
-  
-        });
-  
-        const normalStyles = (widget) => {
-          if (widget instanceof Annotations.TextWidgetAnnotation) {
-  
-            if (widget.fieldName.startsWith(_id) || widget.fieldName.startsWith('bulk')) { 
-              return {
-                // border: '1px solid #a5c7ff',
-                // 'background-color': '#a5c7ff',
-                border: '1px solid #a5c7ff',
-                'background-color': '#e8e8e8',
-                color: 'black',
-                // lineHeight: 1.5,
-                textAlign: widget.getCustomData('textAlign')
-              };
-            } else {
-              return {
-                color: 'black',
-                // lineHeight: 1.5,
-                textAlign: widget.getCustomData('textAlign')
-              };
-            }
-  
-          } else if (widget instanceof Annotations.SignatureWidgetAnnotation) {
-            return {
-              border: '1px solid #a5c7ff',
-            };
-          } else if (widget instanceof Annotations.CheckButtonWidgetAnnotation) {
-            return {
-              border: '1px solid #a5c7ff',
-            };
-          }
-        };
-  
-        annotationManager.addEventListener('annotationChanged', (annotations, action, { imported }) => {
-          console.log("annotationChanged called(action):"+ action)
-  
-          if (!imported && action === 'add') {  // 서명 및 입력값이 추가 된 경우
-            const annotList = annotationManager.getAnnotationsList();
-            let widgetCount = 0;
-            let createCount = 0;
-            annotList.forEach(function(annot) {
-              if (annot instanceof Annotations.SignatureWidgetAnnotation && annot.fieldName.startsWith(_id)) widgetCount++;
-              if (annot.ToolName === 'AnnotationCreateRubberStamp' && annot.IsAdded ) createCount++;
-  
-            });
-            if (widgetCount === 0 || widgetCount > 0 && widgetCount === createCount) {
-              setDisableNext(false);
-            }
-          }
-  
-          if (!imported && action === 'delete') {  // 서명 및 입력값이 삭제 된 경우
-            annotations.forEach(function(annot) {
-              if (annot.ToolName === 'AnnotationCreateRubberStamp') setDisableNext(true);
-            });
-          }
-  
-          if (imported && (action === 'add' || action === 'modify')) {
-            annotations.forEach(function(annot) {
-              // 서명 참여자는 모든 Annotation 이동, 삭제 불가
-              annot.NoMove = true;
-              annot.NoDelete = true;
-              annot.ReadOnly = true;
-              if (annot instanceof Annotations.WidgetAnnotation) {
-                Annotations.WidgetAnnotation.getCustomStyles = normalStyles;
-  
-                //TODO
-                // 1. [완료]다른 사람의 텍스트가 안보이는 것 수정 
-                // 2. [완료]다른 사람의 텍스트는 스타일 변경 
-                // 3. [진행중]다른 사람의 텍스트 및 사인은 수정 안되게 하기  
-  
-                console.log("annot.fieldName:"+annot.fieldName)
-  
-                if (docType === 'B') {
-                  if (!annot.fieldName.startsWith('bulk')) { 
-                    annot.Hidden = true;
-                    annot.Listable = false;
-                  }
-                } else {
-                  // if (!annot.fieldName.startsWith(_id)) { 
-                  //   annot.Hidden = true;
-                  //   annot.Listable = false;
-                  // }
-  
-                  if (!annot.fieldName.startsWith(_id)) {
-  
-                    // TODO
-                    // 3. [진행중]다른 사람의 텍스트 및 사인은 수정 안되게 하기 | 아래 메서드 안먹힘
-                    // annot.disabled = true;
-                    
-                    console.log('readonly called');
-  
-                    if (annot.fieldName.includes('SIGN')) {  // 다른 사람이 입력한 텍스트는 보여야 됨
-                      annot.Hidden = true;
-                      annot.Listable = false;
-                    }
-                    if (annot.fieldName.includes('TEXT')) {
-                      annot.fieldFlags.set('ReadOnly', true);
-                    }
-                    if (annot.fieldName.includes('CHECKBOX')) {
-                      // annot.Hidden = true;
-                      // annot.Listable = false;
-                      annot.fieldFlags.set('ReadOnly', true);
-                    }
-                  }
-                }
-  
-              } else {
-                console.log('일반 편집한 텍스트 컴포넌트')
-                // annot.Listable = false;
-  
-                // const annotsToDeleteNew = annotsToDelete.slice()
-                // annotsToDeleteNew.push(annot) 
-                // setAnnotsToDelete(annotsToDeleteNew)
-                // annotsToDelete.push(annot);
-  
-                setAnnotsToDelete(annotsToDelete => [...annotsToDelete, annot])
-              }
-            });
-          }
-        });
-  
-        // annotManager.on('fieldChanged', (field, value) => {
-        //   console.log("fieldChanged called")
-        //   console.log(field, value)
-        // })
-  
-  
-        // 내 사인 이미지 가져와서 출력하기
-        // const res = await axios.post('/api/sign/signs', {user: _id})
-        // if (res.data.success) {
-        //   const signs = res.data.signs;
-  
-        //   var signDatas = []
-        //   signs.forEach(element => {
-        //     signDatas.push(element.signData)
-        //   });
-  
-        //   if (signDatas.length > 0) {
-        //     const signatureTool = docViewer.getTool('AnnotationCreateSignature');
-        //     docViewer.on('documentLoaded', () => {
-        //       signatureTool.importSignatures(signDatas);
-        //     });
-        //   }
-        // }
-        
-        // const signatureTool = docViewer.getTool('AnnotationCreateSignature');
-        // console.log('ccc');
-        // console.log(signatureTool);
-        // const base64Image = "";
-        // docViewer.on('documentLoaded', () => {
-        //   signatureTool.importSignatures([base64Image]);
-        // });
-  
-  
-        // 내 사인 저장하기
-      //   docViewer.on('annotationsLoaded', async () => {
-      //     annotManager.on('annotationSelected', async (annotationList) => {
-      //         console.log("annotationList:"+annotationList)
-      //         annotationList.forEach(annotation => {
-      //             if (annotation.Subject === "Signature")
-      //                 extractAnnotationSignature(annotation, docViewer);
-      //         })
-      //     })
-      //   });
-  
-      //   async function extractAnnotationSignature(annotation, docViewer) {
-      //     // Create a new Canvas to draw the Annotation on
-      //     const canvas = document.createElement('canvas');
-      //     // Reference the annotation from the Document
-      //     const pageMatrix = docViewer.getDocument().getPageMatrix(annotation.PageNumber);
-      //     // Set the height & width of the canvas to match the annotation
-      //     canvas.height = annotation.Height;
-      //     canvas.width = annotation.Width;
-      //     const ctx = canvas.getContext('2d');
-      //     // Translate the Annotation to the top Top Left Corner of the Canvas ie (0, 0)
-      //     ctx.translate(-annotation.X, -annotation.Y);
-      //     // Draw the Annotation onto the Canvas
-      //     annotation.draw(ctx, pageMatrix);
-      //     // Convert the Canvas to a Blob Object for Upload
-      //     canvas.toBlob((blob) => {
-      //         // Call your Blob Storage Upload Function
-      //         console.log("blob:"+blob)
-      //     });
-      // }  
-      });
-    }
   }, [docRef, _id]);
 
   const fetchSigns = async () => {
@@ -480,26 +190,6 @@ const SignDocument = () => {
     return <CheckCard key={uuidv4()} style={{width:'auto', height: 'auto'}} value={sign.signData} avatar={sign.signData} className="customSignCardCSS"/>
   }
   
-  const nextField = () => {
-    let annots = annotationManager.getAnnotationsList();
-    if (annots[annotPosition]) {
-      annotationManager.jumpToAnnotation(annots[annotPosition]);
-      if (annots[annotPosition+1]) {
-        setAnnotPosition(annotPosition+1);
-      }
-    }
-  }
-
-  const prevField = () => {
-    let annots = annotationManager.getAnnotationsList();
-    if (annots[annotPosition]) {
-      annotationManager.jumpToAnnotation(annots[annotPosition]);
-      if (annots[annotPosition-1]) {
-        setAnnotPosition(annotPosition-1);
-      }
-    }
-  }
-
   const cancelSigning = () => {
 
     setVisiblModal(true);
@@ -655,135 +345,6 @@ const SignDocument = () => {
 
   }
 
-  const completeSigning = async () => {
-
-    // setLoading(true);
-
-    console.log('pageCount:'+pageCount)
-
-    //TODO: 서명요청자가 요청 시 작성한 freetext는 xfdf 추출 시 제외하여야 함 
-    // TYPE: Widget, 자유 텍스트, 서명 
-    // TYPE 이 아니라 다른 키값을 부여해서 제외시켜야 될듯
-    // const annotationsList = annotManager.getAnnotationsList();
-    // const annotsToDelete = [];
-    // await Promise.all(
-    //   annotationsList.map(async (annot, index) => {
-    //     console.log('annot.Subject:'+annot.Subject)
-    //     if (annot.Subject == '자유 텍스트') {
-    //       console.log('여기 제발 통과하자')
-    //       // annotsToDelete.push(annot);
-    //       annotManager.deleteAnnotation(annot, false, true);
-    //     }
-    //   })
-    // )
-    const { Core } = instance;
-    const { Annotations } = Core;
-    const annotList = annotationManager.getAnnotationsList();
-    annotationManager.deselectAllAnnotations();
-    annotList.forEach(function(annot) { // freetext 제외 처리 위한 설정
-      annot.NoMove = false;
-      annot.NoDelete = false;
-      annot.ReadOnly = false;
-      // Text Widget >>> Free Text
-      if (annot.fieldName && annot.fieldName.startsWith(_id) && annot.fieldName.includes('TEXT')) {
-        console.log('본인 입력한 Text Widget을 Free Text로 변환');
-        let textAnnot = new Annotations.FreeTextAnnotation();
-        let textStyle = {
-          'underline': annot.getCustomData('textDecoration').indexOf('underline') >= 0 ? true : false,
-          'line-through': annot.getCustomData('textDecoration').indexOf('line-through') >= 0 ? true : false,
-          'font-weight': annot.getCustomData('fontWeight'),
-          'font-style': annot.getCustomData('fontStyle')
-        }
-        textAnnot.Opacity = 1;
-        textAnnot.StrokeThickness = 0;
-        textAnnot.PageNumber = annot.PageNumber;
-        textAnnot.Rotation = annot.Rotation;
-        textAnnot.FillColor = new Annotations.Color(0, 0, 0, 0);
-        textAnnot.TextColor = new Annotations.Color(0, 0, 0, 1);
-        textAnnot.StrokeColor = new Annotations.Color(0, 0, 0, 1);
-        textAnnot.X = annot.getX();
-        textAnnot.Y = annot.getY();
-        textAnnot.Width = annot.getWidth();
-        textAnnot.Height = annot.getHeight();
-        textAnnot.Font = annot.getCustomData('font');
-        textAnnot.FontSize = annot.getCustomData('fontSize');
-        textAnnot.TextAlign = annot.getCustomData('textAlign');
-        textAnnot.TextVerticalAlign = annot.getCustomData('textVerticalAlign');
-        textAnnot.Author = annotationManager.getCurrentUser();
-        textAnnot.setContents(annot.getValue());
-        textAnnot.updateRichTextStyle(textStyle);
-        annotationManager.addAnnotation(textAnnot);
-        annotationManager.drawAnnotationsFromList(textAnnot);
-      }
-    });
-    console.log('>>> annotsToDelete <<<');
-    console.log(annotsToDelete);
-    await annotationManager.deleteAnnotations(annotsToDelete, null, true); //다건 처리가 오류나서 일단 단건 처리함
-
-    // field: true 를 해줘야 텍스트 값도 저장됨
-    // console.log('annotManager.getAnnotationsList():'+annotManager.getAnnotationsList());
-    const xfdf = await annotationManager.exportAnnotations({ widgets: false, links: false, fields: false,	annotList: annotationManager.getAnnotationsList() });
-    // await updateDocumentToSign(docId, email, xfdf);
-
-    setLoading(true);
-
-    // 순차 서명인 경우: 다음 서명 대상자 설정    
-    // 설장 참조값: orderType, usersTodo, usersOrder
-    var todo = [];
-    if(orderType == 'S'){ //순차 서명인 경우 
-      if(usersTodo?.length > 0) {
-        if (usersTodo?.filter(e => e != _id).length > 0) {   // 본인 제외 같은 레벨에 서명할 사람이 있는 경우 본인만 제외
-          todo = usersTodo?.filter(e => e != _id)
-        } else { // 다음 레벨의 서명할 사람들을 입력 
-          var arr = usersOrder?.filter(e => e.user == usersTodo[0])
-          if (arr?.length > 0) {
-            todo = usersOrder?.filter(e => e.order == arr[0].order + 1).map(e => e.user)
-          }
-        }
-      }
-    }
-
-    let param = {
-      docId: docId,
-      // email: email,
-      user: _id,
-      xfdf: xfdf,
-      usersTodo: todo
-    }
-    console.log("completeSigning param:"+param)
-
-    if (docType === 'B') {
-      // 벌크방식이면 docRef에 있던 원본파일을 신규 경로로 복사
-      // ex) docToSign/bulkId/60dbfeec57e078050836b4741625204681539.pdf
-      const res = await axios.post('/api/storage/copyBulk', param)
-    } 
-
-    // 파일업로드 된 후에 화면 이동되도록 변경
-    try {
-      const res = await axios.post('/api/document/updateDocumentToSign', param)
-      if (res.data.success) {
-        console.log("start merge")
-        await mergeAnnotations(docId, res.data.docRef, res.data.xfdfArray, res.data.isLast)
-        console.log("end merge")
-
-        // 서명 요청자 paperless 수 증가 시킴
-        if(res.data.isLast) {
-          await axios.post('/api/users/updatePaperless', {user: docUser._id, paperless: pageCount})
-        }
-
-        setLoading(false);
-      } else {
-        console.log("updateDocumentToSign error")
-        setLoading(false);
-      } 
-    } catch (error) {
-      console.log(error)
-      setLoading(false);
-    }
-
-    navigate('/');
-  }
-
   const listAttachFiles = (
     <List
     size="small"
@@ -832,7 +393,7 @@ const SignDocument = () => {
           <Button key="1" danger onClick={() => cancelSigning()}>
             {formatMessage({id: 'sign.cancel'})}
           </Button>,
-          <Button key="2" type="primary" loading={loading} onClick={() => isWithPDF ? send() : completeSigning()} disabled={disableNext}>
+          <Button key="2" type="primary" loading={loading} onClick={() => send()} disabled={disableNext}>
             {textSign}
           </Button>,
         ],
@@ -852,7 +413,7 @@ const SignDocument = () => {
         {/* <Row gutter={[24, 24]}>
           <Col span={24}> */}
           <Spin tip="로딩중..." spinning={loading}>
-          {isWithPDF ? <PDFViewer ref={pdfRef} isUpload={false} isSave={false} isEditing={false} onItemChanged={handleItemChanged} onValidationChanged={handleValidationChanged}  defaultScale={1.0} headerSpace={attachFiles?.length > 0 ? 128 + attachFiles?.length * 30 : 128}  />  : <div className="webviewer" ref={viewer}></div>}
+            <PDFViewer ref={pdfRef} isUpload={false} isSave={false} isEditing={false} onItemChanged={handleItemChanged} onValidationChanged={handleValidationChanged}  defaultScale={1.0} headerSpace={attachFiles?.length > 0 ? 128 + attachFiles?.length * 30 : 128}  />
           </Spin>
           {/* </Col>
         </Row> */}
@@ -908,49 +469,6 @@ const SignDocument = () => {
     </PageContainer> 
     </PageContainerStyle>
 
-
-      {/* <Spin tip={formatMessage({id: 'Processing'})} spinning={loading}>
-        <Box display="flex" direction="row" flex="grow">
-          <Column span={2}>
-            <Box padding={3}>
-              <Heading size="md">Sign Document</Heading>
-            </Box>
-            <Box padding={3}>
-              <Row gap={1}>
-                <Stack>
-                  <Box padding={2}>
-                    <Button
-                      onClick={nextField}
-                      accessibilityLabel="next field"
-                      text="Next field"
-                      iconEnd="arrow-forward"
-                    />
-                  </Box>
-                  <Box padding={2}>
-                    <Button
-                      onClick={prevField}
-                      accessibilityLabel="Previous field"
-                      text="Previous field"
-                      iconEnd="arrow-back"
-                    />
-                  </Box>
-                  <Box padding={2}>
-                    <Button
-                      onClick={completeSigning}
-                      accessibilityLabel="complete signing"
-                      text="Complete signing"
-                      iconEnd="compose"
-                    />
-                  </Box>
-                </Stack>
-              </Row>
-            </Box>
-          </Column>
-          <Column span={10}>
-            <div className="webviewer" ref={viewer}></div>
-          </Column>
-        </Box>
-      </Spin> */}
     </div>
   );
 };
