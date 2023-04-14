@@ -42,6 +42,9 @@ import banner from '../../assets/images/sub_top2.png';
 import banner_small from '../../assets/images/sub_top2_2.png';
 import styled from 'styled-components';
 import loadash from 'lodash';
+import JSZipUtils from 'jszip-utils';
+import JSZip from 'jszip';
+import { saveAs } from 'file-saver';
 
 const { Search } = Input;
 const CardTitle = styled.div`
@@ -70,6 +73,7 @@ const DocumentList = ({location}) => {
   const [pagination, setPagination] = useState(location.state.pagination ? location.state.pagination : {current:1, pageSize:10, showSizeChanger:true, pageSizeOptions: ["10", "20", "30"]});
   const [loading, setLoading] = useState(false);
   const [loadingDownload, setLoadingDownload] = useState([]);
+  const [loadingDownloadAll, setLoadingDownloadAll] = useState(false);
   const [loadingFolder, setLoadingFolder] = useState(false);
   const [manageInput, setManageInput] = useState('');
   const [manageModal, setManageModal] = useState(false);
@@ -88,6 +92,7 @@ const DocumentList = ({location}) => {
   const [folderName, setFolderName] = useState('');
   const [selectFolderId, setSelectFolderId] = useState('');
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+  const [selectedDownloads, setSelectedDownloads] = useState([]);
   const [hasSelected, setHasSelected] = useState(selectedRowKeys.length > 0);
   const [includeBulk, setIncludeBulk] = useState(false);
   const [responsive, setResponsive] = useState(false);
@@ -96,6 +101,9 @@ const DocumentList = ({location}) => {
   // const searchInput = useRef<Input>(null)
   const refSearchInput = useRef();
   const refSearchInputTable = useRef();
+
+  const zip = new JSZip();
+  const zipFilename = 'documentAll.zip';
 
   const treeProps = {
     treeData,
@@ -111,6 +119,34 @@ const DocumentList = ({location}) => {
       marginTop: '10px'
     },
   };
+
+  // 선택된 파일 전체 다운로드 
+  const downloadAll = () => { 
+    if (selectedDownloads.length < 1) return;
+    setLoadingDownloadAll(true); 
+
+    console.log('downloadAll', selectedDownloads)
+    try {
+      selectedDownloads.forEach((doc, index) => {
+        var filename = doc.docTitle + '.pdf';
+        // loading a file and add it in a zip file
+        JSZipUtils.getBinaryContent(doc.docRef, async (err, data) => {
+          if (err) {
+            throw err; // or handle the error
+          }
+          zip.file(filename, data, { binary: true });
+          if (index === selectedDownloads.length - 1) {
+            var zipFile = await zip.generateAsync({ type: 'blob' });
+            saveAs(zipFile, zipFilename);
+          }
+        });
+      });
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoadingDownloadAll(false);
+    }
+  }
 
   // 폴더 추가
   const addFolder = () => {
@@ -655,6 +691,17 @@ const DocumentList = ({location}) => {
     selectedRowKeys,
     onChange : selectedRowKeys => {
       console.log('selectedRowKeys changed: ', selectedRowKeys);
+
+      //S 선택된 항목 모두 다운로드를 위해 저장 추가
+      let _selectedDownloads = selectedRowKeys.map(selectedRowKey => {
+        let currData = data.find(el => el._id === selectedRowKey);
+        if (currData) return {docTitle: currData.docTitle, docRef:currData.docRef};
+      })
+
+      setSelectedDownloads(_selectedDownloads)
+      console.log('_selectedDownloads', _selectedDownloads)
+      //E
+
       setSelectedRowKeys(selectedRowKeys);
       setHasSelected(selectedRowKeys.length > 0);
     }
@@ -1208,6 +1255,19 @@ const DocumentList = ({location}) => {
             //   }}
             // />,    
             <Checkbox key={uuidv4()} checked={includeBulk} onChange={(e) => {setIncludeBulk(e.target.checked)}}>대량 전송 포함</Checkbox>,
+
+
+            // <Button key="3" icon={<DownloadOutlined />} loading={loadingDownloadAll}  onClick={(e) => {
+            //   downloadAll();
+            //     // row['downloads'].push(_id);
+            //     // axios.post('/api/document/updateDownloads', {docId:row['_id'], usrId:_id});
+            //     // setLoadingDownload( { [row['_id']] : true } );
+            //     // setTimeout(() => {
+            //     //   setLoadingDownload( { [row['_id']] : false } );
+            //     // }, 3000);
+            //   }}>
+            //   </Button>,
+
             <Button key={uuidv4()} icon={<FileAddOutlined />} type="primary" onClick={() => {
               dispatch(resetAssignAll());
               dispatch(setSendType('G'));

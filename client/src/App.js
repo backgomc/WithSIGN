@@ -34,7 +34,8 @@ import SignDirect from './components/SignDirect/SignDirect';
 import Welcome from './components/Welcome';
 import Home from './components/Home/Home';
 // import Footer from './components/Footer/Footer';
-import Test from './components/Test/Test';
+import Test4 from './components/Test/Test4';
+import Test3 from './components/Test/Test3';
 import Test2 from './components/Test/Test2';
 import Login from './components/Login/Login';
 import Agreement from './components/Login/Agreement';
@@ -190,17 +191,15 @@ const App = () => {
         </div>
       )}
       footerRender={() => (
-        // <div>
-        //   <Footer />
-        // </div>
+
+        (pathname === '/documentList' || pathname === '/templateList') ?  // 문서 서명 및 에디팅 시는 Footer 제거 (스크롤 공간 확보를 위해)
+        '' :
         <DefaultFooter
           links={[
             { key: '이용약관', title: '이용약관', href: 'terms' },
             { key: '개인정보처리방침', title: '개인정보처리방침', href: 'policy' },
           ]}
-          // 임시NH
           copyright="2021 NH INFORMATION SYSTEM CO.,LTD. ALL RIGHT RESERVED"
-          // copyright="CopyRight 2021. NONGHYUP ALL Rights Reserved."
         />
       )}     
   >
@@ -226,6 +225,8 @@ const App = () => {
       <ViewDocument path="/viewDocument" />
       <Setting path="/setting" />
       <Test2 path="/test" />
+      <Test3 path="/test3" />
+      <Test4 path="/test4" />
       <BoardList path="/boardList" />
       <BoardDetail path="/boardDetail" />
       <Audit path="/audit" />

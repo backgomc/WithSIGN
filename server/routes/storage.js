@@ -480,7 +480,7 @@ router.get('/:class/:docId', async (req, res) => {
             // console.log(copyPath);
             if (fs.existsSync(fileInfo)) { // 파일 존재 체크
 
-                // CASE: 파일 암호화 후 다운로드
+                // CASE 1: 파일 암호화 후 다운로드
                 await restful.callDRMPackaging(filePath, fileName, copyPath);
 
                 if (fs.existsSync(copyPath)) { // 비동기 메서드는 try/catch 안먹히므로 파일 선체크 로직 추가
@@ -490,7 +490,7 @@ router.get('/:class/:docId', async (req, res) => {
                     return res.json({ success: false, message: 'file download failed!' });
                 }
 
-                // CASE: 암호화 없이 다운로드
+                // CASE 2: 암호화 없이 다운로드
                 // var filestream = fs.createReadStream(fileInfo);
                 // filestream.pipe(res);
 

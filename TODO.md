@@ -403,7 +403,12 @@ db.documents.find( {$and: [
 - [ ] 템플릿 UI 고도화
 - [ ] jwtToken 적용
 - [x] 서명 참여자 검색 시 자동스크롤 기능 추가 
-
+- [x] 메뉴얼 withPDF로 변경
+- [x] 문서 뷰어 시 이중 스크롤바 안생기도록 푸터바 숨김처리  
+- [ ] pdf 다건 일괄 다운로드 기능 
+- [ ] 첨부파일에 # 포함 시 다운로드 안되는 문제 해결 (github pull 후 테스트 필요)
+- [ ] 다건 다운로드 이후 pdf 다운로드 오류 해결 필요 
+- [ ] tron 지우기
 
 # 로그인 JWT 토큰 방식으로 변경 
  1. [서버] jwt 토큰 생성/갱신/검증 모듈 생성 : adminAuth.js 참조
@@ -421,3 +426,18 @@ db.documents.find( {$and: [
  10. [클라이언트] axiosInterceptor 추가 (토큰 유효성 검증 결과 선처리, 만약 검증 실패 응답 시 토큰 갱신 서비스 호출)
  11. [클라이언트] 토큰 검증이 필요한 모든 axios 서비스를 axiosInterceptor로 변경 (login, logout, auth 같은 인증 서비스들은 제외)
 
+
+
+# PDFTRON 삭제
+Audit 
+Manual 
+MergeAnnotations
+PrepareDocument
+PrepareTemplate
+MergeDirect
+SignDirect
+SignDocument
+PreviewPDF
+UploadDocument
+ViewDocument
+[x] Config 

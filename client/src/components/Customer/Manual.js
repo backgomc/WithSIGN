@@ -1,12 +1,9 @@
 import React, { useEffect, useState, useRef } from 'react';
 import useDidMountEffect from '../Common/useDidMountEffect';
 import axios from 'axios';
-import WebViewer from '@pdftron/webviewer';
-import { LICENSE_KEY } from '../../config/Config';
-import BoardCard from '../Board/BoardCard';
-import FAQCard from '../Board/FAQCard';
-import OpinionCard from '../Board/OpinionCard';
-import DirectCard from './DirectCard';
+// import WebViewer from '@pdftron/webviewer';
+import PDFViewer from '@niceharu/withpdf';
+// import { LICENSE_KEY } from '../../config/Config';
 import { Modal, Input, Row, Col, Space, Button } from "antd";
 import Highlighter from 'react-highlight-words';
 import { ArrowLeftOutlined, DeleteOutlined, FileOutlined, DownloadOutlined, EditOutlined, FormOutlined, FilePdfOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
@@ -18,12 +15,22 @@ import moment from 'moment';
 import 'moment/locale/ko';
 import { PageContainer } from '@ant-design/pro-layout';
 import 'antd/dist/antd.css';
+import '@ant-design/pro-card/dist/card.css';
 import { useIntl } from "react-intl";
-import { Viewer } from '@toast-ui/react-editor';
+import styled from 'styled-components';
+
+const PageContainerStyle = styled.div`
+.ant-pro-page-container-children-content {
+  margin-top: 0px !important; 
+  margin-left: 0px !important; 
+  margin-right: 0px !important;
+}
+`;
 
 const Manual = () => {
 
   const editorRef = useRef();
+  const pdfRef = useRef();
   const boardType = 'manual';
   const dispatch = useDispatch();
   const user = useSelector(selectUser);
@@ -78,6 +85,10 @@ const Manual = () => {
     });
   };
 
+  const initWithPDF = async () => {
+    await pdfRef.current.uploadPDF(docRef);
+  }
+
   useEffect(() => {
     fetch({
         boardType: boardType,
@@ -86,81 +97,85 @@ const Manual = () => {
   }, []);
 
   useDidMountEffect(() => {
-    WebViewer(
-      {
-        path: 'webviewer',
-        licenseKey: LICENSE_KEY,
-        disabledElements: [
-          'ribbons',
-          'toggleNotesButton',
-          'contextMenuPopup',
-        ],
-      },
-      viewer.current,
-    ).then(async instance => {
 
-      // const { annotManager, Annotations, CoreControls } = instance;
-      const { Core, UI } = instance;
-      const { annotationManager, Annotations } = Core;
+    initWithPDF();
 
-      // select only the view group
-      UI.setToolbarGroup('toolbarGroup-View');
-      Core.setCustomFontURL("/webfonts/");
-      // instance.setToolbarGroup('toolbarGroup-Insert');
+    // WebViewer(
+    //   {
+    //     path: 'webviewer',
+    //     licenseKey: LICENSE_KEY,
+    //     disabledElements: [
+    //       'ribbons',
+    //       'toggleNotesButton',
+    //       'contextMenuPopup',
+    //     ],
+    //   },
+    //   viewer.current,
+    // ).then(async instance => {
 
-      setInstance(instance);
+    //   // const { annotManager, Annotations, CoreControls } = instance;
+    //   const { Core, UI } = instance;
+    //   const { annotationManager, Annotations } = Core;
 
-      // load document
-      // const storageRef = storage.ref();
-      // const URL = await storageRef.child(docRef).getDownloadURL();
-      // console.log(URL);
+    //   // select only the view group
+    //   UI.setToolbarGroup('toolbarGroup-View');
+    //   Core.setCustomFontURL("/webfonts/");
+    //   // instance.setToolbarGroup('toolbarGroup-Insert');
 
-      // DISTO
-      const URL = '/' + docRef;
-      console.log("URL:"+URL);      
-      UI.loadDocument(URL);
+    //   setInstance(instance);
 
-      const normalStyles = (widget) => {
-        if (widget instanceof Annotations.TextWidgetAnnotation) {
-          return {
-            // 'background-color': '#a5c7ff',
-            color: 'black',
-          };
-        } else if (widget instanceof Annotations.SignatureWidgetAnnotation) {
-          return {
-            // border: '1px solid #a5c7ff',
-          };
-        }
-      };
+    //   // load document
+    //   // const storageRef = storage.ref();
+    //   // const URL = await storageRef.child(docRef).getDownloadURL();
+    //   // console.log(URL);
 
-      // TODO annotation 수정 안되게 하기
+    //   // DISTO
+    //   const URL = '/' + docRef;
+    //   console.log("URL:"+URL);      
+    //   UI.loadDocument(URL);
 
-      annotationManager.addEventListener('annotationChanged', (annotations, action, { imported }) => {
-        if (imported && action === 'add') {
-          annotations.forEach(function(annot) {
-            if (annot instanceof Annotations.WidgetAnnotation) {
-              Annotations.WidgetAnnotation.getCustomStyles = normalStyles;
+    //   const normalStyles = (widget) => {
+    //     if (widget instanceof Annotations.TextWidgetAnnotation) {
+    //       return {
+    //         // 'background-color': '#a5c7ff',
+    //         color: 'black',
+    //       };
+    //     } else if (widget instanceof Annotations.SignatureWidgetAnnotation) {
+    //       return {
+    //         // border: '1px solid #a5c7ff',
+    //       };
+    //     }
+    //   };
 
-              console.log("annot.fieldName:"+annot.fieldName)
-              if (!annot.fieldName.startsWith(_id)) { 
-                annot.Hidden = true;
-                annot.Listable = false;
-              }
-            }
-          });
-        }
-      });
+    //   // TODO annotation 수정 안되게 하기
+
+    //   annotationManager.addEventListener('annotationChanged', (annotations, action, { imported }) => {
+    //     if (imported && action === 'add') {
+    //       annotations.forEach(function(annot) {
+    //         if (annot instanceof Annotations.WidgetAnnotation) {
+    //           Annotations.WidgetAnnotation.getCustomStyles = normalStyles;
+
+    //           console.log("annot.fieldName:"+annot.fieldName)
+    //           if (!annot.fieldName.startsWith(_id)) { 
+    //             annot.Hidden = true;
+    //             annot.Listable = false;
+    //           }
+    //         }
+    //       });
+    //     }
+    //   });
       
-    });
+    // });
   }, [docRef]);
 
   return (
     <div>
+    <PageContainerStyle>
     <PageContainer
-        ghost
+        // ghost
         header={{
           title: title ? title : formatMessage({id: 'Manual'}),
-          ghost: false,
+          ghost: true,
           breadcrumb: {
             routes: [
             ],
@@ -175,7 +190,7 @@ const Manual = () => {
             <Button key="1" type="primary" onClick={() => navigate('boardList', {state: {boardType: 'manual', boardName: '서비스 소개 자료'}})}>
             {formatMessage({id: 'Modify'})}
             </Button> : '',
-            <Button key="3" loading={loadingDownload['1']} href={docRef} download={fileName+'.pdf'} type="primary" icon={<DownloadOutlined />} onClick={()=> {
+            <Button key="3" loading={loadingDownload['1']} href={docRef} download={fileName} type="primary" icon={<DownloadOutlined />} onClick={()=> {
               setLoadingDownload( { "1" : true } )
               setTimeout(() => {
                 setLoadingDownload( { "1" : false})
@@ -185,6 +200,7 @@ const Manual = () => {
             </Button>
           ],
         }}
+        style={{height:`calc(100vh - 83px)`}}
         content={<div
                     dangerouslySetInnerHTML={{
                     __html: content
@@ -193,18 +209,19 @@ const Manual = () => {
         footer={[
         ]}
     >
-      <br></br>
       {/* <div style={{background:'white', margin:'0px', padding:'25px'}}>
         <Viewer ref={editorRef} />
       </div> */}
 
-      <Row gutter={[24, 24]}>
-        <Col span={24}>
-        <div className="webviewer" ref={viewer}></div>
-        </Col>
-      </Row>
+      {/* <Row gutter={[24, 24]}>
+        <Col span={24}> */}
+        <div><PDFViewer ref={pdfRef} isUpload={false} isSave={false} isEditing={false} defaultScale={1.0} headerSpace={148}  /></div>
+        {/* <div className="webviewer" ref={viewer}></div> */}
+        {/* </Col>
+      </Row> */}
 
     </PageContainer>
+    </PageContainerStyle>
     </div>
     
   );
