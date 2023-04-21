@@ -217,7 +217,7 @@ const BulkList = () => {
       sorter: (a, b) => a.user.name.localeCompare(b.user.name),
       key: 'name',
       responsive: ["sm"],
-      width: '100px',
+      width: '105px',
       ...getColumnSearchProps('name'),
       onFilter: (value, record) =>
       record['user']['name']
@@ -248,7 +248,7 @@ const BulkList = () => {
       sorter: true,
       key: 'requestedTime',
       responsive: ["sm"],
-      width: '100px',
+      width: '105px',
       render: (text, row) => {
         return (<font color='#787878'>{moment(row["requestedTime"]).fromNow()}</font>)
       } 

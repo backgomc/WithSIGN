@@ -213,7 +213,7 @@ router.post('/updateTemplate', (req, res) => {
 
 });
 
-// 게시글 상세
+// 템플릿 상세
 router.post('/detail', (req, res) => {
   if (!req.body.templateId) {
     return res.json({ success: false, message: "input value not enough!" })
@@ -231,5 +231,22 @@ router.post('/detail', (req, res) => {
   });
 })
 
+// 템플릿 정보 업데이트
+router.post('/updateTemplateInfo', (req, res) => {
+
+  if (!req.body.templateId ) return res.json({ success: false, message: 'input value not enough!' });
+
+  const templateId = req.body.templateId
+  const docTitle = req.body.docTitle
+
+  Template.updateOne(
+    { '_id': templateId },
+    { 'docTitle': docTitle },
+    (err) => {
+      if (err) return res.json({ success: false, message: err });
+      return res.json({ success: true});
+  });
+
+});
 
 module.exports = router;
