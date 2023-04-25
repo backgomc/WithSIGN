@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
+import axiosInterceptor from '../../config/AxiosConfig';
 import { Table, Input, Space, Button, Form } from "antd";
 import Highlighter from 'react-highlight-words';
 import { SearchOutlined } from '@ant-design/icons';
@@ -56,7 +57,7 @@ const ManualModify = ({location}) => {
   const fetch = (params = {}) => {
     setLoading(true);
 
-    axios.post('/api/board/detail', params).then(response => {
+    axiosInterceptor.post('/api/board/detail', params).then(response => {
 
       console.log(response)
       if (response.data.success) {
@@ -107,7 +108,7 @@ const ManualModify = ({location}) => {
       content: contentHtml
     }
     console.log(body)
-    const res = await axios.post('/api/board/modify', body)
+    const res = await axiosInterceptor.post('/api/board/modify', body)
 
     setLoading(false);
 

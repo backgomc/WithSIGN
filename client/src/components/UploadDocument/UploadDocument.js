@@ -1,6 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import axios from 'axios';
+import axiosInterceptor from '../../config/AxiosConfig';
 import { navigate } from '@reach/router';
 import { selectUser } from '../../app/infoSlice';
 import 'antd/dist/antd.css';
@@ -166,7 +167,7 @@ const UploadDocument = ({location}) => {
     formData.append('path', 'temp/')
     formData.append('file', file, filename)
 
-    const res = await axios.post(`/api/storage/upload`, formData)
+    const res = await axiosInterceptor.post(`/api/storage/upload`, formData)
     setLoading(false);
 
     // 업로드 후 파일 경로 가져오기  

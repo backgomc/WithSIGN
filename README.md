@@ -168,6 +168,6 @@ xfdf: ["<?xml version="1.0" encoding="UTF-8" ?><xfdf xmlns="http://ns.adobe.com/
 
 ## 운영 배포
 - 분할 압축
->  tar cvfz - nhsign_server.tar | split -b 470m - nhsign_server.tar.gz
+>  tar cvfz - nhsign-server.tar | split -b 470m - nhsign-server.tar.gz
 - 분할 압축 풀기
 > cat nhsign_server.tar.gz* | tar xvfz -

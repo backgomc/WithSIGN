@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
+import axiosInterceptor from '../../config/AxiosConfig';
 import { Button, Space, Collapse, Empty, Modal } from "antd";
 import Highlighter from 'react-highlight-words';
 import { SearchOutlined } from '@ant-design/icons';
@@ -49,7 +50,7 @@ const FAQList = ({location}) => {
   const fetch = (params = {}) => {
     setLoading(true);
 
-    axios.post('/api/board/list', params).then(response => {
+    axiosInterceptor.post('/api/board/list', params).then(response => {
 
       console.log(response)
       if (response.data.success) {
@@ -73,7 +74,7 @@ const FAQList = ({location}) => {
       _ids: [boardId]
     }
     
-    const res = await axios.post('/api/board/delete', param)
+    const res = await axiosInterceptor.post('/api/board/delete', param)
     if (res.data.success) {
       fetch({
         boardType: boardType,

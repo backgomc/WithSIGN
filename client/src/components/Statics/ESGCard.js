@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import axiosInterceptor from '../../config/AxiosConfig';
 import { useSelector } from 'react-redux';
 import { selectUser } from '../../app/infoSlice';
 import { StatisticCard } from '@ant-design/pro-card';
@@ -34,7 +35,7 @@ const ESGCard = () => {
     let param = {
       user: _id
     }
-    const res = await axios.post('/api/users/paperless', param);
+    const res = await axiosInterceptor.post('/api/users/paperless', param);
     if (res.data.success) {
       setTotalPaperlessNum(res.data.totalPaperless);
     }

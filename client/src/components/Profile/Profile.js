@@ -1,5 +1,6 @@
 import React from 'react';
 import axios from 'axios';
+import axiosInterceptor from '../../config/AxiosConfig';
 import {
   Box,
   Button,
@@ -47,6 +48,7 @@ const ProfilePage = () => {
 
                   axios.post(`/api/users/logout`).then(response => {
                     if (response.status === 200) {
+                      localStorage.removeItem('__rToken__');
                       dispatch(setUser(null));
                       dispatch(resetSignee())
                       navigate('/login');

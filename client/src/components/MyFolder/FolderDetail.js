@@ -6,6 +6,7 @@ import { navigate } from '@reach/router';
 import { get } from 'lodash-es';
 import { v4 as uuidv4 } from 'uuid';
 import axios from 'axios';
+import axiosInterceptor from '../../config/AxiosConfig';
 import Moment from 'react-moment';
 import 'moment/locale/ko';
 import { setPathname } from '../../config/MenuSlice';
@@ -139,7 +140,7 @@ const FolderDetail = ({location}) => {
       docId: item._id,
       docTitle: text
     }
-    axios.post('/api/folder/renameDocTitle', params).then(response => {
+    axiosInterceptor.post('/api/folder/renameDocTitle', params).then(response => {
       console.log(response.data);
       if (response.data.success) {
         fetchDocs({
@@ -247,7 +248,7 @@ const FolderDetail = ({location}) => {
                   loading={loadingDownload[row['_id']]}
                   onClick={(e) => {
                     row['downloads'].push(_id);
-                    axios.post('/api/document/updateDownloads', {docId:row['_id'], usrId:_id});
+                    axiosInterceptor.post('/api/document/updateDownloads', {docId:row['_id'], usrId:_id});
                     setLoadingDownload( { [row['_id']] : true } );
                     setTimeout(() => {
                       setLoadingDownload( { [row['_id']] : false } );
@@ -291,7 +292,7 @@ const FolderDetail = ({location}) => {
       docIds: selectedRowKeys
     }
     
-    axios.post('/api/folder/moveDocInFolder', params).then(response => {
+    axiosInterceptor.post('/api/folder/moveDocInFolder', params).then(response => {
       console.log(response.data);
       if (response.data.success) {
         fetchDocs({
@@ -315,7 +316,7 @@ const FolderDetail = ({location}) => {
       sourceId: folderId,
       docIds: selectedRowKeys
     }
-    axios.post('/api/folder/removeDocInFolder', params).then(response => {
+    axiosInterceptor.post('/api/folder/removeDocInFolder', params).then(response => {
       console.log(response.data);
       if (response.data.success) {
         fetchDocs({
@@ -365,7 +366,7 @@ const FolderDetail = ({location}) => {
       editable: editable,
       targets: treeValue
     }
-    axios.post('/api/folder/shareFolder', params).then(response => {
+    axiosInterceptor.post('/api/folder/shareFolder', params).then(response => {
       console.log(response.data);
       if (response.data.success) {
         fetchFolders(params);
@@ -380,12 +381,12 @@ const FolderDetail = ({location}) => {
   // 전체부서 트리 구조 조회
   const fetchTreeSelect = async (params = {}) => {
     let users = [];
-    let resp = await axios.post('/api/users/list', params);
+    let resp = await axiosInterceptor.post('/api/users/list', params);
     if (resp.data.success) {
       users = resp.data.users;
       setUsers(resp.data.users);
     }
-    resp = await axios.post('/api/users/orgList', params);
+    resp = await axiosInterceptor.post('/api/users/orgList', params);
     if (resp.data.success) {
       let orgs = resp.data.orgs;
       let tree = [];
@@ -477,7 +478,7 @@ const FolderDetail = ({location}) => {
   // 폴더별 문서 목록 조회
   const fetchDocs = (params = {}) => {
     setLoading(true);
-    axios.post('/api/folder/selectFolder', params).then(response => {
+    axiosInterceptor.post('/api/folder/selectFolder', params).then(response => {
       console.log(response.data.docs);
       setDocs(response.data.docs);
       setLoading(false);
@@ -486,7 +487,7 @@ const FolderDetail = ({location}) => {
 
   // 사용자의 부서 정보 조회
   const fetchMyOrgs = (params = {}) => {
-    axios.post('/api/users/myOrgs', params).then(response => {
+    axiosInterceptor.post('/api/users/myOrgs', params).then(response => {
       if (response.data.success) {
         setMyOrgs(response.data.orgs);
       }
@@ -495,7 +496,7 @@ const FolderDetail = ({location}) => {
 
   // 사용자별 폴더 목록 조회  
   const fetchFolders = (params = {}) => {
-    axios.post('/api/folder/listFolder', params).then(response => {
+    axiosInterceptor.post('/api/folder/listFolder', params).then(response => {
       console.log(response.data.folders);
       setFolderList([...response.data.folders]);
     });

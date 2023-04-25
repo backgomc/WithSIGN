@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import useDidMountEffect from '../Common/useDidMountEffect';
 import axios from 'axios';
+import axiosInterceptor from '../../config/AxiosConfig';
 import PDFViewer from '@niceharu/withpdf';
 import { Modal, Input, Row, Col, Space, Button } from "antd";
 import Highlighter from 'react-highlight-words';
@@ -51,7 +52,7 @@ const Manual = () => {
   const fetch = (params = {}) => {
     setLoading(true);
 
-    axios.post('/api/board/list', params).then(response => {
+    axiosInterceptor.post('/api/board/list', params).then(response => {
 
       console.log(response)
       if (response.data.success) {

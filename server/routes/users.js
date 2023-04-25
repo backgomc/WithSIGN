@@ -8,8 +8,7 @@ const jwt = require('jsonwebtoken');
 var fs = require('fs');
 var url = require('url');
 const { hexCrypto, isEmpty, generateRandomPass } = require('../common/utils');
-
-const { auth } = require("../middleware/auth");
+const { auth, generateToken, ValidateToken, renewalToken } = require("../middleware/auth");
 
 const java = require('java');
 const jarFilePath1 = __dirname+'/../lib/INICrypto_v4.0.12.jar';
@@ -70,7 +69,7 @@ router.post('/login', (req, res) => {
     console.log("uid: "+ uid)
     //요청된 이메일을 데이터베이스에서 있는지 찾는다.
     // User.findOne({ email: req.body.email }, (err, user) => {
-    User.findOne({ uid: uid }, (err, user) => {
+    User.findOne({ uid: uid, 'use': true }, (err, user) => {
       // console.log('user', user)
       if (!user) {
         return res.json({
@@ -81,24 +80,22 @@ router.post('/login', (req, res) => {
   
       //요청된 이메일이 데이터 베이스에 있다면 비밀번호가 맞는 비밀번호 인지 확인.
       user.comparePassword(req.body.password, (err, isMatch) => {
-        // console.log('err',err)
-  
-        // console.log('isMatch',isMatch)
-  
-        if (!isMatch)
-          return res.json({ success: false, message: "비밀번호가 일치하지 않습니다." })
+        if (err) return res.json({ success: false, error: err });
+        if (!isMatch) return res.json({ success: false, message: "비밀번호가 일치하지 않습니다." })
 
-        console.log('user:'+user)
-        console.log(typeof user.terms)
-        if (!user.terms || !user.privacy || req.body.SABUN === req.body.password)
+        // console.log('user:'+user)
+        // console.log(typeof user.terms)
+        if (!user.terms || !user.privacy || req.body.SABUN === req.body.password) {
           return res.json({ success: false, user: user._id, message: "약관 동의가 필요합니다." })
-  
-        //비밀번호 까지 맞다면 토큰을 생성하기.
-        user.generateToken(async (err, user) => {
-          if (err) return res.status(400).send(err);
-  
-          // 패스워드 빼고 리턴 
-          user.password = ""
+        }
+
+        // 토큰 생성
+        var {accessToken, refreshToken} = generateToken(user);
+
+        // Refresh 토큰 DB 저장
+        User.updateOne({ '_id': user._id }, {'tokenJWT': refreshToken}, async (err, result) => {
+          if (err) return res.json({ success: false, message: err });
+          console.log(result);
 
           // 조직 정보 셋팅
           let OFFICE_NAME = '';
@@ -111,11 +108,44 @@ router.post('/login', (req, res) => {
           user.OFFICE_NAME = OFFICE_NAME;
           user.DEPART_NAME = DEPART_NAME;
 
-          // 토큰을 저장한다.  어디에 ?  쿠키 , 로컬스토리지 
-          res.cookie("x_auth", user.token)
-            .status(200)
-            .json({ success: true, user: user })
-        })
+          // 패스워드 제외 셋팅 
+          user.password = ""
+
+          // Refresh 토큰 셋팅
+          user.__rToken__ = refreshToken;
+
+          res.cookie('__aToken__', accessToken,  { httpOnly: true, maxAge: 12*60*60*1000 });
+          res.status(200).json({
+            success: true,
+            user: user
+          });
+        });
+
+        //비밀번호 까지 맞다면 토큰을 생성하기.
+        // user.generateToken(async (err, user) => {
+        //   if (err) return res.status(400).send(err);
+  
+        //   // 패스워드 빼고 리턴 
+        //   user.password = ""
+
+        //   // 조직 정보 셋팅
+        //   let OFFICE_NAME = '';
+        //   let DEPART_NAME = '';        
+        //   const orgInfo = await Org.findOne({ DEPART_CODE: user?.DEPART_CODE });
+        //   if(orgInfo) {
+        //     OFFICE_NAME = orgInfo.OFFICE_NAME;
+        //     DEPART_NAME = orgInfo.DEPART_NAME;
+        //   }
+        //   user.OFFICE_NAME = OFFICE_NAME;
+        //   user.DEPART_NAME = DEPART_NAME;
+
+        //   // 토큰을 저장한다.  어디에 ?  쿠키 , 로컬스토리지 
+        //   res.cookie("x_auth", user.token)
+        //     .status(200)
+        //     .json({ success: true, user: user })
+        // })
+
+
       })
     })
 })
@@ -123,7 +153,7 @@ router.post('/login', (req, res) => {
   
 // role 1 어드민    role 2 특정 부서 어드민 
 // role 0 -> 일반유저   role 0이 아니면  관리자 
-router.get('/auth', auth, async (req, res) => {
+router.get('/auth', ValidateToken, async (req, res) => {
   //여기 까지 미들웨어를 통과해 왔다는 얘기는  Authentication 이 True 라는 말.
 
   // const user = req.user
@@ -133,33 +163,72 @@ router.get('/auth', auth, async (req, res) => {
 
   // console.log("email crypto: "+hexCrypto(req.user.email))
 
-  let OFFICE_NAME = '';
-  let DEPART_NAME = '';
+  const uid = req.body.systemId;
 
-  const orgInfo = await Org.findOne({ DEPART_CODE: req.user.DEPART_CODE });
-  if(orgInfo) {
-    OFFICE_NAME = orgInfo.OFFICE_NAME;
-    DEPART_NAME = orgInfo.DEPART_NAME;
-  }
+  User.findOne({ '_id': uid, 'use': true }, async (err, user) => {
+    if (err) return res.json({ success: false, error: err });
+    if (!user) {
+      return res.json({
+        success: false,
+        message: '입력하신 ID에 해당하는 유저가 없습니다.'
+      });
+    }
+
+    let OFFICE_NAME = '';
+    let DEPART_NAME = '';
   
-  res.status(200).json({
-    _id: req.user._id,
-    isAdmin: req.user.role === 0 ? false : true,
-    isAuth: true,
-    email: req.user.email,
-    name: req.user.name,
-    lastname: req.user.lastname,
-    role: req.user.role,
-    image: req.user.image,
-    uid: req.user.uid,
-    JOB_TITLE: req.user.JOB_TITLE,
-    DEPART_CODE: req.user.DEPART_CODE,
-    OFFICE_CODE: req.user.OFFICE_CODE,
-    OFFICE_NAME: OFFICE_NAME,
-    DEPART_NAME: DEPART_NAME,
-    SABUN: req.user.SABUN,
-    thumbnail: req.user.thumbnail
-  })
+    const orgInfo = await Org.findOne({ DEPART_CODE: user.DEPART_CODE });
+    if(orgInfo) {
+      OFFICE_NAME = orgInfo.OFFICE_NAME;
+      DEPART_NAME = orgInfo.DEPART_NAME;
+    }
+
+    user.OFFICE_NAME = OFFICE_NAME;
+    user.DEPART_NAME = DEPART_NAME;
+
+    // 패스워드 제외 셋팅 
+    user.password = ""
+
+    // 관리자 유무 셋팅 
+    user.isAdmin = user.role === 0 ? false : true;
+    user.isAuth = true;
+
+    return res.status(200).json({
+      success: true,
+      user: user
+    });
+  });
+
+
+  // let OFFICE_NAME = '';
+  // let DEPART_NAME = '';
+
+  // const orgInfo = await Org.findOne({ DEPART_CODE: req.user.DEPART_CODE });
+  // if(orgInfo) {
+  //   OFFICE_NAME = orgInfo.OFFICE_NAME;
+  //   DEPART_NAME = orgInfo.DEPART_NAME;
+  // }
+  
+  // res.status(200).json({
+  //   _id: req.user._id,
+  //   isAdmin: req.user.role === 0 ? false : true,
+  //   isAuth: true,
+  //   email: req.user.email,
+  //   name: req.user.name,
+  //   lastname: req.user.lastname,
+  //   role: req.user.role,
+  //   image: req.user.image,
+  //   uid: req.user.uid,
+  //   JOB_TITLE: req.user.JOB_TITLE,
+  //   DEPART_CODE: req.user.DEPART_CODE,
+  //   OFFICE_CODE: req.user.OFFICE_CODE,
+  //   OFFICE_NAME: OFFICE_NAME,
+  //   DEPART_NAME: DEPART_NAME,
+  //   SABUN: req.user.SABUN,
+  //   thumbnail: req.user.thumbnail
+  // })
+
+
 })
 
 // SSO Token -> 사번 추출 -> 사용자 검색 -> 로그인
@@ -180,12 +249,16 @@ router.post('/sso', (req, res) => {
   }
   console.log("uid: "+ uid)
 
-  User.findOne({ uid: uid }, (err, user) => {
+  User.findOne({ uid: uid, 'use': true }, (err, user) => {
     if (user) {
       if (!user.terms || !user.privacy) return res.json({ success: false, user: user._id, message: "약관 동의가 필요합니다." });
-      user.generateToken(async (err, user) => {
-        if (err) return res.status(400).send(err);
-        user.password = ""
+
+      // 토큰 생성
+      var {accessToken, refreshToken} = generateToken(user);
+
+      User.updateOne({ '_id': user._id }, {'tokenJWT': refreshToken}, async (err, result) => {
+        if (err) return res.json({ success: false, message: err });
+        console.log(result);
 
         // 조직 정보 셋팅
         let OFFICE_NAME = '';
@@ -198,10 +271,40 @@ router.post('/sso', (req, res) => {
         user.OFFICE_NAME = OFFICE_NAME;
         user.DEPART_NAME = DEPART_NAME;
 
-        res.cookie("x_auth", user.token)
-          .status(200)
-          .json({ success: true, isAuth: true, user: user })
-      })
+        // 패스워드 제외 셋팅 
+        user.password = ""
+
+        // Refresh 토큰 셋팅
+        user.__rToken__ = refreshToken;
+
+        res.cookie('__aToken__', accessToken,  { httpOnly: true, maxAge: 12*60*60*1000 });
+        res.status(200).json({
+          success: true,
+          isAuth: true,
+          user: user
+        });  
+
+      });
+
+      // user.generateToken(async (err, user) => {
+      //   if (err) return res.status(400).send(err);
+      //   user.password = ""
+
+      //   // 조직 정보 셋팅
+      //   let OFFICE_NAME = '';
+      //   let DEPART_NAME = '';        
+      //   const orgInfo = await Org.findOne({ DEPART_CODE: user?.DEPART_CODE });
+      //   if(orgInfo) {
+      //     OFFICE_NAME = orgInfo.OFFICE_NAME;
+      //     DEPART_NAME = orgInfo.DEPART_NAME;
+      //   }
+      //   user.OFFICE_NAME = OFFICE_NAME;
+      //   user.DEPART_NAME = DEPART_NAME;
+
+      //   res.cookie("x_auth", user.token)
+      //     .status(200)
+      //     .json({ success: true, isAuth: true, user: user })
+      // })
     } else {
       return res.json({
         success: false,
@@ -211,21 +314,29 @@ router.post('/sso', (req, res) => {
   })
 })
 
-router.post('/logout', auth, (req, res) => {
-  User.findOneAndUpdate({ uid: req.user.uid },
-    { token: "" }
-    , (err, user) => {
-      if (err) return res.json({ success: false, err });
-      return res.status(200).send({
-        success: true
-      })
-    })
+router.post('/logout', ValidateToken, (req, res) => {
+
+  User.findOneAndUpdate({ '_id': req.body._id }, { 'tokenJWT': '' }, (err) => {
+    if (err) return res.json({ success: false, err });
+    res.cookie('__aToken__', '__aToken__', { httpOnly: true, maxAge: 0 });
+    return res.status(200).send({success: true});
+  });
+
+  // User.findOneAndUpdate({ uid: req.user.uid },
+  //   { token: "" }
+  //   , (err, user) => {
+  //     if (err) return res.json({ success: false, err });
+  //     return res.status(200).send({
+  //       success: true
+  //     })
+  //   })
+
 })
 
 /*
     USER LIST: POST /list
 */
-router.post('/list', (req, res) => {
+router.post('/list', ValidateToken, (req, res) => {
 
   var searchStr;
 
@@ -259,7 +370,7 @@ router.post('/list', (req, res) => {
 /*
     ORG INSERT: POST /org
 */
-router.post('/orgInsert', (req, res) => {
+router.post('/orgInsert', ValidateToken, (req, res) => {
 
   fs.readFile('./public/mock/org.json', 'utf8', (error, jsonFile) => {
     if (error) return console.log(error);
@@ -301,7 +412,7 @@ router.post('/orgInsert', (req, res) => {
 /*
     ORG LIST: POST /orgList
 */
-router.post('/orgList', (req, res) => {
+router.post('/orgList', ValidateToken, (req, res) => {
 
   if (!req.body.OFFICE_CODE) {
     return res.json({ success: false, message: "input value not enough!" })
@@ -326,7 +437,7 @@ router.post('/orgList', (req, res) => {
     INPUT: DEPART_CODE
     OUTPUT: Org
 */
-router.post('/orgInfo', (req, res) => {
+router.post('/orgInfo', ValidateToken, (req, res) => {
 
   if (!req.body.DEPART_CODE) {
     return res.json({ success: false, message: "input value not enough!" })
@@ -361,7 +472,7 @@ router.post('/orgInfo', (req, res) => {
     INPUT: [DEPART_CODE]
     OUTPUT: [Org]
 */
-router.post('/orgInfos', (req, res) => {
+router.post('/orgInfos', ValidateToken, (req, res) => {
 
   if (!req.body.DEPART_CODES) {
     return res.json({ success: false, message: "input value not enough!" })
@@ -392,7 +503,7 @@ router.post('/orgInfos', (req, res) => {
 });
 
 // 유저 업데이트 : updateUser
-router.post('/updateUser', (req, res) => {
+router.post('/updateUser', ValidateToken, (req, res) => {
 
   console.log("user:"+req.body.user)
   console.log("email:"+req.body.email)
@@ -444,7 +555,7 @@ router.post('/updateAgreement', (req, res) => {
 
 
 // 유저 비밀번호 : updatePassword
-router.post('/updatePassword', (req, res) => {
+router.post('/updatePassword', ValidateToken, (req, res) => {
 
   console.log("user:"+req.body.user)
   console.log("current:"+req.body.currentPassword)
@@ -495,7 +606,7 @@ router.post('/updatePassword', (req, res) => {
 /*
     USER INSERT: POST /insertUsers
 */
-router.post('/insertUsers', (req, res) => {
+router.post('/insertUsers', ValidateToken, (req, res) => {
 
   fs.readFile('./public/mock/user.json', 'utf8', (error, jsonFile) => {
     if (error) return console.log(error);
@@ -543,7 +654,7 @@ router.post('/insertUsers', (req, res) => {
 
 
 // paperless 업데이트 : 받은 숫자를 더해준다.
-router.post('/updatePaperless', (req, res) => {
+router.post('/updatePaperless', ValidateToken, (req, res) => {
 
   console.log("user:"+req.body.user)
   console.log("paperless:"+req.body.paperless)
@@ -567,7 +678,7 @@ router.post('/updatePaperless', (req, res) => {
 })
 
 // paperless : paperless 정보를 리턴한다.
-router.post('/paperless', async (req, res) => {
+router.post('/paperless', ValidateToken, async (req, res) => {
 
   if (!req.body.user) {
       return res.json({ success: false, message: "input value not enough!" })
@@ -638,7 +749,7 @@ router.post('/verify', async (req, res) => {
 });
 
 // 유저 상태 확인
-router.post('/check', (req, res) => {
+router.post('/check', ValidateToken, (req, res) => {
   if (!req.body.assignees) return res.json({ success: false, message: "input value not enough!" });
   
   var assignees = req.body.assignees;
@@ -654,7 +765,7 @@ router.post('/check', (req, res) => {
 });
 
 // 유저 소속 정보
-router.post('/myOrgs', (req, res) => {
+router.post('/myOrgs', ValidateToken, (req, res) => {
   if (!req.body.user) return res.json({ success: false, message: "input value not enough!" });
   User.aggregate([
     { $match: {'_id': new mongoose.Types.ObjectId(req.body.user)} },
@@ -676,6 +787,39 @@ router.post('/myOrgs', (req, res) => {
     } else {
       return res.json({ success: false});
     }
+  });
+});
+
+// 토큰 갱신
+router.post('/refresh', renewalToken, (req, res) => {
+  var _id = req.body.systemId;
+  var _tk = req.body.accessTk;
+  // console.log(_tk);
+  // console.log('refresh-token:', req.headers['refresh-token'])
+  User.findOne({ '_id': _id, 'use': true, 'tokenJWT': req.headers['refresh-token'] }, async (err, user) => {
+    // console.log(user);
+    if (err) return res.json({ success: false, error: err });
+    if (!user) return res.json({ success: false, message: 'No User!!' });
+    res.cookie('__aToken__', _tk,  { httpOnly: true, maxAge: 12*60*60*1000 });
+
+    // 조직 정보 셋팅
+    let OFFICE_NAME = '';
+    let DEPART_NAME = '';        
+    const orgInfo = await Org.findOne({ DEPART_CODE: user?.DEPART_CODE });
+    if(orgInfo) {
+      OFFICE_NAME = orgInfo.OFFICE_NAME;
+      DEPART_NAME = orgInfo.DEPART_NAME;
+    }
+    user.OFFICE_NAME = OFFICE_NAME;
+    user.DEPART_NAME = DEPART_NAME;
+
+    // 패스워드 제외 셋팅 
+    user.password = ""
+     
+    res.status(200).json({
+      success: true,
+      user: user
+    });
   });
 });
 

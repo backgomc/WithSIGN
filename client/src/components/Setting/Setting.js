@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import axios from 'axios';
+import axiosInterceptor from '../../config/AxiosConfig';
 import BoardCard from '../Board/BoardCard';
 import FAQCard from '../Board/FAQCard';
 import { setUser, selectUser } from '../../app/infoSlice';
@@ -40,7 +41,7 @@ const Setting = () => {
     let param = {
         DEPART_CODE: DEPART_CODE      
     }  
-    const res = await axios.post('/api/users/orgInfo', param)
+    const res = await axiosInterceptor.post('/api/users/orgInfo', param)
     
     if (res.data.success) {
         setDepartName(res.data.org.DEPART_NAME)
@@ -57,7 +58,7 @@ const Setting = () => {
         user: _id,
         email: values.email      
     }  
-    const res = await axios.post('/api/users/updateUser', param)
+    const res = await axiosInterceptor.post('/api/users/updateUser', param)
 
     if (res.data.success) {
       message.success('변경되었습니다 !');
@@ -86,7 +87,7 @@ const Setting = () => {
         password: values.password
 
     }  
-    const res = await axios.post('/api/users/updatePassword', param)
+    const res = await axiosInterceptor.post('/api/users/updatePassword', param)
 
     if (res.data.success) {
       message.success('비밀번호가 변경되었습니다!');

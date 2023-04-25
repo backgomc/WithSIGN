@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import axiosInterceptor from '../../config/AxiosConfig';
 import { v4 as uuidv4 } from 'uuid';
 import { Tooltip, Tag, Timeline, Button, Alert, Modal, Badge, Descriptions, Space, message, List, Typography } from 'antd';
 import Moment from 'react-moment';
@@ -73,7 +74,7 @@ const DocumentExpander = (props) => {
 
     // 사용자의 부서 정보 조회
     const fetchMyOrgs = (params = {}) => {
-        axios.post('/api/users/myOrgs', params).then(response => {
+        axiosInterceptor.post('/api/users/myOrgs', params).then(response => {
         if (response.data.success) {
             setMyOrgs(response.data.orgs);
         }
@@ -89,7 +90,7 @@ const DocumentExpander = (props) => {
           user: _id
         }
     
-        const res = await axios.post('/api/storage/removeDocument', param)
+        const res = await axiosInterceptor.post('/api/storage/removeDocument', param)
         setLoadingCancel(false);
 
         if (res.data.success) {
@@ -109,7 +110,7 @@ const DocumentExpander = (props) => {
         ))
         DEPART_CODES.push(item.user.DEPART_CODE)
 
-        const res = await axios.post('/api/users/orgInfos', {DEPART_CODES: DEPART_CODES})
+        const res = await axiosInterceptor.post('/api/users/orgInfos', {DEPART_CODES: DEPART_CODES})
         
         if (res.data.success) {
             setOrgInfos(res.data.results)
@@ -123,7 +124,7 @@ const DocumentExpander = (props) => {
             usrId: _id,
             docId: item._id
         }
-        axios.post('/api/document/notify/G', param).then(response => {
+        axiosInterceptor.post('/api/document/notify/G', param).then(response => {
             message.success({content: '미서명자에게 아이프로넷 쪽지 & With 메시지로 서명 재요청 알림을 보냈습니다.', style: {marginTop: '70vh'}});
         });
     }
@@ -133,7 +134,7 @@ const DocumentExpander = (props) => {
           usrId: _id,
           docId: item._id
         }
-        axios.post('/api/document/delete', param).then(response => {
+        axiosInterceptor.post('/api/document/delete', param).then(response => {
             if (response.data.success) {
                 navigate('/resultPage', { state: {status:'success', headerTitle:'결과', title:'서명 문서를 폐기하였습니다.'}}); 
             } else {
@@ -152,7 +153,7 @@ const DocumentExpander = (props) => {
             message: '요청 취소'
         }
 
-        const res = await axios.post('/api/document/updateCancelSigning', param)
+        const res = await axiosInterceptor.post('/api/document/updateCancelSigning', param)
 
         setLoadingCancel(false);
 

@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
+import axiosInterceptor from '../../config/AxiosConfig';
 import { Table, Input, Space, Button, Descriptions, Form, Comment, Avatar, List, Divider, Modal, Tooltip } from "antd";
 import Highlighter from 'react-highlight-words';
 import { useSelector, useDispatch } from 'react-redux';
@@ -68,7 +69,7 @@ const BoardDetail = ({location}) => {
   const fetch = (params = {}) => {
     setLoading(true);
 
-    axios.post('/api/board/detail', params).then(response => {
+    axiosInterceptor.post('/api/board/detail', params).then(response => {
 
       console.log(response)
       if (response.data.success) {
@@ -107,7 +108,7 @@ const BoardDetail = ({location}) => {
       _ids: [boardId]
     }
     
-    const res = await axios.post('/api/board/delete', param)
+    const res = await axiosInterceptor.post('/api/board/delete', param)
     if (res.data.success) {
       window.history.back();
     }
@@ -138,7 +139,7 @@ const BoardDetail = ({location}) => {
       boardId: boardId
     }
     
-    const res = await axios.post('/api/board/deleteComment', param)
+    const res = await axiosInterceptor.post('/api/board/deleteComment', param)
     if (res.data.success) {
       fetch({
         boardId: boardId  
@@ -212,7 +213,7 @@ const BoardDetail = ({location}) => {
       content: form.getFieldValue("content"),
     }
     console.log(body)
-    const res = await axios.post('/api/board/addComment', body)
+    const res = await axiosInterceptor.post('/api/board/addComment', body)
 
     setLoading(false);
 

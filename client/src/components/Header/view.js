@@ -48,6 +48,7 @@ const HeaderComponent = ({collapsed, setCollapsed}) => {
         <Link to="" onClick={() => {
           axios.post(`/api/users/logout`).then(response => {
             if (response.status === 200) {
+              localStorage.removeItem('__rToken__');
               dispatch(setUser(null));
               dispatch(resetSignee())
               navigate('/login');

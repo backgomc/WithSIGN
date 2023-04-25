@@ -4,9 +4,10 @@ const { Template } = require("../models/Template");
 const fs = require('fs');
 const config = require("../config/key");
 const { generateRandomName, makeFolder, today } = require('../common/utils');
+const { ValidateToken } = require('../middleware/auth');
 
 // 템플릿 등록
-router.post('/addTemplate', (req, res) => {
+router.post('/addTemplate', ValidateToken, (req, res) => {
 
     if (!req.body.user) {
         return res.json({ success: false, message: "input value not enough!" })
@@ -43,7 +44,7 @@ router.post('/addTemplate', (req, res) => {
 // type:C (신청서)
 // type:G (회사 템플릿)
 // type:M (개인)
-router.post('/templates', (req, res) => {
+router.post('/templates', ValidateToken, (req, res) => {
 
   const uid = req.body.uid
   if (!uid) {
@@ -122,7 +123,7 @@ router.post('/templates', (req, res) => {
 })
 
 // 템플릿 삭제
-router.post('/deleteTemplate', (req, res) => {
+router.post('/deleteTemplate', ValidateToken, (req, res) => {
 
   if (!req.body._ids) {
     return res.json({ success: false, message: "input value not enough!" });
@@ -180,7 +181,7 @@ router.post('/deleteTemplate', (req, res) => {
 });
 
 // 템플릿 설정 등록 및 수정
-router.post('/updateTemplate', (req, res) => {
+router.post('/updateTemplate', ValidateToken, (req, res) => {
 
   if (!req.body._id || !req.body.user ) return res.json({ success: false, message: 'input value not enough!' });
 
@@ -214,7 +215,7 @@ router.post('/updateTemplate', (req, res) => {
 });
 
 // 템플릿 상세
-router.post('/detail', (req, res) => {
+router.post('/detail', ValidateToken, (req, res) => {
   if (!req.body.templateId) {
     return res.json({ success: false, message: "input value not enough!" })
   }
@@ -232,7 +233,7 @@ router.post('/detail', (req, res) => {
 })
 
 // 템플릿 정보 업데이트
-router.post('/updateTemplateInfo', (req, res) => {
+router.post('/updateTemplateInfo', ValidateToken, (req, res) => {
 
   if (!req.body.templateId ) return res.json({ success: false, message: 'input value not enough!' });
 

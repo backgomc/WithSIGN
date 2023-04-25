@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
+import axiosInterceptor from '../../config/AxiosConfig';
 import { Popover, Tooltip, Badge, Modal, Table, Input, Space, Button, Tag, List, Card, Radio } from "antd";
 import Highlighter from 'react-highlight-words';
 import { SearchOutlined, DeleteOutlined, FileOutlined, FileAddOutlined, FormOutlined, ExclamationCircleOutlined, SettingTwoTone, QuestionCircleTwoTone, UnorderedListOutlined, AppstoreOutlined, UserAddOutlined } from '@ant-design/icons';
@@ -97,7 +98,7 @@ const TemplateList = () => {
   // fetch (전체 통합)
   const fetchTemplates = (params = {}) => {
     setLoading(true);
-    axios.post('/api/template/templates', params).then(response => {
+    axiosInterceptor.post('/api/template/templates', params).then(response => {
 
       console.log(response)
       if (response.data.success) {
@@ -125,7 +126,7 @@ const TemplateList = () => {
       okType: 'danger',
       cancelText: '아니오',
       onOk() {
-        axios.post('/api/template/deleteTemplate', {_ids: [templateId]}).then(response => {
+        axiosInterceptor.post('/api/template/deleteTemplate', {_ids: [templateId]}).then(response => {
           if (response.data.success) {
             loadData();
           }

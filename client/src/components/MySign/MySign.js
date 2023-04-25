@@ -1,6 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { useSelector, useDispatch, useStore } from 'react-redux';
 import axios from 'axios';
+import axiosInterceptor from '../../config/AxiosConfig';
 import { navigate } from '@reach/router';
 import { Spin, Button, Card, Modal, Empty, List, Form, message, Upload } from 'antd';
 import { selectUser } from '../../app/infoSlice';
@@ -47,7 +48,7 @@ const MySign = () => {
       user: _id
     }
     
-    const res = await axios.post('/api/sign/signs', param)
+    const res = await axiosInterceptor.post('/api/sign/signs', param)
     if (res.data.success) {
       const signs = res.data.signs;
       setData(signs)
@@ -63,7 +64,7 @@ const MySign = () => {
       _id: _id
     }
     
-    const res = await axios.post('/api/sign/deleteSign', param)
+    const res = await axiosInterceptor.post('/api/sign/deleteSign', param)
     if (res.data.success) {
       fetchSigns();
     }
@@ -103,7 +104,7 @@ const MySign = () => {
       }
   
       // 서버업로드
-      const res = await axios.post('/api/sign/addSign', param)
+      const res = await axiosInterceptor.post('/api/sign/addSign', param)
   
       setLoading(false);
       setVisiblModal(false);
@@ -129,7 +130,7 @@ const MySign = () => {
         }
 
         // 서버업로드
-        const res = await axios.post('/api/sign/addSign', param)
+        const res = await axiosInterceptor.post('/api/sign/addSign', param)
     
         setLoading(false);
         setVisiblModal(false);

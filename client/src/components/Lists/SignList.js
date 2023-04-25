@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
+import axiosInterceptor from '../../config/AxiosConfig';
 import { Table, Input, Space, Button } from "antd";
 import Highlighter from 'react-highlight-words';
 import { SearchOutlined } from '@ant-design/icons';
@@ -37,7 +38,7 @@ const SignList = () => {
   const fetch = (params = {}) => {
     setLoading(true);
 
-    axios.post('/api/document/searchForDocumentToSign', params).then(response => {
+    axiosInterceptor.post('/api/document/searchForDocumentToSign', params).then(response => {
 
       console.log(response)
       if (response.data.success) {

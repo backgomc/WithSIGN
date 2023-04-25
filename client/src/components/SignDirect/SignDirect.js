@@ -3,6 +3,7 @@ import { useSelector, useDispatch, useStore } from 'react-redux';
 import SignaturePad from 'react-signature-canvas';
 import { v4 as uuidv4 } from 'uuid';
 import axios from 'axios';
+import axiosInterceptor from '../../config/AxiosConfig';
 import { navigate } from '@reach/router';
 import { TreeSelect, Input, Row, Col, Modal, Spin, Button, Upload, message, Typography, Divider, Steps, Tag } from 'antd';
 import { selectUser } from '../../app/infoSlice';
@@ -254,7 +255,7 @@ const SignDirect = () => {
     let param = {
       user: _id
     }
-    const res = await axios.post('/api/sign/signs', param);
+    const res = await axiosInterceptor.post('/api/sign/signs', param);
     if (res.data.success) {
       const signs = res.data.signs;
       setSignList(signs);
@@ -338,7 +339,7 @@ const SignDirect = () => {
     const formData = new FormData()
     formData.append('path', path)
     formData.append('file', file, filename)
-    const res = await axios.post(`/api/storage/upload`, formData)
+    const res = await axiosInterceptor.post(`/api/storage/upload`, formData)
 
     // 업로드 후 파일 경로 가져오기  
     var docRef = ''
@@ -349,7 +350,7 @@ const SignDirect = () => {
 
     // 2. SAVE THUMBNAIL
     let _thumbnail = await pdfRef.current.getThumbnail(0, 0.6);
-    const resThumbnail = await axios.post('/api/document/addThumbnail', {user: _id, thumbnail: _thumbnail})
+    const resThumbnail = await axiosInterceptor.post('/api/document/addThumbnail', {user: _id, thumbnail: _thumbnail})
     var thumbnailUrl = '';
     if (resThumbnail.data.success) {
       thumbnailUrl = resThumbnail.data.thumbnail 
@@ -366,7 +367,7 @@ const SignDirect = () => {
 
       fileList.forEach(file => formData.append('files', file));
 
-      const resFile = await axios.post(`/api/storage/uploadFiles`, formData)
+      const resFile = await axiosInterceptor.post(`/api/storage/uploadFiles`, formData)
       if (resFile.data.success) {
         files = resFile.data.files
       }
@@ -424,7 +425,7 @@ const SignDirect = () => {
       isWithPDF: true
     }
 
-    const res2 = await axios.post('/api/document/addDocumentToSign', body)
+    const res2 = await axiosInterceptor.post('/api/document/addDocumentToSign', body)
     console.log(res2)
     if (res2.data.success) {
       docId = res2.data.documentId;

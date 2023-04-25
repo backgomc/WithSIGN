@@ -10,9 +10,10 @@ const { generateRandomName, makeFolder, today } = require('../common/utils');
 const { DOCUMENT_SIGNED, DOCUMENT_TOSIGN, DOCUMENT_SIGNING, DOCUMENT_CANCELED, DOCUMENT_TOCONFIRM } = require('../common/constants');
 const restful = require('../common/restful');
 const e = require('express');
+const { ValidateToken } = require('../middleware/auth');
 
 // 신규 문서 등록  
-router.post('/addDocumentToSign', (req, res) => {
+router.post('/addDocumentToSign', ValidateToken, (req, res) => {
 
   if (!req.body.user || !req.body.docRef) {
     return res.json({ success: false, message: 'input value not enough!' });
@@ -81,7 +82,7 @@ router.post('/addDocumentToSign', (req, res) => {
 })
 
 // 썸네일 저장
-router.post('/addThumbnail', (req, res) => {
+router.post('/addThumbnail', ValidateToken, (req, res) => {
 
   console.log("req.body.user:"+req.body.user)
 
@@ -113,7 +114,7 @@ router.post('/addThumbnail', (req, res) => {
 
 
 // 문서 상태 변경 (사인) : updateDocumentToSign
-router.post('/updateDocumentToSign', (req, res) => {
+router.post('/updateDocumentToSign', ValidateToken, (req, res) => {
 
   // TODO 서명자의 IP 정보 남기기
   // console.log("client IP: " +requestIp.getClientIp(req));
@@ -219,7 +220,7 @@ router.post('/updateDocumentToSign', (req, res) => {
 
 // WITHPDF
 // 문서 상태 변경 (사인)
-router.post('/update', (req, res) => {
+router.post('/update', ValidateToken, (req, res) => {
 
   // TODO 서명자의 IP 정보 남기기
   // console.log("client IP: " +requestIp.getClientIp(req));
@@ -337,7 +338,7 @@ router.post('/update', (req, res) => {
 
 
 // 문서 취소 : updateDocumentToSign
-router.post('/updateDocumentCancel', (req, res) => {
+router.post('/updateDocumentCancel', ValidateToken, (req, res) => {
 
   console.log("docId:"+req.body.docId)
   console.log("user:"+req.body.user)
@@ -384,7 +385,7 @@ router.post('/updateDocumentCancel', (req, res) => {
 
 // 요청취소 : updateCancelSigning
 // 서명 취소를 등록하고 기존에 서명 이력은 지워준다.
-router.post('/updateCancelSigning', async (req, res) => {
+router.post('/updateCancelSigning', ValidateToken, async (req, res) => {
 
   console.log("docId:"+req.body.docId)
   console.log("user:"+req.body.user)
@@ -427,7 +428,7 @@ router.post('/updateCancelSigning', async (req, res) => {
 })
 
 // 사인 대상 문서 검색 : searchForDocumentToSign
-router.post('/searchForDocumentToSign', (req, res) => {
+router.post('/searchForDocumentToSign', ValidateToken, (req, res) => {
 
   const user = req.body.user
   if (!user) {
@@ -477,7 +478,7 @@ router.post('/searchForDocumentToSign', (req, res) => {
 
   // 사인한 문서 검색 : searchForDocumentsSigned 
   // sample : "{"email":"3thzone@naver.com","sortField":"signedTime","sortOrder":"ascend","pagination":{"current":1,"pageSize":2,"total":3}}"
-  router.post('/searchForDocumentsSigned', (req, res) => {
+  router.post('/searchForDocumentsSigned', ValidateToken, (req, res) => {
 
     const user = req.body.user
     if (!user) {
@@ -531,7 +532,7 @@ router.post('/searchForDocumentToSign', (req, res) => {
   // [서명진행중 문서: signed = false]
   // [취소된 문서: canceled = true]
   // [내가서명해야할 문서: emails:[email], signed = false]
-  router.post('/documents', async (req, res) => {
+  router.post('/documents', ValidateToken, async (req, res) => {
 
     const user = req.body.user
     if (!user) {
@@ -713,7 +714,7 @@ router.post('/searchForDocumentToSign', (req, res) => {
   })
 
 // 문서 통계 : 서명 필요 건수, 서명 대기 건수, 전체 문서 건수
-router.post('/statics', (req, res) => {
+router.post('/statics', ValidateToken, (req, res) => {
 
   const user = req.body.user
   if (!user) {
@@ -783,7 +784,7 @@ router.post('/statics', (req, res) => {
 })  
 
 // 문서 불러오기
-router.post('/document', (req, res) => {
+router.post('/document', ValidateToken, (req, res) => {
 
   console.log("docId:"+req.body.docId)
 
@@ -810,7 +811,7 @@ router.post('/document', (req, res) => {
 })
 
 // 문서 폐기 - 취소 상태 문서는 서명 요청자만 폐기 가능
-router.post('/delete', async (req, res) => {
+router.post('/delete', ValidateToken, async (req, res) => {
   if (!req.body.usrId || !req.body.docId) {
     return res.json({ success: false, message: 'input value not enough!' });
   }
@@ -825,7 +826,7 @@ router.post('/delete', async (req, res) => {
 });
 
 // 서명 재요청 알림 보내기
-router.post('/notify/:type', async (req, res) => {
+router.post('/notify/:type', ValidateToken, async (req, res) => {
   if (!req.params.type || !req.body.usrId) return res.json({ success: false, message: 'input value not enough!' });
   
   if (req.params.type === 'B') {  // 대량
@@ -869,7 +870,7 @@ router.post('/notify/:type', async (req, res) => {
 
 
 // 최근시간 업데이트 - 빈값인 경우
-router.post('/updateRecentTime', async (req, res) => {
+router.post('/updateRecentTime', ValidateToken, async (req, res) => {
 
   Document.find(
       { 'recentTime': null }
@@ -909,7 +910,7 @@ router.post('/updateRecentTime', async (req, res) => {
 });
 
 // 문서 다운시 업데이트(최초 1회)
-router.post('/updateDownloads', (req, res) => {
+router.post('/updateDownloads', ValidateToken, (req, res) => {
   if (!req.body.usrId || !req.body.docId) {
     return res.json({ success: false, message: 'input value not enough!' });
   }

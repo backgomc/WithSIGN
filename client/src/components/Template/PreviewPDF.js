@@ -1,6 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import axios from 'axios';
+import axiosInterceptor from '../../config/AxiosConfig';
 import { navigate } from '@reach/router';
 import { selectUser } from '../../app/infoSlice';
 
@@ -68,7 +69,7 @@ const PreviewPDF = ({location}) => {
     console.log('param', param);
     setLoading(true);
 
-    const res = await axios.post('/api/template/updateTemplateInfo', param)
+    const res = await axiosInterceptor.post('/api/template/updateTemplateInfo', param)
     if (res.data.success) {
       Modal.success({
         content: '템플릿명이 수정되었습니다.',
@@ -98,7 +99,7 @@ const PreviewPDF = ({location}) => {
           (role || _id === userId)  && <Button key="2" icon={<EditOutlined />} onClick={() => updateDocument()}>
           {formatMessage({id: 'document.modify'})}
         </Button>,
-          <Button key="3" loading={loadingDownload['1']} href={docRef} download={docTitle+'.pdf'} type="primary" icon={<DownloadOutlined />} onClick={()=> {
+          <Button key="3" loading={loadingDownload['1']} href={'/api/storage/templates/'+templateId} download={docTitle+'.pdf'} type="primary" icon={<DownloadOutlined />} onClick={()=> {
             setLoadingDownload( { "1" : true } )
             setTimeout(() => {
               setLoadingDownload( { "1" : false})

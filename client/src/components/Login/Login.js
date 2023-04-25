@@ -55,6 +55,7 @@ function Login(props) {
         axios.post('/api/users/login', body).then(response => {
             console.log(response);
             if (response.data.success) {
+                localStorage.setItem('__rToken__', response.data.user.__rToken__);
                 dispatch(setUser(response.data.user));
                 dispatch(setPathname('/'));
                 navigate('/', { replace: true });

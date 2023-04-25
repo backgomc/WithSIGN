@@ -408,7 +408,8 @@ db.documents.find( {$and: [
 # 2.1.1
 - [ ] 사용자 등록 후 좌측에 사람을 빼고 우측 이동 시 맨오른쪽에 사람이 빠지지 않는다.
 - [x] 템플릿 UI 고도화 및 템플릿 제목 수정 가능하도록 처리
-- [ ] jwtToken 적용
+- [x] jwtToken 적용
+- [x] 템플릿 다운로드 시 DRM 적용
 - [ ] pdf 다건 일괄 다운로드 기능 
 - [ ] 다건 다운로드 이후 pdf 다운로드 오류 해결 필요 
 
@@ -421,8 +422,10 @@ db.documents.find( {$and: [
           - accessToken 쿠키 저장
           - refreshToken 응답 값 추가
  4. [서버] logout 서비스 적용 : users /logout 
+ 5. [서버] auth 서비스 적용 : users /auth 
  5. [서버] sso 서비스 적용 : users /sso
- 6. [서버] 서비스 통신 시 토큰 검증 전처리 : 검증 필요 서비스들 모두 적용 
+          sso 접속 테스트 : http://localhost:3000/?t=ykClWOR%2BXXPW8Gt9mJixzQ%3D%3D%26%26z0vgHkiQJxI7Y%2BjPTvWIgnMo3Hrw9DSXApgjvRbEo6btuL%2F8I6Kt63LiCRL%2Fylvg%26%26EZgpuOveH5LV4fspdJdNMQ%3D%3D
+ 6. [서버] 서비스 통신 시 토큰 검증 전처리 : ValidateToken
  7.  [클라이언트] login 시 토큰 추가 로직 추가 : Login.js
  8.  [클라이언트] logout 시 토큰 삭제 로직 추가 : Profile.js, view.js (Header.js 참조)
  9.  [클라이언트] auth 인증 시 토큰 로직 추가 (토큰 갱신, 토큰 localstorage 저장, 통합 로그인 처리) : App.js 
@@ -444,3 +447,4 @@ db.documents.find( {$and: [
 [x] UploadTemplate
 [x] ViewDocument
 [x] Config
+

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import axios from 'axios';
+import axiosInterceptor from '../../config/AxiosConfig';
 import { selectUser } from '../../app/infoSlice';
 import { StatisticCard } from '@ant-design/pro-card';
 import 'antd/dist/antd.css';
@@ -37,7 +38,7 @@ const PaperlessCard = (props) => {
     let param = {
       user: _id
     }
-    const res = await axios.post('/api/users/paperless', param)
+    const res = await axiosInterceptor.post('/api/users/paperless', param)
     if (res.data.success) {
       setPaperlessNum(res.data.paperless)
       setDocNum(res.data.docCount)

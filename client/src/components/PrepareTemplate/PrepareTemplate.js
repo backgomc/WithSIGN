@@ -1,6 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import axios from 'axios';
+import axiosInterceptor from '../../config/AxiosConfig';
 import { navigate } from '@reach/router';
 import { Badge, Button, Row, Col, List, Card, Checkbox, Tooltip, Tag, Spin, Divider, Typography } from 'antd';
 import Icon, { PlusOutlined, ArrowLeftOutlined, SendOutlined } from '@ant-design/icons';
@@ -74,7 +75,7 @@ const PrepareTemplate = () => {
     let param = {
       user: _id
     }
-    const res = await axios.post('/api/sign/signs', param);
+    const res = await axiosInterceptor.post('/api/sign/signs', param);
     if (res.data.success) {
       const signs = res.data.signs;
       pdfRef.current.setSigns(signs);
@@ -87,7 +88,7 @@ const PrepareTemplate = () => {
     let param = {
       templateId: templateId
     }
-    const res = await axios.post('/api/template/detail', param);
+    const res = await axiosInterceptor.post('/api/template/detail', param);
     if (res.data.success) {
       let _template = res.data.template;
       // setTemplate(_template);
@@ -206,7 +207,7 @@ const PrepareTemplate = () => {
       isWithPDF: isWithPDF
     }
     
-    await axios.post('/api/template/updateTemplate', body);
+    await axiosInterceptor.post('/api/template/updateTemplate', body);
 
     dispatch(resetAssignAll());
     setLoading(false);  

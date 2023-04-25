@@ -3,9 +3,10 @@ const router = express.Router();
 const { Board } = require("../models/Board");
 const fs = require('fs');
 const config = require("../config/key");
+const { ValidateToken } = require('../middleware/auth');
 
 // 게시글 등록
-router.post('/add', (req, res) => {
+router.post('/add', ValidateToken, (req, res) => {
 
   if (!req.body.user || !req.body.title || !req.body.content || !req.body.boardType) {
       return res.json({ success: false, message: "input value not enough!" })
@@ -22,7 +23,7 @@ router.post('/add', (req, res) => {
 })
 
 // 게시글 목록
-router.post('/list', (req, res) => {
+router.post('/list', ValidateToken, (req, res) => {
 
   if (!req.body.boardType) {
       return res.json({ success: false, message: "input value not enough!" })
@@ -88,7 +89,7 @@ router.post('/list', (req, res) => {
 })
 
 // 게시글 목록 (content 제외)
-router.post('/listSlim', (req, res) => {
+router.post('/listSlim', ValidateToken, (req, res) => {
 
   if (!req.body.boardType) {
       return res.json({ success: false, message: "input value not enough!" })
@@ -154,7 +155,7 @@ router.post('/listSlim', (req, res) => {
 })
 
 // 게시글 상세
-router.post('/detail', (req, res) => {
+router.post('/detail', ValidateToken, (req, res) => {
   if (!req.body.boardId) {
     return res.json({ success: false, message: "input value not enough!" })
   }
@@ -176,7 +177,7 @@ router.post('/detail', (req, res) => {
 })
 
 // 게시글 삭제
-router.post('/delete', (req, res) => {
+router.post('/delete', ValidateToken, (req, res) => {
 
   if (!req.body._ids) {
       return res.json({ success: false, message: "input value not enough!" })
@@ -228,7 +229,7 @@ router.post('/delete', (req, res) => {
 })
 
 // 게시글 수정
-router.post('/modify', (req, res) => {
+router.post('/modify', ValidateToken, (req, res) => {
 
   if (!req.body.boardId || !req.body.title || !req.body.content) {
     return res.json({ success: false, message: "input value not enough!" })
@@ -273,7 +274,7 @@ router.post('/modify', (req, res) => {
 })
 
 // 게시글 등록
-router.post('/addComment', (req, res) => {
+router.post('/addComment', ValidateToken, (req, res) => {
 
   if (!req.body.user || !req.body.boardId || !req.body.content) {
       return res.json({ success: false, message: "input value not enough!" })
@@ -303,7 +304,7 @@ router.post('/addComment', (req, res) => {
 })
 
 // 댓글 삭제 
-router.post('/deleteComment', (req, res) => {
+router.post('/deleteComment', ValidateToken, (req, res) => {
 
   if (!req.body.boardId || !req.body.commentId) {
       return res.json({ success: false, message: "input value not enough!" })

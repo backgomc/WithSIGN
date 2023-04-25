@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
+import axiosInterceptor from '../../config/AxiosConfig';
 import { Table, Input, Space, Button, Popconfirm, Badge } from "antd";
 import Highlighter from 'react-highlight-words';
 import { SearchOutlined } from '@ant-design/icons';
@@ -60,7 +61,7 @@ const BoardList = ({location}) => {
   const fetch = (params = {}) => {
     setLoading(true);
 
-    axios.post('/api/board/list', params).then(response => {
+    axiosInterceptor.post('/api/board/list', params).then(response => {
 
       console.log(response)
       if (response.data.success) {
@@ -87,7 +88,7 @@ const BoardList = ({location}) => {
     }
 
     console.log("param:" + param)
-    const res = await axios.post('/api/board/delete', param)
+    const res = await axiosInterceptor.post('/api/board/delete', param)
     if (res.data.success) {
       // alert('삭제 되었습니다.')
     } else {

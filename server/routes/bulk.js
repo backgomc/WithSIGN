@@ -1,9 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const { Bulk } = require("../models/Bulk");
+const { ValidateToken } = require('../middleware/auth');
 
 // 신규 bulk 등록
-router.post('/addBulk', (req, res) => {
+router.post('/addBulk', ValidateToken, (req, res) => {
 
     if (!req.body.user) {
         return res.json({ success: false, message: "input value not enough!" })
@@ -20,7 +21,7 @@ router.post('/addBulk', (req, res) => {
 })
 
 // bulk 목록 
-router.post('/bulks', (req, res) => {
+router.post('/bulks', ValidateToken, (req, res) => {
 
   const user = req.body.user
   if (!user) {

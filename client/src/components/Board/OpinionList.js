@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
+import axiosInterceptor from '../../config/AxiosConfig';
 import { Table, Input, Space, Button, Popconfirm, List, Comment, Avatar, Form } from "antd";
 import Highlighter from 'react-highlight-words';
 import { SearchOutlined } from '@ant-design/icons';
@@ -63,7 +64,7 @@ const OpinionList = ({location}) => {
       content: form.getFieldValue("content"),
     }
     console.log(body)
-    const res = await axios.post('/api/board/add', body)
+    const res = await axiosInterceptor.post('/api/board/add', body)
 
     setLoading(false);
 
@@ -129,7 +130,7 @@ const OpinionList = ({location}) => {
   const fetch = (params = {}) => {
     setLoading(true);
 
-    axios.post('/api/board/list', params).then(response => {
+    axiosInterceptor.post('/api/board/list', params).then(response => {
 
       console.log(response)
       if (response.data.success) {

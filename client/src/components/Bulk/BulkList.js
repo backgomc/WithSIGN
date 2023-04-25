@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
+import axiosInterceptor from '../../config/AxiosConfig';
 import { Table, Input, Space, Button, Popconfirm } from "antd";
 import Highlighter from 'react-highlight-words';
 import { useSelector, useDispatch } from 'react-redux';
@@ -54,7 +55,7 @@ const BulkList = () => {
   const fetch = (params = {}) => {
     setLoading(true);
 
-    axios.post('/api/bulk/bulks', params).then(response => {
+    axiosInterceptor.post('/api/bulk/bulks', params).then(response => {
 
       console.log(response)
       if (response.data.success) {

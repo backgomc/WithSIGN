@@ -4,9 +4,10 @@ const mongoose = require('mongoose');
 const { User } = require('../models/User');
 const { Folder } = require('../models/Folder');
 const { Document } = require('../models/Document');
+const { ValidateToken } = require('../middleware/auth');
 
 // 폴더 생성 (전체 로우 생성)
-router.post('/createFolder', (req, res) => {
+router.post('/createFolder', ValidateToken, (req, res) => {
   if (!req.body.user || !req.body.folderName) return res.json({ success: false, message: 'input value not enough!' });
   var folder = new Folder(req.body);
   folder.save((err) => {
@@ -16,7 +17,7 @@ router.post('/createFolder', (req, res) => {
 });
 
 // 폴더 수정 (관련 필드 수정)
-router.post('/updateFolder', async (req, res) => {
+router.post('/updateFolder', ValidateToken, async (req, res) => {
   if (!req.body._id || !req.body.user || !req.body.folderName) return res.json({ success: false, message: 'input value not enough!' });
 
   // ----------------- 사용자 [사번, 소속 부서 코드] 시작 -----------------
@@ -48,7 +49,7 @@ router.post('/updateFolder', async (req, res) => {
 });
 
 // 폴더 삭제 (전체 로우 삭제) -> Documents Collection 의 folders Field 변경
-router.post('/deleteFolder', async (req, res) => {
+router.post('/deleteFolder', ValidateToken, async (req, res) => {
   if (!req.body._id || !req.body.user) return res.json({ success: false, message: 'input value not enough!' });
   
   // ----------------- 사용자 [사번, 소속 부서 코드] 시작 -----------------
@@ -83,7 +84,7 @@ router.post('/deleteFolder', async (req, res) => {
 });
 
 // 폴더 조회 (폴더 기준 목록)
-router.post('/selectFolder', async (req, res) => {
+router.post('/selectFolder', ValidateToken, async (req, res) => {
   if (!req.body._id || !req.body.user) return res.json({ success: false, message: 'input value not enough!' });
 
   try {
@@ -159,7 +160,7 @@ router.post('/selectFolder', async (req, res) => {
 });
 
 // 폴더 목록 (폴더 목록 조회)
-router.post('/listFolder', async (req, res) => {
+router.post('/listFolder', ValidateToken, async (req, res) => {
   if (!req.body.user) return res.json({ success: false, message: 'input value not enough!' });
 
   try {
@@ -201,7 +202,7 @@ router.post('/listFolder', async (req, res) => {
 });
 
 // 파일 이동 (docs 필드 변경) -> Documents Collection 의 folders Field 변경 (*주의*)
-router.post('/moveDocInFolder', async (req, res) => {
+router.post('/moveDocInFolder', ValidateToken, async (req, res) => {
   if (!req.body.user || !req.body.sourceId || !req.body.targetId || !req.body.docIds ) return res.json({ success: false, message: 'input value not enough!' });
 
   // sourceId='xxxxxxx' --> targetId='xxxxxxx' 정상 처리
@@ -349,7 +350,7 @@ router.post('/moveDocInFolder', async (req, res) => {
 // });
 
 // 파일 제거(in Folder) === moveFolder 삭제와 동일
-router.post('/removeDocInFolder', async (req, res) => {
+router.post('/removeDocInFolder', ValidateToken, async (req, res) => {
   if (!req.body.user || !req.body.sourceId || !req.body.docIds ) return res.json({ success: false, message: 'input value not enough!' });
   
   // ----------------- 사용자 [사번, 소속 부서 코드] 시작 -----------------

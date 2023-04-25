@@ -2,6 +2,7 @@ import React, {useEffect, useState} from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Modal, Button, Result } from "antd";
 import axios from 'axios';
+import axiosInterceptor from '../../config/AxiosConfig';
 import { PageContainer } from '@ant-design/pro-layout';
 import { useIntl } from "react-intl";
 import { navigate } from '@reach/router';
@@ -34,7 +35,7 @@ const PrepareResult = ({location}) => {
   const fetch = (params = {}) => {
     setLoading(true);
 
-    axios.post('/api/document/document', params).then(response => {
+    axiosInterceptor.post('/api/document/document', params).then(response => {
 
       console.log(response)
       if (response.data.success) {

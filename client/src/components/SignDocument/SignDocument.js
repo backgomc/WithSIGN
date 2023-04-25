@@ -3,6 +3,7 @@ import { useSelector, useDispatch, useStore } from 'react-redux';
 import SignaturePad from 'react-signature-canvas';
 import { v4 as uuidv4 } from 'uuid';
 import axios from 'axios';
+import axiosInterceptor from '../../config/AxiosConfig';
 import { navigate } from '@reach/router';
 import { Input, Row, Col, Modal, Checkbox, Button, List, Spin } from 'antd';
 import { selectDocToSign } from './SignDocumentSlice';
@@ -175,7 +176,7 @@ const SignDocument = () => {
     let param = {
       user: _id
     }
-    const res = await axios.post('/api/sign/signs', param);
+    const res = await axiosInterceptor.post('/api/sign/signs', param);
     if (res.data.success) {
       const signs = res.data.signs;
       console.log('signs', signs)
@@ -222,7 +223,7 @@ const SignDocument = () => {
 
 
 
-    const res = await axios.post('/api/document/updateDocumentCancel', param)
+    const res = await axiosInterceptor.post('/api/document/updateDocumentCancel', param)
 
     console.log("fetchCancelSigning res:" + res);
     setLoading(false);
@@ -284,12 +285,12 @@ const SignDocument = () => {
     if (docType === 'B') {
       // 벌크방식이면 docRef에 있던 원본파일을 신규 경로로 복사
       // ex) docToSign/bulkId/60dbfeec57e078050836b4741625204681539.pdf
-      const res = await axios.post('/api/storage/copyBulk', param)
+      const res = await axiosInterceptor.post('/api/storage/copyBulk', param)
     } 
 
     // 파일업로드 된 후에 화면 이동되도록 변경
     try {
-      const res = await axios.post('/api/document/update', param)
+      const res = await axiosInterceptor.post('/api/document/update', param)
       if (res.data.success) {
 
 
@@ -301,7 +302,7 @@ const SignDocument = () => {
           console.log('isLast', res.data.isLast)
 
           // 1. update paperless (서명 요청자 paperless 수 증가)
-          await axios.post('/api/users/updatePaperless', {user: docUser._id, paperless: pageCount})
+          await axiosInterceptor.post('/api/users/updatePaperless', {user: docUser._id, paperless: pageCount})
 
           // 2. merge items & upload merged file
           const lastItems = res.data.items;
@@ -320,14 +321,14 @@ const SignDocument = () => {
           formData.append('docId', docId)
           formData.append('file', mergedFile, lastDocRef)
           
-          const res1 = await axios.post(`/api/storage/upload`, formData)
+          const res1 = await axiosInterceptor.post(`/api/storage/upload`, formData)
           console.log('res merged file', res1)
 
           // 3. updateHash
           let param = {
             docId: docId
           }
-          const res2 = await axios.post(`/api/storage/updateHash`, param)
+          const res2 = await axiosInterceptor.post(`/api/storage/updateHash`, param)
           console.log(res2)
         }
 

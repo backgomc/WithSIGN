@@ -1,5 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import axios from 'axios';
+import axiosInterceptor from '../../config/AxiosConfig';
 import { useSelector } from 'react-redux';
 import { navigate, Link } from '@reach/router';
 import { Row, Col, Button, Badge, List } from 'antd';
@@ -60,7 +61,7 @@ const ViewDocument = ({location}) => {
         docId: docId,
       }
       let items;
-      const res = await axios.post('/api/document/document', param)
+      const res = await axiosInterceptor.post('/api/document/document', param)
       if (res.data.success) {
         items = res.data.document.items;
       }
@@ -174,7 +175,7 @@ const ViewDocument = ({location}) => {
           }}></Button>,  
           // 서명 완료된 문서만 다운로드 되도록 수정 
           (status == DOCUMENT_SIGNED) ? <Badge count={downloads?.find(e => e === _id)||chkeckDownload?<CheckCircleTwoTone />:0}><Button key="3" loading={loadingDownload['1']} href={'/api/storage/documents/'+docId} download={docTitle+'.pdf'} type="primary" icon={<DownloadOutlined />} onClick={()=> {
-            axios.post('/api/document/updateDownloads', {docId:docId, usrId:_id});
+            axiosInterceptor.post('/api/document/updateDownloads', {docId:docId, usrId:_id});
             setCheckDownload(true);
             setLoadingDownload( { "1" : true } );
             setTimeout(() => {

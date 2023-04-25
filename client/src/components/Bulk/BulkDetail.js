@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
+import axiosInterceptor from '../../config/AxiosConfig';
 import { Table, Input, Space, Button, Descriptions, Tooltip, Modal, message, Badge } from "antd";
 import Highlighter from 'react-highlight-words';
 import { SearchOutlined, BellFilled, FileExcelOutlined } from '@ant-design/icons';
@@ -72,7 +73,7 @@ const BulkDetail = ({location}) => {
   const fetch = (params = {}) => {
     setLoading(true);
 
-    axios.post('/api/bulk/bulks', params).then(response => {
+    axiosInterceptor.post('/api/bulk/bulks', params).then(response => {
 
       console.log(response)
       if (response.data.success) {
@@ -100,7 +101,7 @@ const BulkDetail = ({location}) => {
     ))
     DEPART_CODES.push(bulk.user.DEPART_CODE)
 
-    const res = await axios.post('/api/users/orgInfos', {DEPART_CODES: DEPART_CODES})
+    const res = await axiosInterceptor.post('/api/users/orgInfos', {DEPART_CODES: DEPART_CODES})
     
     if (res.data.success) {
         setOrgInfos(res.data.results)
@@ -115,7 +116,7 @@ const BulkDetail = ({location}) => {
       usrId: _id,
       bulkId: bulk._id
     }
-    axios.post('/api/document/notify/B', param).then(response => {
+    axiosInterceptor.post('/api/document/notify/B', param).then(response => {
       message.success({content: '미서명자에게 아이프로넷 쪽지 & With 메시지로 서명 재요청 알림을 보냈습니다.', style: {marginTop: '70vh'}});
       setLoading(false);
     });
@@ -448,14 +449,15 @@ const BulkDetail = ({location}) => {
           }}></Button></Tooltip>&nbsp;&nbsp;
               <Tooltip placement="top" title={'다운로드'}>
                 <Badge count={row['downloads'].find(e => e === _id)?<CheckCircleTwoTone/>:0}>
-                <Button key="3" href={row["docRef"]} download={row["docTitle"]+'_'+filterUsers(row['users'][0])[0].name+'.pdf'} icon={<DownloadOutlined />} loading={loadingDownload[row["_id"]]}  onClick={(e) => {
+                  {/* href={row["docRef"]} */}
+                <Button key="3" href={'/api/storage/documents/'+row["_id"]} download={row["docTitle"]+'_'+filterUsers(row['users'][0])[0].name+'.pdf'} icon={<DownloadOutlined />} loading={loadingDownload[row["_id"]]}  onClick={(e) => {
                   // setLoadingDownload( { [row["_id"]] : true } )
                   // setTimeout(() => {
                   //   setLoadingDownload( { [row["_id"]] : false})
                   // }, 3000);
 
                   row['downloads'].push(_id);
-                  axios.post('/api/document/updateDownloads', {docId:row['_id'], usrId:_id});
+                  axiosInterceptor.post('/api/document/updateDownloads', {docId:row['_id'], usrId:_id});
                   setLoadingDownload( { [row['_id']] : true } );
                   setTimeout(() => {
                     setLoadingDownload( { [row['_id']] : false } );

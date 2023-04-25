@@ -5,6 +5,7 @@ import { navigate } from '@reach/router';
 import { useIntl } from 'react-intl';
 import { v4 as uuidv4 } from 'uuid';
 import axios from 'axios';
+import axiosInterceptor from '../../config/AxiosConfig';
 import moment from 'moment';
 import 'moment/locale/ko';
 import { Tooltip, Modal, Input, Space, Button, List, TreeSelect, message, Switch, Checkbox, Typography, Badge } from 'antd';
@@ -86,7 +87,7 @@ const FolderList = () => {
         folderName: folderName,
         includeOption: includeOption
       }
-      axios.post('/api/folder/createFolder', params).then(response => {
+      axiosInterceptor.post('/api/folder/createFolder', params).then(response => {
         console.log(response.data);
         fetchFolders(params);
         setManageModal(false);
@@ -105,7 +106,7 @@ const FolderList = () => {
       folderName: folderName,
       includeOption: includeOption
     }
-    axios.post('/api/folder/updateFolder', params).then(response => {
+    axiosInterceptor.post('/api/folder/updateFolder', params).then(response => {
       console.log(response.data);
       if (response.data.success) {
         fetchFolders(params);
@@ -124,7 +125,7 @@ const FolderList = () => {
       user: _id,
       includeOption: includeOption
     }
-    axios.post('/api/folder/deleteFolder', params).then(response => {
+    axiosInterceptor.post('/api/folder/deleteFolder', params).then(response => {
       console.log(response.data);
       if (response.data.success) {
         fetchFolders(params);
@@ -145,7 +146,7 @@ const FolderList = () => {
       editable: editable,
       targets: treeValue
     }
-    axios.post('/api/folder/shareFolder', params).then(response => {
+    axiosInterceptor.post('/api/folder/shareFolder', params).then(response => {
       console.log(response.data);
       if (response.data.success) {
         fetchFolders(params);
@@ -200,7 +201,7 @@ const FolderList = () => {
 
   // 사용자의 부서 정보 조회
   const fetchMyOrgs = (params = {}) => {
-    axios.post('/api/users/myOrgs', params).then(response => {
+    axiosInterceptor.post('/api/users/myOrgs', params).then(response => {
       if (response.data.success) {
         setMyOrgs(response.data.orgs);
       }
@@ -210,7 +211,7 @@ const FolderList = () => {
   // 사용자별 폴더 목록 조회  
   const fetchFolders = (params = {}) => {
     setLoading(true);
-    axios.post('/api/folder/listFolder', params).then(response => {
+    axiosInterceptor.post('/api/folder/listFolder', params).then(response => {
       console.log(response.data.folders);
       setFolderList(response.data.folders);
       setLoading(false);
@@ -220,12 +221,12 @@ const FolderList = () => {
   // 전체부서 트리 구조 조회
   const fetchTreeSelect = async (params = {}) => {
     let users = [];
-    let resp = await axios.post('/api/users/list', params);
+    let resp = await axiosInterceptor.post('/api/users/list', params);
     if (resp.data.success) {
       users = resp.data.users;
       setUsers(resp.data.users);
     }
-    resp = await axios.post('/api/users/orgList', params);
+    resp = await axiosInterceptor.post('/api/users/orgList', params);
     if (resp.data.success) {
       let orgs = resp.data.orgs;
       let tree = [];

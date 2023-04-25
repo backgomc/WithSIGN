@@ -4,9 +4,10 @@ const { Sign } = require("../models/Sign");
 const fs = require('fs');
 const config = require("../config/key");
 const { encrypt, decrypt } = require('../common/utils');
+const { ValidateToken } = require('../middleware/auth');
 
 // 템플릿 등록
-router.post('/addSign', (req, res) => {
+router.post('/addSign', ValidateToken, (req, res) => {
 
     if (!req.body.user || !req.body.signData) {
         return res.json({ success: false, message: "input value not enough!" })
@@ -25,7 +26,7 @@ router.post('/addSign', (req, res) => {
 })
 
 // 사인 목록
-router.post('/signs', (req, res) => {
+router.post('/signs', ValidateToken, (req, res) => {
 
   const user = req.body.user
   if (!user) {
@@ -69,7 +70,7 @@ router.post('/signs', (req, res) => {
 })
 
 // 템플릿 삭제
-router.post('/deleteSign', (req, res) => {
+router.post('/deleteSign', ValidateToken, (req, res) => {
 
   if (!req.body._id) {
       return res.json({ success: false, message: "input value not enough!" })

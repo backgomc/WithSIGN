@@ -11,6 +11,7 @@ const crypto = require('crypto');
 const { makeFolder, generateRandomName } = require('../common/utils');
 const Magic = require('mmmagic').Magic;
 const restful = require('../common/restful');
+const { ValidateToken } = require('../middleware/auth');
 
 // const upload = multer({ dest: 'storage/docToSign/' })
 
@@ -113,7 +114,7 @@ router.post('/upload', upload.single('file'), async (req, res) => {
 // 2. docId로 bulkId 찾기
 // 3. 파일 복사하기 (ex: docToSign/docId -> bulkId/60dbfeec57e078050836b4741625204681539.pdf)
 // 4. 복사 경로 response 전달 
-router.post('/copyBulk', (req, res) => {
+router.post('/copyBulk', ValidateToken, (req, res) => {
 
     if (!req.body.docId) {
         return res.json({ success: false, message: "input value not enough!" })
@@ -267,7 +268,7 @@ router.post('/checkHashByFile', uploadTemp.single('file'), async (req, res) => {
 })
 
 // file hash 값 업데이트 
-router.post('/updateHash', async (req, res) => {
+router.post('/updateHash', ValidateToken, async (req, res) => {
 
     if (!req.body.docId) {
         return res.json({ success: false, message: "input value not enough!" })
@@ -310,7 +311,7 @@ router.post('/updateHash', async (req, res) => {
 
 
 // 파일 삭제
-router.post('/removeDocument', (req, res) => {
+router.post('/removeDocument', ValidateToken, (req, res) => {
 
     console.log("docId:"+req.body.docId)
     console.log("user:"+req.body.user)
@@ -367,7 +368,7 @@ router.post('/removeDocument', (req, res) => {
 
 // 파일 삭제
 // target : 삭제 파일 경로 (storage/temp/test.pdf)
-router.post('/deleteFile', (req, res) => {
+router.post('/deleteFile', ValidateToken, (req, res) => {
 
     if (!req.body.target) {
         return res.json({ success: false, message: "input value not enough!" })
@@ -399,7 +400,7 @@ router.post('/deleteFile', (req, res) => {
 // 파일 이동 
 // origin : 원본 파일 경로 (storage/temp/test.pdf)
 // target : 이동 파일 경로 (storage/..../test.pdf)
-router.post('/moveFile', (req, res) => {
+router.post('/moveFile', ValidateToken, (req, res) => {
 
     if (!req.body.origin || !req.body.target) {
         return res.json({ success: false, message: "input value not enough!" })
@@ -462,7 +463,7 @@ router.post('/uploadFiles', upload.array('files'), async (req, res) => {
     }    
 })
 
-router.get('/:class/:docId', async (req, res) => {
+router.get('/:class/:docId', ValidateToken, async (req, res) => {
     // console.log(req.params.class);
     // console.log(req.params.docId);
     if (!req.params.class || !req.params.docId) return res.json({ success: false, message: 'input value not enough!' });

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import axiosInterceptor from '../../config/AxiosConfig';
 import { TreeSelect } from 'antd';
 
 const { SHOW_PARENT } = TreeSelect;
@@ -40,12 +41,12 @@ const UserSelector = ({setValue, _defaultValue}) => {
   // 전체부서 트리 구조 조회
   const fetchTreeSelect = async (params = {}) => {
     let users = [];
-    let resp = await axios.post('/api/users/list', params);
+    let resp = await axiosInterceptor.post('/api/users/list', params);
     if (resp.data.success) {
       users = resp.data.users;
       // setUsers(resp.data.users);
     }
-    resp = await axios.post('/api/users/orgList', params);
+    resp = await axiosInterceptor.post('/api/users/orgList', params);
     if (resp.data.success) {
       let orgs = resp.data.orgs;
       let tree = [];

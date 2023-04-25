@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
+import axiosInterceptor from '../../config/AxiosConfig';
 import { Table, Input, Space, Button, Form, message, Upload } from "antd";
 import Highlighter from 'react-highlight-words';
 import { SearchOutlined } from '@ant-design/icons';
@@ -60,7 +61,7 @@ const BoardModify = ({location}) => {
   const fetch = (params = {}) => {
     setLoading(true);
 
-    axios.post('/api/board/detail', params).then(response => {
+    axiosInterceptor.post('/api/board/detail', params).then(response => {
 
       console.log(response)
       if (response.data.success) {
@@ -124,7 +125,7 @@ const BoardModify = ({location}) => {
       formData.append('path', 'articles/'+Date.now()+'/');
       fileList.current.forEach(file => formData.append('files', file));
 
-      const resFile = await axios.post(`/api/storage/uploadFiles`, formData)
+      const resFile = await axiosInterceptor.post(`/api/storage/uploadFiles`, formData)
       if (resFile.data.success) {
         resFile.data.files.map(file => {
           filePaths.push(file.path)
@@ -162,7 +163,7 @@ const BoardModify = ({location}) => {
       filesDeleted: fileListDeleted.current
     }
     console.log(body)
-    const res = await axios.post('/api/board/modify', body)
+    const res = await axiosInterceptor.post('/api/board/modify', body)
 
     setLoading(false);
 

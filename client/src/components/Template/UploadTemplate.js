@@ -1,6 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import axios from 'axios';
+import axiosInterceptor from '../../config/AxiosConfig';
 import { navigate } from '@reach/router';
 import { selectUser } from '../../app/infoSlice';
 import { resetSignee, resetObservers, setTemplateInfo, setIsWithPDF } from '../PrepareTemplate/AssignTemplateSlice';
@@ -62,7 +63,7 @@ const UploadTemplate = ({location}) => {
     formData.append('path', 'temp/')
     formData.append('file', file, filename)
 
-    const res = await axios.post(`/api/storage/upload`, formData)
+    const res = await axiosInterceptor.post(`/api/storage/upload`, formData)
     setLoading(false);
 
     // 업로드 후 파일 경로 가져오기
@@ -118,7 +119,7 @@ const UploadTemplate = ({location}) => {
       origin: tempFilePath,
       target: tempFilePath.replace('temp', 'templates')
     }
-    const res = await axios.post('/api/storage/moveFile', param);
+    const res = await axiosInterceptor.post('/api/storage/moveFile', param);
     var docRef = ''
     if (res.data.success){
       docRef = res.data.filePath
@@ -135,7 +136,7 @@ const UploadTemplate = ({location}) => {
       isWithPDF: USE_WITHPDF,
       COMPANY_CODE: COMPANY_CODE
     }
-    const res2 = await axios.post('/api/template/addTemplate', body);
+    const res2 = await axiosInterceptor.post('/api/template/addTemplate', body);
     setLoading(false);
     if (res2.data.success) {
       confirmToPrepare(res2.data.templateInfo);

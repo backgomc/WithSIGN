@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import useDidMountEffect from '../Common/useDidMountEffect';
 import axios from 'axios';
+import axiosInterceptor from '../../config/AxiosConfig';
 import { v4 as uuidv4 } from 'uuid';
 import { Table, Input, Space, Button, Checkbox, Badge, Tooltip, Select, Typography, Modal, message, TreeSelect, Switch, Radio, Empty } from "antd";
 import Highlighter from 'react-highlight-words';
@@ -156,7 +157,7 @@ const DocumentList = ({location}) => {
         user: _id,
         folderName: folderName
       }
-      axios.post('/api/folder/createFolder', params).then(response => {
+      axiosInterceptor.post('/api/folder/createFolder', params).then(response => {
         console.log(response.data);
         fetchFolders(params);
         setFolderName('');
@@ -173,7 +174,7 @@ const DocumentList = ({location}) => {
       user: _id,
       folderName: manageInput
     }
-    axios.post('/api/folder/updateFolder', params).then(response => {
+    axiosInterceptor.post('/api/folder/updateFolder', params).then(response => {
       console.log(response.data);
       if (response.data.success) {
         fetchFolders({
@@ -196,7 +197,7 @@ const DocumentList = ({location}) => {
       _id: selectFolderId,
       user: _id
     }
-    axios.post('/api/folder/deleteFolder', params).then(response => {
+    axiosInterceptor.post('/api/folder/deleteFolder', params).then(response => {
       console.log(response.data);
       if (response.data.success) {
         fetchFolders({
@@ -233,7 +234,7 @@ const DocumentList = ({location}) => {
       targetId: moveFolderId,
       docIds: selectedRowKeys
     }
-    axios.post('/api/folder/moveDocInFolder', params).then(response => {
+    axiosInterceptor.post('/api/folder/moveDocInFolder', params).then(response => {
       console.log(response.data);
       if (response.data.success) {
         fetch({
@@ -264,7 +265,7 @@ const DocumentList = ({location}) => {
       editable: editable,
       targets: treeValue
     }
-    axios.post('/api/folder/shareFolder', params).then(response => {
+    axiosInterceptor.post('/api/folder/shareFolder', params).then(response => {
       console.log(response.data);
       if (response.data.success) {
         fetchFolders({
@@ -520,7 +521,7 @@ const DocumentList = ({location}) => {
 
   // 사용자의 부서 정보 조회
   const fetchMyOrgs = (params = {}) => {
-    axios.post('/api/users/myOrgs', params).then(response => {
+    axiosInterceptor.post('/api/users/myOrgs', params).then(response => {
       if (response.data.success) {
         setMyOrgs(response.data.orgs);
       }
@@ -529,7 +530,7 @@ const DocumentList = ({location}) => {
 
   // 사용자별 폴더 목록 조회  
   const fetchFolders = (params = {}) => {
-    axios.post('/api/folder/listFolder', params).then(response => {
+    axiosInterceptor.post('/api/folder/listFolder', params).then(response => {
       console.log(response.data.folders);
       if (response.data.success && response.data.folders.length > 0) {
         setFolderList(response.data.folders);
@@ -540,7 +541,7 @@ const DocumentList = ({location}) => {
   const fetch = (params = {}) => {
     setLoading(true);
 
-    axios.post('/api/document/documents', params).then(response => {
+    axiosInterceptor.post('/api/document/documents', params).then(response => {
 
       console.log(response)
       if (response.data.success) {
@@ -552,7 +553,7 @@ const DocumentList = ({location}) => {
 
       } else {
           setLoading(false);
-          alert(response.data.error)
+          // alert(response.data.error)
       }
 
     });
@@ -1060,7 +1061,7 @@ const DocumentList = ({location}) => {
                 <Button key="2" href={'/api/storage/documents/'+row["_id"]} download={row["docTitle"]+'.pdf'} icon={<DownloadOutlined />} loading={loadingDownload[row["_id"]]}  onClick={(e) => {
                 // <Button key="2" href={row["docRef"]} download={row["docTitle"]+'.pdf'} icon={<DownloadOutlined />} loading={loadingDownload[row["_id"]]}  onClick={(e) => {
                   row['downloads'].push(_id);
-                  axios.post('/api/document/updateDownloads', {docId:row['_id'], usrId:_id});
+                  axiosInterceptor.post('/api/document/updateDownloads', {docId:row['_id'], usrId:_id});
                   setLoadingDownload( { [row['_id']] : true } );
                   setTimeout(() => {
                     setLoadingDownload( { [row['_id']] : false } );

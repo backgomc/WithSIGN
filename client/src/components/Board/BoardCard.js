@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import axiosInterceptor from '../../config/AxiosConfig';
 import { navigate, Link } from '@reach/router';
 import { List, Tag } from 'antd';
 import { useSelector, useDispatch } from 'react-redux';
@@ -38,7 +39,7 @@ const BoardCard = (props) => {
           boardType: boardType,
           pagination
         }
-        const res = await axios.post('/api/board/listSlim', param)
+        const res = await axiosInterceptor.post('/api/board/listSlim', param)
         if (res.data.success) {
           const boards = res.data.boards;
           setData(boards)

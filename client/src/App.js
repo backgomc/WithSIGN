@@ -86,35 +86,64 @@ const App = () => {
     console.log('App called')
 
     axios.get('/api/users/auth').then(response => {
+      console.log('/api/users/auth called!');
       console.log(response);
-      if (response.data.isAuth) {
-        dispatch(setUser(response.data));
+      if (response.data.success) {
+        dispatch(setUser(response.data.user));
         dispatch(setPathname('/'));
         // navigate('/');
       } else {
-        // 통합 로그인
-        if (token) {
-          let body = {
-            token: token
-          }
-          axios.post('/api/users/sso', body).then(response => {
-            if (response.data.success) {
-              dispatch(setUser(response.data.user));
-              navigate('/');
-            } else {
-              if (response.data.user) { // 약관 동의 절차 필요
-                navigate('/agreement', { state: {user: response.data.user}});
+        
+        if (localStorage.getItem('__rToken__') || token) {
+
+          // 2. 토큰 만료 갱신
+          if (localStorage.getItem('__rToken__')) {
+            let config = {
+              headers: {
+                'refresh-Token': localStorage.getItem('__rToken__')
+              }
+            }
+            axios.post('api/users/refresh', null, config).then(response => {
+              if (response.data.success) {
+                dispatch(setUser(response.data.user));
+                navigate('/');
               } else {
-                alert(response.data.message ? response.data.message : 'login failed !');
                 dispatch(setUser(null));
                 navigate('/login');
               }
+            });
+          }
+
+          // 3. 통합 로그인
+          if (token) {
+            let body = {
+              token: token
             }
-          });
+            axios.post('/api/users/sso', body).then(response => {
+              if (response.data.success) {
+                dispatch(setUser(response.data.user));
+                localStorage.setItem('__rToken__', response.data.user.__rToken__);
+                navigate('/');
+              } else {
+                if (response.data.user) { // 약관 동의 절차 필요
+                  navigate('/agreement', { state: {user: response.data.user}});
+                } else {
+                  alert(response.data.message ? response.data.message : 'login failed !');
+                  dispatch(setUser(null));
+                  navigate('/login');
+                }
+              }
+            });
+          } else {
+            dispatch(setUser(null));
+            navigate('/login');
+          }
+
         } else {
           dispatch(setUser(null));
           navigate('/login');
         }
+
       }
     });
     return () => {} // cleanup

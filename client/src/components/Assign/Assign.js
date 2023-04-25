@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import axios from 'axios';
+import axiosInterceptor from '../../config/AxiosConfig';
 import { useIntl } from "react-intl";
 import { navigate, Link } from '@reach/router';
 import { Transfer, Tree, Input, Button, Card, Avatar, message, Row, Col, Tag } from 'antd';
@@ -87,14 +88,14 @@ const Assign = ({location}) => {
     setLoading(true);
 
     var users = []
-    const res1 = await axios.post('/api/users/list', {OFFICE_CODE: "7831"})
+    const res1 = await axiosInterceptor.post('/api/users/list', {OFFICE_CODE: "7831"})
     if (res1.data.success) {
       users = res1.data.users
       setUsers(res1.data.users)
     }
     // console.log("users:"+users)
 
-    const res = await axios.post('/api/users/orgList', params)
+    const res = await axiosInterceptor.post('/api/users/orgList', params)
     if (res.data.success) {
       const orgs = res.data.orgs;
       const tree = []
@@ -354,7 +355,7 @@ const sortView = (
 
     if (assignees) {
       // 참여자 설정되어 있을 경우 유저 상태 체크 필요 
-      axios.post('/api/users/check', {assignees: assignees}).then(response => {
+      axiosInterceptor.post('/api/users/check', {assignees: assignees}).then(response => {
         let assigneesCheck  = response.data.assignees;
 
         //TODO: 1단계에 사람이 없는데 다음단계에 사람이 있는 경우 단계를 내려준다.

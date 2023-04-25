@@ -4,6 +4,7 @@ import { useIntl } from 'react-intl';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { navigate } from '@reach/router';
 import axios from 'axios';
+import axiosInterceptor from '../../config/AxiosConfig';
 import { Button, Card, Avatar, message, Row, Col } from 'antd';
 import ProCard from '@ant-design/pro-card';
 import { PageContainer } from '@ant-design/pro-layout';
@@ -79,7 +80,7 @@ const AssignTemplate = () => {
     setLoading(true);
 
     var users = []
-    const res1 = await axios.post('/api/users/list', {OFFICE_CODE: '7831'});
+    const res1 = await axiosInterceptor.post('/api/users/list', {OFFICE_CODE: '7831'});
     if (res1.data.success) {
       users = res1.data.users;
       if (templateType === 'C') {
@@ -93,7 +94,7 @@ const AssignTemplate = () => {
       setUsers(users)
     }
     
-    const res = await axios.post('/api/users/orgList', params);
+    const res = await axiosInterceptor.post('/api/users/orgList', params);
     if (res.data.success) {
       const orgs = res.data.orgs;
       const tree = []
@@ -333,7 +334,7 @@ const sortView = (
       let assigneesCheck = [];
       if (assigneesExceptRequester) {
 
-        let res = await axios.post('/api/users/check', {assignees: assigneesExceptRequester});
+        let res = await axiosInterceptor.post('/api/users/check', {assignees: assigneesExceptRequester});
         assigneesCheck = res.data.assignees;
 
         assigneesCheck.forEach(element => {

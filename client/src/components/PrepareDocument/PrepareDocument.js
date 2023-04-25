@@ -1,6 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import axios from 'axios';
+import axiosInterceptor from '../../config/AxiosConfig';
 import { navigate } from '@reach/router';
 // import {
 //   Box,
@@ -187,7 +188,7 @@ const PrepareDocument = ({location}) => {
     let param = {
       user: _id
     }
-    const res = await axios.post('/api/sign/signs', param);
+    const res = await axiosInterceptor.post('/api/sign/signs', param);
     if (res.data.success) {
       const signs = res.data.signs;
       pdfRef.current.setSigns(signs);
@@ -353,7 +354,7 @@ const PrepareDocument = ({location}) => {
     const formData = new FormData()
     formData.append('path', path)
     formData.append('file', file, filename)
-    const res = await axios.post(`/api/storage/upload`, formData)
+    const res = await axiosInterceptor.post(`/api/storage/upload`, formData)
     console.log(res)
 
     // 업로드 후 파일 경로 가져오기  
@@ -366,7 +367,7 @@ const PrepareDocument = ({location}) => {
 
     // 2. SAVE THUMBNAIL
     let _thumbnail = await pdfRef.current.getThumbnail(0, 0.6);
-    const resThumbnail = await axios.post('/api/document/addThumbnail', {user: _id, thumbnail: _thumbnail})
+    const resThumbnail = await axiosInterceptor.post('/api/document/addThumbnail', {user: _id, thumbnail: _thumbnail})
     var thumbnailUrl = '';
     if (resThumbnail.data.success) {
       thumbnailUrl = resThumbnail.data.thumbnail 
@@ -389,7 +390,7 @@ const PrepareDocument = ({location}) => {
 
       attachFiles.forEach(file => formData.append('files', file));
 
-      const resFile = await axios.post(`/api/storage/uploadFiles`, formData)
+      const resFile = await axiosInterceptor.post(`/api/storage/uploadFiles`, formData)
       if (resFile.data.success) {
         // resFile.data.files.map(file => {
         //   attachPaths.push(file.path)
@@ -456,7 +457,7 @@ const PrepareDocument = ({location}) => {
         attachFiles: files
       }
       console.log("일반 전송")
-      const res2 = await axios.post('/api/document/addDocumentToSign', body)
+      const res2 = await axiosInterceptor.post('/api/document/addDocumentToSign', body)
       console.log(res2)
       if (res2.data.success) {
         docId = res2.data.documentId;
@@ -493,7 +494,7 @@ const PrepareDocument = ({location}) => {
           observers: observers,
           attachFiles: files
         }
-        const res = await axios.post('/api/document/addDocumentToSign', body)
+        const res = await axiosInterceptor.post('/api/document/addDocumentToSign', body)
         if (res.data.success) {
           const documentId = res.data.documentId;
           console.log("documentId:"+documentId);
@@ -518,7 +519,7 @@ const PrepareDocument = ({location}) => {
       }
 
       console.log("documentIds:"+documentIds);
-      const res = await axios.post('/api/bulk/addBulk', bulk)
+      const res = await axiosInterceptor.post('/api/bulk/addBulk', bulk)
       if (res.data.success) {
         console.log("Done saveBulk !!!");
       }
@@ -527,7 +528,7 @@ const PrepareDocument = ({location}) => {
 
     //5. 임시파일삭제
     if (documentType === 'PC' || documentType === 'DIRECT') {
-      await axios.post(`/api/storage/deleteFile`, {target: documentTempPath})
+      await axiosInterceptor.post(`/api/storage/deleteFile`, {target: documentTempPath})
     }
     
 
@@ -582,7 +583,7 @@ const PrepareDocument = ({location}) => {
     // formData.append('path', 'docToSign/')
     formData.append('path', path)
     formData.append('file', blob, filename)
-    const res = await axios.post(`/api/storage/upload`, formData)
+    const res = await axiosInterceptor.post(`/api/storage/upload`, formData)
     console.log(res)
 
     // 업로드 후 파일 경로 가져오기  
@@ -592,7 +593,7 @@ const PrepareDocument = ({location}) => {
     }
 
     // 2. SAVE THUMBNAIL
-    const resThumbnail = await axios.post('/api/document/addThumbnail', {user: _id, thumbnail: thumbnail})
+    const resThumbnail = await axiosInterceptor.post('/api/document/addThumbnail', {user: _id, thumbnail: thumbnail})
     var thumbnailUrl = '';
     if (resThumbnail.data.success) {
       thumbnailUrl = resThumbnail.data.thumbnail 
@@ -609,7 +610,7 @@ const PrepareDocument = ({location}) => {
 
       attachFiles.forEach(file => formData.append('files', file));
 
-      const resFile = await axios.post(`/api/storage/uploadFiles`, formData)
+      const resFile = await axiosInterceptor.post(`/api/storage/uploadFiles`, formData)
       if (resFile.data.success) {
         // resFile.data.files.map(file => {
         //   attachPaths.push(file.path)
@@ -689,7 +690,7 @@ const PrepareDocument = ({location}) => {
         attachFiles: files
       }
       console.log("일반 전송")
-      const res2 = await axios.post('/api/document/addDocumentToSign', body)
+      const res2 = await axiosInterceptor.post('/api/document/addDocumentToSign', body)
       console.log(res2)
       if (res2.data.success) {
         docId = res2.data.documentId;
@@ -723,7 +724,7 @@ const PrepareDocument = ({location}) => {
           observers: observers,
           attachFiles: files
         }
-        const res = await axios.post('/api/document/addDocumentToSign', body)
+        const res = await axiosInterceptor.post('/api/document/addDocumentToSign', body)
         if (res.data.success) {
           const documentId = res.data.documentId;
           console.log("documentId:"+documentId);
@@ -747,7 +748,7 @@ const PrepareDocument = ({location}) => {
       }
 
       console.log("documentIds:"+documentIds);
-      const res = await axios.post('/api/bulk/addBulk', bulk)
+      const res = await axiosInterceptor.post('/api/bulk/addBulk', bulk)
       if (res.data.success) {
         console.log("Done saveBulk !!!");
       }
@@ -755,7 +756,7 @@ const PrepareDocument = ({location}) => {
 
     //4. 임시파일삭제
     if (documentType === 'PC' || documentType === 'DIRECT') {
-      await axios.post(`/api/storage/deleteFile`, {target: documentTempPath})
+      await axiosInterceptor.post(`/api/storage/deleteFile`, {target: documentTempPath})
     }
     
     dispatch(resetAssignAll());

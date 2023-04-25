@@ -7,6 +7,7 @@ import { setDocToSign } from '../SignDocument/SignDocumentSlice';
 import { setPathname } from '../../config/MenuSlice';
 import { setSendType } from '../Assign/AssignSlice';
 import axios from 'axios';
+import axiosInterceptor from '../../config/AxiosConfig';
 import BoardCard from '../Board/BoardCard';
 import FAQCard from '../Board/FAQCard';
 import OpinionCard from '../Board/OpinionCard';
@@ -261,7 +262,7 @@ const Home = () => {
       status: DOCUMENT_TOSIGN,
       includeBulk: true
     }
-    const res = await axios.post('/api/document/documents', param)
+    const res = await axiosInterceptor.post('/api/document/documents', param)
     if (res.data.success) {
       const documents = res.data.documents;
       setDocumentsToSign(documents)
@@ -277,7 +278,7 @@ const Home = () => {
       status: DOCUMENT_SIGNING,
       includeBulk: true
     }
-    const res = await axios.post('/api/document/documents', param)
+    const res = await axiosInterceptor.post('/api/document/documents', param)
     if (res.data.success) {
       const documents = res.data.documents;
       setDocumentsSigning(documents)
@@ -292,7 +293,7 @@ const Home = () => {
       pagination,
       includeBulk: true
     }
-    const res = await axios.post('/api/document/documents', param)
+    const res = await axiosInterceptor.post('/api/document/documents', param)
     if (res.data.success) {
       const documents = res.data.documents;
       setDocumentsTotal(documents)
@@ -308,7 +309,7 @@ const Home = () => {
       status: DOCUMENT_CANCELED,
       includeBulk: true
     }
-    const res = await axios.post('/api/document/documents', param)
+    const res = await axiosInterceptor.post('/api/document/documents', param)
     if (res.data.success) {
       const documents = res.data.documents;
       setDocumentsCanceled(documents)
@@ -324,7 +325,7 @@ const Home = () => {
       status: DOCUMENT_SIGNED,
       includeBulk: true
     }
-    const res = await axios.post('/api/document/documents', param)
+    const res = await axiosInterceptor.post('/api/document/documents', param)
     if (res.data.success) {
       const documents = res.data.documents;
       setDocumentsSigned(documents)
@@ -337,7 +338,7 @@ const Home = () => {
     let param = {
       user: _id
     }
-    const res = await axios.post('/api/document/statics', param)
+    const res = await axiosInterceptor.post('/api/document/statics', param)
     if (res.data.success) {
       setSigningNum(res.data.signingNum)
       setToSignNum(res.data.toSignNum)

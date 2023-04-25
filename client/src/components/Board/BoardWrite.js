@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
+import axiosInterceptor from '../../config/AxiosConfig';
 import { Table, Input, Space, Button, Form, message, Upload } from "antd";
 import Highlighter from 'react-highlight-words';
 import { SearchOutlined } from '@ant-design/icons';
@@ -129,7 +130,7 @@ const BoardWrite = ({location}) => {
       formData.append('path', 'articles/'+Date.now()+'/');
       fileList.forEach(file => formData.append('files', file));
 
-      const resFile = await axios.post(`/api/storage/uploadFiles`, formData)
+      const resFile = await axiosInterceptor.post(`/api/storage/uploadFiles`, formData)
       if (resFile.data.success) {
         resFile.data.files.map(file => {
           filePaths.push(file.path)
@@ -159,7 +160,7 @@ const BoardWrite = ({location}) => {
       // content: draftToHtml(convertToRaw(editorState.getCurrentContent()))
     }
     console.log(body)
-    const res = await axios.post('/api/board/add', body)
+    const res = await axiosInterceptor.post('/api/board/add', body)
 
     setLoading(false);
     
