@@ -920,4 +920,16 @@ router.post('/updateDownloads', ValidateToken, (req, res) => {
   });
 });
 
+// 문서 다운시 업데이트(최초 1회) : 여러 문서 동시에 다운로드 시
+router.post('/updateDownloadsAll', ValidateToken, (req, res) => {
+
+  console.log('updateDownloadsAll called', req.body.docIds)
+  if (!req.body.usrId || !req.body.docIds) {
+    return res.json({ success: false, message: 'input value not enough!' });
+  }
+  Document.updateMany({'_id': {$in: req.body.docIds}}, {$addToSet: {'downloads': req.body.usrId}}, (err) => {
+    if (err) return res.json({ success: false, err });
+    return res.status(200).send({success: true});
+  });
+});
 module.exports = router;

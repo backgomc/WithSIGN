@@ -8,10 +8,11 @@ const { Bulk } = require("../models/Bulk");
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
-const { makeFolder, generateRandomName } = require('../common/utils');
+const { makeFolder, generateRandomName, getUniqueFileName, deleteFolder, today } = require('../common/utils');
 const Magic = require('mmmagic').Magic;
 const restful = require('../common/restful');
 const { ValidateToken } = require('../middleware/auth');
+const archiver = require('archiver');
 
 // const upload = multer({ dest: 'storage/docToSign/' })
 
@@ -505,6 +506,69 @@ router.get('/:class/:docId', ValidateToken, async (req, res) => {
       console.log(e);
       return res.json({ success: false, message: 'file download failed!' });
     }
-  });
+});
+
+// 다건 파일 다운로드 : 임시로 폴더를 생성 후 zip 파일 다운로드 제공, 배치로 매일 임시 폴더 삭제 처리
+router.post('/downloadAll', ValidateToken, async (req, res) => {
+
+    if (!req.body.docIds) return res.json({ success: false, message: 'input value not enough!' });
+    const docIds = req.body.docIds; 
+    console.log('docIds', docIds);
+
+    try {
+        let copyPaths = [];
+        let folderDir = config.storageDIR + 'tempDownloads/' + today() + '/' + generateRandomName() + '/'; 
+        
+        makeFolder(folderDir); // ex) storage/tempDownloads/20230426/3707875322/
+
+        for (const docId of docIds) { 
+            let dataInfo = await Document.findOne({ '_id': docId });
+            if (dataInfo && dataInfo.docRef) {
+                let fileInfo = dataInfo.docRef;
+                let filePath = fileInfo.substring(0, fileInfo.lastIndexOf('/'));
+                let fileName = fileInfo.substring(fileInfo.lastIndexOf('/')+1, fileInfo.length);
+                // let copyPath = config.storageDIR + 'tempDownloads/' + fileName;
+                let copyPath = folderDir + dataInfo.docTitle + '.pdf';
+                copyPath = getUniqueFileName(copyPath, copyPaths);  // 파일명 중복 방지
+                if (fs.existsSync(fileInfo)) {
+                    await restful.callDRMPackaging(filePath, fileName, copyPath);
+                    copyPaths.push(copyPath);
+                }
+            }
+        }
+
+        console.log('copyPaths', copyPaths)
+    
+        // 압축 파일을 생성할 output 스트림을 생성
+        const zipFilePath = folderDir + 'files.zip';
+        const output = fs.createWriteStream(zipFilePath);
+        const archive = archiver('zip', {
+            zlib: { level: 9 } // 압축 레벨을 최대로 설정
+        });
+    
+        // output 스트림에 archive를 파이핑
+        archive.pipe(output);
+    
+        // 압축 대상 파일들을 archive에 추가
+        for (const file of copyPaths) {
+            archive.file(file, { name: path.basename(file) });
+        }
+    
+        await archive.finalize();
+    
+        if (fs.existsSync(zipFilePath)) { // 비동기 메서드는 try/catch 안먹히므로 파일 선체크 로직 추가
+
+            var filestream = fs.createReadStream(zipFilePath);
+            filestream.pipe(res);
+        } else {
+            return res.json({ success: false, message: 'file download failed!' });
+        }
+
+    } catch (e) {
+        console.log(e);
+        return res.json({ success: false, message: 'file download failed!' });
+    }
+
+});
 
 module.exports = router;

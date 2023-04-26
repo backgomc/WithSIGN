@@ -96,6 +96,23 @@ const makeFolder = (dir) => {
     }
 }
 
+const deleteFolder = (dir) => {
+    console.log('deleteFolder called', dir);
+    try {
+        if(fs.existsSync(dir)) {
+            // delete directory recursively
+            fs.rm(dir, { recursive: true, force: true }, err => {
+                if (err) {
+                    throw err
+                }
+                console.log(`${dir} is deleted!`)
+            })        
+        }
+    } catch (err) {
+        console.error(err)
+    }
+}
+
 const today = () => {
     var today = new Date();
     var year = today.getFullYear();
@@ -110,6 +127,27 @@ const today = () => {
 var isEmpty = function(value){ if( value == "" || value == null || value == undefined || ( value != null && typeof value == "object" && !Object.keys(value).length ) ){ return true }else{ return false } };
 
 
+/**
+ * 배열안에 원본 파일명과 동일한 파일이 존재하는 경우 파일명 뒤에 숫자를 붙여 리턴해준다.
+ * 
+ * @param fileName 원본 파일 이름
+ * @param filesInDirectory 파일 목록
+ * @returns 변경된 파일 이름 
+ */
+const getUniqueFileName = (fileName, filesInDirectory) => {
+    let uniqueFileName = fileName;
+    let fileExtension = '';
+    const lastDotIndex = fileName.lastIndexOf('.');
+    if (lastDotIndex !== -1) {
+      fileExtension = fileName.substring(lastDotIndex);
+      uniqueFileName = fileName.substring(0, lastDotIndex);
+    }
+    let counter = 1;
+    while (filesInDirectory.includes(uniqueFileName + fileExtension)) {
+      uniqueFileName = fileName.substring(0, lastDotIndex) + `(${counter++})`;
+    }
+    return uniqueFileName + fileExtension;
+}
 
 
-module.exports = { hexCrypto, encrypt, decrypt, generateRandomName, generateRandomPass, makeFolder, today, isEmpty };
+module.exports = { hexCrypto, encrypt, decrypt, generateRandomName, generateRandomPass, makeFolder, today, isEmpty, getUniqueFileName, deleteFolder };
