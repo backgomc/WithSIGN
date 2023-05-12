@@ -31,7 +31,7 @@ const FAQCard = (props) => {
           boardType: boardType,
           pagination
         }
-        const res = await axiosInterceptor.post('/api/board/list', param)
+        const res = await axiosInterceptor.post('/api/board/listSlim', param)
         if (res.data.success) {
           const boards = res.data.boards;
           setData(boards)
@@ -44,6 +44,31 @@ const FAQCard = (props) => {
         fetch();
         return () => {} // cleanup
     }, []);
+
+    const onchangeCollapse = async (key) => {
+        console.log('onchanged!!!', key)
+        if (key.length < 1) return;
+
+        const boardId = data[key[0]]._id;
+
+        console.log(boardId, boardId)
+
+        const res = await axiosInterceptor.post('/api/board/detail', {boardId: boardId})
+        let content = '';
+        if(res.data.success) {
+            content = res.data.board.content;
+        } else {
+            return;
+        }
+
+        setData(data.map(el => {
+            if (el._id === boardId) {
+                el.content = content;
+            }
+            return el;
+        }))
+
+    }
 
     return (
         <ProCard
@@ -80,7 +105,7 @@ const FAQCard = (props) => {
 
             <Space direction="vertical" style={{width:'100%'}}>
                 {data.length > 0 ? data.map((item, index) => (
-                    <Collapse key={uuidv4()} collapsible="header">
+                    <Collapse key={item._id} collapsible="header" onChange={(key)=> {onchangeCollapse(key)}}>
                         <Panel header={item.title} key={index}>
                             {/* <p style={{whiteSpace:'pre-wrap', wordWrap:'break-word'}}>{item.content}</p> */}
                             <div

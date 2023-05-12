@@ -1275,6 +1275,7 @@ const DocumentList = ({location}) => {
             <Checkbox key={uuidv4()} checked={includeBulk} onChange={(e) => {setIncludeBulk(e.target.checked)}}>대량 전송 포함</Checkbox>,
 
 
+            <Tooltip placement="bottom" title={'선택 문서 중 서명 완료 문서를 모두 다운로드합니다.'}>
             <Button key="3" disabled={!hasSelectedDownloads} icon={<DownloadOutlined />} loading={loadingDownloadAll}  onClick={(e) => {
               
               downloadAll();
@@ -1285,7 +1286,7 @@ const DocumentList = ({location}) => {
                 //   setLoadingDownload( { [row['_id']] : false } );
                 // }, 3000);
               }}>
-              </Button>,
+              </Button></Tooltip>,
 
             <Button key={uuidv4()} icon={<FileAddOutlined />} type="primary" onClick={() => {
               dispatch(resetAssignAll());

@@ -2695,10 +2695,10 @@
     prop-types "^15.7.2"
     react-is "^16.8.0 || ^17.0.0"
 
-"@niceharu/withpdf@^0.6.7":
-  version "0.6.7"
-  resolved "https://npm.pkg.github.com/download/@niceharu/withpdf/0.6.7/793097e74c0f24ee398b5cd46c5699dbb12c7ee2#793097e74c0f24ee398b5cd46c5699dbb12c7ee2"
-  integrity sha512-i6Ju0zd/ly0abgFwK2GknM9gMIuY1DSN0VoDgYmRHl5BryfDimyMycrwY1/YuXuf8UK7hk+oDJVvZKNwQ0vTdw==
+"@niceharu/withpdf@^0.6.9":
+  version "0.6.9"
+  resolved "https://npm.pkg.github.com/download/@niceharu/withpdf/0.6.9/fddd1119b3e95e2e50bb9e5cc5aaa343cd0e553b#fddd1119b3e95e2e50bb9e5cc5aaa343cd0e553b"
+  integrity sha512-Sx9W68QNCz+uINUf9mBHzxKqRKzV5GC/X41BVbwFRNScMc3IC3A/T6lAuwODzkch7K3zZlPlIyHZ1C1xv6J9Bg==
   dependencies:
     "@craco/craco" "^6.4.3"
     "@pdf-lib/fontkit" "^1.1.1"
@@ -2773,11 +2773,6 @@
   integrity sha512-dQK2FUMQtowVP00mtIksrlZhdFXQZPC+taih1q4CvPZ5vqdxR/LKBaFg0oAfzd1GlHZXXSPdQfzQnt+ViGvEIQ==
   dependencies:
     pako "^1.0.10"
-
-"@pdftron/webviewer@^8.6.0":
-  version "8.9.0"
-  resolved "https://registry.yarnpkg.com/@pdftron/webviewer/-/webviewer-8.9.0.tgz#b319c6b0fe815ba1e3b81e6e9b6809796694c69c"
-  integrity sha512-lEFELp29yhiYpypYs360aqoyWEBNhk8Tq9hMnwXOnMaqsfZHOafKmWnba40aZVR8aKv2JK+7idEdwIrmRNGmMQ==
 
 "@pmmmwh/react-refresh-webpack-plugin@0.4.3":
   version "0.4.3"

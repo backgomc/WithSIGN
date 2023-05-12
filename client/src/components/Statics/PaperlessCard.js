@@ -22,33 +22,33 @@ const MyStyle = styled.div`
   }
 `;
 
-const PaperlessCard = (props) => {
+const PaperlessCard = ({paperlessNum, totalPaperlessNum, loadingPaperless}) => {
 
   const user = useSelector(selectUser);
   const { _id } = user;
 
-  const [loadingPaperless, setLoadingPaperless] = useState(false);
-  const [paperlessNum, setPaperlessNum] = useState(0);
-  const [totalPaperlessNum, setTotalPaperlessNum] = useState(0);
-  const [docNum, setDocNum] = useState(0);
+  // const [loadingPaperless, setLoadingPaperless] = useState(false);
+  // const [paperlessNum, setPaperlessNum] = useState(0);
+  // const [totalPaperlessNum, setTotalPaperlessNum] = useState(0);
+  // const [docNum, setDocNum] = useState(0);
   const [responsive, setResponsive] = useState(false);
 
-  const fetchPaperless = async () => {
-    setLoadingPaperless(true);
-    let param = {
-      user: _id
-    }
-    const res = await axiosInterceptor.post('/api/users/paperless', param)
-    if (res.data.success) {
-      setPaperlessNum(res.data.paperless)
-      setDocNum(res.data.docCount)
-      setTotalPaperlessNum(res.data.totalPaperless)
-    }
-    setLoadingPaperless(false);
-  }
+  // const fetchPaperless = async () => {
+  //   setLoadingPaperless(true);
+  //   let param = {
+  //     user: _id
+  //   }
+  //   const res = await axiosInterceptor.post('/api/users/paperless', param)
+  //   if (res.data.success) {
+  //     setPaperlessNum(res.data.paperless)
+  //     setDocNum(res.data.docCount)
+  //     setTotalPaperlessNum(res.data.totalPaperless)
+  //   }
+  //   setLoadingPaperless(false);
+  // }
 
   useEffect(() => {
-    fetchPaperless();
+    // fetchPaperless();
     return () => {} // cleanup
   }, []);
 

@@ -24,25 +24,25 @@ const MyStyle = styled.div`
     font-weight: bold;
 `;
 
-const ESGCard = () => {
+const ESGCard = ({totalPaperlessNum, loadingPaperless}) => {
 
   const user = useSelector(selectUser);
   const { _id } = user;
-  const [totalPaperlessNum, setTotalPaperlessNum] = useState(0);
+  // const [totalPaperlessNum, setTotalPaperlessNum] = useState(0);
   const [responsive, setResponsive] = useState(false);
 
-  const fetchPaperless = async () => {
-    let param = {
-      user: _id
-    }
-    const res = await axiosInterceptor.post('/api/users/paperless', param);
-    if (res.data.success) {
-      setTotalPaperlessNum(res.data.totalPaperless);
-    }
-  }
+  // const fetchPaperless = async () => {
+  //   let param = {
+  //     user: _id
+  //   }
+  //   const res = await axiosInterceptor.post('/api/users/paperless', param);
+  //   if (res.data.success) {
+  //     setTotalPaperlessNum(res.data.totalPaperless);
+  //   }
+  // }
 
   useEffect(() => {
-    fetchPaperless();
+    // fetchPaperless();
     return () => {} // cleanup
   }, []);
 
@@ -54,7 +54,7 @@ const ESGCard = () => {
           setResponsive(offset.width < 596);
         }}
       >
-        <StatisticCard.Group direction={responsive ? 'column' : 'row'} title="ESG 경영">
+        <StatisticCard.Group loading={loadingPaperless} direction={responsive ? 'column' : 'row'} title="ESG 경영">
           <StatisticCard
             statistic={{
               title: '물 사용량',

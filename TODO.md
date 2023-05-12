@@ -410,8 +410,9 @@ db.documents.find( {$and: [
 - [x] 템플릿 UI 고도화 및 템플릿 제목 수정 가능하도록 처리
 - [x] jwtToken 적용
 - [x] 템플릿 다운로드 시 DRM 적용
-- [ ] pdf 다건 일괄 다운로드 기능 
-- [ ] 다건 다운로드 이후 pdf 다운로드 오류 해결 필요 
+- [x] pdf 다건 일괄 다운로드 기능 - 내 문서, 폴더 적용
+- [x] 메인 화면 서비스 호출 횟수 최적화
+- [x] 프린터 스캔 문서 지원 (orientation 속성 걸린 문서)
 
 
 # 로그인 JWT 토큰 방식으로 변경 
@@ -447,4 +448,3 @@ db.documents.find( {$and: [
 [x] UploadTemplate
 [x] ViewDocument
 [x] Config
-

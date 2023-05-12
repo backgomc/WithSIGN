@@ -52,7 +52,11 @@ const FolderDetail = ({location}) => {
   const folderId = folderInfo._id;
   const [docs, setDocs] = useState([]);
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+  const [selectedDownloads, setSelectedDownloads] = useState([]);
   const [hasSelected, setHasSelected] = useState(selectedRowKeys.length > 0);
+  const [hasSelectedDownloads, setHasSelectedDownloads] = useState(selectedDownloads.length > 0);
+  const [hiddenSelectedDownloads, setHiddenSelectedDownloads] = useState(false);
+
   const [users, setUsers] = useState([]);
   const [orgs, setOrgs] = useState([]);
   const [myOrgs, setMyOrgs] = useState();
@@ -68,6 +72,7 @@ const FolderDetail = ({location}) => {
   const [editable, setEditable] = useState(false);
   const [loading, setLoading] = useState(false);
   const [loadingDownload, setLoadingDownload] = useState([]);
+  const [loadingDownloadAll, setLoadingDownloadAll] = useState(false);
   const [responsive, setResponsive] = useState(false);
 
   const treeProps = {
@@ -85,6 +90,49 @@ const FolderDetail = ({location}) => {
       marginTop: '10px'
     },
   };
+
+  // 선택된 파일 전체 다운로드 
+  const downloadAll = async () => { 
+    if (selectedDownloads.length < 1) return;
+    setLoadingDownloadAll(true); 
+    setLoading(true);
+
+    // console.log('downloadAll', selectedDownloads)
+    try {
+      const res = await axiosInterceptor.post('/api/storage/downloadAll', {docIds:selectedDownloads}, {responseType: 'arraybuffer'});
+
+      const url = window.URL.createObjectURL(
+        new Blob([res.data], { type: "application/zip" })
+      );
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", "files.zip");
+      document.body.appendChild(link);
+      link.click();
+
+      // 다운로드 이력 저장
+      await axios.post('/api/document/updateDownloadsAll', {docIds:selectedDownloads, usrId:_id});
+      
+      // 다운로드 아이콘 업데이트 
+      const newData = docs.map(el => {
+        if (selectedDownloads.includes(el._id)) {
+          el['downloads'].push(_id);
+          return el;
+        } else {
+          return el;
+        }
+      })
+      setDocs(newData);
+      
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setTimeout(() => {
+        setLoadingDownloadAll(false);
+        setLoading(false);
+      }, 500 * selectedDownloads.length);
+    }
+  }
 
   const getColumnSearchProps = dataIndex => ({
     filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
@@ -267,6 +315,14 @@ const FolderDetail = ({location}) => {
     selectedRowKeys,
     onChange : selectedRowKeys => {
       console.log('selectedRowKeys changed: ', selectedRowKeys);
+
+      //S 선택된 항목 모두 다운로드를 위해 저장 추가
+      let _selectedDownloads = selectedRowKeys.filter(selectedRowKey => docs?.find(el => el._id === selectedRowKey)?.signed === true);
+      setSelectedDownloads(_selectedDownloads);
+      setHasSelectedDownloads(_selectedDownloads.length > 0);
+      console.log('_selectedDownloads', _selectedDownloads);
+      //E
+
       setSelectedRowKeys(selectedRowKeys);
       setHasSelected(selectedRowKeys.length > 0);
     }
@@ -578,12 +634,22 @@ const FolderDetail = ({location}) => {
               {`선택한 문서 (${selectedRowKeys.length})`}
               <Typography.Link disabled={!hasSelected} onClick={()=>{setMoveFolderId('');setMoveModal(true);}}><FolderOpenOutlined /> 이동</Typography.Link>
               <Typography.Link disabled={!hasSelected} onClick={()=>{setDeleteModal(true);}} type="danger"><DeleteOutlined /> 삭제</Typography.Link>
+              <Tooltip placement="bottom" title={'선택 문서 중 서명 완료 문서를 모두 다운로드합니다.'}>
+              <Typography.Link hidden={hiddenSelectedDownloads} disabled={!hasSelectedDownloads} loading={loadingDownloadAll} onClick={()=>{downloadAll();}} type="success"><DownloadOutlined /> 다운로드</Typography.Link>
+              </Tooltip>
             </Space>
           }
           footer={[
           ]}
       >
-        <Tabs style={{marginTop: '1rem'}} defaultActiveKey="1" tabBarExtraContent={{
+        <Tabs style={{marginTop: '1rem'}} defaultActiveKey="1" onChange={(key) => {
+          console.log('tab key', key)
+          if (key === '1') {
+            setHiddenSelectedDownloads(false);
+          } else {
+            setHiddenSelectedDownloads(true);
+          }
+        }} tabBarExtraContent={{
           left:   <Button type="text" key={uuidv4()} icon={<ArrowLeftOutlined />} onClick={() => {navigate(backUrl?backUrl:'/myFolder');}}> 뒤로</Button>,
           right:  <Select style={{ width: 200 }} value={folderId} onChange={selectFolder} >
                     {folderList.map(folder => (

@@ -281,7 +281,7 @@ const TemplateList = () => {
       key: 'docTitle',
       ...getColumnSearchProps('docTitle'),
       expandable: true,
-      render: (text,row) => <div style={{ wordWrap: 'break-word', wordBreak: 'break-word' }}>{row.type === 'C' ?  <Tag color="#519BE3">신청</Tag>: <Tag color="#87d068">일반</Tag>}
+      render: (text,row) => <div style={{ wordWrap: 'break-word', wordBreak: 'break-word' }}>{row.type === 'C' ?  <Tag color="#519BE3">신청</Tag>: <Tag color="#87d068">개인</Tag>}
         {searchedColumn === 'docTitle' ? (
         <Highlighter
           highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}

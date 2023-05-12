@@ -1,5 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { useSelector, useDispatch, useStore } from 'react-redux';
+import useDidMountEffect from '../Common/useDidMountEffect';
 import { navigate, Link } from '@reach/router';
 import { useIntl } from "react-intl";
 import { selectUser } from '../../app/infoSlice';
@@ -205,13 +206,14 @@ const Home = () => {
   const [loadingCanceled, setLoadingCanceled] = useState(false);
   const [loadingSigned, setLoadingSigned] = useState(false);
   const [loadingStatics, setLoadingStatics] = useState(false);
-  // const [loadingPaperless, setLoadingPaperless] = useState(false);
+  const [loadingPaperless, setLoadingPaperless] = useState(false);
   // const [loadingNotice, setLoadingNotice] = useState(false);
   const [documentsToSign, setDocumentsToSign] = useState([]);
   const [documentsSigning, setDocumentsSigning] = useState([]);
   const [documentsTotal, setDocumentsTotal] = useState([]);
   const [documentsCanceled, setDocumentsCanceled] = useState([]);
   const [documentsSigned, setDocumentsSigned] = useState([]);
+
   // const [notice, setNotice] = useState([]);
   const [pagination, setPagination] = useState({current:1, pageSize:5});
   const [responsive, setResponsive] = useState(false);
@@ -220,8 +222,10 @@ const Home = () => {
   const [signingNum, setSigningNum] = useState(0);
   const [canceledNum, setCanceledNum] = useState(0);
   const [signedNum, setSignedNum] = useState(0);
-  // const [paperlessNum, setPaperlessNum] = useState(0);
-  // const [docNum, setDocNum] = useState(0);
+
+  const [paperlessNum, setPaperlessNum] = useState(0);
+  const [docNum, setDocNum] = useState(0);
+  const [totalPaperlessNum, setTotalPaperlessNum] = useState(0);
 
   const [imgTotal, setImgTotal] = useState(BTN01);
   const [imgToSign, setImgToSign] = useState(BTN02_ON);
@@ -243,16 +247,69 @@ const Home = () => {
   const { formatMessage } = useIntl();
 
   useEffect(() => {
-    fetchToSign();
-    fetchSigning();
+    // 문서 통계
     fetchStatics();
-    fetchTotal();
-    fetchCanceled();
-    fetchSigned();
-    // fetchPaperless();
-    // fetchNotice();
+
+    // 페이퍼리스 통계
+    fetchPaperless();
+
+    // 처음 호출 시는 서명 필요 문서만 호출
+    fetchToSign();
+    // fetchSigning();
+    // fetchTotal();
+    // fetchCanceled();
+    // fetchSigned();
     return () => {} // cleanup
   }, []);
+
+  // 문서 - 전체
+  useDidMountEffect(() => {
+    if(checkTotal){
+      fetchTotal();  
+    }
+  }, [checkTotal]);
+
+  // 문서 - 서명필요
+  useDidMountEffect(() => {
+    if(checkToSign){
+      fetchToSign();  
+    }
+  }, [checkToSign]);
+
+  // 문서 - 서명진행중
+  useDidMountEffect(() => {
+    if(checkSigning){
+      fetchSigning();  
+    }
+  }, [checkSigning]);
+
+  // 문서 - 서명취소
+  useDidMountEffect(() => {
+    if(checkCanceled){
+      fetchCanceled();  
+    }
+  }, [checkCanceled]);
+  
+  // 문서 - 서명완료
+  useDidMountEffect(() => {
+    if(checkSigned){
+      fetchSigned();  
+    }
+  }, [checkSigned]);
+
+  const fetchPaperless = async () => {
+    setLoadingPaperless(true);
+    let param = {
+      user: _id
+    }
+    const res = await axiosInterceptor.post('/api/users/paperless', param)
+    if (res.data.success) {
+      setPaperlessNum(res.data.paperless)
+      setDocNum(res.data.docCount)
+      setTotalPaperlessNum(res.data.totalPaperless)
+    }
+    setLoadingPaperless(false);
+  }
 
   const fetchToSign = async () => {
     setLoadingToSign(true);
@@ -1301,8 +1358,8 @@ const Home = () => {
         </Col>
         <Col xl={6} lg={24} md={24} sm={24} xs={24}>
           {/* {pie} */}
-          <ESGCard></ESGCard>
-          <PaperlessCard></PaperlessCard>
+          <ESGCard totalPaperlessNum={totalPaperlessNum} loadingPaperless={loadingPaperless}></ESGCard>
+          <PaperlessCard paperlessNum={paperlessNum} totalPaperlessNum={totalPaperlessNum} loadingPaperless={loadingPaperless}></PaperlessCard>
           <DirectCard></DirectCard>
         </Col>
       </Row>
