@@ -4,7 +4,7 @@ services:
   # admin:
   #   build: # Dockerfile 빌드
   #     context: ./admin # Dockerfile 빌드 경로
-  #   image: nhsign-admin:2.1.0
+  #   image: nhsign-admin:2.1.1
   #   container_name: nhsign-admin # 컨테이너 명
   #   restart: always
   #   ports:
@@ -12,40 +12,40 @@ services:
   #   volumes: # 볼륨 설정
   #     - ./admin/build:/app/build
 
-  broker:
-    build: # Dockerfile 빌드
-      context: ./broker # Dockerfile 빌드 경로
-      args:
-      - SERVER_MODE=REAL
-      - JAR_VERSION=broker-0.0.1.jar
-    container_name: nhsign_broker # 컨테이너 명
-    restart: always
-    ports:
-      - 4001:4001
-    volumes: # 볼륨 설정
-      - ./broker/fsdinit/:/app/fsdinit
-      - ./server/storage/:/app/storage
+  # broker:
+  #   build: # Dockerfile 빌드
+  #     context: ./broker # Dockerfile 빌드 경로
+  #     args:
+  #     - SERVER_MODE=REAL
+  #     - JAR_VERSION=broker-0.0.1.jar
+  #   container_name: nhsign_broker # 컨테이너 명
+  #   restart: always
+  #   ports:
+  #     - 4001:4001
+  #   volumes: # 볼륨 설정
+  #     - ./broker/fsdinit/:/app/fsdinit
+  #     - ./server/storage/:/app/storage
 
-  web:
-    build: # Dockerfile 빌드
-      context: ./client # Dockerfile 빌드 경로
-    image: nhsign-client:2.1.1
-    container_name: nhsign-client # 컨테이너 명
-    restart: "on-failure"
-    ports:
-      - 3000:3000
-    # volumes: # 볼륨 설정
-      # - ./client/build:/app/build
-    # image: nginx:latest # nginx 이미지
-    # container_name: nhsign-client # 컨테이너 명
-    # restart: "on-failure" # 구동 실패 시 재시작
-    # ports:
-    #   - 80:80
-    # volumes: # 볼륨 설정
-    #   - ./nginx/nginx.conf:/etc/nginx/nginx.conf
-    #   - ./client/build:/usr/share/nginx/html
-    environment:
-      - NODE_ENV=production
+  # web:
+  #   build: # Dockerfile 빌드
+  #     context: ./client # Dockerfile 빌드 경로
+  #   image: nhsign-client:2.1.1
+  #   container_name: nhsign-client # 컨테이너 명
+  #   restart: "on-failure"
+  #   ports:
+  #     - 3000:3000
+  #   # volumes: # 볼륨 설정
+  #     # - ./client/build:/app/build
+  #   # image: nginx:latest # nginx 이미지
+  #   # container_name: nhsign-client # 컨테이너 명
+  #   # restart: "on-failure" # 구동 실패 시 재시작
+  #   # ports:
+  #   #   - 80:80
+  #   # volumes: # 볼륨 설정
+  #   #   - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+  #   #   - ./client/build:/usr/share/nginx/html
+  #   environment:
+  #     - NODE_ENV=production
  
   server:
     build: # Dockerfile 빌드

@@ -23,4 +23,20 @@ pdf 가 한장인 경우 PDF뷰어 높이가 여백이 많이 생기는 문제 
 > docker container prune -f
 * [x] Uncaught (in promise) Error: Invariant failed: A state mutation was detected between dispatches
 > redux state 값을 mutable 하게 변경하여 나타난 오류로 객체를 copy 하여 사용하여 해결함.
-*[ ] 스페이스 간격이 실제 다름 
+* [*] 스페이스 간격이 실제 다름 
+* [*] 참조라이브리리에 optional chaining(?)이 오류나는 문제 
+> browserlist 에 ie 11을 추가해 준다.
+  "browserslist": {
+    "production": [
+      "ie 11",
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "ie 11",
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },

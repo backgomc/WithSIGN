@@ -555,7 +555,7 @@ router.post('/updateAgreement', (req, res) => {
 
 
 // 유저 비밀번호 : updatePassword
-router.post('/updatePassword', ValidateToken, (req, res) => {
+router.post('/updatePassword', (req, res) => {
 
   console.log("user:"+req.body.user)
   console.log("current:"+req.body.currentPassword)

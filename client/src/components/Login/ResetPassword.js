@@ -51,7 +51,7 @@ function ResetPassword({location}) {
       }
       
 
-      const res = await axiosInterceptor.post('/api/users/updatePassword', param)
+      const res = await axios.post('/api/users/updatePassword', param)
   
       if (res.data.success) {
         message.success({content: '비밀번호가 변경되었습니다.', style: {marginTop: '70vh'}});  
