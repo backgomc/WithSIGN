@@ -31,7 +31,7 @@ axiosInterceptor.interceptors.response.use(
                 resp = await axios(originalRequest);
                 response = resp;
             } else {
-                alert('세션이 만료되었습니다.');
+                // alert('세션이 만료되었습니다.');
                 window.location.href = '/';
             }
         }
