@@ -55,10 +55,15 @@ const storage = multer.diskStorage({
 
         // console.log('file.originalname', file.originalname)
         if (req.body.path.includes('attachfiles')) {
-            let newFileName = new Date().valueOf() + path.extname(file.originalname)
+
+            // FIX
+            // 원인: 2023/11/23 멀티 첨부파일 시 파일의 용량이 작으면 Date().valueOf() 값이 같아서 덮어써지는 경우가 발생
+            // 수정: Date().valueOf() => generateRandomName()
+            // let newFileName = new Date().valueOf() + path.extname(file.originalname)
+            let newFileName = generateRandomName() + path.extname(file.originalname)
             cb(null, newFileName);
         } else {
-            cb(null, file.originalname);    
+            cb(null, file.originalname);
         }
     }
 })
