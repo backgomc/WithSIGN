@@ -89,5 +89,6 @@
 	"code.manage": "Code",
 	"folder.manage": "Folder",
 	"system.manage": "System",
+	"history.manage": "History",
 	"name": "이름"
 }

@@ -15,6 +15,7 @@ import BoardWrite from './components/Board/BoardWrite';
 import BoardModify from './components/Board/BoardModify';
 import FolderManage from './components/Folder/FolderManage';
 import SystemManage from './components/System/SystemManage';
+import HistoryManage from './components/History/HistoryManage';
 import DocumentList from './components/Document/DocumentList';
 import ViewDocument from './components/Document/ViewDocument';
 import AuditCertify from './components/Document/AuditCertify';
@@ -153,6 +154,7 @@ const App = () => {
           <BoardModify path="/boardModify" />
           <FolderManage path="/folderManage" />
           <SystemManage path="/systemManage" />
+          <HistoryManage path="/historyManage" />
           <DocumentList path="/documentList" />
           <ViewDocument path="/viewDocument" />
           <AuditCertify path="/auditCertify" />

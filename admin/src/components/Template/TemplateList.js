@@ -325,7 +325,20 @@ const TemplateList = () => {
       onFilter: (value, record) =>
       record['user']['name']
         ? record['user']['name'].toString().toLowerCase().includes(value.toLowerCase())
-        : ''
+        : '',
+      render: (text, row) =>
+        <React.Fragment>
+          { searchedColumn === 'name' ? (
+            <Highlighter
+              highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
+              searchWords={[searchText]}
+              autoEscape
+              textToHighlight={text ? text + ' ' + row['user']['JOB_TITLE'] : ''}
+            />
+          ) : (
+            text + ' ' + row['user']['JOB_TITLE']
+          )}
+        </React.Fragment>
     },
     {
       title: '생성 일시',

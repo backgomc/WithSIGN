@@ -11,31 +11,35 @@ import 'moment/locale/ko';
 
 const { Option } = Select;
 
-const BoardList = () => {
-
+const HistoryManage = () => {
   const { formatMessage } = useIntl();
-  const [boardType, setBoardType] = useState();
   const [pagination, setPagination] = useState({current:1, pageSize:10, showSizeChanger: true});
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState([]);
+  const [type, setType] = useState();
+  const [filters, setFilters] = useState({});
+  const [sorter, setSorter] = useState({});
 
-  const handleSelectChange = (boardType) => {
+  const handleSelectChange = (type) => {
     console.log('handleSelectChange called');
     pagination.current = 1; // RESET
-    setBoardType(boardType);
+    setType(type);
     fetch({
-      boardType,
-      pagination
+      sortOrder: sorter.order,
+      pagination,
+      type,
+      ...filters
     });
   };
 
   const handleTableChange = (pagination, filters, sorter) => {
     console.log('handleTableChange called');
+    setFilters(filters);
+    setSorter(sorter);
     fetch({
-      sortField: sorter.field,
       sortOrder: sorter.order,
-      boardType,
       pagination,
+      type,
       ...filters
     });
   };
@@ -81,11 +85,11 @@ const BoardList = () => {
 
   const fetch = async (params = {}) => {
     setLoading(true);
-    axiosInterceptor.post('/admin/board/list', params).then(response => {
+    axiosInterceptor.post('/admin/history/list', params).then(response => {
       if (response.data.success) {
-        let boards = response.data.boards;
+        let logs = response.data.logs;
         setPagination({...params.pagination, total:response.data.total});
-        setData(boards);
+        setData(logs);
         setLoading(false);
       } else {
         setLoading(false);
@@ -97,44 +101,53 @@ const BoardList = () => {
   const columns = [
     {
       title: '유형',
-      dataIndex: 'boardType',
-      key: 'boardType',
+      dataIndex: 'type',
+      key: 'type',
       render: (value) => {
         let text = '';
-        if (value === 'notice') text = '공지사항';
-        if (value === 'faq') text = 'FAQ';
-        if (value === 'opinion') text = '문의하기';
-        if (value === 'manual') text = '매뉴얼';
+        if (value === 'LOGIN') text = '로그인';
+        if (value === 'SELECT') text = '조회';
+        if (value === 'UPDATE') text = '수정';
+        if (value === 'DELETE') text = '삭제';
         return <div>{text}</div>
       }
     },
     {
-      title: '제목',
-      dataIndex: 'title',
-      key: 'title',
-      ...getColumnSearchProps('title'),
-      render: (text,row) => <div style={{ 'wordWrap': 'break-word', 'wordBreak': 'break-word' }}>{text} <Badge count={row.comments.length} style={{ backgroundColor: '#1A4D7D' }} /></div>
+      title: 'URL',
+      dataIndex: 'url',
+      responsive: ['sm'],
+      key: 'url'
     },
     {
-      title: '작성자',
+      title: '요청 파라미터',
+      dataIndex: 'request',
+      responsive: ['sm'],
+      key: 'request',
+      expandable: true,
+      render: (text, row) =>
+        <div style={{wordWrap:'break-word', wordBreak:'break-word', display:'flex', alignItems:'center'}}>{text}</div>
+    },
+    {
+      title: '관리자',
       dataIndex: ['user', 'name'],
-      sorter: (a, b) => a.user.name.localeCompare(b.user.name),
       key: 'name',
       ...getColumnSearchProps('name')
     },
     {
-      title: '작성일',
-      dataIndex: 'registeredTime',
+      title: '요청시간',
+      dataIndex: 'time',
+      responsive: ['sm'],
       sorter: true,
-      key: 'registeredTime',
+      key: 'time',
       render: (text, row) => {
-        return <Moment format="YYYY/MM/DD HH:mm">{row['registeredTime']}</Moment>
-      } 
-    },
+        return <Moment format="YYYY/MM/DD HH:mm">{row['time']}</Moment>
+      }
+    }
   ];
 
   useEffect(() => {
     console.log('useEffect called');
+    setType('');
     fetch({
       pagination
     });
@@ -142,7 +155,9 @@ const BoardList = () => {
       setPagination({current:1, pageSize:10, showSizeChanger: true});
       setLoading(false);
       setData([]);
-      setBoardType();
+      setType('');
+      setFilters({});
+      setSorter({});
     } // cleanup
 }, []);
 
@@ -151,7 +166,7 @@ const BoardList = () => {
         <PageContainer
           ghost
           header={{
-            title: formatMessage({id: 'board.manage'}),
+            title: formatMessage({id: 'history.manage'}),
             ghost: false,
             breadcrumb: {
               routes: [
@@ -159,16 +174,13 @@ const BoardList = () => {
               ],
             },
             extra: [           
-              <Select key={uuidv4()} defaultValue={boardType} style={{ width: 120 }} onChange={handleSelectChange}>
+              <Select key={uuidv4()} defaultValue={type} style={{ width: 120 }} onChange={handleSelectChange}>
                 <Option value="">전체</Option>
-                <Option value="notice">공지사항</Option>
-                <Option value="faq">FAQ</Option>
-                <Option value="opinion">문의하기</Option>
-                <Option value="manual">매뉴얼</Option>
-              </Select>,
-              <Button key={uuidv4()} type="primary" onClick={() => {navigate('/boardWrite');}}>
-                게시글 등록
-              </Button>
+                <Option value="LOGIN">로그인</Option>
+                <Option value="SELECT">조회</Option>
+                <Option value="UPDATE">수정</Option>
+                <Option value="DELETE">삭제</Option>
+              </Select>
             ]
           }}
         >
@@ -179,11 +191,6 @@ const BoardList = () => {
             dataSource={data}
             pagination={pagination}
             loading={loading}
-            onRow={record => ({
-              onClick: e => {
-                navigate('/boardDetail', { state: { boardId: record._id, boardType: record.boardType } } );
-              }
-            })}
             onChange={handleTableChange}
           />
         </PageContainer>
@@ -191,4 +198,4 @@ const BoardList = () => {
   );
 };
 
-export default BoardList;
+export default HistoryManage;

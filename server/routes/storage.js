@@ -8,7 +8,7 @@ const { Bulk } = require("../models/Bulk");
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
-const { makeFolder, generateRandomName, getUniqueFileName, deleteFolder, today } = require('../common/utils');
+const { makeFolder, generateRandomName, generateRandomPass, getUniqueFileName, deleteFolder, today } = require('../common/utils');
 const Magic = require('mmmagic').Magic;
 const restful = require('../common/restful');
 const { ValidateToken } = require('../middleware/auth');
@@ -522,7 +522,7 @@ router.post('/downloadAll', ValidateToken, async (req, res) => {
 
     try {
         let copyPaths = [];
-        let folderDir = config.storageDIR + 'tempDownloads/' + today() + '/' + generateRandomName() + '/'; 
+        let folderDir = config.storageDIR + 'zip/' + generateRandomPass(4, 'complex') + '/'; 
         
         makeFolder(folderDir); // ex) storage/tempDownloads/20230426/3707875322/
 
@@ -533,7 +533,7 @@ router.post('/downloadAll', ValidateToken, async (req, res) => {
                 let filePath = fileInfo.substring(0, fileInfo.lastIndexOf('/'));
                 let fileName = fileInfo.substring(fileInfo.lastIndexOf('/')+1, fileInfo.length);
                 // let copyPath = config.storageDIR + 'tempDownloads/' + fileName;
-                let copyPath = folderDir + dataInfo.docTitle + '.pdf';
+                let copyPath = folderDir + dataInfo.docTitle.slice(0, 64) + '.pdf';
                 copyPath = getUniqueFileName(copyPath, copyPaths);  // 파일명 중복 방지
                 if (fs.existsSync(fileInfo)) {
                     await restful.callDRMPackaging(filePath, fileName, copyPath);

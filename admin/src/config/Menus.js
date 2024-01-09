@@ -1,5 +1,5 @@
 import React from 'react';
-import { CodeSandboxOutlined, FolderOpenOutlined, ReadOutlined, UserSwitchOutlined, SoundOutlined, FileTextOutlined, SettingOutlined } from '@ant-design/icons';
+import { CodeSandboxOutlined, FolderOpenOutlined, ReadOutlined, UserSwitchOutlined, SoundOutlined, FileTextOutlined, SettingOutlined, HistoryOutlined } from '@ant-design/icons';
 
 export default function Menus(formatMessage) {
   const data = {
@@ -35,6 +35,11 @@ export default function Menus(formatMessage) {
           path: '/systemManage',
           name: formatMessage({id: 'system.manage'}),
           icon: <SettingOutlined />,
+        },
+        {
+          path: '/historyManage',
+          name: formatMessage({id: 'history.manage'}),
+          icon: <HistoryOutlined />,
         },
       ],
     },

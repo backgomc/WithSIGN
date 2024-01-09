@@ -89,5 +89,6 @@
 	"code.manage": "코드 관리",
 	"folder.manage": "폴더 관리",
 	"system.manage": "시스템 관리",
+	"history.manage": "접속 및 이력",
 	"name": "이름"
 }

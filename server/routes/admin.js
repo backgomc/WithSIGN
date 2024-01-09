@@ -9,6 +9,7 @@ const { Board } = require('../models/Board');
 const { Folder } = require('../models/Folder');
 const { Document } = require('../models/Document');
 const { Template } = require('../models/Template');
+const { Log } = require('../models/Log');
 const { Org } = require('../models/Org');
 const { User } = require('../models/User');
 const { generateToken, ValidateToken, renewalToken } = require('../middleware/adminAuth');
@@ -50,6 +51,18 @@ const storage = multer.diskStorage({
   }
 });
 const upload = multer({storage});
+
+// History Type : LOGIN, SELECT, UPDATE, DELETE
+const insertLog = async (id, type, url, req, res) => {
+  try {
+    var log = new Log({user: id, type: type, url: url, request: req, response: res});
+    log.save((err) => {
+      if (err) console.log(err);
+    });
+  } catch (error) {
+    console.log(error);
+  }
+}
 
 // -- 로그인/아웃 --
 // /admin/auth        (GET)
@@ -255,6 +268,8 @@ router.post('/login', (req, res) => {
           }
         });
       });
+      // 관리자 및 개인정보처리 이력
+      insertLog(user._id, 'LOGIN', req.url);
     });
   });
 });
@@ -371,7 +386,15 @@ router.post('/user/list', ValidateToken, async (req, res) => {
     .exec((err, users) => {
       // console.log(users);
       if (err) return res.json({ success: false, error: err });
-      return res.json({ success: true, users: users, total: totalCount });
+      // 개인정보 마스킹 처리
+      var newsUsers = users.map(item => {
+        if (item['name'].length === 2) item['name'] = item['name'].charAt(0) + '*'.repeat(item['name'].length - 1);
+        else item['name'] = item['name'].substr(0, 2) + '*'.repeat(item['name'].length - 2);
+        return item;
+      });
+      // 관리자 및 개인정보처리 이력
+      insertLog(req.body.systemId, 'SELECT', req.url, JSON.stringify(req.body));
+      return res.json({ success: true, users: newsUsers, total: totalCount });
     });
 });
 
@@ -537,13 +560,22 @@ router.post('/document/list', ValidateToken, async (req, res) => {
       select: { name: 1, JOB_TITLE: 1, DEPART_CODE: 1 }
     })
     .exec((err, documents) => {
+      if (err) return res.json({ success: false, error: err });
       // console.log(documents);
       var newDocs = documents.map(item => {
         var departInfo = orgList.find(e => e.DEPART_CODE === item.user['DEPART_CODE']);
         item.user['DEPART_NAME'] = departInfo ? departInfo.DEPART_NAME : '';
+        // 개인정보 마스킹 처리
+        if (item.user['name'].length === 2) item.user['name'] = item.user['name'].charAt(0) + '*'.repeat(item.user['name'].length - 1);
+        else item.user['name'] = item.user['name'].substr(0, 2) + '*'.repeat(item.user['name'].length - 2);
+        item.users.map(u => {
+          if (u['name'].length === 2) u['name'] = u['name'].charAt(0) + '*'.repeat(u['name'].length - 1);
+          else u['name'] = u['name'].substr(0, 2) + '*'.repeat(u['name'].length - 2);
+        });
         return item;
       });
-      if (err) return res.json({ success: false, error: err });
+      // 관리자 및 개인정보처리 이력
+      insertLog(req.body.systemId, 'SELECT', req.url, JSON.stringify(req.body));
       return res.json({ success: true, documents: newDocs, total: totalCount });
     });
 });
@@ -673,7 +705,15 @@ router.post('/templates/list', ValidateToken, async (req, res) => {
     })
     .exec((err, data) => {
       if (err) return res.json({ success: false, error: err });
-      return res.json({ success: true, templates: data, total: totalCount });
+      // 개인정보 마스킹 처리
+      var newData = data.map(item => {
+        if (item.user['name'].length === 2) item.user['name'] = item.user['name'].charAt(0) + '*'.repeat(item.user['name'].length - 1);
+        else item.user['name'] = item.user['name'].substr(0, 2) + '*'.repeat(item.user['name'].length - 2);
+        return item;
+      });
+      // 관리자 및 개인정보처리 이력
+      insertLog(req.body.systemId, 'SELECT', req.url, JSON.stringify(req.body));
+      return res.json({ success: true, templates: newData, total: totalCount });
     });
 });
 
@@ -829,7 +869,15 @@ router.post('/board/list', ValidateToken, async (req, res) => {
     })
     .exec((err, data) => {
       if (err) return res.json({ success: false, error: err });
-      return res.json({ success: true, boards: data, total: totalCount });
+      // 개인정보 마스킹 처리
+      var newData = data.map(item => {
+        if (item.user['name'].length === 2) item.user['name'] = item.user['name'].charAt(0) + '*'.repeat(item.user['name'].length - 1);
+        else item.user['name'] = item.user['name'].substr(0, 2) + '*'.repeat(item.user['name'].length - 2);
+        return item;
+      });
+      // 관리자 및 개인정보처리 이력
+      insertLog(req.body.systemId, 'SELECT', req.url, JSON.stringify(req.body));
+      return res.json({ success: true, boards: newData, total: totalCount });
     });
 });
 
@@ -1157,7 +1205,15 @@ router.post('/folder/list', ValidateToken, async (req, res) => {
     })
     .exec((err, data) => {
       if (err) return res.json({ success: false, error: err });
-      return res.json({ success: true, folders: data, total: totalCount });
+      // 개인정보 마스킹 처리
+      var newData = data.map(item => {
+        if (item.user['name'].length === 2) item.user['name'] = item.user['name'].charAt(0) + '*'.repeat(item.user['name'].length - 1);
+        else item.user['name'] = item.user['name'].substr(0, 2) + '*'.repeat(item.user['name'].length - 2);
+        return item;
+      });
+      // 관리자 및 개인정보처리 이력
+      insertLog(req.body.systemId, 'SELECT', req.url, JSON.stringify(req.body));
+      return res.json({ success: true, folders: newData, total: totalCount });
     });
 });
 
@@ -1182,5 +1238,76 @@ router.post('/folder/update/:flag', ValidateToken, async (req, res) => {
   }
 });
 ///////////////////////////////////////////////////////////////////////// 폴더 관리 종료 /////////////////////////////////////////////////////////////////////////
+
+
+
+///////////////////////////////////////////////////////////////////////// 접속 및 이력 시작 /////////////////////////////////////////////////////////////////////////
+router.post('/history/list', ValidateToken, async (req, res) => {
+  
+  // 페이징 처리
+  var current = req.body.pagination.current;
+  var pageSize = req.body.pagination.pageSize;
+  var start = 0;
+  if (current > 1) {
+    start = (current - 1) * pageSize;
+  }
+
+  var order = 'time';
+  var dir = 'desc';
+  if (req.body.sortField) {
+    order = req.body.sortField;
+  }
+  if (req.body.sortOrder) {
+    if (req.body.sortOrder == 'ascend') {
+      dir = 'asc';
+    } else {
+      dir = 'desc';
+    }
+  }
+
+  // 단어검색
+  var searchStr = {};
+
+  // 관리자
+  if (req.body.name) {
+    var userIds = [];
+    var regex = new RegExp(req.body.name[0], 'i');
+    var dataList = await User.find({ 'name': regex }).exec();
+    for (var idx in dataList) {
+      userIds.push(dataList[idx]['_id']);
+    }
+    searchStr['user'] = { $in: userIds };
+  }
+
+  // 공통 템플릿
+  if (req.body.type) searchStr['type'] = req.body.type;
+
+  console.log(searchStr);
+
+  // 전체 건수
+  var totalCount = await Log.countDocuments(searchStr).exec();
+
+  Log.find(searchStr)
+    .sort({ [order]: dir })   //asc:오름차순 desc:내림차순
+    .skip(Number(start))
+    .limit(Number(pageSize))
+    .populate({
+      path: 'user',
+      select: { name: 1, JOB_TITLE: 2 }
+    })
+    .exec((err, data) => {
+      if (err) return res.json({ success: false, error: err });
+      // 개인정보 마스킹 처리
+      var newData = data.map(item => {
+        if (item.user['name'].length === 2) item.user['name'] = item.user['name'].charAt(0) + '*'.repeat(item.user['name'].length - 1);
+        else item.user['name'] = item.user['name'].substr(0, 2) + '*'.repeat(item.user['name'].length - 2);
+        return item;
+      });
+      // 관리자 및 개인정보처리 이력
+      insertLog(req.body.systemId, 'SELECT', req.url, JSON.stringify(req.body));
+      return res.json({ success: true, logs: newData, total: totalCount });
+    });
+});
+///////////////////////////////////////////////////////////////////////// 접속 및 이력 종료 /////////////////////////////////////////////////////////////////////////
 
 module.exports = router;

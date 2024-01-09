@@ -30,8 +30,7 @@ let userSyncJob = cron.schedule('10 08 * * 1-5', async function () {
 let tempDeleteJob = cron.schedule('15 08 * * 1-5', async function () {
     console.log('folderDeleteJob Start');
     
-    deleteFolder(config.storageDIR + 'tempDownloads/');
-
+    deleteFolder(config.storageDIR + 'zip/');
     console.log('folderDeleteJob End');
 }, {
     scheduled: false
