@@ -151,8 +151,8 @@ xfdf: ["<?xml version="1.0" encoding="UTF-8" ?><xfdf xmlns="http://ns.adobe.com/
  > docker-compse down 
 - docker image 수동으로 추출
  > docker images
- > docker save -o nhsign_server.tar nhsign_server
- > docker save -o nhsign_web.tar nhsign_web
+ > docker save -o nhsign_server215.tar nhsign-server:2.1.5
+ > docker save -o nhsign_client.tar nhsign-client:2.1.5
  > docker save -o mongo.tar mongo
 - docker image 압축 후 운영서버 전송
 - docker image 주입

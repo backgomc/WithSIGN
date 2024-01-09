@@ -184,7 +184,9 @@ const TemplateList = () => {
       dispatch(setTemplateTitle(`${item.docTitle}_${moment().format('YYYYMMDD')}`));
       dispatch(setTemplate(item));
   
-      navigate('/assign');
+      // 템플릿 등록 시 첨부 파일이 있는 경우가 있으므로 1단계로 이동하도록 변경
+      // navigate('/assign');
+      navigate('/uploadDocument');
 
     }
   }

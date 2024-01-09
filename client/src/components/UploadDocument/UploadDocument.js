@@ -2,6 +2,7 @@ import React, { useRef, useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import axios from 'axios';
 import axiosInterceptor from '../../config/AxiosConfig';
+import useDidMountEffect from '../Common/useDidMountEffect';
 import { navigate } from '@reach/router';
 import { selectUser } from '../../app/infoSlice';
 import 'antd/dist/antd.css';
@@ -9,7 +10,7 @@ import { Tabs, Upload, message, Input, Space, Form, Button } from 'antd';
 // import { InboxOutlined, CheckOutlined } from '@ant-design/icons';
 import StepWrite from '../Step/StepWrite';
 import { useIntl } from "react-intl";
-import { setSignees, setObservers, setDocumentFile, setDocumentTitle, selectDocumentTitle, setDocumentTempPath, selectDocumentFile, setTemplate, setTemplateType, setDocumentType, selectDocumentType, selectTemplate, selectTemplateTitle, setTemplateTitle, selectSendType, selectTemplateType, resetTemplate, resetTemplateTitle } from '../Assign/AssignSlice';
+import { setSignees, resetSignee, setObservers, setDocumentFile, setDocumentTitle, selectDocumentTitle, setDocumentTempPath, selectDocumentFile, setTemplate, setTemplateType, setDocumentType, selectDocumentType, selectTemplate, selectTemplateTitle, setTemplateTitle, selectSendType, selectTemplateType, resetTemplate, resetTemplateTitle } from '../Assign/AssignSlice';
 import { PageContainer } from '@ant-design/pro-layout';
 import ProCard from '@ant-design/pro-card';
 import ProForm, { ProFormUploadDragger, ProFormText, ProFormUploadButton } from '@ant-design/pro-form';
@@ -25,6 +26,7 @@ import { ReactComponent as PPT_ICON} from '../../assets/images/ppt-icon.svg';
 import { ReactComponent as XLS_ICON} from '../../assets/images/excel-icon.svg';
 
 import Icon, { ReloadOutlined, ArrowRightOutlined } from '@ant-design/icons';
+// import { resetSignee } from '../PrepareTemplate/AssignTemplateSlice';
 
 function stringifyFile(files) {
   var myArray = [];
@@ -227,18 +229,22 @@ const UploadDocument = ({location}) => {
   }, [documentTitle, documentFile, documentType, templateTitle, templateRef_C, templateRef_M]);
 
   // useEffect(() => {
-  //   console.log(tab)
+  //   console.log('useEffect:' + tab)
   //   // if (tab === 'tab3') {
   //   //   templateRef_C.current.initTemplateUI();
   //   // } else if (tab === 'tab2') {
   //   //   templateRef_M.current.initTemplateUI();
   //   // }
 
-  //   if (tab === 'tab2') {
-  //     templateRef_M.current.initTemplateUI();
-  //   }
+  //   // if (tab === 'tab2') {
+  //   //   templateRef_M.current.initTemplateUI();
+  //   // }
 
   // }, [tab])
+
+  // useDidMountEffect(() => {
+  //   console.log('useEffect:' + tab)
+  // }, [tab]);
 
   useEffect(() => {
     console.log('useEffect[file] called')
@@ -385,16 +391,22 @@ const UploadDocument = ({location}) => {
               setTab(activeKey)
 
               if (activeKey === "tab1") {
-                // dispatch(setDocumentType('PC'))
+                dispatch(setDocumentType('PC'))
+                dispatch(resetTemplate());
+                dispatch(resetTemplateTitle());
+                dispatch(resetSignee());
+
               } else if (activeKey === "tab2") {
-                // dispatch(setDocumentType('TEMPLATE'))
+                dispatch(setDocumentType('TEMPLATE'))
                 dispatch(setTemplateType('M'))
 
                 dispatch(resetTemplate());
                 dispatch(resetTemplateTitle());
 
                 // UI 변경은 렌더링이 완료된 후에 해야 하므로 useEffect (tab) 에서 처리함
-                // templateRef_M.current.resetSelect();
+                setTimeout(() => {
+                  templateRef_M.current.initTemplateUI();
+                }, 1000);
                 
               } else {
                 // dispatch(setDocumentType('TEMPLATE'))
@@ -502,7 +514,7 @@ const UploadDocument = ({location}) => {
                 name="documentTitle"
                 label="문서명"
                 // width="md"
-                tooltip="입력하신 문서명으로 상대방에게 표시됩니다."
+                tooltip="입력하신 문서명으로 관련 문서 다운로드시 표기됩니다."
                 placeholder="문서명을 입력하세요."
                 rules={[{ required: true, message: formatMessage({id: 'input.documentTitle'}) }]}
               />

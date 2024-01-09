@@ -562,6 +562,14 @@ router.post('/document/list', ValidateToken, async (req, res) => {
     .exec((err, documents) => {
       if (err) return res.json({ success: false, error: err });
       // console.log(documents);
+      if (err) {
+        //TODO: 오류해결 필요 
+        // 버퍼를 늘리거나 index로 해결가능
+        // 1. requestedTime index 주기 
+        // MongoError: Executor error during find command :: caused by :: Sort operation used more than the maximum 33554432 bytes of RAM. Add an index, or specify a smaller limit.
+        console.log(err);
+        return res.json({ success: false, error: err });
+      }
       var newDocs = documents.map(item => {
         var departInfo = orgList.find(e => e.DEPART_CODE === item.user['DEPART_CODE']);
         item.user['DEPART_NAME'] = departInfo ? departInfo.DEPART_NAME : '';
