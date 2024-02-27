@@ -3,9 +3,9 @@ version: "3"
 services:
   gotenberg:
     # image: gotenberg/gotenberg:7
-    image: nhsign-converter-gotenberg:8
+    image: nhsign-converter-gotenberg:7
     build: # Dockerfile 빌드
       context: ./ # Dockerfile 빌드 경로
-    command: "gotenberg --api-timeout 400s"
+    # command: "gotenberg --api-timeout 400s"
     ports:
       - 3018:3000
