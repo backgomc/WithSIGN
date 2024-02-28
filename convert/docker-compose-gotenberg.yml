@@ -2,7 +2,7 @@ version: "3"
 
 services:
   gotenberg:
-    image: nhsign-converter_gotenberg:8
+    image: nhsign-converter_gotenberg:7.5
     restart: always
     command:
       - "gotenberg --api-timeout 400s"
