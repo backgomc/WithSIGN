@@ -10,6 +10,6 @@ if (navigator.userAgent.indexOf('Chrome') > -1) {
         var runProgram = 'msedge http://10.220.141.91:3001/?t='+encodeURIComponent(NEXESS_API.GetTicket());
         objShell.run(runProgram, 1, false);
     } catch(e) {
-        alert('[도구] - [인터넷 옵션] - [보안] - [사용자 지정 수준] 선택 후\n\n스크립팅하기 안전하지 않는 것으로 표시된 ActiveX : 사용 선택');
+        alert('[인터넷 옵션]-[보안]-[신뢰할 수 있는 사이트]-[사용자 지정 수준] 선택 후\n\n스크립팅하기 안전하지 않는 것으로 표시된 ActiveX : 사용 선택\n\n신뢰할 수 있는 사이트에 WithSIGN(10.220.141.91) 추가 필수');
     }
 }
