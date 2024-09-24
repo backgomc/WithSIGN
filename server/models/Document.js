@@ -40,7 +40,8 @@ const documentSchema = mongoose.Schema({
     }],
     usersOrder: [{  // 순차 발송 순서
         user: { type: String },
-        order: { type: Number }
+        order: { type: Number },
+        allowSkip: {type: Boolean, default: false}
     }],
     usersTodo: { // 순차 발송 : 현재 단계에 서명할 사람 목록 
         type: Array
@@ -52,7 +53,8 @@ const documentSchema = mongoose.Schema({
     signedBy: [{
         user: { type: String },
         signedTime: { type: Date },
-        ip: {type: String }
+        ip: {type: String },
+        skipped: {type: Boolean, default: false}
     }],
     signed: {
         type: Boolean

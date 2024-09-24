@@ -61,6 +61,10 @@ const PageContainerStyle = styled.div`
   margin-left: 5px !important; 
   // margin-right: 0px !important;
 }
+
+.ant-pro-card-body {
+  padding: 24px 24px 12px 24px;
+}
 `;
 
 const { Dragger } = Upload;

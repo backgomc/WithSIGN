@@ -5,7 +5,7 @@ import axiosInterceptor from '../../config/AxiosConfig';
 import { navigate } from '@reach/router';
 import { selectUser } from '../../app/infoSlice';
 
-import { Button, TreeSelect, Form, Typography, Modal, Spin } from 'antd';
+import { Button, message, Form, Typography, Modal, Spin, Upload } from 'antd';
 import { useIntl } from "react-intl";
 import { PageContainer } from '@ant-design/pro-layout';
 import 'antd/dist/antd.css';
@@ -13,9 +13,11 @@ import '@ant-design/pro-card/dist/card.css';
 import {
   ArrowLeftOutlined,
   DownloadOutlined,
-  EditOutlined
+  EditOutlined,
+  UploadOutlined
 } from '@ant-design/icons';
 import PDFViewer from "@niceharu/withpdf";
+import * as common from "../../util/common";
 import styled from 'styled-components';
 const PageContainerStyle = styled.div`
 .ant-pro-page-container-children-content {
@@ -40,7 +42,8 @@ const PreviewPDF = ({location}) => {
   const [loading, setLoading] = useState(false);
   const [loadingDownload, setLoadingDownload] = useState([]);
   const [docTitle, setDocTitle] = useState(location.state.docTitle ? location.state.docTitle : '');
-
+  const [file, setFile] = useState(null);
+  const [fileTitle, setFileTitle] = useState('문서 변경');
 
   const user = useSelector(selectUser);
   const { _id, role } = user;
@@ -61,9 +64,34 @@ const PreviewPDF = ({location}) => {
 
   const updateDocument = async () => {
 
+    let newDocRef = '';
+    let pageCount = await pdfRef.current.getPageCount();
+    // 파일이 변경된 경우 Upload 처리
+    if (file) {
+      console.log('file upload called!');
+
+      const filename = `${_id}${Date.now()}.pdf`
+      const formData = new FormData()
+      formData.append('path', 'templates/')
+      formData.append('file', file, filename)
+  
+      const res = await axiosInterceptor.post(`/api/storage/upload`, formData)
+
+      if (res.data.success){
+        newDocRef = res.data.file.path 
+      }
+    }
+
+    console.log('newDocRef', newDocRef)
+    const thumbnail = await pdfRef.current.getThumbnail(0, 0.6);
+
+
     let param = {
       templateId: templateId,
-      docTitle: docTitle
+      docTitle: docTitle,
+      docRef: newDocRef,
+      thumbnail: thumbnail,
+      pageCount: pageCount
     }
 
     console.log('param', param);
@@ -72,13 +100,52 @@ const PreviewPDF = ({location}) => {
     const res = await axiosInterceptor.post('/api/template/updateTemplateInfo', param)
     if (res.data.success) {
       Modal.success({
-        content: '템플릿명이 수정되었습니다.',
+        content: '템플릿이 수정되었습니다.',
       });
     }
 
     setLoading(false);
 
   }
+
+  const propsUpload = {
+    name: "file",
+    showUploadList: false,
+    beforeUpload: (file) => {
+
+      console.log('file', file)
+      const isPDF = file.type === 'application/pdf';
+      if (!isPDF) {
+        message.error(`${file.name} is not a pdf file`);
+        return Upload.LIST_IGNORE;
+      }
+      
+      if (file.size > 1048576 * 5) {  //5MB
+        console.log(file.size)
+        message.error(`filesize(${common.formatBytes(file.size)}) is bigger than 5MB`);
+        return Upload.LIST_IGNORE;
+      }
+
+      try {
+        pdfRef.current.uploadPDF(file); 
+        setFile(file);
+
+        const fileName = file.name.normalize('NFC');
+        const truncatedFileName =  fileName.length > 10 ? fileName.slice(0, 10) + '...' : fileName;
+        setFileTitle(truncatedFileName);
+
+        message.info('수정 버튼을 클릭하여야 최종 반영됩니다!');
+      } catch (e) {
+        console.log(e);
+      }
+      
+      return false;
+    },
+    onChange: (info) => {
+      console.log(info.fileList);
+    },
+  }
+
   return (
     <div>
       <PageContainerStyle>
@@ -96,6 +163,11 @@ const PreviewPDF = ({location}) => {
           <Button key="1" icon={<ArrowLeftOutlined />} onClick={() => window.history.back()}>
             {/* {formatMessage({id: 'Back'})} */}
           </Button>,
+
+          <Upload {...propsUpload}>
+            <Button key="4" icon={<UploadOutlined />}>{fileTitle}</Button>
+          </Upload>,
+
           (role || _id === userId)  && <Button key="2" icon={<EditOutlined />} onClick={() => updateDocument()}>
           {formatMessage({id: 'document.modify'})}
         </Button>,
@@ -105,7 +177,7 @@ const PreviewPDF = ({location}) => {
               setLoadingDownload( { "1" : false})
             }, 3000);
           }}>
-            {formatMessage({id: 'document.download'})}
+            {/* {formatMessage({id: 'document.download'})} */}
           </Button>
         ],
       }}

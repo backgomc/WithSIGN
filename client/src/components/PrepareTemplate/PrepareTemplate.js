@@ -378,7 +378,7 @@ const PrepareTemplate = () => {
                 loading={loading}
                 grid={{ gutter: 24, lg: 1, md: 1, sm: 2, xs: 2 }}
                 dataSource={assignees}
-                renderItem={item =>
+                renderItem={(item, idx) =>
                   <List.Item key={item.key}>
                     <Card size="small" type="inner" title={<><Tag color="blue">{Number(item.order)+1}</Tag> {item.JOB_TITLE ? item.name+' '+item.JOB_TITLE : item.name} </>} style={{ width: '236px' }} extra={
                       <Tooltip placement="top" title={'문서에 서명 없이 문서 수신만 하는 경우'}>
@@ -450,23 +450,26 @@ const PrepareTemplate = () => {
                         >수신자 지정</Checkbox>
                       </Tooltip>
                     }>
+
+                      <div className="absolute left-0 top-0" style={{width:0, height:0, borderBottom: '10px solid transparent', borderLeft: `10px solid ${COLORS[idx]}`, borderRight: '10px solid transparent'}} />
+
                       <p>
                       <Tooltip placement="right" title={'참여자가 사인을 입력할 위치에 넣어주세요.'}>
                         <Badge count={boxData.filter(e => e.key === item.key)[0].sign}>
-                          <Button style={{width:'190px', textAlign:'left'}} disabled={observers.filter(v => v === item.key).length > 0} icon={<Icon component={IconSign} style={{ fontSize: '120%'}} />} onClick={e => { addField('SIGN', {}, item); }}>{formatMessage({id: 'input.sign'})}</Button>
+                          <Button style={{width:'190px', textAlign:'left'}} disabled={observers.filter(v => v === item.key).length > 0} icon={<Icon component={IconSign} style={{ fontSize: '120%'}} />} onClick={e => { addField('SIGN', {}, item, COLORS[idx]); }}>{formatMessage({id: 'input.sign'})}</Button>
                         </Badge>
                       </Tooltip>
                       </p>
                       <p>
                       <Tooltip placement="right" title={(browser && browser.name.includes('chrom') && parseInt(browser.version) < 87) ? '사용중인 브라우저의 버전이 낮습니다.(버전 87 이상 지원)' : '참여자가 텍스트를 입력할 위치에 넣어주세요.'}>
                         <Badge count={boxData.filter(e => e.key === item.key)[0].text}>
-                          <Button style={{width:'91px', textAlign:'left'}} disabled={observers.filter(v => v === item.key).length > 0 || (browser && browser.name.includes('chrom') && parseInt(browser.version) < 87)} icon={<Icon component={IconText} style={{ fontSize: '120%'}} />} onClick={e => { addField('TEXT', {}, item); }}>{formatMessage({id: 'input.text'})}</Button>
+                          <Button style={{width:'91px', textAlign:'left'}} disabled={observers.filter(v => v === item.key).length > 0 || (browser && browser.name.includes('chrom') && parseInt(browser.version) < 87)} icon={<Icon component={IconText} style={{ fontSize: '120%'}} />} onClick={e => { addField('TEXT', {}, item, COLORS[idx]); }}>{formatMessage({id: 'input.text'})}</Button>
                         </Badge>
                       </Tooltip>
                       &nbsp;&nbsp;&nbsp;
                       <Tooltip placement="right" title={(browser && browser.name.includes('chrom') && parseInt(browser.version) < 87) ? '사용중인 브라우저의 버전이 낮습니다.(버전 87 이상 지원)' : '참여자가 텍스트를 입력할 위치에 넣어주세요.'}>
                         <Badge count={boxData.filter(e => e.key === item.key)[0].checkbox}>
-                          <Button style={{width:'90px', textAlign:'left'}} disabled={observers.filter(v => v === item.key).length > 0 || (browser && browser.name.includes('chrom') && parseInt(browser.version) < 87)} icon={<Icon component={IconCheckbox} style={{ fontSize: '120%'}} />} onClick={e => { addField('CHECKBOX', {}, item); }}>{formatMessage({id: 'input.checkbox'})}</Button>
+                          <Button style={{width:'90px', textAlign:'left'}} disabled={observers.filter(v => v === item.key).length > 0 || (browser && browser.name.includes('chrom') && parseInt(browser.version) < 87)} icon={<Icon component={IconCheckbox} style={{ fontSize: '120%'}} />} onClick={e => { addField('CHECKBOX', {}, item, COLORS[idx]); }}>{formatMessage({id: 'input.checkbox'})}</Button>
                         </Badge>
                       </Tooltip>
                       </p>
@@ -477,30 +480,30 @@ const PrepareTemplate = () => {
                         <Divider plain>자동 입력</Divider>
                         <p>
                         <Badge count={boxData.filter(e => e.key === 'requester1')[0].auto_name}>
-                          <Button style={{width:'90px', textAlign:'left'}} icon={<Icon component={IconText} style={{ fontSize: '120%'}} />} onClick={e => { addField('AUTONAME', {}, {key: 'requester1', type: 'AUTONAME', name: "이름"}); }}>{formatMessage({id: 'name'})}</Button>
+                          <Button style={{width:'90px', textAlign:'left'}} icon={<Icon component={IconText} style={{ fontSize: '120%'}} />} onClick={e => { addField('AUTONAME', {}, {key: 'requester1', type: 'AUTONAME', name: "이름"}, COLORS[idx]); }}>{formatMessage({id: 'name'})}</Button>
                         </Badge>
                         &nbsp;&nbsp;&nbsp;
                         <Badge count={boxData.filter(e => e.key === 'requester1')[0].auto_jobtitle}>
-                          <Button style={{width:'90px', textAlign:'left'}} icon={<Icon component={IconText} style={{ fontSize: '120%'}} />} onClick={e => { addField('AUTOJOBTITLE', {}, {key: 'requester1', type: 'AUTOJOBTITLE', name: "직급"}); }}>{formatMessage({id: 'jobtitle'})}</Button>
+                          <Button style={{width:'90px', textAlign:'left'}} icon={<Icon component={IconText} style={{ fontSize: '120%'}} />} onClick={e => { addField('AUTOJOBTITLE', {}, {key: 'requester1', type: 'AUTOJOBTITLE', name: "직급"}, COLORS[idx]); }}>{formatMessage({id: 'jobtitle'})}</Button>
                         </Badge>
                         </p>
                         <p>
                         <Badge count={boxData.filter(e => e.key === 'requester1')[0].auto_office}>
-                          <Button style={{width:'90px', textAlign:'left'}} icon={<Icon component={IconText} style={{ fontSize: '120%'}} />} onClick={e => { addField('AUTOOFFICE', {}, {key: 'requester1', type: 'AUTOOFFICE', name: "회사명"}); }}>{formatMessage({id: 'office'})}</Button>
+                          <Button style={{width:'90px', textAlign:'left'}} icon={<Icon component={IconText} style={{ fontSize: '120%'}} />} onClick={e => { addField('AUTOOFFICE', {}, {key: 'requester1', type: 'AUTOOFFICE', name: "회사명"}, COLORS[idx]); }}>{formatMessage({id: 'office'})}</Button>
                         </Badge>
                         &nbsp;&nbsp;&nbsp;
                         <Badge count={boxData.filter(e => e.key === 'requester1')[0].auto_depart}>
-                          <Button style={{width:'90px', textAlign:'left'}} icon={<Icon component={IconText} style={{ fontSize: '120%'}} />} onClick={e => { addField('AUTODEPART', {}, {key: 'requester1', type: 'AUTODEPART', name: "소속명"}); }}>{formatMessage({id: 'depart'})}</Button>
+                          <Button style={{width:'90px', textAlign:'left'}} icon={<Icon component={IconText} style={{ fontSize: '120%'}} />} onClick={e => { addField('AUTODEPART', {}, {key: 'requester1', type: 'AUTODEPART', name: "소속명"}, COLORS[idx]); }}>{formatMessage({id: 'depart'})}</Button>
                         </Badge>
                         </p>
                         <p>
                         <Badge count={boxData.filter(e => e.key === 'requester1')[0].auto_sabun}>
-                          <Button style={{width:'90px', textAlign:'left'}} icon={<Icon component={IconText} style={{ fontSize: '120%'}} />} onClick={e => { addField('AUTOSABUN', {}, {key: 'requester1', type: 'AUTOSABUN', name: "사번"}); }}>{formatMessage({id: 'sabun'})}</Button>
+                          <Button style={{width:'90px', textAlign:'left'}} icon={<Icon component={IconText} style={{ fontSize: '120%'}} />} onClick={e => { addField('AUTOSABUN', {}, {key: 'requester1', type: 'AUTOSABUN', name: "사번"}, COLORS[idx]); }}>{formatMessage({id: 'sabun'})}</Button>
                         </Badge>
                         &nbsp;&nbsp;&nbsp;
                         <Tooltip placement="right" title={'예) 2022년 06월 10일'}>
                           <Badge count={boxData.filter(e => e.key === 'requester1')[0].auto_date}>
-                            <Button style={{width:'90px', textAlign:'left'}} icon={<Icon component={IconText} style={{ fontSize: '120%'}} />} onClick={e => { addField('AUTODATE', {}, {key: 'requester1', type: 'AUTODEPART', name: "날짜"}); }}>{formatMessage({id: 'date'})}</Button>
+                            <Button style={{width:'90px', textAlign:'left'}} icon={<Icon component={IconText} style={{ fontSize: '120%'}} />} onClick={e => { addField('AUTODATE', {}, {key: 'requester1', type: 'AUTODEPART', name: "날짜"}, COLORS[idx]); }}>{formatMessage({id: 'date'})}</Button>
                           </Badge>
                         </Tooltip>
                         </p></div>}

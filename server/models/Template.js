@@ -34,7 +34,8 @@ const templateSchema = mongoose.Schema({
     }],
     usersOrder: [{  // 순차 발송 순서
         user: { type: String },
-        order: { type: Number }
+        order: { type: Number },
+        allowSkip: {type: Boolean, default: false}
     }],
     usersTodo: {    // 순차 발송 : 현재 단계에 서명할 사람 목록 
         type: Array

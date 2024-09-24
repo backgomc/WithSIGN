@@ -257,19 +257,19 @@ const SignDocument = () => {
     console.log('updateItems', updateItems);
 
     // 순차 서명인 경우: 다음 서명 대상자 설정    
-    var todo = [];
-    if(orderType == 'S'){ //순차 서명인 경우 
-      if(usersTodo?.length > 0) {
-        if (usersTodo?.filter(e => e != _id).length > 0) {   // 본인 제외 같은 레벨에 서명할 사람이 있는 경우 본인만 제외
-          todo = usersTodo?.filter(e => e != _id)
-        } else { // 다음 레벨의 서명할 사람들을 입력 
-          var arr = usersOrder?.filter(e => e.user == usersTodo[0])
-          if (arr?.length > 0) {
-            todo = usersOrder?.filter(e => e.order == arr[0].order + 1).map(e => e.user)
-          }
-        }
-      }
-    }
+    // var todo = [];
+    // if(orderType == 'S'){ //순차 서명인 경우 
+    //   if(usersTodo?.length > 0) {
+    //     if (usersTodo?.filter(e => e != _id).length > 0) {   // 본인 제외 같은 레벨에 서명할 사람이 있는 경우 본인만 제외
+    //       todo = usersTodo?.filter(e => e != _id)
+    //     } else { // 다음 레벨의 서명할 사람들을 입력 
+    //       var arr = usersOrder?.filter(e => e.user == usersTodo[0])
+    //       if (arr?.length > 0) {
+    //         todo = usersOrder?.filter(e => e.order == arr[0].order + 1).map(e => e.user)
+    //       }
+    //     }
+    //   }
+    // }
 
     setLoading(true);
 
@@ -278,7 +278,7 @@ const SignDocument = () => {
       // email: email,
       user: _id,
       items: updateItems,
-      usersTodo: todo
+      // usersTodo: todo
     }
     console.log("sign param:"+param)
 

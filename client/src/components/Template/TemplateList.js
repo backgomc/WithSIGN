@@ -440,17 +440,17 @@ const TemplateList = () => {
   const btnReqeust = (item) => {
     return (
       item.type && item.type == 'C' ? 
-      <Tooltip placement="top" title='신청/제출'><Button type="text" icon={<FormOutlined />} onClick={e => { signTemplate(item, 'D') }}>{(item.user?._id === _id || user.role)? '': '신청/제출'}</Button></Tooltip> :
+      <Tooltip placement="top" title='신청/제출'><Button type="text" icon={<FormOutlined />} onClick={e => { e.stopPropagation(); signTemplate(item, 'D') }}>{(item.user?._id === _id || user.role)? '': '신청/제출'}</Button></Tooltip> :
       <Tooltip placement="top" title='서명요청'>
       <Popover
           content={
             <div>
             <Tooltip placement="bottom" title={'하나의 문서에 여러 참여자의 서명을 받는 경우'}>
-              <Button onClick={e => { signTemplate(item, 'G') }}>일반 요청</Button>
+              <Button onClick={e => { e.stopPropagation(); signTemplate(item, 'G') }}>일반 요청</Button>
             </Tooltip>
             &nbsp;&nbsp;
             <Tooltip placement="bottom" title={'한 문서를 여러 명에게 보내 개별 문서에 각각 서명 받을 필요가 있을 경우 (개별 동의서, 보안서약서 등)'}>
-              <Button onClick={e => { signTemplate(item, 'B') }}>대량 요청</Button>
+              <Button onClick={e => { e.stopPropagation(); signTemplate(item, 'B') }}>대량 요청</Button>
             </Tooltip>
             </div>
           }
@@ -469,15 +469,15 @@ const TemplateList = () => {
       return (
       [btnReqeust(item),
         
-        <Tooltip placement="top" title={'문서 보기'}><Button type="text" icon={<FileOutlined />} onClick={e => { navigate('/previewPDF', {state: {templateId: item._id, docRef:item.docRef, docTitle:item.docTitle, openTargets:item.openTargets, userInfo:item.user}}) }}></Button></Tooltip>,
+        <Tooltip placement="top" title={'문서 보기'}><Button type="text" icon={<FileOutlined />} onClick={e => { e.stopPropagation(); navigate('/previewPDF', {state: {templateId: item._id, docRef:item.docRef, docTitle:item.docTitle, openTargets:item.openTargets, userInfo:item.user}}) }}></Button></Tooltip>,
 
-        <Badge count={(item.hasRequester || (item.users && item.users.length > 0 || (item.requesters && item.requesters.length > 0))) ? item.users?.length + item.requesters?.length : '0'} color='#108ee9'><Tooltip placement="top" title={'참여자 설정'}><Button type="text" icon={<UserAddOutlined />} onClick={e => { confirmToPrepare(item) }}></Button></Tooltip></Badge>,
+        <Badge count={(item.hasRequester || (item.users && item.users.length > 0 || (item.requesters && item.requesters.length > 0))) ? item.users?.length + item.requesters?.length : '0'} color='#108ee9'><Tooltip placement="top" title={'참여자 설정'}><Button type="text" icon={<UserAddOutlined />} onClick={e => { e.stopPropagation(); confirmToPrepare(item) }}></Button></Tooltip></Badge>,
 
-        <Tooltip placement="top" title={'문서 삭제'}><Button type="text" danger icon={<DeleteOutlined />} onClick={e => { deleteTemplateSingle(item._id) }}></Button></Tooltip>]);
+        <Tooltip placement="top" title={'문서 삭제'}><Button type="text" danger icon={<DeleteOutlined />} onClick={e => { e.stopPropagation(); deleteTemplateSingle(item._id) }}></Button></Tooltip>]);
     } else {
       return (
       [btnReqeust(item),
-        <Button type="text" icon={<FileOutlined />} onClick={e => { navigate('/previewPDF', {state: {templateId: item._id, docRef:item.docRef, docTitle:item.docTitle, openTargets:item.openTargets, userInfo:item.user}}) }}>문서조회</Button>]);
+        <Button type="text" icon={<FileOutlined />} onClick={e => { e.stopPropagation(); navigate('/previewPDF', {state: {templateId: item._id, docRef:item.docRef, docTitle:item.docTitle, openTargets:item.openTargets, userInfo:item.user}}) }}>문서조회</Button>]);
     }
   }
 
@@ -558,8 +558,13 @@ const TemplateList = () => {
           layout="center" 
           style={{ minWidth: "320px", height: "450px" }}
           bodyStyle={{ padding: "2px", height: '100%'}}
-          actions={actionItems(item)}>
-            {/* <div><img src={item.thumbnail} style={{width: '280px', height: '395px'}} /></div> */}
+          actions={actionItems(item)}
+          onClick={()=>{
+            if (item.type && item.type == 'C') {
+              signTemplate(item, 'D') 
+            }
+          }}
+        >
             {CustomLabel(item)}
         </ProCard>
         </Badge.Ribbon>

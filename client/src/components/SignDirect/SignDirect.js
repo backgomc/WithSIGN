@@ -63,6 +63,19 @@ const PageContainerStyle = styled.div`
   margin-left: 0px !important; 
   margin-right: 0px !important;
 }
+
+.ant-page-header-content {
+  padding-top: 0px;
+}
+
+.ant-form-item {
+  margin-bottom: 0px;
+}
+
+.ant-divider-horizontal {
+  margin: 15px 0;
+}
+
 `;
 
 
@@ -106,7 +119,7 @@ const SignDirect = () => {
   const [current, setCurrent] = useState(0);
 
 
-  const { directRef, docRef, items, xfdfIn, requesters, observers, signees } = direct;
+  const { directRef, docRef, items, xfdfIn, requesters, observers, signees, usersOrder } = direct;
   const { _id, name, JOB_TITLE, DEPART_CODE, OFFICE_CODE, SABUN, OFFICE_NAME, DEPART_NAME } = user;
 
   const [annotsToDelete, setAnnotsToDelete] = useState([]);
@@ -379,8 +392,10 @@ const SignDirect = () => {
     var resultMsg = '서명 요청이 정상 처리되었습니다.';
 
     // 순차 전송을 위해 필드 추가
-    var usersOrder = [];
+    var _usersOrder = [];
     var usersTodo = [];
+
+    console.log('usersOrder from server', usersOrder)
 
     // SUNCHA: 순차 기능 활성화 
     // let assignees = [..._requesters, ...signees];
@@ -393,7 +408,7 @@ const SignDirect = () => {
     console.log('maxOrder', maxOrder);
     var orderType = 'A';
     _lastUsers.forEach(user => {
-      usersOrder.push({'user': user.key, 'order': user.order})
+      _usersOrder.push({'user': user.key, 'order': user.order, 'allowSkip': usersOrder.find(el => el.user === user.key)?.allowSkip})
       if (user.order === maxOrder) {
         usersTodo.push(user.key)
       }
@@ -401,6 +416,8 @@ const SignDirect = () => {
         orderType = 'S';
       }
     })
+
+    console.log('_usersOrder changed', _usersOrder)
 
     let users = _lastUsers.map(el => {
       return el.key;
@@ -419,7 +436,7 @@ const SignDirect = () => {
       pageCount: pageCount,
       observers: _observers,
       orderType: orderType, //SUNCHA: 순차 기능 활성화 
-      usersOrder: usersOrder,
+      usersOrder: _usersOrder,
       usersTodo: usersTodo,
       attachFiles: files,
       isWithPDF: true
@@ -592,7 +609,7 @@ const SignDirect = () => {
           </Button>,
         ],
       }}
-      style={{height:`calc(100vh)`}}
+      style={{height:`calc(100vh - 72px)`}}
       content={content}
       // footer={[
       // ]}
@@ -600,7 +617,7 @@ const SignDirect = () => {
     >
 
           <Spin tip="로딩중..." spinning={loading}>
-            <PDFViewer ref={pdfRef} isUpload={false} isSave={false} isEditing={false} onItemChanged={handleItemChanged} onValidationChanged={handleValidationChanged} defaultScale={1.0} />
+            <PDFViewer ref={pdfRef} isUpload={false} isSave={false} isEditing={false} onItemChanged={handleItemChanged} onValidationChanged={handleValidationChanged} defaultScale={1.0} headerSpace={300} />
           </Spin>
 
         <Modal

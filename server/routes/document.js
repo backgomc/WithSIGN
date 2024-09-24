@@ -235,7 +235,7 @@ router.post('/update', ValidateToken, (req, res) => {
   const docId = req.body.docId
   const user = req.body.user
   const updateItems = req.body.items
-  const usersTodo = req.body.usersTodo
+  // const usersTodo = req.body.usersTodo
 
   const time = new Date()
   const ip = requestIp.getClientIp(req)
@@ -248,7 +248,7 @@ router.post('/update', ValidateToken, (req, res) => {
       console.log(signedBy.some(e => e.user === user))
       if (!signedBy.some(e => e.user === user)) {
 
-        const signedByArray = [...signedBy, {user:user, signedTime:time, ip:ip}];
+        let signedByArray = [...signedBy, {user:user, signedTime:time, ip:ip}];
 
         // console.log('before items', items);
         // update item : 기존 항목은 update 하고 신규 항목은 추가해준다.
@@ -280,6 +280,52 @@ router.post('/update', ValidateToken, (req, res) => {
         console.log("todo", todo)
         //E
 
+
+
+
+
+
+        // S. 수신자 SKIPP 처리 ------------------- 2024.09.13
+        // 요약: (신청서) 수신자가 마지막 단계에 여러명인 경우 완료처리 해준다. 
+        // 1. 수신 요청인지 체크 : user 가 observers 에 포함되어 있는지 확인
+        // 2. todo 배열에 사람의 order 가 마지막인지 체크 
+        // 3. todo 배열에 나머지도 수신자인지 체크 : todo 배열에 모두가 observers 인지 확인
+        // 4. 해당 수신자가 allowSkip=true 인지 ?
+        // 5. 위 4가지 조건을 만족 시 todo 배열의 사용자를 signedByArray 에 포함 시킨다.
+        // >> signedByArray 의 사용자와 users 가 동일해 지므로 isLast 를 콜백하게 되고 서명완료 문서가 되게 된다.
+        if (document.observers.filter(el=> el === user)?.length > 0) {
+          console.log('현재 서명자는 수신자!')
+
+          const userOrder = document.usersOrder?.filter(el => el.user === user)?.[0]?.order;
+          console.log('userOrder', userOrder)
+
+          if (!(document.usersOrder?.filter(el => el.order === userOrder + 1)?.length > 0)) {
+            console.log('현재 서명자가 마지막 단계임')
+
+            if (todo.length > 0 && todo.every(el => document.observers.includes(el))) {
+                console.log('todo 에 남은 모두는 수신자임!', todo)
+
+                const allowSkipedTodo = todo.filter(el => document.usersOrder.find(obj => obj.user === el).allowSkip === true)
+                console.log('allowSkipedTodo', allowSkipedTodo)
+                const passSign = allowSkipedTodo.map(el => {
+                  return {user:el, signedTime:time, ip:ip, skipped:true}
+                })
+
+                console.log('passSign', passSign)
+                signedByArray = [...signedByArray, ...passSign]
+
+            }
+
+          }
+        }
+        // E. 수신자 SKIPP 처리 -------------------
+
+
+
+
+
+
+
         Document.updateOne({ _id: docId }, {items: items, signedBy:signedByArray, usersTodo:todo, recentTime:time}, (err, result) => {
           if (err) {
             console.log(err);
@@ -307,16 +353,21 @@ router.post('/update', ValidateToken, (req, res) => {
             } else {
               if (document.orderType == 'S') {
                 
-                if (usersTodo?.length > 0) {
+
+                console.log('------------------ SERVER BASE')
+                // console.log('usersTodo', usersTodo);
+                // console.log('todo', todo);
+                // 서버베이스로 변경: usersTodo > todo
+                if (todo?.length > 0) {
 
                   // 22.02.07: 동차에 서명할 사람이 여러 명인 경우 최초에만 메시지 발송하기
-                  var arr = document.usersOrder?.filter(e => e.user == usersTodo[0])
+                  var arr = document.usersOrder?.filter(e => e.user == todo[0])
                   if (arr?.length > 0) {
                     var sameOrderArr = document.usersOrder?.filter(e => e.order == arr[0].order)
-                    if (sameOrderArr?.length == usersTodo?.length) { // 같은 차례에 처음 메시지를 보낸다고 판단 => 메시지 발송
+                    if (sameOrderArr?.length == todo?.length) { // 같은 차례에 처음 메시지를 보낸다고 판단 => 메시지 발송
                       // 메시지 발송하기 
                       console.log('쪽지 전송 OK: 순차 전송')
-                      restful.callNotify(document.user, usersTodo,'서명(수신) 요청 알림', '['+document.docTitle+']' + ' 서명(수신) 요청 건이 있습니다.');
+                      restful.callNotify(document.user, todo,'서명(수신) 요청 알림', '['+document.docTitle+']' + ' 서명(수신) 요청 건이 있습니다.');
                     } else {
                       console.log('쪽지 전송 NO: 이미 쪽지 보냄')
                     }

@@ -181,15 +181,50 @@ router.post('/deleteTemplate', ValidateToken, (req, res) => {
 });
 
 // 템플릿 설정 등록 및 수정
-router.post('/updateTemplate', ValidateToken, (req, res) => {
+router.post('/updateTemplate', ValidateToken, async (req, res) => {
 
   if (!req.body._id || !req.body.user ) return res.json({ success: false, message: 'input value not enough!' });
 
   if (req.body.isWithPDF) {
 
+    // S. 수신자 SKIPP 처리 ------------------- 2024.09.13
+    // 요약: 신청서인 경우 > 마지막 단계 > 모두 수신자인 경우 > Skip 허용 처리 (allowSkip === true)
+    const template = await Template.findOne({ '_id': req.body._id });
+    let usersOrder = req.body.usersOrder;
+    const observers = req.body.observers;
+    if (template) {
+      if (template.type === 'C') {  // 신청서인 경우
+        console.log('usersOrder', usersOrder)
+        const maxOrder = Math.max(...usersOrder.map(item => parseInt(item.order)));
+        console.log('maxOrder', maxOrder)
+        const latestOrders = usersOrder.filter(item => parseInt(item.order) === maxOrder);
+        console.log('latestOrders', latestOrders)
+
+        const latestOrdersUsers = latestOrders.map(el => el.user);
+        console.log('latestOrdersUsers', latestOrdersUsers)
+
+        // latestOrdersUsers가 모두 수신자인지 여부 체크 
+        if (latestOrdersUsers?.every(el => observers.includes(el))) {
+          usersOrder = usersOrder?.map(el => {
+            if (latestOrdersUsers.includes(el.user)) {
+              return {user: el.user, order: el.order, allowSkip: true}
+            } else {
+              return el;
+            }
+          })
+        }
+
+        console.log('usersOrder changed', usersOrder)
+
+      }
+    }
+    // E. 수신자 SKIPP 처리 -------------------
+
+
     Template.updateOne(
-      { '_id': req.body._id, 'user': req.body.user },
-      { 'users': req.body.users, 'observers': req.body.observers, 'orderType': req.body.orderType, 'usersOrder': req.body.usersOrder, 'usersTodo': req.body.usersTodo, 'signees': req.body.signees, 'hasRequester': req.body.hasRequester, 'requesters': req.body.requesters, 'items': req.body.items, 'docTitle': req.body.docTitle, 'isWithPDF': true },
+      // { '_id': req.body._id, 'user': req.body.user },
+      { '_id': req.body._id },  // 권한이 있는 다른 User 도 수정할 수 있게 변경
+      { 'users': req.body.users, 'observers': req.body.observers, 'orderType': req.body.orderType, 'usersOrder': usersOrder, 'usersTodo': req.body.usersTodo, 'signees': req.body.signees, 'hasRequester': req.body.hasRequester, 'requesters': req.body.requesters, 'items': req.body.items, 'docTitle': req.body.docTitle, 'isWithPDF': true },
       (err) => {
         if (err) return res.json({ success: false, message: err });
         return res.json({ success: true});
@@ -233,16 +268,61 @@ router.post('/detail', ValidateToken, (req, res) => {
 })
 
 // 템플릿 정보 업데이트
-router.post('/updateTemplateInfo', ValidateToken, (req, res) => {
+router.post('/updateTemplateInfo', ValidateToken, async (req, res) => {
 
   if (!req.body.templateId ) return res.json({ success: false, message: 'input value not enough!' });
 
   const templateId = req.body.templateId
   const docTitle = req.body.docTitle
+  const docRef = req.body.docRef
+  const thumbnail = req.body.thumbnail
+  const pageCount = req.body.pageCount
+
+  let thumbnailPath;
+
+  if (thumbnail) {
+    const base64Data = thumbnail.split(';base64,').pop();
+    const newDir = config.storageDIR + 'thumbnails/' + today() + '/';
+    makeFolder(newDir);
+    thumbnailPath = newDir+generateRandomName()+'.png';
+    console.log('thumbnailPath:'+thumbnailPath)
+
+    fs.writeFile(thumbnailPath, base64Data, {encoding: 'base64'}, function(err) {
+      if (err) return res.json({ success: false, err })
+      console.log('File created');
+    });  
+  }
+
+  const updateData = {};
+
+  if (docTitle) {
+    updateData.docTitle = docTitle
+  }
+  if (thumbnailPath) {
+    updateData.thumbnail = thumbnailPath
+  }
+  if (docRef) {
+    updateData.docRef = docRef
+
+    // 변경 문서의 페이지수가 줄어든 경우 컴포넌트도 삭제 처리함 
+    if (pageCount) {
+      const template = await Template.findOne({ _id: templateId });
+      if (template) {
+        const items = template.items;
+        // console.log('pageCount', pageCount)
+        // console.log('items', items)
+        const newItems = items.filter(item => item.pIdx < pageCount)
+        // console.log('newItems', newItems)
+        updateData.items = newItems
+      }
+      
+    }
+  }
+
 
   Template.updateOne(
     { '_id': templateId },
-    { 'docTitle': docTitle },
+    updateData,
     (err) => {
       if (err) return res.json({ success: false, message: err });
       return res.json({ success: true});
