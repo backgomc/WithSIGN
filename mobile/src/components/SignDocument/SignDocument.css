@@ -1,0 +1,38 @@
+.webviewer {
+  height: calc(100vh - 83px);
+}
+
+.signCanvas {
+  position: absolute;
+  width: 100%;
+  
+  z-index: 1;
+  cursor: crosshair;
+}
+
+.signBackground {
+  position: relative;
+  background: #f1f3f5;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 15px;
+}
+
+.signHereText {
+  color: #86868686;
+}
+
+.customSignCardCSS {
+  border-radius: 7px;
+}
+
+.customSignCardCSS img {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.customSignCardCSS .ant-avatar-image {
+  width: 72px !important;
+  height: 48px !important;
+}

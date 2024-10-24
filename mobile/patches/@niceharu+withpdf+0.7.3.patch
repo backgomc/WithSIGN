@@ -1,0 +1,102 @@
+diff --git a/node_modules/@niceharu/withpdf/dist/PDFViewer.js b/node_modules/@niceharu/withpdf/dist/PDFViewer.js
+index b69dc16..b1cb5d4 100644
+--- a/node_modules/@niceharu/withpdf/dist/PDFViewer.js
++++ b/node_modules/@niceharu/withpdf/dist/PDFViewer.js
+@@ -922,9 +922,13 @@ const PDFViewer = /*#__PURE__*/forwardRef(({
+   // signModal callback 
+ 
+ 
+-  const signComplete = async signData => {
++  const signComplete = async (signData) => {
++    console.log("🛸 signComplete signData :");
++    console.log(signData);
++    //console.log("✈️ signComplete addSignCheck :" + addSignCheck);
+     try {
+       await addSign(signData);
++
+     } catch (e) {
+       console.log(e);
+     }
+diff --git a/node_modules/@niceharu/withpdf/dist/SignModal.js b/node_modules/@niceharu/withpdf/dist/SignModal.js
+index 7eec1f1..0d3ddb8 100644
+--- a/node_modules/@niceharu/withpdf/dist/SignModal.js
++++ b/node_modules/@niceharu/withpdf/dist/SignModal.js
+@@ -3,7 +3,7 @@ import './image.css';
+ import './tailwind.css';
+ import SignaturePad from 'react-signature-canvas';
+ import ProCard, { CheckCard } from '@ant-design/pro-card';
+-import { Button, Modal } from 'antd';
++import { Button, Modal, Checkbox } from 'antd';
+ import { v4 as uuID } from 'uuid';
+ 
+ const SignModal = ({
+@@ -13,9 +13,12 @@ const SignModal = ({
+   signList
+ }) => {
+   // const [signList, setSignList] = useState([]);
++  const [addSignCheck, setAddSignCheck] = useState(false);
++  
+   const sigCanvas = useRef({});
+   useEffect(() => {
+     console.log("SignModal useEffect called!", visibleModal);
++    setAddSignCheck(false);
+ 
+     if (visibleModal) {
+       sigCanvas.current.clear();
+@@ -26,15 +29,24 @@ const SignModal = ({
+ 
+   const clear = () => {
+     sigCanvas.current.clear();
++    setAddSignCheck(false);
+     let chkObj = document.getElementsByClassName('ant-pro-checkcard-checked'); // 선택한 서명
+ 
+     if (chkObj && chkObj[0]) chkObj[0].click();
+   };
+ 
++  const changeAddSignCheck = (e) => {
++    console.log("[CSI] changeAddSignCheck - e.target.checked : " + e.target.checked);
++    setAddSignCheck(e.target.checked);
++  };
++
+   const handleOk = async () => {
+     if (!sigCanvas.current.isEmpty()) {
+       const signData = sigCanvas.current.toDataURL('image/png');
++      
++      console.log("✈️ handleOk bef signComplete" );
+       await signComplete(signData); //callback
++      console.log("✈️ handleOk aft" );
+     }
+     
+     setVisibleModal(false);
+@@ -68,11 +80,18 @@ const SignModal = ({
+     onCancel: handleCancel,
+     footer: [
+     /*#__PURE__*/
+-    // <Checkbox key={uuidv4()} checked={allCheck} onChange={e => {setAllCheck(e.target.checked);}} style={{float:'left'}}>전체 서명</Checkbox>,
++    //<Checkbox key={uuidv4()} checked={allCheck} onChange={e => {setAllCheck(e.target.checked);}} style={{float:'left'}}>전체 서명</Checkbox>,
++    React.createElement(Checkbox, {
++      key : "checkbox",
++      checked: addSignCheck,
++      onChange : changeAddSignCheck
++    },"\uC0AC\uC778\u0020\uC800\uC7A5"),
+     React.createElement(Button, {
+       key: "back",
+       onClick: clear
+-    }, "\uC9C0\uC6B0\uAE30"), /*#__PURE__*/React.createElement(Button, {
++    }, "\uC9C0\uC6B0\uAE30"), 
++    /*#__PURE__*/
++    React.createElement(Button, {
+       key: "submit",
+       type: "primary",
+       onClick: handleOk
+@@ -80,7 +99,9 @@ const SignModal = ({
+     bodyStyle: {
+       padding: '0px 24px'
+     }
+-  }, /*#__PURE__*/React.createElement(ProCard, {
++  }, 
++  /*#__PURE__*/
++  React.createElement(ProCard, {
+     bodyStyle: {
+       padding: '20px 0px'
+     }

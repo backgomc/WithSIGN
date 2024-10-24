@@ -1,0 +1,59 @@
+.pan {
+  position: absolute;
+}
+.image-dragging {
+  border: 1px dashed #cccccc;
+}
+.image-no-dragging {
+  border: 1px solid #78bce6;
+}
+.image-no-dragging-impact {
+  border: 1px solid #78bce6;
+}
+.image-no-style {
+  border: 1px solid transparent;
+}
+.pan-image {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+.pan-translate {
+  position: absolute;
+  left: 2px;
+  top: 2px;
+  width: 100%;
+  height: 100%;
+}
+.pan-scale {
+  position: absolute;
+  right: 2px;
+  bottom: 2px;
+  width: 15px;
+  height: 15px;
+  color: rgb(121, 121, 121);
+}
+.pan-rotate {
+  position: absolute;
+  left: 2px;
+  bottom: 2px;
+  width: 30px;
+  height: 30px;
+}
+.pan-edit {
+  position: absolute;
+  right: 2px;
+  top: 2px;
+  padding: 0 4px;
+  color: #ffffff;
+  font-size: 20px;
+  line-height: 30px;
+}
+.pan-delete {
+  position: absolute;
+  right: 2px;
+  top: 2px;
+  width: 20px;
+  height: 20px;
+  color: rgb(206, 64, 64);
+}
