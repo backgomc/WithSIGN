@@ -13,10 +13,12 @@ module.exports = {
     ipronetPW: "nacf1234!",
     // nhwithURI: "http://10.220.210.44:8090",    // 내부 개발망
     nhwithURI: "http://192.168.161.27:8090",    // 외부 개발망
+    //nhwithURI: "http://192.168.161.160:8090",    // 외부 개발망
     nhwithID: "NHSIGN",
     nhwithPW: "aaaabbbb",
     nhwithSNDR: "fa81071cefc938ebc99e01dc7677cd24",
     withsignURI: "http://10.220.141.91:3001",
     blockURI: "http://localhost:3003",
-    gotenbergURI: "http://localhost:3018"
+    gotenbergURI: "http://localhost:3018",
+    withsignMobileURI: "http://sign.nhitlab.com:3004"
 }

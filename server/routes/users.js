@@ -314,6 +314,95 @@ router.post('/sso', (req, res) => {
   })
 })
 
+//모바일 NHWith 인증(NHWith 쪽지 접속)
+//reqID로 with서버 확인 -> 전달받은 사번으로 사용자 정보 확인
+router.post('/withAuth', async (req, res) => {
+  let reqID = req.body.reqID
+  console.log(reqID)
+
+  //reqID 입력된 경우
+  if(reqID){
+    //모바일 기기 및 웹뷰여부 확인
+    const userAgent = req.headers['user-agent']; // `User-Agent` 헤더
+
+    //if(isWebView(userAgent) || isMobile(userAgent)){
+    if(isWebView(userAgent)){
+      console.log('isWebView true!');
+    } else {
+      return res.json({ success: false, message: "req wv fail" })
+    }
+
+    try{
+      //req정보 확인
+      let result = await restful.callNHWithAuth(reqID)
+
+      if(result){
+        if(result.data.success){
+          uid = hexCrypto(result.data.records[0].sabun)
+          console.log(uid)
+
+          User.findOne({ uid: uid, 'use': true }, (err, user) => {
+            if (user) {
+              if (!user.terms || !user.privacy) return res.json({ success: false, user: user._id, message: "약관 동의가 필요합니다." });
+        
+              // 토큰 생성
+              var {accessToken, refreshToken} = generateToken(user);
+        
+              User.updateOne({ '_id': user._id }, {'tokenJWT': refreshToken}, async (err, result) => {
+                if (err) return res.json({ success: false, message: err });
+                console.log(result);
+        
+                // 조직 정보 셋팅
+                let OFFICE_NAME = '';
+                let DEPART_NAME = '';        
+                const orgInfo = await Org.findOne({ DEPART_CODE: user?.DEPART_CODE });
+                if(orgInfo) {
+                  OFFICE_NAME = orgInfo.OFFICE_NAME;
+                  DEPART_NAME = orgInfo.DEPART_NAME;
+                }
+                user.OFFICE_NAME = OFFICE_NAME;
+                user.DEPART_NAME = DEPART_NAME;
+        
+                // 패스워드 제외 셋팅 
+                user.password = ""
+        
+                // Refresh 토큰 셋팅
+                user.__rToken__ = refreshToken;
+        
+                res.cookie('__aToken__', accessToken,  { httpOnly: true, maxAge: 12*60*60*1000 });
+                res.status(200).json({
+                  success: true,
+                  isAuth: true,
+                  user: user
+                });  
+        
+              });
+
+            } else {
+              return res.json({ success: false, message: "WithSign 사용자 정보가 없습니다." })
+            }
+          })
+        } else {
+          console.log("req fail")
+          return res.json({ success: false, message: "req fail" })
+        }
+      } else {
+        console.log("res fail")
+        return res.json({ success: false, message: "res fail" })
+      }
+    } catch (error) {
+      console.log("res try fail")
+      console.log(error)
+      return res.json({ success: false, message: "res try fail" })
+    }
+
+  } else {
+    console.log("req null")
+    return res.json({ success: false, message: "req null" })
+  }
+
+})
+
 router.post('/logout', ValidateToken, (req, res) => {
 
   User.findOneAndUpdate({ '_id': req.body._id }, { 'tokenJWT': '' }, (err) => {
@@ -822,5 +911,25 @@ router.post('/refresh', renewalToken, (req, res) => {
     });
   });
 });
+
+// 웹뷰 판단 함수
+function isWebView(userAgent) {
+  // iOS 웹뷰 감지
+  const isIOSWebView = /iPhone|iPod|iPad/i.test(userAgent) && /AppleWebKit/.test(userAgent) && !/Safari/.test(userAgent) // && !/KAKAOTALK/.test(userAgent)
+  // Android 웹뷰 감지
+  const isAndroidWebView = /Android/.test(userAgent) && /wv/.test(userAgent) // && !/KAKAOTALK/.test(userAgent)
+
+  return isIOSWebView || isAndroidWebView
+}
+
+// 모바일 OS 판단 함수
+function isMobile(userAgent) {
+  // iOS 감지
+  const isIOS = /iPhone|iPod|iPad/i.test(userAgent) && /AppleWebKit/.test(userAgent)
+  // Android 감지
+  const isAndroid = /Android/.test(userAgent)
+
+  return isIOS || isAndroid
+}
 
 module.exports = router;

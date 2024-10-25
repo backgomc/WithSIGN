@@ -207,7 +207,7 @@ let callDRMUnpackaging = async (filePath, fileName, target) => {
 // 통합 알림
 // sendInfo : String _id (Option)
 // recvInfo : Arrays _id;_id ... ;_id
-let callNotify = async (send, recv, title, message, filePath) => {
+let callNotify = async (send, recv, title, message, filePath, docId) => {
     let sendData = await User.findOne({_id: send}, {'SABUN': 1, '_id': 0});
     let recvData = await User.find({_id: recv}, {'SABUN': 1, '_id': 0});
     let sendInfo;
@@ -215,11 +215,34 @@ let callNotify = async (send, recv, title, message, filePath) => {
         sendInfo = sendData['SABUN'];
     }
     let recvInfo = [];
-    for (var data of recvData) {
-        recvInfo.push(data['SABUN']);
+    let IproRecvInfo = [];
+    let linkRecvInfo = [];
+    let tester = ['P0610003', 'P0810080', 'P1010008', 'P1110051', 'P1810053', 'P1210044', 'P2010063', 'P2210044' ]; //빅데이터팀
+    let withLink = ''
+    
+    if(docId) {
+        withLink = message + '<br/><a href = "' + config.withsignMobileURI + '/@infog&docId=' + docId + '">WithSIGN 서명 바로가기</a>';
+        console.log('callNotify - docId [' + docId + '] - withLink [' + withLink + ']')
     }
-    callIpronetMSG(sendInfo, recvInfo, title, message, filePath);
-    callNHWithPUSH(sendInfo, recvInfo, title, message);
+    
+    for (var data of recvData) {
+        //if(docId){
+        if(docId && tester.includes(data['SABUN'])){
+            linkRecvInfo.push(data['SABUN']);
+        } else {
+            recvInfo.push(data['SABUN']);
+        }
+        IproRecvInfo.push(data['SABUN']);
+    }
+    console.log('callNotify - linkRecvInfo : ' + linkRecvInfo)
+    console.log('callNotify - recvInfo : ' + recvInfo)
+    
+    if(recvInfo.length > 0) callNHWithPUSH(sendInfo, recvInfo, title, message);
+    if(IproRecvInfo.length > 0) callIpronetMSG(sendInfo, IproRecvInfo, title, message, filePath);
+    
+    if(docId && linkRecvInfo.length > 0){
+        callNHWithPUSH(sendInfo, linkRecvInfo, title, withLink);
+    }
 }
 
 // Ipronet 쪽지 발송
@@ -365,4 +388,24 @@ let convertOfficeToPDF = async (filepath, filename) => {
       }
 }
 
-module.exports = {callOrgAPI, callUserAPI, callDRMPackaging, callDRMUnpackaging, callNotify, callIpronetMSG, callNHWithPUSH, callSaveDocHash, convertOfficeToPDF}
+// With 사번 요청
+// userId : String encode 사번
+let callNHWithAuth = async (userId) => {
+    console.log('NHWITH Auth call start');
+
+    try {
+        url = config.nhwithURI+'/user/sabun'
+        body = {
+            userIds : [userId],
+            key : "nhisNHWith"
+        }
+        conf = {headers: {'Content-Type': 'application/json'}, timeout : 5000}
+        
+        return await axios.post(url, JSON.stringify(body), conf )
+    } catch (err) {
+        console.error(err);
+        return null
+    }
+}
+
+module.exports = {callOrgAPI, callUserAPI, callDRMPackaging, callDRMUnpackaging, callNotify, callIpronetMSG, callNHWithPUSH, callSaveDocHash, convertOfficeToPDF, callNHWithAuth}

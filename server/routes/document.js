@@ -23,7 +23,6 @@ router.post('/addDocumentToSign', ValidateToken, (req, res) => {
   // if (!req.body.docType !== 'B' && req.body.users.length === 1 && req.body.users[0] === req.body.user) {
   //   return res.json({ success: false, message: 'input value not enough!' });
   // }
-
   const document = new Document(req.body)
 
   // 서명요청자 ip 정보 추가
@@ -37,9 +36,9 @@ router.post('/addDocumentToSign', ValidateToken, (req, res) => {
 
     // 쪽지 보내기 
     if (document.orderType == 'S') { //순차 발송: 대상자에게만 메시지 발송
-      restful.callNotify(document.user, document.usersTodo,'서명(수신) 요청 알림', '['+document.docTitle+']' + ' 서명(수신) 요청 건이 있습니다.');
+      restful.callNotify(document.user, document.usersTodo,'서명(수신) 요청 알림', '['+document.docTitle+']' + ' 서명(수신) 요청 건이 있습니다.', null, document._id );
     } else { //동차 발송: 전체에게 메시지 발송
-      restful.callNotify(document.user, document.users,'서명(수신) 요청 알림', '['+document.docTitle+']' + ' 서명(수신) 요청 건이 있습니다.');
+      restful.callNotify(document.user, document.users,'서명(수신) 요청 알림', '['+document.docTitle+']' + ' 서명(수신) 요청 건이 있습니다.', null, document._id);
     }
     
     return res.status(200).json({
@@ -198,7 +197,7 @@ router.post('/updateDocumentToSign', ValidateToken, (req, res) => {
                     if (sameOrderArr?.length == usersTodo?.length) { // 같은 차례에 처음 메시지를 보낸다고 판단 => 메시지 발송
                       // 메시지 발송하기 
                       console.log('쪽지 전송 OK: 순차 전송')
-                      restful.callNotify(document.user, usersTodo,'서명(수신) 요청 알림', '['+document.docTitle+']' + ' 서명(수신) 요청 건이 있습니다.');
+                      restful.callNotify(document.user, usersTodo,'서명(수신) 요청 알림', '['+document.docTitle+']' + ' 서명(수신) 요청 건이 있습니다.', null, docId);
                     } else {
                       console.log('쪽지 전송 NO: 이미 쪽지 보냄')
                     }
@@ -367,7 +366,7 @@ router.post('/update', ValidateToken, (req, res) => {
                     if (sameOrderArr?.length == todo?.length) { // 같은 차례에 처음 메시지를 보낸다고 판단 => 메시지 발송
                       // 메시지 발송하기 
                       console.log('쪽지 전송 OK: 순차 전송')
-                      restful.callNotify(document.user, todo,'서명(수신) 요청 알림', '['+document.docTitle+']' + ' 서명(수신) 요청 건이 있습니다.');
+                      restful.callNotify(document.user, todo,'서명(수신) 요청 알림', '['+document.docTitle+']' + ' 서명(수신) 요청 건이 있습니다.', null, docId );
                     } else {
                       console.log('쪽지 전송 NO: 이미 쪽지 보냄')
                     }
@@ -891,7 +890,7 @@ router.post('/notify/:type', ValidateToken, async (req, res) => {
         rcvUsers.push(docList[idx]['users']);
       }
       console.log('rcvUsers : ' + rcvUsers);
-      restful.callNotify(req.body.usrId, rcvUsers,'서명(수신) 요청 알림', '['+docList[idx]['docTitle']+']' + ' 서명(수신) 요청 건이 있습니다.');
+      restful.callNotify(req.body.usrId, rcvUsers,'서명(수신) 요청 알림', '['+docList[idx]['docTitle']+']' + ' 서명(수신) 요청 건이 있습니다.', null, req.body.docId );
       return res.json({ success: true });
     } else {
       return res.json({ success: false });
@@ -903,14 +902,14 @@ router.post('/notify/:type', ValidateToken, async (req, res) => {
     var document = await Document.findOne({ '_id': req.body.docId, 'user': req.body.usrId, 'signed': false, 'canceled': false }).exec();
     if (document) {
       if (document.orderType == 'S') { //순차 발송: 대상자에게만 메시지 발송
-        restful.callNotify(document.user, document.usersTodo,'서명(수신) 요청 알림', '['+document.docTitle+']' + ' 서명(수신) 요청 건이 있습니다.');
+        restful.callNotify(document.user, document.usersTodo,'서명(수신) 요청 알림', '['+document.docTitle+']' + ' 서명(수신) 요청 건이 있습니다.', null, req.body.docId );
       } else { //동차 발송: 미서명자에게만 메시지 발송
         document.users = document.users.filter(user => user != document.observers);
         for (var idx in document.signedBy) {
           console.log(document.signedBy[idx]['user']);
           document.users = document.users.filter(user => user != document.signedBy[idx]['user']);
         }
-        restful.callNotify(document.user, document.users,'서명(수신) 요청 알림', '['+document.docTitle+']' + ' 서명(수신) 요청 건이 있습니다.');
+        restful.callNotify(document.user, document.users,'서명(수신) 요청 알림', '['+document.docTitle+']' + ' 서명(수신) 요청 건이 있습니다.', null , req.body.docId );
       }
     }
     
