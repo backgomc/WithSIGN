@@ -16,5 +16,5 @@ module.exports = {
     withsignURI: "http://10.220.141.91:3001",
     blockURI: "http://10.220.141.92:3003",
     gotenbergURI: "http://10.220.141.91:3018",
-    withsignMobileURI: "http://sign.nhitlab.com:3004"
+    withsignMobileURI: "https://with.nonghyupit.com:3003"
 }
