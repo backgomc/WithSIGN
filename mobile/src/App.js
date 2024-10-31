@@ -85,8 +85,11 @@ function App() {
                                             msg : formatMessage({id: 'm.view.err.deleted'}),
                                             subMsg : ('UID[' + user._id + '] DocID[' + docId + ']') }})
         } else if (response.data.document.users.includes(user._id)){
-          if ( (response.data.document.docType == 'B' && response.data.document.signed == false ) ||
-               (response.data.document.docType == 'G' && response.data.document.signed == false && response.data.document.usersTodo.includes(user._id)) ){
+          if ( response.data.document.signed == false && 
+               !response.data.document.signedBy.includes(user._id) && (
+               (response.data.document.orderType == 'A' ) ||
+               (response.data.document.orderType == 'S' && response.data.document.usersTodo.includes(user._id))
+              )){
             const docRef = response.data.document.docRef
             const docType = response.data.document.docType
             const docUser = response.data.document.user
