@@ -97,7 +97,7 @@ function App() {
             const orderType = response.data.document.orderType
             const usersTodo = response.data.document.usersTodo
             const usersOrder = response.data.document.usersOrder
-            const attachFiles = null
+            const attachFiles = response.data.document.attachFiles
             const items = response.data.document.items
             const isWithPDF = response.data.document.isWithPDF
             const docTitle = response.data.document.docTitle
@@ -112,7 +112,7 @@ function App() {
             const docTitle = response.data.document.docTitle
             const isWithPDF = response.data.document.user.isWithPDF
             const status = response.data.document.signed == true ? DOCUMENT_SIGNED : ''
-            const attachFiles = null
+            const attachFiles = response.data.document.attachFiles
 
             dispatch(setDocToView({ docRef, docId, status, docType, docTitle, isWithPDF, attachFiles}))
             dispatch(setUser(user))

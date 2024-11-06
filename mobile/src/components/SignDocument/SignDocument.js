@@ -8,6 +8,7 @@ import { selectUser } from '../../app/infoSlice';
 import './SignDocument.css';
 import { useIntl } from "react-intl";
 import { PageContainer } from '@ant-design/pro-layout';
+import { PaperClipOutlined } from '@ant-design/icons';
 import 'antd/dist/antd.css';
 import '@ant-design/pro-card/dist/card.css';
 // import { LICENSE_KEY, USE_WITHPDF } from '../../config/Config';
@@ -304,22 +305,15 @@ const SignDocument = () => {
 
   }
 
- /* const listAttachFiles = (
+  const listAttachFiles = (
     <List
     size="small"
     split={false}
     dataSource={attachFiles}
-    // header={`첨부파일 ${item.attachFiles.length}`}
-    // bordered
     itemLayout="horizontal"
-    renderItem={item =>
-        <List.Item.Meta
-            avatar={<PaperClipOutlined />}
-            description={ <a href={item.path} download={item.originalname} style={{color:'gray'}}>{item.originalname}</a> }
-        />
-    }
+    renderItem={item => <List.Item.Meta avatar={<PaperClipOutlined />} description={ item.originalname } /> }
     />
-  )*/
+  )
 
   const handleItemChanged = async (action, item, validation) => {
     console.log("🚀 ~ handleItemChanged ~ handleItemChanged")
@@ -361,7 +355,7 @@ const SignDocument = () => {
         ],
       }}
       style={{height:`calc(100vh - 72px)`}}
-      //content= {attachFiles?.length > 0 && listAttachFiles}
+      content= {attachFiles?.length > 0 && listAttachFiles}
       // footer={[
       // ]}
       // loading={loading}
@@ -375,7 +369,7 @@ const SignDocument = () => {
         {/* <Row gutter={[24, 24]}>
           <Col span={24}> */}
           <Spin tip="로딩중..." spinning={loading}>
-            <PDFViewer ref={pdfRef} isUpload={false} isSave={false} isEditing={false} onItemChanged={handleItemChanged} onValidationChanged={handleValidationChanged}  defaultScale={1.0} headerSpace={1 /*attachFiles?.length > 0 ? 128 + attachFiles?.length * 30 : 128*/}  />
+          <PDFViewer ref={pdfRef} isUpload={false} isSave={false} isEditing={false} onItemChanged={handleItemChanged} onValidationChanged={handleValidationChanged}  defaultScale={1.0} />
           </Spin>
           {/* </Col>
         </Row> */}
