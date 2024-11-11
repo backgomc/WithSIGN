@@ -217,7 +217,7 @@ let callNotify = async (send, recv, title, message, filePath, docId) => {
     let recvInfo = [];
     let IproRecvInfo = [];
     let linkRecvInfo = [];
-    let tester = ['P0610003', 'P0810080', 'P1010008', 'P1110051', 'P1810053', 'P1210044', 'P2010063', 'P2210044' ]; //빅데이터팀
+    //let tester = ['P0610003', 'P0810080', 'P1010008', 'P1110051', 'P1810053', 'P1210044', 'P2010063', 'P2210044' ]; //빅데이터팀
     let withLink = ''
     
     if(docId) {
@@ -226,8 +226,8 @@ let callNotify = async (send, recv, title, message, filePath, docId) => {
     }
     
     for (var data of recvData) {
-        //if(docId){
-        if(docId && tester.includes(data['SABUN'])){
+        if(docId){
+        //if(docId && tester.includes(data['SABUN'])){
             linkRecvInfo.push(data['SABUN']);
         } else {
             recvInfo.push(data['SABUN']);
