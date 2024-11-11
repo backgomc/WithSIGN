@@ -381,6 +381,8 @@ router.post('/update', ValidateToken, (req, res) => {
             return res.json({ success: true, docRef: docRef, items: items, isLast: isLast })
         }
         })
+      } else {  // 중복 처리 알림
+        return res.json({ success: false, message: '이미 서명 처리 되었습니다!' })
       }
     }
   });

@@ -334,7 +334,10 @@ const SignDocument = () => {
 
         setLoading(false);
       } else {
-        console.log("update error")
+        if (res.data.message) {
+          alert(res.data.message);
+        }
+        console.log("update error:", res.data.message)
         setLoading(false);
       } 
     } catch (error) {
