@@ -180,6 +180,12 @@ const SignDocument = () => {
     console.log("fetchCancelSigning res:" + res);
 
     setLoading(false);
+    if (!res.data.success) {
+      if (res.data.message) {
+        navigate('/ResultPage',{ state : { status : 'error', mainTitle : formatMessage({id: 'm.cancel'}), msg : formatMessage(res.data?.message), subMsg : 'update fail'}});
+      }
+    }
+
     navigate('/ResultPage',{ state : { mainTitle : formatMessage({id: 'm.cancel'}), msg : formatMessage({id: 'm.cancel.success'}), subMsg : docTitle }});
   }
   
