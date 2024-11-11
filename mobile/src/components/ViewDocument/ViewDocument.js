@@ -1,13 +1,13 @@
 import React, { useRef, useEffect } from 'react';
 import axiosInterceptor from '../../config/AxiosConfig';
 import { useSelector } from 'react-redux';
-import { Button, List } from 'antd';
+import { List } from 'antd';
 import { selectDocToView } from './ViewDocumentSlice';
 import './ViewDocument.css';
 import { PageContainer } from '@ant-design/pro-layout';
 import 'antd/dist/antd.css';
 import '@ant-design/pro-card/dist/card.css';
-import { CloseOutlined, PaperClipOutlined } from '@ant-design/icons';
+import { PaperClipOutlined } from '@ant-design/icons';
 import { DOCUMENT_SIGNED, TYPE_SIGN, TYPE_IMAGE, TYPE_TEXT, TYPE_CHECKBOX} from '../../common/Constants';
 //import PDFViewer from "@niceharu/withpdf";
 import PDFViewer from "../WithPDF/PDFViewer";
@@ -74,20 +74,15 @@ const ViewDocument = () => {
     window.close()
   }
 
-  /*const listAttachFiles = (
+  const listAttachFiles = (
     <List
     size="small"
     split={false}
     dataSource={attachFiles}
     itemLayout="horizontal"
-    renderItem={item =>
-        <List.Item.Meta
-            avatar={<PaperClipOutlined />}
-            description={ <a href={item.path} download={item.originalname} style={{color:'gray'}}>{item.originalname}</a> }
-        />
-    }
+    renderItem={item => <List.Item.Meta avatar={<PaperClipOutlined />} description={ item.originalname } /> }
     />
-  )*/
+  )
 
   return (
     <div>
@@ -106,14 +101,14 @@ const ViewDocument = () => {
         //],
       }}
       style={{height:`calc(100vh - 72px)`}}
-      //content= {attachFiles?.length > 0 && listAttachFiles}
+      content= {attachFiles?.length > 0 && listAttachFiles}
       // content= {}
       // footer={[
       // ]}
       //loading={loading}
     >
 
-        <PDFViewer ref={pdfRef} isUpload={false} isSave={false} isEditing={false} defaultScale={1.0} headerSpace={1 /*attachFiles?.length > 0 ? 128 + attachFiles?.length * 30 : 128*/}></PDFViewer>
+<PDFViewer ref={pdfRef} isUpload={false} isSave={false} isEditing={false} defaultScale={1.0}></PDFViewer>
 
     </PageContainer> 
     </PageContainerStyle>

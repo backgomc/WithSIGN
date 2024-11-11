@@ -85,8 +85,11 @@ function App() {
                                             msg : formatMessage({id: 'm.view.err.deleted'}),
                                             subMsg : ('UID[' + user._id + '] DocID[' + docId + ']') }})
         } else if (response.data.document.users.includes(user._id)){
-          if ( (response.data.document.docType == 'B' && response.data.document.signed == false ) ||
-               (response.data.document.docType == 'G' && response.data.document.signed == false && response.data.document.usersTodo.includes(user._id)) ){
+          if ( response.data.document.signed == false && 
+               !response.data.document.signedBy.includes(user._id) && (
+               (response.data.document.orderType == 'A' ) ||
+               (response.data.document.orderType == 'S' && response.data.document.usersTodo.includes(user._id))
+              )){
             const docRef = response.data.document.docRef
             const docType = response.data.document.docType
             const docUser = response.data.document.user
@@ -94,7 +97,7 @@ function App() {
             const orderType = response.data.document.orderType
             const usersTodo = response.data.document.usersTodo
             const usersOrder = response.data.document.usersOrder
-            const attachFiles = null
+            const attachFiles = response.data.document.attachFiles
             const items = response.data.document.items
             const isWithPDF = response.data.document.isWithPDF
             const docTitle = response.data.document.docTitle
@@ -109,7 +112,7 @@ function App() {
             const docTitle = response.data.document.docTitle
             const isWithPDF = response.data.document.user.isWithPDF
             const status = response.data.document.signed == true ? DOCUMENT_SIGNED : ''
-            const attachFiles = null
+            const attachFiles = response.data.document.attachFiles
 
             dispatch(setDocToView({ docRef, docId, status, docType, docTitle, isWithPDF, attachFiles}))
             dispatch(setUser(user))
