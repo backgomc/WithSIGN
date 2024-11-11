@@ -227,6 +227,13 @@ const SignDocument = () => {
 
     console.log("fetchCancelSigning res:" + res);
     setLoading(false);
+
+    if (!res.data.success) {
+      if (res.data.message) {
+        alert(res.data?.message)
+      }
+    }
+
     navigate('/documentList');
   }
 

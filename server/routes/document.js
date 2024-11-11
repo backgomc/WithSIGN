@@ -242,10 +242,10 @@ router.post('/update', ValidateToken, (req, res) => {
 
   Document.findOne({ _id: req.body.docId }, (err, document) => {
     if (document) {
-      let { signedBy, users, items, docRef } = document;
+      let { signedBy, canceledBy, users, items, docRef } = document;
       
       console.log(signedBy.some(e => e.user === user))
-      if (!signedBy.some(e => e.user === user)) {
+      if (! (signedBy.some(e => e.user === user) || canceledBy.some(e => e.user === user))) {
 
         let signedByArray = [...signedBy, {user:user, signedTime:time, ip:ip}];
 
@@ -382,7 +382,7 @@ router.post('/update', ValidateToken, (req, res) => {
         }
         })
       } else {  // 중복 처리 알림
-        return res.json({ success: false, message: '이미 서명 처리 되었습니다!' })
+        return res.json({ success: false, message: '이미 처리된 문서입니다!' })
       }
     }
   });
@@ -406,11 +406,11 @@ router.post('/updateDocumentCancel', ValidateToken, (req, res) => {
 
   Document.findOne({ _id: req.body.docId }, (err, document) => {
     if (document) {
-      const { canceled, canceledBy } = document;
+      const { canceled, canceledBy, signedBy } = document;
       
       console.log(canceledBy.some(e => e.user === user))
-      if (!canceledBy.some(e => e.user === user)) {
-
+      // if (!canceledBy.some(e => e.user === user)) {
+      if (! (signedBy.some(e => e.user === user) || canceledBy.some(e => e.user === user))) {
         const canceledByArray = [...canceledBy, {user:user, canceledTime:time, message: message}];
 
         Document.updateOne({ _id: docId }, {canceled: true, canceledBy:canceledByArray, recentTime:time}, (err, result) => {
@@ -429,7 +429,7 @@ router.post('/updateDocumentCancel', ValidateToken, (req, res) => {
         } 
 
       } else {
-        return res.json({ success: false, message: "이미 서명취소 처리되었습니다." })
+        return res.json({ success: false, message: "이미 처리된 문서입니다" })
       }
     }
   });
