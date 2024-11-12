@@ -50,7 +50,9 @@ const DocumentExpander = (props) => {
                     <font color='#A7A7A9'><b>{user.name} {user.JOB_TITLE}</b> {orgInfos.filter(e => e.DEPART_CODE === user.DEPART_CODE).length > 0 ? '['+orgInfos.filter(e => e.DEPART_CODE === user.DEPART_CODE)[0].DEPART_NAME+']' : ''} {(item.observers && item.observers.includes(user._id)) ? '문서 수신' : '서명 완료'}</font>
                     &nbsp;&nbsp;&nbsp;
                     <Tag color="#BABABC">
-                        <Moment format='YYYY/MM/DD HH:mm'>{item.signedBy.filter(e => e.user === user._id)[0].signedTime}</Moment>
+                        {item.signedBy.filter(e => e.user === user._id)[0].skipped === true ? '생략됨' : 
+                        <Moment format='YYYY/MM/DD HH:mm'>{item.signedBy.filter(e => e.user === user._id)[0].signedTime}</Moment>}
+
                     </Tag>
                 </Timeline.Item>
             )
