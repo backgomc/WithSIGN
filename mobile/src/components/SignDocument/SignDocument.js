@@ -180,13 +180,11 @@ const SignDocument = () => {
     console.log("fetchCancelSigning res:" + res);
 
     setLoading(false);
-    if (!res.data.success) {
-      if (res.data.message) {
-        navigate('/ResultPage',{ state : { status : 'error', mainTitle : formatMessage({id: 'm.cancel'}), msg : formatMessage(res.data?.message), subMsg : 'update fail'}});
-      }
+    if ( res.data.success ) {
+      navigate('/ResultPage',{ state : { mainTitle : formatMessage({id: 'm.cancel'}), msg : formatMessage({id: 'm.cancel.success'}), subMsg : docTitle }});
+    } else{
+      navigate('/ResultPage',{ state : { status : 'error', mainTitle : formatMessage({id: 'm.cancel'}), msg : res.data?.message, subMsg : 'update fail'}});
     }
-
-    navigate('/ResultPage',{ state : { mainTitle : formatMessage({id: 'm.cancel'}), msg : formatMessage({id: 'm.cancel.success'}), subMsg : docTitle }});
   }
   
 
@@ -300,11 +298,13 @@ const SignDocument = () => {
         console.log("update error")
         setLoading(false);
         navigate('/ResultPage',{ state : { status : 'error', mainTitle : formatMessage({id: 'm.sign'}), msg : formatMessage({id: 'm.sign.fail'}), subMsg : 'update error'}});
+        return;
       } 
     } catch (error) {
       console.log(error)
       setLoading(false);
       navigate('/ResultPage',{ state : { status : 'error', mainTitle : formatMessage({id: 'm.sign'}), msg : formatMessage({id: 'm.sign.fail'}), subMsg : error.msg }});
+      return;
     }
 
     navigate('/ResultPage',{ state : { status : 'success', mainTitle : formatMessage({id: 'm.sign'}), msg : formatMessage({id: 'm.sign.success'}), subMsg : docTitle }});
