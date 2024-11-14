@@ -5,7 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { navigate } from '@reach/router';
 import { Tooltip, Tag, Timeline, Button, Alert, List } from 'antd';
 import ProDescriptions from '@ant-design/pro-descriptions';
-import { CheckCircleOutlined, CloseCircleOutlined, ClockCircleOutlined, DownloadOutlined, PaperClipOutlined } from '@ant-design/icons';
+import { CheckCircleOutlined, CloseCircleOutlined, ClockCircleOutlined, DownloadOutlined, PaperClipOutlined, MobileTwoTone } from '@ant-design/icons';
 import '@ant-design/pro-card/dist/card.css';
 import '@ant-design/pro-descriptions/dist/descriptions.css';
 import 'antd/dist/antd.css';
@@ -51,9 +51,9 @@ const DocumentExpander = (props) => {
                     &nbsp;&nbsp;&nbsp;
                     <Tag color="#BABABC">
                         {item.signedBy.filter(e => e.user === user._id)[0].skipped === true ? '생략됨' : 
-                        <Moment format='YYYY/MM/DD HH:mm'>{item.signedBy.filter(e => e.user === user._id)[0].signedTime}</Moment>}
-
+                        <Moment format='YYYY/MM/DD HH:mm'>{item.signedBy.filter(e => e.user === user._id)[0].signedTime}</Moment>}                       
                     </Tag>
+                    {/^(10\.220\.140\.(66|67))$/.test(item.signedBy.filter(e => e.user === user._id)[0].ip) ? <MobileTwoTone /> : ''}
                 </Timeline.Item>
             )
         } else if ((item.canceledBy.some(e => e.user === user._id))) {
