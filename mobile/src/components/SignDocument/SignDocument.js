@@ -2,7 +2,7 @@ import React, { useRef, useEffect, useState } from 'react';
 import { useSelector} from 'react-redux';
 import axiosInterceptor from '../../config/AxiosConfig';
 import { navigate } from '@reach/router';
-import { Input, Modal, Button, List, Spin } from 'antd';
+import { Input, Modal, Button, List, Spin, message } from 'antd';
 import { selectDocToSign } from './SignDocumentSlice';
 import { selectUser } from '../../app/infoSlice';
 import './SignDocument.css';
@@ -317,7 +317,10 @@ const SignDocument = () => {
     split={false}
     dataSource={attachFiles}
     itemLayout="horizontal"
-    renderItem={item => <List.Item.Meta avatar={<PaperClipOutlined />} description={ item.originalname } /> }
+    renderItem={item => 
+      <List.Item onClick={() => message.warning('첨부파일은 PC버전에서 확인 가능합니다')} >
+        <List.Item.Meta avatar={<PaperClipOutlined />} description={ item.originalname } /> 
+      </List.Item>}
     />
   )
 
