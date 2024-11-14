@@ -1,7 +1,7 @@
 import React, { useRef, useEffect } from 'react';
 import axiosInterceptor from '../../config/AxiosConfig';
 import { useSelector } from 'react-redux';
-import { List } from 'antd';
+import { List, message } from 'antd';
 import { selectDocToView } from './ViewDocumentSlice';
 import './ViewDocument.css';
 import { PageContainer } from '@ant-design/pro-layout';
@@ -80,7 +80,10 @@ const ViewDocument = () => {
     split={false}
     dataSource={attachFiles}
     itemLayout="horizontal"
-    renderItem={item => <List.Item.Meta avatar={<PaperClipOutlined />} description={ item.originalname } /> }
+    renderItem={item => 
+      <List.Item onClick={() => message.warning('첨부파일은 PC버전에서 확인 가능합니다')} >
+        <List.Item.Meta avatar={<PaperClipOutlined />} description={ item.originalname } /> 
+      </List.Item>}
     />
   )
 
