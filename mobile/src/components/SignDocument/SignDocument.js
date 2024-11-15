@@ -2,7 +2,7 @@ import React, { useRef, useEffect, useState } from 'react';
 import { useSelector} from 'react-redux';
 import axiosInterceptor from '../../config/AxiosConfig';
 import { navigate } from '@reach/router';
-import { Input, Modal, Button, List, Spin } from 'antd';
+import { Input, Modal, Button, List, Spin, message } from 'antd';
 import { selectDocToSign } from './SignDocumentSlice';
 import { selectUser } from '../../app/infoSlice';
 import './SignDocument.css';
@@ -180,7 +180,11 @@ const SignDocument = () => {
     console.log("fetchCancelSigning res:" + res);
 
     setLoading(false);
-    navigate('/ResultPage',{ state : { mainTitle : formatMessage({id: 'm.cancel'}), msg : formatMessage({id: 'm.cancel.success'}), subMsg : docTitle }});
+    if ( res.data.success ) {
+      navigate('/ResultPage',{ state : { mainTitle : formatMessage({id: 'm.cancel'}), msg : formatMessage({id: 'm.cancel.success'}), subMsg : docTitle }});
+    } else{
+      navigate('/ResultPage',{ state : { status : 'error', mainTitle : formatMessage({id: 'm.cancel'}), msg : res.data?.message, subMsg : 'update fail'}});
+    }
   }
   
 
@@ -294,11 +298,13 @@ const SignDocument = () => {
         console.log("update error")
         setLoading(false);
         navigate('/ResultPage',{ state : { status : 'error', mainTitle : formatMessage({id: 'm.sign'}), msg : formatMessage({id: 'm.sign.fail'}), subMsg : 'update error'}});
+        return;
       } 
     } catch (error) {
       console.log(error)
       setLoading(false);
       navigate('/ResultPage',{ state : { status : 'error', mainTitle : formatMessage({id: 'm.sign'}), msg : formatMessage({id: 'm.sign.fail'}), subMsg : error.msg }});
+      return;
     }
 
     navigate('/ResultPage',{ state : { status : 'success', mainTitle : formatMessage({id: 'm.sign'}), msg : formatMessage({id: 'm.sign.success'}), subMsg : docTitle }});
@@ -311,7 +317,10 @@ const SignDocument = () => {
     split={false}
     dataSource={attachFiles}
     itemLayout="horizontal"
-    renderItem={item => <List.Item.Meta avatar={<PaperClipOutlined />} description={ item.originalname } /> }
+    renderItem={item => 
+      <List.Item onClick={() => message.warning('첨부파일은 PC버전에서 확인 가능합니다')} >
+        <List.Item.Meta avatar={<PaperClipOutlined />} description={ item.originalname } /> 
+      </List.Item>}
     />
   )
 
