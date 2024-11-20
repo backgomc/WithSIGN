@@ -332,37 +332,39 @@ router.post('/removeDocument', ValidateToken, (req, res) => {
     Document.findOne({ _id: docId }, (err, document) => {
 
         if (document) {
-          const { docRef } = document;
+          const { docRef, docType } = document;
 
-          // DISTO
-        //   const filePath = config.storageDIR+docRef
-          const filePath = docRef
-          fs.access(filePath, fs.constants.F_OK, (err) => { // A
-            if (err) return console.log('삭제할 수 없는 파일입니다');
-          
-            fs.unlink(filePath, (err) => err ?  
-              console.log(err) : console.log(`${filePath} 를 정상적으로 삭제했습니다`));
-
-              // 썸네일도 삭제하기 (벌크가 아닌 경우만 삭제: 벌크인 경우 다른 문서가 같이 참조하므로 ...)
-              if(document.docType === 'G') {
-                  const thumbnailPath = document.thumbnail
-                fs.access(thumbnailPath, fs.constants.F_OK, (err) => { // A
+          // 2024.11.15 Bug Fixed
+          // 대량 전송인 경우는 요청 취소 시에 파일 삭제를 하지 않도록 처리
+            if (docType !== 'B') {
+                const filePath = docRef
+                fs.access(filePath, fs.constants.F_OK, (err) => { // A
                     if (err) return console.log('삭제할 수 없는 파일입니다');
-                  
-                    fs.unlink(thumbnailPath, (err) => err ?  
-                      console.log(err) : console.log(`${thumbnailPath} 를 정상적으로 삭제했습니다`));
+                
+                    fs.unlink(filePath, (err) => err ?  
+                    console.log(err) : console.log(`${filePath} 를 정상적으로 삭제했습니다`));
+
+                    // 썸네일도 삭제하기 (벌크가 아닌 경우만 삭제: 벌크인 경우 다른 문서가 같이 참조하므로 ...)
+                    if(document.docType === 'G') {
+                        const thumbnailPath = document.thumbnail
+                        fs.access(thumbnailPath, fs.constants.F_OK, (err) => { // A
+                            if (err) return console.log('삭제할 수 없는 파일입니다');
+                        
+                            fs.unlink(thumbnailPath, (err) => err ?  
+                            console.log(err) : console.log(`${thumbnailPath} 를 정상적으로 삭제했습니다`));
+                        });
+                    }
                 });
-              }
-          });
-      
-          // DOCUMENT에 HASH 값 저장
-          Document.deleteOne({ _id: docId }, (err, result) => {
-              if (err) {
-                  res.json({ success: false, message: err });
-              } else {
-                  return res.json({ success: true })
-              }
-          });
+            }
+
+            // DOCUMENT에 HASH 값 저장
+            Document.deleteOne({ _id: docId }, (err, result) => {
+                if (err) {
+                    res.json({ success: false, message: err });
+                } else {
+                    return res.json({ success: true })
+                }
+            });
 
         } else {
             res.json({ success: false, message: 'document not found!' });
