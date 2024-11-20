@@ -80,11 +80,9 @@ const ViewDocument = () => {
     split={false}
     dataSource={attachFiles}
     itemLayout="horizontal"
-    renderItem={item => 
-      <List.Item onClick={() => message.warning('첨부파일은 PC버전에서 확인 가능합니다')} >
-        <List.Item.Meta avatar={<PaperClipOutlined />} description={ item.originalname } /> 
-      </List.Item>}
-    />
+    renderItem={
+      item => <List.Item.Meta avatar={<PaperClipOutlined />} description={ item.originalname } onClick={() => message.info('첨부파일은 PC버전에서 확인 가능합니다')}/>
+    }/>
   )
 
   return (
@@ -111,7 +109,7 @@ const ViewDocument = () => {
       //loading={loading}
     >
 
-<PDFViewer ref={pdfRef} isUpload={false} isSave={false} isEditing={false} defaultScale={1.0}></PDFViewer>
+<PDFViewer ref={pdfRef} isUpload={false} isSave={false} isEditing={false}></PDFViewer>
 
     </PageContainer> 
     </PageContainerStyle>

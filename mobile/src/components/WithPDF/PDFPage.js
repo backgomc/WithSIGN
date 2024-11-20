@@ -150,7 +150,7 @@ const PDFPage = ({idx, page, setPagesScale, setPagesSize, pagesScale}) => {
       // console.log("viewport.width", viewport.width)
       // console.log("canvasRef.current.clientWidth ", canvasRef.current.clientWidth)
       // console.log("pagesScale ", pagesScale)
-      await wait(100);  // deplay 0.1 second
+      await wait(10);  // deplay 0.1 second
       // console.log("b")
       context.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
       context.beginPath();

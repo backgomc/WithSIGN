@@ -317,11 +317,9 @@ const SignDocument = () => {
     split={false}
     dataSource={attachFiles}
     itemLayout="horizontal"
-    renderItem={item => 
-      <List.Item onClick={() => message.warning('첨부파일은 PC버전에서 확인 가능합니다')} >
-        <List.Item.Meta avatar={<PaperClipOutlined />} description={ item.originalname } /> 
-      </List.Item>}
-    />
+    renderItem={
+      item => <List.Item.Meta avatar={<PaperClipOutlined />} description={ item.originalname } onClick={() => message.info('첨부파일은 PC버전에서 확인 가능합니다')}/>
+    }/>
   )
 
   const handleItemChanged = async (action, item, validation) => {
@@ -378,7 +376,7 @@ const SignDocument = () => {
         {/* <Row gutter={[24, 24]}>
           <Col span={24}> */}
           <Spin tip="로딩중..." spinning={loading}>
-          <PDFViewer ref={pdfRef} isUpload={false} isSave={false} isEditing={false} onItemChanged={handleItemChanged} onValidationChanged={handleValidationChanged}  defaultScale={1.0} />
+          <PDFViewer ref={pdfRef} isUpload={false} isSave={false} isEditing={false} onItemChanged={handleItemChanged} onValidationChanged={handleValidationChanged} />
           </Spin>
           {/* </Col>
         </Row> */}
