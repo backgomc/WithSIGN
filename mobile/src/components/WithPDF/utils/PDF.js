@@ -105,28 +105,38 @@ export async function save(pdfFile, pdfUrl, objects, name, isDownload) {
     // 'y' starts from bottom in PDFLib, use this to calculate y
     const pageHeight = page.getHeight();
     const embedProcesses = pageObjects.map(async (object) => {
-      if (object.type === TYPE_IMAGE) {
-        let { file, x, y, width, height, payload } = object;
 
+      //TO-BE: base64 기반 저장 (TYPE_IMAGE)
+      if (object.type === TYPE_IMAGE) {
+
+        let { x, y, width, height, payload } = object;
+        // console.log('TYPE_IMAGE save', payload)
+        
         const correction = compensateRotation(
           page.getRotation(), 
           x, y, 
           1, page.getSize(), height
         );
-        
-        let img;
-        try {
 
-          if (file.type === 'image/jpeg') {
-            img = await pdfDoc.embedJpg(await readAsArrayBuffer(file));
+        // console.log('correction', correction)
+            
+        try {
+          
+          let img;
+          if (payload.src.startsWith('data:image/jpeg;base64,')) {
+            img = await pdfDoc.embedJpg(await (await fetch(payload.src)).arrayBuffer());
+          } else if (payload.src.startsWith('data:image/png;base64,')) {
+            img = await pdfDoc.embedPng(await (await fetch(payload.src)).arrayBuffer());
           } else {
-            img = await pdfDoc.embedPng(await readAsArrayBuffer(file));
+            return noop;
           }
 
           return () =>
             page.drawImage(img, {
               // x,
               // y: pageHeight - y - height,
+              // width,
+              // height,
               x: correction.x,
               y: correction.y,
               width,
@@ -137,9 +147,12 @@ export async function save(pdfFile, pdfUrl, objects, name, isDownload) {
           console.log('Failed to embed image.', e);
           return noop;
         }
+
       } else if (object.type === TYPE_SIGN) {
 
         let { x, y, width, height, payload } = object;
+        
+        console.log('TYPE_SIGN save', payload)
         
         // console.log('page.getRotation():', page.getRotation().angle)
         // console.log('x:', x)

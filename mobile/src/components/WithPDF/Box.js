@@ -10,11 +10,11 @@ import SvgDelete from './assets/images/delete.svg';
 import SvgEdit from './assets/images/edit.svg';
 import SvgResizeWidth from './assets/images/resize-width.svg';
 import SvgResizeBoth from './assets/images/resize-both.svg';
-import { InputNumber, Segmented, Switch } from 'antd';
+import { InputNumber, Input, Segmented, Switch, Button } from 'antd';
 import SvgTextSize from './assets/svg/SvgTextSize';
-import Icon, { AlignCenterOutlined, AlignLeftOutlined, AlignRightOutlined } from '@ant-design/icons';
+import Icon, { AlignCenterOutlined, AlignLeftOutlined, AlignRightOutlined, CloseOutlined } from '@ant-design/icons';
 import styled from 'styled-components';
-import { TYPE_SIGN, TYPE_TEXT, TYPE_CHECKBOX } from './Common/Constants';
+import { TYPE_SIGN, TYPE_TEXT, TYPE_CHECKBOX, TYPE_IMAGE } from './Common/Constants';
 // const EditorArea = styled.button`
 //   border: none;
 //   margin-left: -8px;
@@ -75,10 +75,13 @@ const Box = ({item, deleteItem, updateItem, pageSize, pagesScale, scaleDirection
   const canvasRef = useRef();
   transformRef.current = transform;
   const textRef = useRef();
+  const fontSizeRef = useRef();
+  const labelRef = useRef();
+
 
   useEffect(() => {
 
-    console.log("Box useEffect called!", item);
+    // console.log("Box useEffect called!", item);
 
     setTransform({
       width: item.width,
@@ -93,6 +96,14 @@ const Box = ({item, deleteItem, updateItem, pageSize, pagesScale, scaleDirection
     render();
 
   }, []);
+  
+  // 컴포넌트가 선택되면 focus 주기
+  // 빈 영역 클릭 시 focus 에 해제되어 blur event가 콜 되고 이때 편집모드를 해제 할 수 있다.
+  useEffect(() => {
+    if (editing && labelRef.current) {
+      labelRef.current.focus();      
+    }
+  }, [editing]);
   
   // pagesScale 이 변경되었을때 처리
   useDidMountEffect(() => {
@@ -119,6 +130,14 @@ const Box = ({item, deleteItem, updateItem, pageSize, pagesScale, scaleDirection
     //   }
     // }
 
+
+    // console.log('pageSize.width', pageSize?.width)
+    // console.log('pagesScale', pagesScale)
+    // console.log('transform.width', transform.width)
+
+    
+
+
     setTransform((prevTransform) => ({
       ...prevTransform,
       x: item.x * pagesScale,
@@ -136,6 +155,7 @@ const Box = ({item, deleteItem, updateItem, pageSize, pagesScale, scaleDirection
       textRef.current.innerHTML = `<input type="checkbox" style="margin-top: 3px; width: 17px; height: 17px;" />`;
     } else {
       textRef.current.innerHTML = item.text;
+      // textRef.current.innerHTML = item.label;
       // textRef.current.focus();
   
       updateItem(item.id, {lines : extractLines()});
@@ -314,11 +334,12 @@ const Box = ({item, deleteItem, updateItem, pageSize, pagesScale, scaleDirection
 
   function onFocus() {
     console.log('onFocus called');
-    textRef.current.focus();
+    // textRef.current.focus();
     setOperation("edit");
     setEditing(true);
   }
 
+  // 컴포넌트가 포커스를 잃었을 때 발생하는 이벤트를 처리하는 데 사용되는 이벤트 핸들러
   const onBlur = (e) => {
     console.log('onBlur called');
     e.stopPropagation();
@@ -365,20 +386,15 @@ const Box = ({item, deleteItem, updateItem, pageSize, pagesScale, scaleDirection
     }
   }
 
-  const onDoubleClick = (e) => {
-    console.log('onDoubleClick called');
-    e.stopPropagation();
-    textRef.current.focus();
-  }
+  // const onDoubleClick = (e) => {
+  //   console.log('onDoubleClick called');
+  //   e.stopPropagation();
+  //   textRef.current.focus();
+  // }
 
   const onClick = (e) => {
     console.log('onClick called');
-    if (item.subType === TYPE_CHECKBOX) {
-      setEditing(true);
-      return;
-    } 
-    e.stopPropagation();
-    textRef.current.focus();
+    setEditing(true);
   }
 
   const onKeyUp = (e) => {
@@ -414,6 +430,30 @@ const Box = ({item, deleteItem, updateItem, pageSize, pagesScale, scaleDirection
     }
 
     justdo = true;
+  }
+
+  const onChangeCoordinateX = (value) => {
+    updateItem(item.id, {x : parseInt(value)});
+    setTransform((prevTransform) => ({
+      ...prevTransform,
+      x: value * pagesScale,
+    }));
+  }
+
+  const onChangeCoordinateY = (value) => {
+    updateItem(item.id, {y : parseInt(value)});
+    setTransform((prevTransform) => ({
+      ...prevTransform,
+      y: value * pagesScale
+    }));
+  }
+
+  const onChangeLabel = (e) => {
+    console.log('onChangeLabel called', e.target.value);
+    updateItem(item.id, {label : e.target.value});
+    if(item.subType !== TYPE_CHECKBOX && item.subType !== TYPE_SIGN) {
+      textRef.current.innerHTML = e.target.value;
+    }
   }
 
   const onChangeTextAlign = (value) => {
@@ -538,8 +578,9 @@ const Box = ({item, deleteItem, updateItem, pageSize, pagesScale, scaleDirection
             {/* <div class='w-7 bg-gray-300'>aaabbb</div> */}
             {/* <div class='w-full bg-gray-200' style={{width:'100px'}}>Option <Button style={{alignContent:'right'}} icon={<CloseSquareOutlined />}></Button></div> */}
             <EditorArea>
-              {/* <Button type="text" style={{marginTop:'2px'}} className="left-0"> */}
-              <InputNumber style={{maxWidth:'90px', marginTop:'3px'}} addonBefore={<Icon component={SvgTextSize} style={{verticalAlign:'middle'}} />} min={12} max={30} step={1} size="small" onChange={onChangeFontSize} defaultValue={fontSize} />
+              <Input ref={labelRef} style={{maxWidth:'90px', marginTop:'3px'}} placeholder='Label' onChange={onChangeLabel} value={item.label} maxLength={10} size='small' />
+              <br></br>
+              <InputNumber ref={fontSizeRef} style={{maxWidth:'90px', marginTop:'3px'}} addonBefore={<Icon component={SvgTextSize} style={{verticalAlign:'middle'}} />} min={9} max={30} step={1} size="small" onChange={onChangeFontSize} defaultValue={fontSize} />
               {/* </Button> */}
               <br></br>
               {/* <Button type="text" style={{marginTop:'-5px'}}> */}
@@ -568,15 +609,33 @@ const Box = ({item, deleteItem, updateItem, pageSize, pagesScale, scaleDirection
                 updateItem(item.id, {required : checked});
               }} />
 
+              <br></br>
+              {/* X: {item.x} Y: {item.y} */}
+              <InputNumber style={{maxWidth:'90px', marginTop:'3px'}} addonBefore="x" min={0} max={pageSize?.width ? Math.ceil(pageSize.width/pagesScale) - transform.width : 0} step={1} size="small" onChange={onChangeCoordinateX} value={item.x} />
+              <br></br>
+              <InputNumber style={{maxWidth:'90px', marginTop:'3px'}} addonBefore="y" min={0} max={pageSize?.height ? Math.ceil(pageSize.height/pagesScale) - transform.height : 0} step={1} size="small" onChange={onChangeCoordinateY} value={item.y} />
+              <br></br>
+              <Button size='small' style={{minWidth:'90px', marginTop:'3px'}} onClick={(e)=>{e.stopPropagation();setEditing(false);}}>닫기</Button>
+
             </EditorArea>
           </div>}
 
-          {(item.subType === TYPE_SIGN || item.subType === TYPE_CHECKBOX) && 
-          <div hidden={!editing} class="absolute -bottom-11 left-2 w-150">
+          {(item.subType === TYPE_SIGN || item.subType === TYPE_CHECKBOX || item.subType === TYPE_IMAGE) && 
+          <div hidden={!editing} class="absolute -bottom-17 left-2 w-150">
             <EditorArea>
+              <Input ref={labelRef} style={{maxWidth:'90px', marginTop:'3px'}} placeholder='Label' onChange={onChangeLabel} value={item.label} maxLength={10} size='small' />
+              <br></br>
               <Switch style={{minWidth:'80px', marginTop:'3px'}} checkedChildren="필수 입력" unCheckedChildren="필수 입력" checked={item.required} onChange={(checked) => {
                 updateItem(item.id, {required : checked});
               }} />
+              <br></br>
+              {/* X: {item.x} Y: {item.y} */}
+              <InputNumber style={{maxWidth:'90px', marginTop:'3px'}} addonBefore="x" min={0} max={pageSize?.width ? Math.ceil(pageSize.width/pagesScale) - transform.width : 0} step={1} size="small" onChange={onChangeCoordinateX} value={item.x} />
+              <br></br>
+              <InputNumber style={{maxWidth:'90px', marginTop:'3px'}} addonBefore="y" min={0} max={pageSize?.height ? Math.ceil(pageSize.height/pagesScale) - transform.height : 0} step={1} size="small" onChange={onChangeCoordinateY} value={item.y} />
+              <br></br>
+              <Button size='small' style={{minWidth:'90px', marginTop:'3px'}} onClick={(e)=>{e.stopPropagation();setEditing(false);}}>닫기</Button>
+              
             </EditorArea>
           </div>}
 

@@ -9,19 +9,23 @@ import './tailwind.css';
 import SvgDelete from './assets/images/delete.svg';
 import SvgResizeBoth from './assets/images/resize-both.svg';
 import SvgReload from './assets/images/eraser.svg';   // ISSUE: 해당 이미지는 CRA5 에서는 컴파일이 안됨
-import { readAsImage } from "./utils/asyncReader.js";
+import { readAsImage, readAsDataURL, compressImage } from "./utils/asyncReader.js";
 import SignModal from './SignModal';
 import { TYPE_SIGN, TYPE_IMAGE, TYPE_TEXT, TYPE_BOX } from './Common/Constants';
 import { scale } from 'pdf-lib';
+import { Upload, message } from 'antd';
 
 const Image = ({item, deleteItem, updateItem, pageSize, pagesScale, scaleDirection, signList, setSignList }) => {
 
   console.log("Image render !");
 
   const resizedImage = () => {
-    console.log('resizedImage called')
+
     let scale = 1;
-    const limit = 200;
+    // 패키지를 통해 실행시 pageSize.width 가 undefined 인 경우 발생 (pdf 실행전에 컴포넌트가 실행되는 듯...)
+    //const limit = 200;
+    const limit = pageSize?.width ? pageSize.width : 1500;
+    // const limit = pageSize.width;
     if(item.width > limit) {
       scale = limit / item.width;
     }
@@ -34,7 +38,7 @@ const Image = ({item, deleteItem, updateItem, pageSize, pagesScale, scaleDirecti
   }
 
   const initVisibleLabel = () => {
-    if (item.type === TYPE_SIGN) {
+    if (item.type === TYPE_SIGN || item.type === TYPE_IMAGE) {
       if (item.payload) {
         return false;
       } else {
@@ -76,12 +80,13 @@ const Image = ({item, deleteItem, updateItem, pageSize, pagesScale, scaleDirecti
   
   // const [signList, setSignList] = useState([]);
   const sigCanvas = useRef({});
+  const uploadRef = useRef();
   
 
   useEffect(() => {
 
     console.log("Image useEffect called!", item);
-
+    console.log("pagesScale", pagesScale)
     setTransform({
       width: resizedImage().width,
       height: resizedImage().height,
@@ -160,7 +165,7 @@ const Image = ({item, deleteItem, updateItem, pageSize, pagesScale, scaleDirecti
     // item.payload.onload = function() {
     //   canvasRef.current.getContext("2d").drawImage(item.payload, 0, 0, canvasRef.current.width, canvasRef.current.height);
     // };
-
+    
     if (item.payload) {
       canvasRef.current.getContext("2d").drawImage(item.payload, 0, 0, canvasRef.current.width, canvasRef.current.height);
     }
@@ -195,6 +200,7 @@ const Image = ({item, deleteItem, updateItem, pageSize, pagesScale, scaleDirecti
 
       const { action, startTransform } = drag;
 
+      console.log('action', action);
       console.log('pageWidth', pageSize.width);
       console.log('pageHeight', pageSize.height);
       console.log('startTransform.x', startTransform.x);
@@ -245,7 +251,7 @@ const Image = ({item, deleteItem, updateItem, pageSize, pagesScale, scaleDirecti
 
 
         //AS_IS
-        // updateItem(item.id, transformRef.current);
+        // updateItem(item.id, transformRef.current);dpel
         //TO-BE
         // TODO: x, y 위치는 scale 적용 필요
         // console.log('xxx1', _x);
@@ -301,6 +307,12 @@ const Image = ({item, deleteItem, updateItem, pageSize, pagesScale, scaleDirecti
 
     if (item.type === TYPE_SIGN) {
       setVisibleModal(true);
+
+    } else if (item.type === TYPE_IMAGE) {
+      console.log('IMAGE clicked')
+      if (uploadRef.current) {
+        uploadRef.current?.upload?.uploader?.onClick(e);
+      }
     }
 
   }, [])
@@ -378,8 +390,8 @@ const Image = ({item, deleteItem, updateItem, pageSize, pagesScale, scaleDirecti
 
   // signModal callback 
   const signComplete = async (signData) => {
-    console.log("✈️ Image.js - signComplete start, item.uid : " + item.uid );
-    
+
+    console.log('signComplete', signComplete)
     try {
       const img = await readAsImage(signData);
 
@@ -409,6 +421,55 @@ const Image = ({item, deleteItem, updateItem, pageSize, pagesScale, scaleDirecti
       return true;
     }
 
+  }
+
+  const propsImage = {
+    showUploadList:false,
+    beforeUpload: async file => {
+      console.log('beforeUpload called', file)
+      const isLt2M = file.size / 1024 / 1024 < 10;
+      if (!isLt2M) {
+        message.error('File must smaller than 10MB!');
+        return Upload.LIST_IGNORE;
+      }
+      
+      console.log('file.type', file.type)
+      if (!file || !file.type.includes("image")) {
+        message.error('Image only available!');
+        return Upload.LIST_IGNORE;
+      } 
+
+      try {
+        await updateImage(file);
+      } catch (e) {
+        console.log(e);
+      }
+      return false;
+    }  
+  };
+
+  /**
+   * Add image to item
+   * @function updateImage
+   * @param {File | String} file File or url string
+   */
+  const updateImage = async (file) => {
+    try {
+      
+      // const imgData = await readAsDataURL(file);  //base64 data
+      const compressData = await compressImage(file); // 이미지 용량 압축
+      const img = await readAsImage(compressData);
+      
+      updateItem(item.id, {payload: img});
+
+      canvasRef.current.getContext("2d").clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);  // 초기화
+      canvasRef.current.getContext("2d").drawImage(img, 0, 0, canvasRef.current.width, canvasRef.current.height); // 새로 그리기
+
+      setVisibleLabel(isCanvasEmpty());
+
+    } catch (e) {
+      console.log(`Fail to update image.`, e);
+    }
   }
 
   return (
@@ -446,9 +507,25 @@ const Image = ({item, deleteItem, updateItem, pageSize, pagesScale, scaleDirecti
       {/* 우측 세로 라인 */}
       <div style={{position:'absolute', borderLeft:drag ? 'dotted 1px #78bce6' : 'none', height:`${pageSize?.height/pagesScale}px`, marginTop:`-${transformRef.current.y/pagesScale}px`, marginLeft:`${transformRef.current.width}px`}}></div>
 
+      {/* {item.type === TYPE_IMAGE ?      
+        <Upload {...propsImage} style={{ margin: '0 !important', padding: '0 !important' }}>
+          <canvas 
+            className="pan-image"
+            ref={canvasRef} width={1920} height={1080}>
+          </canvas>
+        </Upload> : 
+        <canvas 
+        className="pan-image"
+        ref={canvasRef} width={1920} height={1080}>
+        </canvas>
+      } */}
+
+      {item.type === TYPE_IMAGE && (<Upload ref={uploadRef} {...propsImage} hidden={true}></Upload>)}
+
       <canvas 
         className="pan-image"
-        ref={canvasRef}>
+        ref={canvasRef} width={1920} height={1080}>
+        {/*ref={canvasRef}>*/}
       </canvas>
 
       {/* 하단 가로 라인 */}
@@ -479,7 +556,7 @@ const Image = ({item, deleteItem, updateItem, pageSize, pagesScale, scaleDirecti
             Done
           </div> */}
 
-          {((item.type === TYPE_SIGN) && !visibleLabel) && 
+          {((item.type === TYPE_SIGN || item.type === TYPE_IMAGE) && !visibleLabel) && 
           <div
             onClick={onReset}
             class="absolute left-0 top-0 right-0 w-4 h-4 m-auto rounded-full bg-white
@@ -499,6 +576,9 @@ const Image = ({item, deleteItem, updateItem, pageSize, pagesScale, scaleDirecti
 
           {((item.type === TYPE_SIGN) && visibleLabel) && 
           <div class="absolute left-0 top-0 bg-blue-600 text-white font-semibold">서명</div> }
+
+          {((item.type === TYPE_IMAGE) && visibleLabel) && 
+          <div class="absolute left-0 top-0 bg-blue-600 text-white font-semibold">이미지</div> }
           
 
           {/* <SvgDelete onClick={() => deleteItem(item.id)} class="absolute color-pink-300 left-0 top-0 right-0 w-5 h-5 m-auto rounded-full bg-white

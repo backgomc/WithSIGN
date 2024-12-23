@@ -217,7 +217,7 @@ const SignDocument = () => {
 
     console.log('updateItems', updateItems);
 
-    // 순차 서명인 경우: 다음 서명 대상자 설정    
+    /*// 순차 서명인 경우: 다음 서명 대상자 설정    
     var todo = [];
     if(orderType == 'S'){ //순차 서명인 경우 
       if(usersTodo?.length > 0) {
@@ -230,7 +230,7 @@ const SignDocument = () => {
           }
         }
       }
-    }
+    }*/
 
     setLoading(true);
 
@@ -238,8 +238,8 @@ const SignDocument = () => {
       docId: docId,
       // email: email,
       user: _id,
-      items: updateItems,
-      usersTodo: todo
+      items: updateItems
+      //,usersTodo: todo
     }
     console.log("sign param:"+param)
 
@@ -265,7 +265,7 @@ const SignDocument = () => {
           // 1. update paperless (서명 요청자 paperless 수 증가)
           await axiosInterceptor.post('/api/users/updatePaperless', {user: docUser._id, paperless: pageCount})
 
-          // 2. merge items & upload merged file
+          // 2. merge items & upload merged file     
           const lastItems = res.data.items;
           console.log('lastItems', lastItems);
           const mergedFile = await pdfRef.current.savePDF(true, false, lastItems);

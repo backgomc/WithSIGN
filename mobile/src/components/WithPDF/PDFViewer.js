@@ -5,7 +5,8 @@ import {
   readAsImage,
   readAsPDF,
   readAsPDF_URL,
-  readAsDataURL
+  readAsDataURL,
+  compressImage
 } from "./utils/asyncReader.js";
 import loadash from 'lodash';
 import PDFPage from './PDFPage.js';
@@ -59,14 +60,14 @@ const PDFViewer = forwardRef(({isUpload, isSave, isEditing, file, onItemChanged,
   }))
 
   console.log("PDFViewer render !");
-
   console.log('window.innerWidth', window.innerWidth)
-  let mobileWidth = 640; // 가로문서 640, 세로문서 840 적용 시 정상 작동
+
+  let defaultWidth = 640; // 가로문서 640, 세로문서 840 적용 시 정상 작동
 
   const [pages, setPages] = useState([]);
   // const [allObjects, setAllObjects] = useState([]);
   const [items, setItems] = useState([]);
-  const [pagesScale, setPagesScale] = useState(defaultScale ? defaultScale : Math.min(window.innerWidth / mobileWidth, 1));  // default pageScale : 1  , TODO: 여기서 미리 pageScale을 계산해서 초기화해야 할듯 
+  const [pagesScale, setPagesScale] = useState(defaultScale ? defaultScale : Math.min(window.innerWidth / defaultWidth, 1));  // default pageScale : 1  , TODO: 여기서 미리 pageScale을 계산해서 초기화해야 할듯 
   const [scaleDirection, setScaleDirection] = useState(); // scale up/down 
   const [pagesSize, setPagesSize] = useState([]); //ex: [{idx:0, width:100, height:100}]
   // const [pagesHeight, setPagesHeight] = useState();
@@ -188,13 +189,13 @@ const PDFViewer = forwardRef(({isUpload, isSave, isEditing, file, onItemChanged,
   //   }
   // }
 
-  // async function onUploadImage(e) {
-  //   const file = e.target.files[0];
-  //   if (file && selectedPageIndex >= 0) {
-  //     addImage(file);
-  //   }
-  //   e.target.value = null;
-  // }
+  async function onUploadImage(e) {
+    const file = e.target.files[0];
+    if (file && selectedPageIndex >= 0) {
+      addImage(file);
+    }
+    e.target.value = null;
+  }
 
   /**
    * Add PDF
@@ -280,10 +281,9 @@ const PDFViewer = forwardRef(({isUpload, isSave, isEditing, file, onItemChanged,
 
       let blob;
       if (isMerge) {
-
         if (_items) {
           const promises = _items.map(async _item => {
-          if (_item.type === (TYPE_SIGN || TYPE_IMAGE)) {  //payload: base64 => Image Object
+            if (_item.type === TYPE_SIGN || _item.type === TYPE_IMAGE) {  //payload: base64 => Image Object
               if (_item.payload) {
                 const img = await readAsImage(_item.payload);
                 _item.payload = img;
@@ -322,7 +322,7 @@ const PDFViewer = forwardRef(({isUpload, isSave, isEditing, file, onItemChanged,
     let newItems = loadash.cloneDeep(items);  //TO-BE 
 
     newItems.forEach(_item => {
-      if (_item.type === (TYPE_SIGN || TYPE_IMAGE)) { //Image Object => base64
+      if (_item.type === TYPE_SIGN || _item.type === TYPE_IMAGE) { //Image Object => base64
         // console.log('type', typeof(_item.payload));
         if (_item.payload && _item.payload.src) {
           _item.payload = _item.payload.src;
@@ -361,7 +361,7 @@ const PDFViewer = forwardRef(({isUpload, isSave, isEditing, file, onItemChanged,
           }
         })
         _item.text = newText;
-      } else if (_item.type === (TYPE_SIGN || TYPE_IMAGE)) {  //base64 => Image Object
+      } else if (_item.type === TYPE_SIGN || _item.type === TYPE_IMAGE) {  //base64 => Image Object
         if (_item.payload) {
           const img = await readAsImage(_item.payload);
           _item.payload = img;
@@ -415,7 +415,7 @@ const PDFViewer = forwardRef(({isUpload, isSave, isEditing, file, onItemChanged,
       canvas.width = vp.width;
       canvas.height = vp.height;
   
-      return page.render({canvasContext: canvas.getContext("2d"), willReadFrequently: true, viewport: vp}).promise.then(function () {
+      return page.render({canvasContext: canvas.getContext("2d"), viewport: vp}).promise.then(function () {
         return canvas.toDataURL();
       });
     } catch (e) {
@@ -440,16 +440,29 @@ const PDFViewer = forwardRef(({isUpload, isSave, isEditing, file, onItemChanged,
    */
   const addImage = async (file) => {
     try {
-      const url = await readAsDataURL(file);
-      const img = await readAsImage(url);
+      // AS-IS
+      // const url = await readAsDataURL(file);
+      // const img = await readAsImage(url);
+
+      // TO-BE: 이미지 압축 처리
+      const compressData = await compressImage(file); // 이미지 용량 압축
+      const img = await readAsImage(compressData);
+
       const id = uuID();
       const { width, height } = img;
+
+      console.log('image width', width)
+      console.log('image width', height)
+
+      var canvas = document.createElement("canvas");
+      console.log('canvas width', canvas.width)
+
       const object = {
         id,
         pIdx: selectedPageIndex,
         type: "image",
-        width,
-        height,
+        width: width*0.58,  // canvas 에 그려지는 사이즈를 계산하여야 하나 하드코딩 처리
+        height: height*0.58,
         x: 0,
         y: 0,
         payload: img,
@@ -592,7 +605,9 @@ const PDFViewer = forwardRef(({isUpload, isSave, isEditing, file, onItemChanged,
         placeholder: '',
         required : required,
         color: color,
-        autoInput: autoInput
+        autoInput: autoInput,
+        label: ''
+        // label : subType === TYPE_TEXT ? 'TEXT' : (subType === TYPE_SIGN ? 'SIGN' : 'CHECKBOX')
       };
 
       setItems([...items, object]);
@@ -667,8 +682,10 @@ const PDFViewer = forwardRef(({isUpload, isSave, isEditing, file, onItemChanged,
         item.disableOptions = true; // 컴포넌트 편집 기능 off
       } 
       
-      if (item.type === (TYPE_SIGN || TYPE_IMAGE)) { //Image Object => base64
+      if (item.type === TYPE_SIGN || item.type === TYPE_IMAGE) { //Image Object => base64
+        console.log('A')
         if (item.payload && item.payload.src) {
+          console.log('B')
           item.payload = item.payload.src;
         }
       }
@@ -743,8 +760,7 @@ const PDFViewer = forwardRef(({isUpload, isSave, isEditing, file, onItemChanged,
    */
   const updateItem = (itemId, payload) => {
 
-    console.log('👽updateItem called - itemId :', itemId);
-    console.log('👽updateItem called - payload :', payload);
+    console.log('updateItem called', payload);
     
     setItems((prevItems) => (
       prevItems.map(item => item.id === itemId ? { ...item, ...payload} : item )
@@ -863,7 +879,7 @@ const PDFViewer = forwardRef(({isUpload, isSave, isEditing, file, onItemChanged,
   /**
    * setting scale
    * @function setScale
-   * @param {number} scale scale [0.5 ~ 1.5]
+   * @param {number} scale scale [0.5 ~ 2.0]
    */
   const setScale = (scale) => {
     console.log('setScale', scale);
@@ -950,24 +966,27 @@ const PDFViewer = forwardRef(({isUpload, isSave, isEditing, file, onItemChanged,
           bg-gray-200 border-b border-gray-300 */}
         <div
           className="sticky z-10 top-0 w-full h-10 p-1 flex justify-center bg-gray-200 border-b border-gray-300">
+
+
           {/* <input
             type="file"
             name="pdf"
             id="pdf"
             onChange={onUploadPDF}
             className="hidden" />
-          <input
-            type="file"
-            id="image"
-            name="image"
-            className="hidden"
-            onChange={onUploadImage} />
           <label
             className="whitespace-no-wrap bg-blue-500 hover:bg-blue-700 text-white
             font-bold py-1 px-3 md:px-4 rounded mr-3 cursor-pointer md:mr-4"
             htmlFor="pdf">
             Choose PDF
-          </label>
+          </label> */}
+
+          {/* <input
+            type="file"
+            id="image"
+            name="image"
+            className="hidden"
+            onChange={onUploadImage} />
           <label
             className="flex items-center justify-center h-full w-8 hover:bg-gray-500
             cursor-pointer"
@@ -983,7 +1002,7 @@ const PDFViewer = forwardRef(({isUpload, isSave, isEditing, file, onItemChanged,
             <Divider type="vertical" />
             
             <Button shape="circle" icon={<PlusOutlined />} onClick={() => {
-              if (pagesScale < 1.5) {
+              if (pagesScale < 2.0) {
                 // console.log('mainRef', mainRef.current.offsetWidth)
                 // console.log('pagesSize', pagesSize);
                 // Scale UP 한 경우 사이즈를 러프하게 예측하여 더 커지지 못하도록 설정 
@@ -1055,13 +1074,13 @@ const PDFViewer = forwardRef(({isUpload, isSave, isEditing, file, onItemChanged,
                 style={{touchAction:'none', transform: `scale(${pagesScale})` }}> */}
               <div
                 className="absolute top-0 left-0 transform origin-top-left"
-                style={{touchAction:'none'}}>
+                style={{touchAction:'none', userSelect:'none'}}>
 
                   {items.filter(item => item.pIdx === idx).map(item => {
                     return (
                       <div key={item.id}>
                       {(item.type === TYPE_IMAGE || item.type === TYPE_SIGN) && <Image key={item.id} item={item} deleteItem={deleteItem} updateItem={updateItem} pageSize={pagesSize.filter(el => el.idx === idx)[0]} pagesScale={pagesScale} scaleDirection={scaleDirection} signList={signList} setSignList={setSignList}/>}
-                      {(item.type === TYPE_TEXT) && <Text key={item.id} item={item} deleteItem={deleteItem} updateItem={updateItem} pageSize={pagesSize.filter(el => el.idx === idx)[0]} pagesScale={pagesScale} scaleDirection={scaleDirection}  />}
+                      {(item.type === TYPE_TEXT) && <Text key={item.id} item={item} deleteItem={deleteItem} updateItem={updateItem} pageSize={pagesSize.filter(el => el.idx === idx)[0]} pagesScale={pagesScale} scaleDirection={scaleDirection} />}
                       {(item.type === TYPE_BOX) && <Box key={item.id} item={item} deleteItem={deleteItem} updateItem={updateItem} pageSize={pagesSize.filter(el => el.idx === idx)[0]} pagesScale={pagesScale} scaleDirection={scaleDirection}  />}
                       {(item.type === TYPE_CHECKBOX) && <CheckBox key={item.id} item={item} deleteItem={deleteItem} updateItem={updateItem} pageSize={pagesSize.filter(el => el.idx === idx)[0]} pagesScale={pagesScale} scaleDirection={scaleDirection}  />}
                       </div>
