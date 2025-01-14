@@ -5,7 +5,7 @@ import { get } from 'lodash-es';
 import { saveAs } from 'file-saver';
 import { v4 as uuidv4 } from 'uuid';
 import Highlighter from 'react-highlight-words';
-import { Table, List, Card, Input, Space, Button, Select } from 'antd';
+import { Table, List, Card, Input, Space, Button, Select, message } from 'antd';
 import { PageContainer } from '@ant-design/pro-layout';
 import { SearchOutlined } from '@ant-design/icons';
 import { useIntl } from 'react-intl';
@@ -182,6 +182,14 @@ const SystemManage = () => {
     const blob = new Blob([buffer], mimeType);
     saveAs(blob, 'testExcel.xlsx');
   };
+
+  const restartGotenberg = async () => { 
+    axiosInterceptor.post('/admin/restartGotenberg').then(response => {
+      message.success(response.data.result)
+    }).catch(error => { 
+      message.error(error.message)
+    });
+  };
   
   return (
     <div>
@@ -220,7 +228,8 @@ const SystemManage = () => {
           )}
         />
         <Table columns={columnsByUser} dataSource={docStatByUser} pagination={pagination} onChange={setPagination} style={{ marginBottom: '1rem' }}/>
-        <Button key={uuidv4()} onClick={handleExcel}>엑셀 내보내기!!</Button>
+        <Button key={uuidv4()} onClick={handleExcel}>엑셀 내보내기!!</Button><br/><br/>
+        <Button onClick={restartGotenberg}> Gotenberg Restart</Button>
       </PageContainer>
     </div>
   );

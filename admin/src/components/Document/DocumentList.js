@@ -180,6 +180,46 @@ const DocumentList = () => {
         </React.Fragment>
     },
     {
+      title: '참여자',
+      responsive: ['sm'],
+      dataIndex: 'users',
+      key: 'participants',
+      ...getColumnSearchProps('participants'),
+      onFilter: (value, record) => {
+        const firstUserName = record.users?.[0]?.name || '';
+        const firstUserTitle = record.users?.[0]?.JOB_TITLE || '';
+        const userCount = record.users?.length || 0;
+        let displayText = '';
+        if(userCount > 1) {displayText = `${firstUserName} ${firstUserTitle} 외 ${userCount-1}명`;}
+        else {displayText = `${firstUserName} ${firstUserTitle}`;}
+        return displayText.toLowerCase().includes(value.toLowerCase());
+      },
+      render: (users) => {
+        const firstUserName = users?.[0]?.name || ' '; // 첫 번째 user 이름
+        const firstUserTitle = users?.[0]?.JOB_TITLE || ' '; // 첫 번째 user 이름
+        const userCount = users?.length || 0; // users 배열의 개수
+        let displayText = '';
+
+        if(userCount > 1){displayText = `${firstUserName} ${firstUserTitle} 외 ${userCount-1}명`;} // 표시할 텍스트
+        else {displayText = `${firstUserName} ${firstUserTitle}`;}
+        
+        return (
+          <React.Fragment>
+            {searchedColumn === 'participants' ? (
+              <Highlighter
+                highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
+                searchWords={[searchText]}
+                autoEscape
+                textToHighlight={displayText}
+              />
+            ) : (
+              displayText
+            )}
+          </React.Fragment>
+        );
+      }
+    },
+    {
       title: '최근 활동',
       dataIndex: 'recentTime',
       responsive: ['sm'],

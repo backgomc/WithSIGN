@@ -16,6 +16,7 @@ const { generateToken, ValidateToken, renewalToken } = require('../middleware/ad
 const { makeFolder } = require('../common/utils');
 const fs = require('fs');
 const path = require('path');
+const { exec } = require('child_process');
 
 const java = require('java');
 const jarFilePath1 = __dirname+'/../lib/INICrypto_v4.0.12.jar';
@@ -540,6 +541,17 @@ router.post('/document/list', ValidateToken, async (req, res) => {
       userIds.push(dataList[idx]['_id']);
     }
     searchStr['user'] = { $in: userIds };
+  }
+
+  // 참여자
+  if (req.body.participants) {
+    var userIds = [];
+    var regex = new RegExp(req.body.participants[0], 'i');
+    var dataList = await User.find({ 'name': regex }).exec();
+    for (var idx in dataList) {
+      userIds.push(dataList[idx]['_id']);
+    }
+    searchStr['users'] = { $in: userIds };
   }
 
   console.log(searchStr);
@@ -1149,6 +1161,26 @@ router.post('/statistic', ValidateToken, async (req, res) => {
 
   return res.json({ success: true, usrStat: usrStat, docStat: docStat, docStatByUser: docStatByUser, docStatByDate: docStatByDate});
 });
+
+// Gotenberg 재실행
+router.post('/restartGotenberg', ValidateToken, (req, res) => {
+  // txt파일 출력 start
+  const fileName = 'GotenRestart.txt';
+  const content = 'Y';
+  const filePath = path.join(config.storageDIR, fileName);
+
+  fs.writeFile(filePath, content, 'utf8', (err) => {
+      if (err) {
+        console.error('파일 생성 중 오류 발생:', err);
+        res.status(500).json({ result: '리스타트 실패' });
+        return;
+      } else {
+        console.log(`${fileName} 파일이 성공적으로 생성되었습니다.`);
+        res.json({ result: '리스타트 요청 성공.' });
+      }
+  });
+});
+
 ///////////////////////////////////////////////////////////////////////// 시스템 통계 정보 종료 /////////////////////////////////////////////////////////////////////////
 
 
