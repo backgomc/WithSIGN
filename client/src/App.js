@@ -252,7 +252,7 @@ const App = () => {
       
 
       <InFolder path="/inFolder" />
-      
+      <MyFolder path="/myFolder" />
       <MySign path="mySign" />
       <Sign path="/signDocument" />
       <ViewDocument path="/viewDocument" />

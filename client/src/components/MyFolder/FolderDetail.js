@@ -13,6 +13,7 @@ import { setPathname } from '../../config/MenuSlice';
 import { DOCUMENT_SIGNED } from '../../common/Constants';
 import { Tooltip, Modal, Input, Space, Button, message, Typography, Table, Radio, Badge, Tabs, List, TreeSelect, Switch, Empty, Select, Divider } from 'antd';
 import { SearchOutlined, TeamOutlined, FileOutlined, ArrowLeftOutlined, AppstoreOutlined , EllipsisOutlined, UnorderedListOutlined , DownloadOutlined, CheckCircleTwoTone, FolderOpenFilled, FolderOpenTwoTone, SwapOutlined, DeleteOutlined, FolderOpenOutlined } from '@ant-design/icons';
+import DocumentExpander from "../Lists/DocumentExpander";
 import { PageContainer } from '@ant-design/pro-layout';
 import ProCard from '@ant-design/pro-card';
 import RcResizeObserver from 'rc-resize-observer';
@@ -69,6 +70,7 @@ const FolderDetail = ({location}) => {
   const [moveFolderId, setMoveFolderId] = useState();
   const [searchedColumn, setSearchedColumn] = useState('');
   const [searchText, setSearchText] = useState('');
+  const [expandable, setExpandable] = useState(true);
   const [editable, setEditable] = useState(false);
   const [loading, setLoading] = useState(false);
   const [loadingDownload, setLoadingDownload] = useState([]);
@@ -220,6 +222,7 @@ const FolderDetail = ({location}) => {
       sorter: true,
       key: 'docTitle',
       ...getColumnSearchProps(['docTitle']),
+      expandable: true,
       sorter: (a, b) => a.docTitle?.localeCompare(b.docTitle),
       render: (text, row) => {
         return (
@@ -665,7 +668,7 @@ const FolderDetail = ({location}) => {
               }}
             >
               <List
-                rowKey="id"
+                rowKey={ item => { return item._id } }
                 grid={{ gutter: 24, lg: 3, md: 2, sm: 1, xs: 1 }}
                 dataSource={docs}
                 loading={loading}
@@ -731,6 +734,14 @@ const FolderDetail = ({location}) => {
                 :
                 false
               }
+              defaultExpandedRowKeys={[location.state.docId]}
+              expandedRowRender={expandable ? row => <DocumentExpander item={row} /> : null}
+              expandRowByClick={expandable}
+              onRow={record => ({
+                onClick: e => {
+                  console.log(`user clicked on row ${record.t1}!`);
+                }
+              })}
             />
           </Tabs.TabPane>
         </Tabs>

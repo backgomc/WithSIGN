@@ -131,12 +131,25 @@ router.post('/selectFolder', ValidateToken, async (req, res) => {
     // } else {
       // 그외 폴더 조회
       Folder.findOne({ '_id': req.body._id, $or: [{ 'user': req.body.user }, { 'sharedTarget': {$elemMatch: {'target': {$in: orgs}}} }]})
-      .populate({path: 'docs._id', select: {'docType': 1, 'docTitle': 1, 'docRef': 1, 'thumbnail': 1, 'downloads': 1, 'requestedTime': 1, 'recentTime': 1, 'signed': 1}})
+      .populate({path: 'docs._id',
+                 select: {'docType': 1, 'docTitle': 1, 'docRef': 1, 'thumbnail': 1, 'downloads': 1, 'requestedTime': 1, 'recentTime': 1, 'signed': 1, 'signedTime': 1, 'signedBy': 1,  'canceledBy': 1, 'deletedBy': 1, 'user': 1, 'users': 1},
+                 populate: [
+                  {
+                    path: 'user',
+                    select: {name: 1, JOB_TITLE: 2, DEPART_CODE: 3, thumbnail: 4}
+                  },
+                  {
+                    path: 'users',
+                    select: {name: 1, JOB_TITLE: 2, DEPART_CODE: 3}
+                  } 
+                 ]
+                })
       .exec(function(err, folder) {
         if (err) return res.json({ success: false, err });
         let docs = [];
         if (folder.docs && folder.docs.length > 0) {
           docs = folder.docs.map(item => {
+            console.log(item._id);
             return {'_id': item?._id?._id,
                     'docTitle': item?.alias,
                     'originTitle': item?._id?.docTitle,
@@ -145,7 +158,14 @@ router.post('/selectFolder', ValidateToken, async (req, res) => {
                     'downloads': item?._id?.downloads,
                     'requestedTime': item?._id?.requestedTime,
                     'recentTime': item?._id?.recentTime,
-                    'signed': item?._id?.signed}
+                    'signed': item?._id?.signed,
+                    'signedTime': item?._id?.signedTime,
+                    'signedBy': item?._id?.signedBy,
+                    'canceledBy': item?._id?.canceledBy,
+                    'deletedBy': item?._id?.sigdeletedByned,
+                    'folders': [],
+                    'user': item?._id?.user,
+                    'users': item?._id?.users,}
           });
         }
         return res.status(200).send({success: true, docs: docs});

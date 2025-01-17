@@ -331,7 +331,7 @@ const DocumentExpander = (props) => {
         
         if ((item.signedBy.some(e => e.user === user._id))) {
             return  (
-                <Timeline.Item dot={<CheckCircleOutlined className="timeline-clock-icon" />} color="gray">
+                <Timeline.Item key={uuidv4()} dot={<CheckCircleOutlined className="timeline-clock-icon" />} color="gray">
                     <font color='#A7A7A9'><b>{user.name} {user.JOB_TITLE}</b> {orgInfos.filter(e => e.DEPART_CODE == user.DEPART_CODE).length > 0 ? '['+orgInfos.filter(e => e.DEPART_CODE == user.DEPART_CODE)[0].DEPART_NAME+']' : ''} {(item.observers && item.observers.includes(user._id)) ? '문서 수신' : '서명 완료'}</font> &nbsp; 
                     <Tag color="#BABABC">
                         {item.signedBy.filter(e => e.user === user._id)[0].skipped === true ? '생략됨' : 
@@ -342,7 +342,7 @@ const DocumentExpander = (props) => {
             )
         } else if ((item.canceledBy.some(e => e.user === user._id))) {
             return (
-                <Timeline.Item dot={<CloseCircleOutlined className="timeline-clock-icon" />} color="red">
+                <Timeline.Item key={uuidv4()} dot={<CloseCircleOutlined className="timeline-clock-icon" />} color="red">
                     <font color='#A7A7A9'><b>{user.name} {user.JOB_TITLE}</b> {orgInfos.filter(e => e.DEPART_CODE == user.DEPART_CODE).length > 0 ? '['+orgInfos.filter(e => e.DEPART_CODE == user.DEPART_CODE)[0].DEPART_NAME+']' : ''} {(item.observers && item.observers.includes(user._id)) ? '수신 취소' : '서명 취소'} &nbsp;</font>
                     <Tooltip placement="right" title={item.canceledBy.filter(e => e.user === user._id)[0].message}>
                         <Tag color="#BABABC" >
@@ -354,7 +354,7 @@ const DocumentExpander = (props) => {
             )
         } else {
             return (
-                <Timeline.Item dot={item.usersOrder?.filter(e => e.user == user._id).length > 0 ? <Tag color='blue'>{item.usersOrder.filter(e => e.user == user._id)[0]?.order + 1}</Tag> : <ClockCircleOutlined className="timeline-clock-icon" />}>
+                <Timeline.Item key={uuidv4()} dot={item.usersOrder?.filter(e => e.user == user._id).length > 0 ? <Tag color='blue'>{item.usersOrder.filter(e => e.user == user._id)[0]?.order + 1}</Tag> : <ClockCircleOutlined className="timeline-clock-icon" />}>
                     <font color='#1890FF'><b>{user.name} {user.JOB_TITLE}</b> {orgInfos.filter(e => e.DEPART_CODE == user.DEPART_CODE).length > 0 ? '['+orgInfos.filter(e => e.DEPART_CODE == user.DEPART_CODE)[0].DEPART_NAME+']' : ''} {(item.observers && item.observers.includes(user._id)) ? '수신 필요' : '서명 필요'}</font>
                 </Timeline.Item>
             )
