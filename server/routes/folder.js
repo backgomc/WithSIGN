@@ -149,7 +149,6 @@ router.post('/selectFolder', ValidateToken, async (req, res) => {
         let docs = [];
         if (folder.docs && folder.docs.length > 0) {
           docs = folder.docs.map(item => {
-            console.log(item._id);
             return {'_id': item?._id?._id,
                     'docTitle': item?.alias,
                     'originTitle': item?._id?.docTitle,
