@@ -148,7 +148,7 @@ router.post('/selectFolder', ValidateToken, async (req, res) => {
         if (err) return res.json({ success: false, err });
         let docs = [];
         if (folder.docs && folder.docs.length > 0) {
-          docs = folder.docs.map(item => {
+          docs = folder.docs.filter(item => item?._id).map(item => {
             return {'_id': item?._id?._id,
                     'docTitle': item?.alias,
                     'originTitle': item?._id?.docTitle,
