@@ -60,7 +60,7 @@ const UserSelectorModal = ({showModal, setShowModal, selectUsers, setSelectUsers
 
       const level1 = orgs.filter(e => e.PARENT_NODE_ID === "")
       level1.forEach(org => {
-        const org1 =  {key: org.DEPART_CODE, value: org.DEPART_CODE + '|' + org.DEPART_NAME, title: org.DEPART_NAME, children: [], selectable: false }
+        const org1 =  {value: org.DEPART_CODE + '|' + org.DEPART_NAME, title: org.DEPART_NAME, children: [], selectable: false }
         insertUser(org1, users, org.DEPART_CODE)
 
         const level2 = orgs.filter(e => e.PARENT_NODE_ID === org.DEPART_CODE)
@@ -80,14 +80,14 @@ const UserSelectorModal = ({showModal, setShowModal, selectUsers, setSelectUsers
   const insertUser = (org, users, depart_code) => {
     let filterUser = users.filter(e => e.DEPART_CODE === depart_code);
     filterUser.map(user => (
-      org.children.push({key: user._id, value: user._id + '|' + user.SABUN + '|' + user.name + (user.JOB_TITLE ? ' ' + user.JOB_TITLE : ''), title: user.name + (user.JOB_TITLE ? ' ' + user.JOB_TITLE : '')})
+      org.children.push({value: user._id + '|' + user.SABUN + '|' + user.name + (user.JOB_TITLE ? ' ' + user.JOB_TITLE : ''), title: user.name + (user.JOB_TITLE ? ' ' + user.JOB_TITLE : '')})
     ));
   };
 
 
   const dfs = (currentOrg, level, users, orgs) => {
     level.forEach(org => {
-      const current = {key: org.DEPART_CODE, value: org.DEPART_CODE + '|' + org.DEPART_NAME, title: org.DEPART_NAME, children: [], selectable: false}
+      const current = {value: org.DEPART_CODE + '|' + org.DEPART_NAME, title: org.DEPART_NAME, children: [], selectable: false}
       insertUser(current, users, org.DEPART_CODE)
 
       currentOrg.children?.push(current)

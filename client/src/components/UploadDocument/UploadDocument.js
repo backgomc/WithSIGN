@@ -112,9 +112,9 @@ const UploadDocument = ({location}) => {
         return Upload.LIST_IGNORE;
       }
 
-      const isLt2M = file.size / 1024 / 1024 < 10;
+      const isLt2M = file.size / 1024 / 1024 < 20;
       if (!isLt2M) {
-        message.error('File must smaller than 10MB!');
+        message.error('File must smaller than 20MB!');
         return Upload.LIST_IGNORE;
       }
       
@@ -333,7 +333,7 @@ const UploadDocument = ({location}) => {
         ...propsAttach
       }}
       // action="/upload.do"
-      extra="최대 파일수 3개, 최대 용량 10MB"
+      extra="최대 파일수 3개, 최대 용량 20MB"
     />
   )
 

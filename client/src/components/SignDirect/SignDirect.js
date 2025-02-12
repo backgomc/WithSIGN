@@ -285,11 +285,15 @@ const SignDirect = () => {
   
   const send = async () => {
 
+    if (loading) return;  // 중복 실행 방지 추가
+
     // 유효성 체크 : 참여자
     if ((requesters.length - 1) !== selectUsers.length) {
       message.warning('참여자를 지정해주세요!');
       return;
     }
+
+    setLoading(true);
 
     let _observers = [];
     let _lastUsers = [];
