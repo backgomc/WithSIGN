@@ -7,7 +7,7 @@ import FAQCard from '../Board/FAQCard';
 import { setUser, selectUser } from '../../app/infoSlice';
 import { navigate, Link } from '@reach/router';
 import { LockOutlined, UserOutlined } from '@ant-design/icons';
-import { Form, message, Spin, Avatar, Alert, Row, Col } from 'antd';
+import { Form, message, Spin, Avatar, Alert, Row, Col, Tag } from 'antd';
 import { PageContainer } from '@ant-design/pro-layout';
 import ProCard from '@ant-design/pro-card';
 import ProForm, { ProFormText, ProFormSelect, ProFormDependency } from '@ant-design/pro-form';
@@ -22,7 +22,7 @@ const Setting = () => {
 
   const [formPassword] = Form.useForm();
 
-  const { _id, name, JOB_TITLE, email, DEPART_CODE, OFFICE_CODE, thumbnail } = user;
+  const { _id, name, JOB_TITLE, email, DEPART_CODE, OFFICE_CODE, thumbnail, role, template_flag } = user;
 
   const [tab, setTab] = useState('tab1');
 
@@ -207,6 +207,9 @@ const Setting = () => {
                 }}
                 placeholder="소속명"
               />
+            <div>권한</div> 
+              {role === 1 ? <Tag>관리자</Tag> : template_flag === 1 ? <Tag>양식 관리자</Tag> : '' }
+            <br></br><br></br>
     
             <div style={{width:"328px"}}>
               <Alert

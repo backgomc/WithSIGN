@@ -1,6 +1,6 @@
 import React from 'react';
 import axios from 'axios';
-import { Dropdown, Menu } from 'antd';
+import { Dropdown, Menu, Tag } from 'antd';
 import Icon, { SettingOutlined, PoweroffOutlined, MenuUnfoldOutlined, 
   MenuFoldOutlined, UserOutlined, CaretDownOutlined, GlobalOutlined } from '@ant-design/icons';
 // import { Link } from 'react-router-dom';
@@ -28,7 +28,7 @@ const HeaderComponent = ({collapsed, setCollapsed}) => {
   const dispatch = useDispatch();
 
   const user = useSelector(selectUser);
-  const { name, photoURL, email } = user;
+  const { name, photoURL, email, role, template_flag } = user;
 
   const localLang = useSelector(selectLang);
 
@@ -69,6 +69,7 @@ const HeaderComponent = ({collapsed, setCollapsed}) => {
         <Icon component={collapsed ? MenuUnfoldOutlined : MenuFoldOutlined} />
       </span> */}
       <div className={styles['header-user-info']}>
+        {role === 1 ? <Tag>관리자</Tag> : template_flag === 1 ? <Tag>양식 관리자</Tag> : '' }
         <Dropdown key="1" overlay={menu}>
           <span className={styles['header-dropdown-link']}>
             <UserOutlined /> &nbsp;

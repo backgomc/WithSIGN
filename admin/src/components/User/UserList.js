@@ -236,6 +236,23 @@ const UserList = () => {
     });
   }
 
+  const setTemplateFlag = async (key, record) =>{
+    confirm({
+      title: '양식관리자 권한을 변경 처리 하시겠습니까?',
+      icon: <ExclamationCircleOutlined />,
+      // content: '',
+      okText: '네',
+      okType: 'danger',
+      cancelText: '아니오',
+      onOk() {
+        fetchUpdate(key, record);
+      },
+      onCancel() {
+        console.log('Cancel');
+      }
+    });
+  }
+
   const setStatus = async (key, record) => {
     confirm({
       title: '사용자 상태를 변경 처리 하시겠습니까?',
@@ -283,6 +300,9 @@ const UserList = () => {
     if (key === 'push') {
       sendPush(record);
     }
+    if (key === 'form') {
+      setTemplateFlag(key, record);
+    }
   }
 
   const columns = [
@@ -305,7 +325,7 @@ const UserList = () => {
       title: '상태',
       render: (row) => {
         return (
-          !row['use']?<Tag color="red">미사용</Tag>:row['role']>0?<Tag color="blue">관리자</Tag>:''
+          !row['use']?<Tag color="red">미사용</Tag>:row['role']>0?<Tag color="blue">관리자</Tag>:row['template_flag']?<Tag color="green">양식관리자</Tag>:''
         );
       },
       align: 'center'
@@ -338,7 +358,8 @@ const UserList = () => {
             { key: 'init', name: '비밀번호 초기화' },
             { key: 'flag', name: '사용자 상태 변경' },
             { key: 'auth', name: '관리자 권한 변경' },
-            { key: 'push', name: '테스트 알림 전송' }
+            { key: 'push', name: '테스트 알림 전송' },
+            { key: 'form', name: '양식관리자 변경' }
           ]}
         />,
       ],

@@ -34,6 +34,10 @@ const userSchema = mongoose.Schema({
         type: Number,
         default: 0
     },
+    template_flag: {
+        type: Number,
+        default: 0  // 0:일반,1:양식관리자
+    },
     thumbnail: {
         type: String
     },

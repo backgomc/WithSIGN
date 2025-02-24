@@ -51,7 +51,7 @@ const UploadTemplate = ({location}) => {
   const viewer = useRef(null);
   const pdfRef = useRef();
 
-  const [type, setType] = useState(user.role ? location.state.templateType : 'M');
+  const [type, setType] = useState(user.role || user.template_flag ? location.state.templateType : 'M');
 
 
   const fetchUploadTempFile = async () => {
@@ -330,7 +330,7 @@ const UploadTemplate = ({location}) => {
                 label="템플릿 타입"
                 rules={[{ required: true }]}
                 initialValue={type}
-                disabled={!user.role}
+                disabled={!user.role && !user.template_flag}
                 onChange={(e) => { setType(e.target.value) }}
                 options={[
                   {

@@ -419,6 +419,7 @@ router.post('/user/update', ValidateToken, async (req, res) => {
     if (req.body.k == 'init') {var pwd = generateRandomPass(); user.password = pwd;}
     if (req.body.k == 'flag') user.use = !user.use;
     if (req.body.k == 'auth') user.role = 1 - user.role;
+    if (req.body.k == 'form') user.template_flag = 1 - user.template_flag;
     user.save((err) => {
       if (err) return res.json({ success: false, err });
       if (req.body.k == 'init') restful.callNotify(null, user,'임시 비밀번호 발급', 'WithSIGN 임시 비밀번호는 ' + pwd + ' 입니다.');
