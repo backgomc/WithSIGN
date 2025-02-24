@@ -60,7 +60,7 @@
 	"input.fileupload.file": "이곳에 파일을 끌어다 놓거나, 내 컴퓨터에서 업로드할 파일을 선택해 주세요.",
 	"input.fileupload.support": "지원 파일: pdf",
 	"input.fileupload.support.image": "지원 파일: jpg, png",
-	"input.fileupload.volume": "업로드 가능 용량: 최대 5Mb",
+	"input.fileupload.volume": "업로드 가능 용량: 최대 20Mb",
 	"input.fileupload.file.volume": "업로드 가능 용량: 최대 10Mb",
 	"input.fileupload.file.max": "최대 파일 등록 갯수: 3개",
 	"input.sign": "서명 입력란",

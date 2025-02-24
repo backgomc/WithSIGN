@@ -487,9 +487,9 @@ const UploadDocument = ({location}) => {
                       return Upload.LIST_IGNORE;
                     }
 
-                    if (file.size > 1048576 * 5) {  //5MB
+                    if (file.size > 1048576 * 20) {  //20MB
                       console.log(file.size)
-                      message.error(`filesize(${common.formatBytes(file.size)}) is bigger than 5MB`);
+                      message.error(`filesize(${common.formatBytes(file.size)}) is bigger than 20MB`);
                       return Upload.LIST_IGNORE;
                     }
 

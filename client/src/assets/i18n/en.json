@@ -60,7 +60,7 @@
 	"input.fileupload.file": "Click or drag a file to this area to upload",
 	"input.fileupload.support": "Support File: [pdf, docx, pptx, xlsx]",
 	"input.fileupload.support.image": "Support File: jpg, png",
-	"input.fileupload.volume": "Maximum volume: 5Mb",
+	"input.fileupload.volume": "Maximum volume: 20Mb",
 	"input.fileupload.file.volume": "Maximum volume: 10Mb",
 	"input.fileupload.file.max": "Maximum file number: 3",
 	"input.sign": "add sign",
