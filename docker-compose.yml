@@ -1,16 +1,16 @@
 version: '3.3'
  
 services:
-  # admin:
-  #   build: # Dockerfile 빌드
-  #     context: ./admin # Dockerfile 빌드 경로
-  #   image: nhsign-admin:2.2.3
-  #   container_name: nhsign-admin # 컨테이너 명
-  #   restart: always
-  #   ports:
-  #     - 4002:3002
-  #   volumes: # 볼륨 설정
-  #     - ./admin/build:/app/build
+  admin:
+     build: # Dockerfile 빌드
+       context: ./admin # Dockerfile 빌드 경로
+     image: nhsign-admin:2.2.5
+     container_name: nhsign-admin # 컨테이너 명
+     restart: always
+     ports:
+       - 4002:3002
+     volumes: # 볼륨 설정
+       - ./admin/build:/app/build
 
   broker:
     build: # Dockerfile 빌드
@@ -29,7 +29,7 @@ services:
   web:
     build: # Dockerfile 빌드
       context: ./client # Dockerfile 빌드 경로
-    image: nhsign-client:2.2.3
+    image: nhsign-client:2.2.5
     container_name: nhsign-client # 컨테이너 명
     restart: "on-failure"
     ports:
@@ -46,11 +46,20 @@ services:
     #   - ./client/build:/usr/share/nginx/html
     environment:
       - NODE_ENV=production
+  
+  mobile:
+    build: # Dockerfile 빌드
+      context: ./mobile # Dockerfile 빌드 경로
+    image: nhsign-mobile:2.2.3
+    container_name: nhsign-mobile # 컨테이너 명
+    restart: "on-failure"
+    ports:
+      - 3004:3004
  
   server:
     build: # Dockerfile 빌드
       context: ./server # Dockerfile 빌드 경로
-    image: nhsign-server:2.2.3
+    image: nhsign-server:2.2.4
     container_name: nhsign-server # 컨테이너 명
     restart: "on-failure"
     # expose:
