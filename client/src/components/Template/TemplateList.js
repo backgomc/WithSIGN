@@ -61,8 +61,8 @@ const TemplateList = () => {
   const [searchedColumn, setSearchedColumn] = useState('');
 
   const [data, setData] = useState([]);
-  const [pagination, setPagination] = useState({current:1, pageSize:10});
-  const [pageSize, setPageSize] = useState(10);
+  const [pagination, setPagination] = useState({current:1, pageSize:12, align:"center"});
+  const [pageSize, setPageSize] = useState(12);
   const [total, setTotal] = useState();
   const [current, setCurrent] = useState();
 
@@ -70,6 +70,8 @@ const TemplateList = () => {
   const [responsive, setResponsive] = useState(false);
 
   const [tab, setTab] = useState('total');
+  const [categoryList, setCategoryList] = useState([]);
+  const [selCategory, setSelCategory] = useState('');
   const [listStyle, setListStyle] = useState(defaultSetting?.templateListStyle ? defaultSetting?.templateListStyle : 'cardStyle');
   const [loading, setLoading] = useState(false);
   const [visiblePopconfirm, setVisiblePopconfirm] = useState(false);
@@ -82,11 +84,17 @@ const TemplateList = () => {
 
   useEffect(() => {
     loadData();
-  }, [tab]);
+  }, [tab, selCategory]);
   
   const loadData = () => {
     fetchTemplates({
       pagination : {current: 1, pageSize: pageSize},
+      uid: _id,
+      type: templateType(),
+      COMPANY_CODE: COMPANY_CODE,
+      category : selCategory
+    });
+    fetchCategory({
       uid: _id,
       type: templateType(),
       COMPANY_CODE: COMPANY_CODE
@@ -112,6 +120,18 @@ const TemplateList = () => {
       } else {
         setLoading(false);
         alert(response.data.error);
+      }
+    });
+  }
+
+  // fetch Category
+  const fetchCategory = (params = {}) => {
+    axiosInterceptor.post('/api/template/category', params).then(response => {
+      console.log(response)
+      if (response.data.success) {
+        setCategoryList(response.data.category)
+      } else {
+        alert(response.data.error)
       }
     });
   }
@@ -353,7 +373,7 @@ const TemplateList = () => {
           </Popover>}
 
           <Tooltip placement="top" title={'문서 보기'}>
-          <Button icon={<FileOutlined />} onClick={e => { navigate('/previewPDF', {state: {templateId: row._id, docRef:row.docRef, docTitle:row.docTitle, openTargets:row.openTargets, userInfo:row.user}}) }}></Button>
+          <Button icon={<FileOutlined />} onClick={e => { navigate('/previewPDF', {state: {templateId: row._id, docRef:row.docRef, docTitle:row.docTitle, openTargets:row.openTargets, userInfo:row.user, documentCategory:row?.category}}) }}></Button>
           </Tooltip>
 
           {(row.user?._id === _id || user.role ) ? <Badge size="small" count={(row.hasRequester || (row.users && row.users.length > 0 || (row.requesters && row.requesters.length > 0))) ? row.users?.length + row.requesters?.length : '0'} color='#108ee9'><Tooltip placement="top" title={'참여자 설정'}><Button icon={<UserAddOutlined />} onClick={e => { confirmToPrepare(row) }}></Button></Tooltip></Badge> : ''}
@@ -371,7 +391,8 @@ const TemplateList = () => {
       docTitle: value,
       uid: _id,
       type: templateType(),
-      COMPANY_CODE: COMPANY_CODE
+      COMPANY_CODE: COMPANY_CODE,
+      category : selCategory
     });
     
     let filters;
@@ -469,7 +490,7 @@ const TemplateList = () => {
       return (
       [btnReqeust(item),
         
-        <Tooltip placement="top" title={'문서 보기'}><Button type="text" icon={<FileOutlined />} onClick={e => { e.stopPropagation(); navigate('/previewPDF', {state: {templateId: item._id, docRef:item.docRef, docTitle:item.docTitle, openTargets:item.openTargets, userInfo:item.user}}) }}></Button></Tooltip>,
+        <Tooltip placement="top" title={'문서 보기'}><Button type="text" icon={<FileOutlined />} onClick={e => { e.stopPropagation(); navigate('/previewPDF', {state: {templateId: item._id, docRef:item.docRef, docTitle:item.docTitle, openTargets:item.openTargets, userInfo:item.user, documentCategory:item?.category}}) }}></Button></Tooltip>,
 
         <Badge count={(item.hasRequester || (item.users && item.users.length > 0 || (item.requesters && item.requesters.length > 0))) ? item.users?.length + item.requesters?.length : '0'} color='#108ee9'><Tooltip placement="top" title={'참여자 설정'}><Button type="text" icon={<UserAddOutlined />} onClick={e => { e.stopPropagation(); confirmToPrepare(item) }}></Button></Tooltip></Badge>,
 
@@ -477,7 +498,7 @@ const TemplateList = () => {
     } else {
       return (
       [btnReqeust(item),
-        <Button type="text" icon={<FileOutlined />} onClick={e => { e.stopPropagation(); navigate('/previewPDF', {state: {templateId: item._id, docRef:item.docRef, docTitle:item.docTitle, openTargets:item.openTargets, userInfo:item.user}}) }}>문서조회</Button>]);
+        <Button type="text" icon={<FileOutlined />} onClick={e => { e.stopPropagation(); navigate('/previewPDF', {state: {templateId: item._id, docRef:item.docRef, docTitle:item.docTitle, openTargets:item.openTargets, userInfo:item.user, documentCategory:item?.category}}) }}>문서조회</Button>]);
     }
   }
 
@@ -536,7 +557,7 @@ const TemplateList = () => {
         setCurrent(page);
 
         fetchTemplates({
-          pagination : {current: page, pageSize: pageSize},
+          pagination : {current: page, pageSize: pageSize, align:"center"},
           uid: _id,
           type: templateType(),
           COMPANY_CODE: COMPANY_CODE
@@ -545,7 +566,8 @@ const TemplateList = () => {
       },
       pageSize: pageSize,
       total: total,
-      current: current
+      current: current,
+      align:"center"
     }}
     renderItem={item => (
       <List.Item key={item._id}>
@@ -586,7 +608,8 @@ const TemplateList = () => {
       ...filters,
       uid: _id,
       type: templateType(),
-      COMPANY_CODE: COMPANY_CODE
+      COMPANY_CODE: COMPANY_CODE,
+      category : ''
     });
 
   };
@@ -627,6 +650,10 @@ const TemplateList = () => {
     setListStyle(e.target.value)
     dispatch(setDefaultSetting({'templateListStyle' : e.target.value}));
   }
+  
+  const onChangeCategory = (e) => {
+    setSelCategory(e.target.value)
+  };
 
   return (
     <div>
@@ -674,12 +701,22 @@ const TemplateList = () => {
             key: 'public',
           },
         ]}
-        onTabChange={(key)=>{setTab(key)}}
+        onTabChange={(key)=>{setTab(key);setSelCategory('')}}
         content={description}
         footer={[
         ]}
+        affixProps={'test affixProps'}
     >
-      <br></br>
+      <br/>{/*카테고리 <br/>*/}
+      <Radio.Group onChange={onChangeCategory} value={selCategory}>
+        <Radio.Button value =''> 전체 </Radio.Button>
+        {categoryList.map((item, index) => (
+          <Radio.Button key={index} value={item}>
+            {item}
+          </Radio.Button>
+        ))}
+      </Radio.Group>
+      <br/><br/>
 
       <RcResizeObserver
         key="resize-observer"

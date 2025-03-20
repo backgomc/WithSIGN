@@ -76,7 +76,11 @@ router.post('/templates', ValidateToken, (req, res) => {
   if (req.body.docTitle) {
     // TODO: 한글검색이 잘 안되는 문제
     andParam['docTitle'] = { $regex: '.*' + req.body.docTitle[0] + '.*', $options: 'i' }
-  } 
+  }
+
+  if (req.body.category) {
+    andParam['category'] = req.body.category
+  }
 
   const current = req.body.pagination.current
   const pageSize = req.body.pagination.pageSize
@@ -277,6 +281,7 @@ router.post('/updateTemplateInfo', ValidateToken, async (req, res) => {
   const docRef = req.body.docRef
   const thumbnail = req.body.thumbnail
   const pageCount = req.body.pageCount
+  const category = req.body.category ? req.body.category : ''
 
   let thumbnailPath;
 
@@ -318,6 +323,7 @@ router.post('/updateTemplateInfo', ValidateToken, async (req, res) => {
       
     }
   }
+  updateData.category = category
 
 
   Template.updateOne(
@@ -329,5 +335,46 @@ router.post('/updateTemplateInfo', ValidateToken, async (req, res) => {
   });
 
 });
+
+
+// 카테고리 목록
+router.post('/category', ValidateToken, (req, res) => {
+  const uid = req.body.uid
+  if (!uid) {
+      return res.json({ success: false, message: "input value not enough!" })
+  }
+
+  var Param = {};
+  const type = req.body.type;
+
+  if (type && type === 'C') { // 신청서
+    Param['type'] = 'C'
+  } else if (type && type === 'G') { // 회사
+    Param['type'] = 'G'
+  } else if (type && type === 'T') { // 전체
+    Param = {
+      $or: [
+        { type: "C" }, // 신청서 or 개인 템플릿
+        { $and: [ { user: uid }, { type: "M" } ] }
+      ]
+    };
+  } else { // 개인
+    Param['user'] = uid
+    Param['type'] = 'M'
+  }
+  
+  console.log('req.body.docTitle:'+req.body.docTitle)
+  if (req.body.docTitle) {
+    andParam['docTitle'] = { $regex: '.*' + req.body.docTitle[0] + '.*', $options: 'i' }
+  }
+
+  Template
+  .distinct("category", Param)
+  .exec((err, data) => {
+      console.log(data);
+      if (err) return res.json({success: false, error: err});
+      return res.json({ success: true, category: data })
+  })
+})
 
 module.exports = router;

@@ -15,6 +15,9 @@ const templateSchema = mongoose.Schema({
     type: { // C(신청서), M(개인), G(회사)
         type: String
     },
+    category: {
+        type: String
+    },
     registeredTime: {
         type: Date, default: Date.now
     },

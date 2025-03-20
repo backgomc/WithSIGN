@@ -132,7 +132,7 @@ router.post('/selectFolder', ValidateToken, async (req, res) => {
       // 그외 폴더 조회
       Folder.findOne({ '_id': req.body._id, $or: [{ 'user': req.body.user }, { 'sharedTarget': {$elemMatch: {'target': {$in: orgs}}} }]})
       .populate({path: 'docs._id',
-                 select: {'docType': 1, 'docTitle': 1, 'docRef': 1, 'thumbnail': 1, 'downloads': 1, 'requestedTime': 1, 'recentTime': 1, 'signed': 1, 'signedTime': 1, 'signedBy': 1,  'canceledBy': 1, 'deletedBy': 1, 'user': 1, 'users': 1},
+                 select: {'docType': 1, 'docTitle': 1, 'docRef': 1, 'thumbnail': 1, 'attachFiles':1, 'downloads': 1, 'requestedTime': 1, 'recentTime': 1, 'signed': 1, 'signedTime': 1, 'signedBy': 1,  'canceledBy': 1, 'deletedBy': 1, 'user': 1, 'users': 1},
                  populate: [
                   {
                     path: 'user',
@@ -154,6 +154,7 @@ router.post('/selectFolder', ValidateToken, async (req, res) => {
                     'originTitle': item?._id?.docTitle,
                     'docRef': item?._id?.docRef,
                     'thumbnail': item?._id?.thumbnail,
+                    'attachFiles': item?._id?.attachFiles,
                     'downloads': item?._id?.downloads,
                     'requestedTime': item?._id?.requestedTime,
                     'recentTime': item?._id?.recentTime,

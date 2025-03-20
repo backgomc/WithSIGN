@@ -1,5 +1,3 @@
-version: '3.3'
- 
 services:
   admin:
      build: # Dockerfile 빌드
@@ -29,7 +27,7 @@ services:
   web:
     build: # Dockerfile 빌드
       context: ./client # Dockerfile 빌드 경로
-    image: nhsign-client:2.2.5
+    image: nhsign-client:2.2.6
     container_name: nhsign-client # 컨테이너 명
     restart: "on-failure"
     ports:
@@ -59,7 +57,7 @@ services:
   server:
     build: # Dockerfile 빌드
       context: ./server # Dockerfile 빌드 경로
-    image: nhsign-server:2.2.4
+    image: nhsign-server:2.2.6
     container_name: nhsign-server # 컨테이너 명
     restart: "on-failure"
     # expose:

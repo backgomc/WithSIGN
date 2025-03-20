@@ -133,6 +133,7 @@ const UploadTemplate = ({location}) => {
       docRef: docRef,
       thumbnail: thumbnail,
       type: type,
+      category : form.getFieldValue('documentCategory'),
       isWithPDF: USE_WITHPDF,
       COMPANY_CODE: COMPANY_CODE
     }
@@ -323,6 +324,14 @@ const UploadTemplate = ({location}) => {
                 tooltip="입력하신 템플릿명으로 표시됩니다."
                 placeholder="템플릿명을 입력하세요."
                 rules={[{ required: true, message: formatMessage({id: 'input.documentTitle'}) }]}
+              />
+
+              <ProFormText
+                name="documentCategory"
+                label="카테고리"
+                tooltip="입력하신 카테고리로 표시됩니다."
+                placeholder="카테고리를 입력하세요."
+                rules={[{ message: formatMessage({id: 'input.documentCategory'}) }]}
               />
 
               <ProFormRadio.Group

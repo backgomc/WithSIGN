@@ -4,7 +4,7 @@ import axios from 'axios';
 import axiosInterceptor from '../../config/AxiosConfig';
 import { navigate } from '@reach/router';
 import { selectUser } from '../../app/infoSlice';
-
+import form, { ProForm, ProFormText } from '@ant-design/pro-form';
 import { Button, message, Form, Typography, Modal, Spin, Upload } from 'antd';
 import { useIntl } from "react-intl";
 import { PageContainer } from '@ant-design/pro-layout';
@@ -42,6 +42,7 @@ const PreviewPDF = ({location}) => {
   const [loading, setLoading] = useState(false);
   const [loadingDownload, setLoadingDownload] = useState([]);
   const [docTitle, setDocTitle] = useState(location.state.docTitle ? location.state.docTitle : '');
+  const [documentCategory, setDocumentCategory] = useState(location.state.documentCategory ? location.state.documentCategory : '');
   const [file, setFile] = useState(null);
   const [fileTitle, setFileTitle] = useState('문서 변경');
 
@@ -91,7 +92,8 @@ const PreviewPDF = ({location}) => {
       docTitle: docTitle,
       docRef: newDocRef,
       thumbnail: thumbnail,
-      pageCount: pageCount
+      pageCount: pageCount,
+      category : documentCategory
     }
 
     console.log('param', param);
@@ -182,7 +184,17 @@ const PreviewPDF = ({location}) => {
         ],
       }}
       style={{height:`calc(100vh - 72px)`}}
-      content={userInfo ? writerInfo : ''}
+      content={[userInfo ? writerInfo : '',
+        <ProFormText
+          name="documentCategory"
+          label="카테고리"
+          tooltip="입력하신 카테고리로 표시됩니다."
+          placeholder="카테고리를 입력하세요."
+          rules={[{ message: formatMessage({id: 'input.documentCategory'}) }]}
+          value={documentCategory}
+          onChange={(e) => setDocumentCategory(e.target.value)} 
+        />]
+      }
       // footer={[
       // ]}
     >
