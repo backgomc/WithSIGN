@@ -373,7 +373,9 @@ router.post('/category', ValidateToken, (req, res) => {
   .exec((err, data) => {
       console.log(data);
       if (err) return res.json({success: false, error: err});
-      return res.json({ success: true, category: data })
+      // 빈 문자열 제거
+      const filteredData = data.filter(category => category !== "");
+      return res.json({ success: true, category: filteredData })
   })
 })
 
