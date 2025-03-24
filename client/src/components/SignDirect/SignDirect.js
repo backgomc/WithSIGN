@@ -329,7 +329,7 @@ const SignDirect = () => {
       item.disable = false;
       item.tag = '';
 
-      if (item.uid.startsWith('requester')) { // uid 변경 
+      if (item.uid?.startsWith('requester')) { // uid 변경 
 
         if (item.uid === 'requester1') {
           item.uid = _id;
