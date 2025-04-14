@@ -3,6 +3,7 @@ const app = express();
 const path = require("path");
 const cors = require('cors')
 const logger = require('morgan');
+const fs = require('fs');
 
 const cookieParser = require("cookie-parser");
 
@@ -20,6 +21,7 @@ const connect = mongoose.connect(config.mongoURI,
 
 app.use(cors())
 app.use(logger('dev'));
+app.use(logger('combined', { format: 'default', stream: fs.createWriteStream('./logs/app.log', { flags: 'a'}) }));
 
 app.use(express.static('public'));
 
