@@ -14,7 +14,7 @@ import { InputNumber, Input, Segmented, Switch, Button } from 'antd';
 import SvgTextSize from './assets/svg/SvgTextSize';
 import Icon, { AlignCenterOutlined, AlignLeftOutlined, AlignRightOutlined, CloseOutlined } from '@ant-design/icons';
 import styled from 'styled-components';
-import { TYPE_SIGN, TYPE_TEXT, TYPE_CHECKBOX, TYPE_IMAGE } from './Common/Constants';
+import { TYPE_SIGN, TYPE_TEXT, TYPE_CHECKBOX, TYPE_IMAGE, TYPE_DROPDOWN } from './Common/Constants';
 // const EditorArea = styled.button`
 //   border: none;
 //   margin-left: -8px;
@@ -70,6 +70,7 @@ const Box = ({item, deleteItem, updateItem, pageSize, pagesScale, scaleDirection
   const [operation, setOperation] = useState();
   const [fontSize, setFontSize] = useState(item.fontSize ? item.fontSize : 16);
   const [textAlign, setTextAlign] = useState(item.textAlign ? item.textAlign : ((item.subType === TYPE_SIGN || item.subType === TYPE_CHECKBOX) ? 'center' : 'left'));
+  const [inputs, setInputs] = useState(item.inputs && item.inputs.length > 0 ? item.inputs : [] );
 
   const transformRef = useRef();
   const canvasRef = useRef();
@@ -96,7 +97,7 @@ const Box = ({item, deleteItem, updateItem, pageSize, pagesScale, scaleDirection
     render();
 
   }, []);
-  
+
   // 컴포넌트가 선택되면 focus 주기
   // 빈 영역 클릭 시 focus 에 해제되어 blur event가 콜 되고 이때 편집모드를 해제 할 수 있다.
   useEffect(() => {
@@ -135,9 +136,6 @@ const Box = ({item, deleteItem, updateItem, pageSize, pagesScale, scaleDirection
     // console.log('pagesScale', pagesScale)
     // console.log('transform.width', transform.width)
 
-    
-
-
     setTransform((prevTransform) => ({
       ...prevTransform,
       x: item.x * pagesScale,
@@ -149,6 +147,10 @@ const Box = ({item, deleteItem, updateItem, pageSize, pagesScale, scaleDirection
   const render = async () => {
 
     console.log("render called")
+
+    if (item.subType === TYPE_DROPDOWN && item.inputs.length == 0) {
+      addInput();
+    }
 
     if (item.subType === TYPE_CHECKBOX) {
       // checkBox 컴포넌트와 동일한 위치/사이즈로 조절
@@ -202,7 +204,7 @@ const Box = ({item, deleteItem, updateItem, pageSize, pagesScale, scaleDirection
 
         let _y = startTransform.y + translation.y;
 
-        if (item.subType === TYPE_TEXT) {
+        if (item.subType === TYPE_TEXT || item.subType === TYPE_DROPDOWN) {
           let textHeight =  item.fontSize * item.lineHeight * extractLines().length; 
           if (startTransform.y + translation.y <= 0) {
             _y = 0;
@@ -243,7 +245,7 @@ const Box = ({item, deleteItem, updateItem, pageSize, pagesScale, scaleDirection
          return;
         }
 
-        if (item.subType === TYPE_TEXT) {
+        if (item.subType === TYPE_TEXT || item.subType === TYPE_DROPDOWN) {
 
         // 텍스트 사이즈에 맞춰 높이를 설정
         _height = parseInt(_height / (item.fontSize * item.lineHeight)) * (item.fontSize * item.lineHeight)
@@ -417,7 +419,7 @@ const Box = ({item, deleteItem, updateItem, pageSize, pagesScale, scaleDirection
     console.log('onChangeFontSize called');
     setFontSize(value);
 
-    if (item.subType === TYPE_TEXT) {
+    if (item.subType === TYPE_TEXT || item.subType === TYPE_DROPDOWN) {
       let newHeight = item.height * (parseInt(value) / item.fontSize);
       updateItem(item.id, {fontSize : parseInt(value), height: newHeight});
       setTransform((prevTransform) => ({
@@ -479,6 +481,31 @@ const Box = ({item, deleteItem, updateItem, pageSize, pagesScale, scaleDirection
     lines.push(lineText);
     return lines;
   }
+
+  const addInput = () => {
+    setInputs([...inputs, '']);
+    updateItem(item.id, {inputs : [...inputs, '']});
+  };
+
+  const removeInput = (indexToRemove) => {
+    console.log('removeInput called', indexToRemove);
+
+    setInputs((prev) => {
+      const copy = [...prev];
+      copy.splice(indexToRemove, 1); // index 기준으로 삭제
+
+      updateItem(item.id, { inputs: copy });
+      return copy;
+    });
+  };
+
+  const onChangeInput = (e, index) => {
+    const newInputs = [...inputs]; // 기존 배열 복사
+    newInputs[index] = e.target.value; // 특정 index 값 변경
+    setInputs(newInputs); // 상태 업데이트
+    updateItem(item.id, {inputs : newInputs});
+  };
+
   
   return (
     // <StyledBox color={item.color}>
@@ -519,7 +546,7 @@ const Box = ({item, deleteItem, updateItem, pageSize, pagesScale, scaleDirection
       <div style={{position:'absolute', borderLeft:drag ? 'dotted 1px #78bce6' : 'none', height:`${pageSize?.height/pagesScale}px`, marginTop:`-${transformRef.current.y/pagesScale}px`, marginLeft:`${transformRef.current.width}px`}}></div>
 
       {/* 하단 가로 라인 - 텍스트 컴포넌트가 아닌 경우 */}
-      {item.subType !== TYPE_TEXT && <div style={{position:'absolute', width:`${pageSize?.width/pagesScale}px`, marginLeft:`-${transformRef.current.x/pagesScale}px`, marginTop:`${transformRef.current.height}px`, border: drag ? 'dotted 0.5px #78bce6' : 'none'}} />}
+      {item.subType !== TYPE_TEXT && item.subType !== TYPE_DROPDOWN  && <div style={{position:'absolute', width:`${pageSize?.width/pagesScale}px`, marginLeft:`-${transformRef.current.x/pagesScale}px`, marginTop:`${transformRef.current.height}px`, border: drag ? 'dotted 0.5px #78bce6' : 'none'}} />}
 
       <div
         ref={textRef}
@@ -538,7 +565,7 @@ const Box = ({item, deleteItem, updateItem, pageSize, pagesScale, scaleDirection
       {/* <div>{item.height} {transformRef.current.height}</div> */}
 
       {/* 하단 가로 라인 - 텍스트 컴포넌트인 경우 */}
-      {item.subType === TYPE_TEXT && <div style={{position:'absolute', width:`${pageSize?.width/pagesScale}px`, marginLeft:`-${transformRef.current.x/pagesScale}px`, border: drag ? 'dotted 0.5px #78bce6' : 'none'}} />}
+      {item.subType === TYPE_TEXT || item.subType === TYPE_DROPDOWN && <div style={{position:'absolute', width:`${pageSize?.width/pagesScale}px`, marginLeft:`-${transformRef.current.x/pagesScale}px`, border: drag ? 'dotted 0.5px #78bce6' : 'none'}} />}
 
       {disabled ? (
         // <div onClick={onEdit} className="pan-edit">
@@ -551,7 +578,7 @@ const Box = ({item, deleteItem, updateItem, pageSize, pagesScale, scaleDirection
           {/* <SvgScale data-action="scale" className="pan-scale" /> */}
 
           {item.subType !== TYPE_CHECKBOX &&
-          <div data-action="scale" class="absolute right-0.5 bottom-0.5 w-2 h-2"><img src={item.subType === TYPE_TEXT ? SvgResizeBoth : SvgResizeBoth} alt="resize item" style={{cursor: item.subType === TYPE_TEXT ? 'nwse-resize' : 'nwse-resize'}} /></div>}
+          <div data-action="scale" class="absolute right-0.5 bottom-0.5 w-2 h-2"><img src={item.subType === TYPE_TEXT || item.subType === TYPE_DROPDOWN ? SvgResizeBoth : SvgResizeBoth} alt="resize item" style={{cursor: item.subType === TYPE_TEXT || item.subType === TYPE_DROPDOWN ? 'nwse-resize' : 'nwse-resize'}} /></div>}
 
           {/* {(item.name && editing) && <div class="absolute left-0 -top-5 text-blue-500">{item.name}</div>} */}
 
@@ -572,7 +599,7 @@ const Box = ({item, deleteItem, updateItem, pageSize, pagesScale, scaleDirection
             <img class="w-full h-full" src={SvgDelete} alt="delete item" />
           </div>
 
-          {item.subType === TYPE_TEXT && 
+          {(item.subType === TYPE_TEXT || item.subType === TYPE_DROPDOWN) && 
           <div hidden={!editing} class="absolute -bottom-17 left-2 w-150">
             {/* <div class='w-10 bg-blue-100'>aaa</div> */}
             {/* <div class='w-7 bg-gray-300'>aaabbb</div> */}
@@ -580,6 +607,20 @@ const Box = ({item, deleteItem, updateItem, pageSize, pagesScale, scaleDirection
             <EditorArea>
               <Input ref={labelRef} style={{maxWidth:'90px', marginTop:'3px'}} placeholder='Label' onChange={onChangeLabel} value={item.label} maxLength={10} size='small' />
               <br></br>
+              {/*Dropdown 시작*/}
+                {item.subType === TYPE_DROPDOWN && (
+                  <>
+                    {inputs.map((input, index) => (
+                    <div key={index} style={{ display: "flex", alignItems: "center", marginTop: "3px" }}>
+                      <Button danger size="small" onClick={() => removeInput(index)} style={{ marginLeft: "1px" }}>-</Button>
+                      <Input style={{ maxWidth: "90px" }} placeholder='옵션' maxLength={30} size="small" onChange={(e) => onChangeInput(e, index)} value={input} />
+                    </div>
+                  ))}
+                  <Button size='small' style={{marginTop:'3px'}} onClick={addInput}>+ 추가</Button>
+                  <br></br>
+                  </>
+                )}
+              {/*Dropdown 종료*/}
               <InputNumber ref={fontSizeRef} style={{maxWidth:'90px', marginTop:'3px'}} addonBefore={<Icon component={SvgTextSize} style={{verticalAlign:'middle'}} />} min={9} max={30} step={1} size="small" onChange={onChangeFontSize} defaultValue={fontSize} />
               {/* </Button> */}
               <br></br>

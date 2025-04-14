@@ -22,7 +22,7 @@ import moment from 'moment';
 import 'moment/locale/ko';
 import PDFViewer from "@niceharu/withpdf";
 import loadash from 'lodash';
-import {TYPE_SIGN, TYPE_IMAGE, TYPE_TEXT, TYPE_CHECKBOX, AUTO_NAME, AUTO_JOBTITLE, AUTO_OFFICE, AUTO_DEPART, AUTO_SABUN, AUTO_DATE} from '../../common/Constants';
+import {TYPE_SIGN, TYPE_IMAGE, TYPE_TEXT, TYPE_CHECKBOX, TYPE_DROPDOWN, AUTO_NAME, AUTO_JOBTITLE, AUTO_OFFICE, AUTO_DEPART, AUTO_SABUN, AUTO_DATE} from '../../common/Constants';
 import styled from 'styled-components';
 const PageContainerStyle = styled.div`
 .ant-pro-page-container-children-content {
@@ -144,7 +144,7 @@ const SignDocument = () => {
         if ((item.type === (TYPE_SIGN || TYPE_IMAGE)) && !item.payload) {
           item.hidden = true;
         }
-        if (item.type === TYPE_TEXT) {
+        if (item.type === TYPE_TEXT || item.type === TYPE_DROPDOWN) {
           if (item.lines.length < 1 || item.lines[0].length < 1) {
             item.hidden = true;
           }

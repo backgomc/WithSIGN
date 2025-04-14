@@ -66,6 +66,7 @@
 	"input.sign": "add sign",
 	"input.text": "add text",
 	"input.checkbox": "add checkbox",
+	"input.dropdown": "add dropdown",
 	"Send": "Send",
 	"Processing": "Processing...",
 	"Initialize": "Initialize",

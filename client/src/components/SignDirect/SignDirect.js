@@ -28,7 +28,7 @@ import { deepCopyObject } from '../../util/common';
 import styled from 'styled-components';
 
 import PDFViewer from "@niceharu/withpdf";
-import {TYPE_SIGN, TYPE_IMAGE, TYPE_TEXT, TYPE_BOX, TYPE_CHECKBOX, COLORS, AUTO_NAME, AUTO_JOBTITLE, AUTO_OFFICE, AUTO_DEPART, AUTO_SABUN, AUTO_DATE} from '../../common/Constants';
+import {TYPE_SIGN, TYPE_IMAGE, TYPE_TEXT, TYPE_BOX, TYPE_CHECKBOX, TYPE_DROPDOWN, COLORS, AUTO_NAME, AUTO_JOBTITLE, AUTO_OFFICE, AUTO_DEPART, AUTO_SABUN, AUTO_DATE} from '../../common/Constants';
 import { getToday } from '../../util/common';
 
 const { confirm } = Modal;

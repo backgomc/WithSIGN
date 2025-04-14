@@ -14,7 +14,7 @@ import ProCard from '@ant-design/pro-card';
 import 'antd/dist/antd.css';
 import '@ant-design/pro-card/dist/card.css';
 import { DownloadOutlined, ArrowLeftOutlined, CheckCircleTwoTone, PaperClipOutlined, PrinterOutlined } from '@ant-design/icons';
-import {DOCUMENT_SIGNED, DOCUMENT_TOSIGN, DOCUMENT_SIGNING, DOCUMENT_CANCELED, DOCUMENT_TOCONFIRM, DOCUMENT_TODO, TYPE_SIGN, TYPE_IMAGE, TYPE_TEXT, TYPE_CHECKBOX} from '../../common/Constants';
+import {DOCUMENT_SIGNED, DOCUMENT_TOSIGN, DOCUMENT_SIGNING, DOCUMENT_CANCELED, DOCUMENT_TOCONFIRM, DOCUMENT_TODO, TYPE_SIGN, TYPE_IMAGE, TYPE_TEXT, TYPE_CHECKBOX, TYPE_DROPDOWN} from '../../common/Constants';
 import PDFViewer from "@niceharu/withpdf";
 import styled from 'styled-components';
 
@@ -81,6 +81,11 @@ const ViewDocument = ({location}) => {
         }
         if (item.type === TYPE_CHECKBOX && !item.checked) {
           item.hidden = true;
+        }
+        if (item.type === TYPE_DROPDOWN) {
+          if (item.lines.length < 1 || item.lines[0].length < 1) {
+            item.hidden = true;
+          }
         }
         return item;
       })

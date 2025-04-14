@@ -11,8 +11,6 @@ import SvgEdit from './assets/images/edit.svg';
 // import SvgResizeWidth from './assets/images/resize-width.svg';
 import SvgResizeBoth from './assets/images/resize-both.svg';
 import { Button, Switch, InputNumber, Segmented, Space, Divider } from 'antd';
-
-// import { ReactComponent as svgTextSize} from './assets/images/text-size.svg';
 import SvgTextSize from './assets/svg/SvgTextSize';
 
 import Icon, { AlignCenterOutlined, AlignLeftOutlined, AlignRightOutlined } from '@ant-design/icons';
@@ -41,9 +39,9 @@ const EditorArea = styled.button`
   // }
 `;
 
-const Text = ({item, deleteItem, updateItem, pageSize, pagesScale, scaleDirection}) => {
+const DropDown = ({item, deleteItem, updateItem, pageSize, pagesScale, scaleDirection}) => {
 
-  console.log("Text render !");
+  console.log("DropDown render !");
 
   // const [transform, setTransform] = useState({
   //   width: item.width,
@@ -64,13 +62,44 @@ const Text = ({item, deleteItem, updateItem, pageSize, pagesScale, scaleDirectio
 
   const [drag, setDrag] = useState(null);
   const [disabled, setDisabled] = useState(item.disable ? item.disable : false);
+  //const [disabled, setDisabled] = useState(true);
   const [editing, setEditing] = useState(false);
   const [isText, setIsText] = useState(false);
   const [operation, setOperation] = useState();
   const [fontSize, setFontSize] = useState(item.fontSize ? item.fontSize : 16);
   const [textAlign, setTextAlign] = useState(item.textAlign ? item.textAlign : 'left');
   
+  const [inputOptions, setInputOptions] = useState((item.inputs || []).map(input => input === '' ? ' ' : input));
+  const [selectedLine, setSelectedLine] = useState(""); // 하나만 선택 가능하도록 설정
 
+  // 버튼 클릭 시 item.lines에 추가하는 함수
+  const handleSelect = (value) => {
+
+    console.log('handleSelect called');
+    //e.stopPropagation();
+
+    textRef.current.innerHTML = value;
+    textRef.current.innerHTML.replaceAll('<br>', '').length > 0 ? setIsText(true) : setIsText(false);
+    
+    // height 계산하여 적용
+    let _height;
+    if (extractLines()[extractLines().length - 1] === '') {
+      _height = item.fontSize * item.lineHeight * (extractLines().length - 1);
+    } else {
+      _height = item.fontSize * item.lineHeight * (extractLines().length);
+    }
+
+    setTransform((prevTransform) => ({
+      ...prevTransform,
+      height: Math.max(item.height, _height)
+    }));
+
+    setSelectedLine(value); // 상태 업데이트
+    updateItem(item.id, {lines : extractLines(), height: Math.max(item.height, _height)}); 
+    //updateItem(item.id, {lines : [value]}); // 부모 컴포넌트에 업데이트 요청
+
+  };
+  
   const [componentHeight, setComponentHeight] = useState(0);
 
 
@@ -81,7 +110,7 @@ const Text = ({item, deleteItem, updateItem, pageSize, pagesScale, scaleDirectio
   
   useEffect(() => {
 
-    console.log("Text useEffect called!", item);
+    console.log("DropDown useEffect called!", item);
 
     console.log('extractLines.length',extractLines().length)
 
@@ -103,40 +132,8 @@ const Text = ({item, deleteItem, updateItem, pageSize, pagesScale, scaleDirectio
   // pagesScale 이 변경되었을때 처리
   useDidMountEffect(() => {
 
-    console.log("Text useDidMountEffect pagesScale called", pagesScale);
-    // pageScale 이 1일때 x, y 좌표에 scale 값을 곱하여야 제대로 계산이 됨.
+    console.log("DropDown useDidMountEffect pagesScale called", pagesScale);
 
-    // if (scaleDirection === 'up') {
-    //   console.log('scaleDirection up')
-    //   setTransform((prevTransform) => ({
-    //     ...prevTransform,
-    //     x: prevTransform.x * pagesScale / (pagesScale - 0.1),
-    //     y: prevTransform.y * pagesScale / (pagesScale - 0.1)
-    //   }));
-    // } else if (scaleDirection === 'down') {  //down
-    //   console.log('scaleDirection down')
-    //   if (pagesScale === 0.9) {
-    //     setTransform((prevTransform) => ({
-    //       ...prevTransform,
-    //       x: prevTransform.x * pagesScale,
-    //       y: prevTransform.y * pagesScale
-    //     }));
-    //   } else {
-    //     setTransform((prevTransform) => ({
-    //       ...prevTransform,
-    //       x: prevTransform.x * pagesScale / (pagesScale + 0.1),
-    //       y: prevTransform.y * pagesScale / (pagesScale + 0.1)
-    //     }));
-    //   }
-    // } else {
-    //   console.log('mouse down called');
-
-    //   setTransform((prevTransform) => ({
-    //     ...prevTransform,
-    //     x: item.x * pagesScale,
-    //     y: item.y * pagesScale
-    //   }));
-    // }
     setTransform((prevTransform) => ({
       ...prevTransform,
       x: item.x * pagesScale,
@@ -148,18 +145,12 @@ const Text = ({item, deleteItem, updateItem, pageSize, pagesScale, scaleDirectio
   const render = async () => {
 
     console.log("render called")
-    textRef.current.innerHTML = item.text;
-    // textRef.current.focus();
+    textRef.current.innerHTML = item.label ? item.label : "";
+    
 
     updateItem(item.id, {lines : extractLines()});
 
     textRef.current.innerHTML.replaceAll('<br>', '').length > 0 ? setIsText(true) : setIsText(false);
-
-    // setTransform((prevTransform) => ({
-    //   ...prevTransform,
-    //   height: Math.max(22.4, item.fontSize * item.lineHeight * extractLines())
-    // }));
-
   }
 
   const onEdit = useCallback(() => {
@@ -181,13 +172,6 @@ const Text = ({item, deleteItem, updateItem, pageSize, pagesScale, scaleDirectio
       }
 
       const { action, startTransform } = drag;
-
-      // console.log('pageWidth', pageSize.width);
-      // console.log('pageHeight', pageSize.height);
-      // console.log('startTransform.x', startTransform.x);
-      // console.log('translation.x', translation.x);
-      // console.log('transform.width', transform.width);
-      // console.log('transform.height', transform.height);
 
       if (action === 'translate') {
 
@@ -212,8 +196,6 @@ const Text = ({item, deleteItem, updateItem, pageSize, pagesScale, scaleDirectio
           ...prevTransform,
           x: _x,
           y: _y,
-          // x: startTransform.x + translation.x,
-          // y: startTransform.y + translation.y,
         }));
 
         // updateItem(item.id, transformRef.current);
@@ -240,10 +222,8 @@ const Text = ({item, deleteItem, updateItem, pageSize, pagesScale, scaleDirectio
           ...prevTransform,
           width: Math.max(25, _width),
           height: Math.max(item.fontSize * item.lineHeight, _height)
-          // height: Math.max(50, startTransform.height + translation.y),
         }));
 
-        // updateItem(item.id, transformRef.current);
         updateItem(item.id, {x: transformRef.current.x / pagesScale, y: transformRef.current.y / pagesScale, width: Math.max(25, _width), height: Math.max(item.fontSize * item.lineHeight, _height)});
 
       }
@@ -300,16 +280,7 @@ const Text = ({item, deleteItem, updateItem, pageSize, pagesScale, scaleDirectio
     };
   }
 
-
-  // const onFocus = useCallback((e) => {
-  //   console.log('onFocus called #1');
-  //   textRef.current.focus();
-  //   e.stopPropagation();   
-  //   setOperation("edit");
-  // }, []);
-
-  function onFocus() {
-    console.log('onFocus called');
+  function onDivClick() {
     if (disabled) {
       textRef.current.blur();
       return;
@@ -318,16 +289,13 @@ const Text = ({item, deleteItem, updateItem, pageSize, pagesScale, scaleDirectio
     textRef.current.focus();
     setOperation("edit");
 
-    // console.log('item.disableOptions', item.disableOptions)
-    if (!item.disableOptions) { // 컴포넌트 편집기능 가능 여부 체크
-      setEditing(true);
-    }
+    setEditing(true);
   }
 
   const onBlur = (e) => {
     // console.log('onBlur called');
     // console.log('currentTarget', e.currentTarget);
-    // console.log('relatedTarget', e.relatedTarget);
+    // console.log('relatedTarget', e.relatedTarget);wnfakw
     e.stopPropagation();
 
     if (e.currentTarget.contains(e.relatedTarget)) return;  //blur로 인해 옵션창이 닫히지 않게 처리
@@ -389,58 +357,60 @@ const Text = ({item, deleteItem, updateItem, pageSize, pagesScale, scaleDirectio
 
   function onKeydown(e) {
 
-    // console.log('onKeydown called', e.keyCode);
-    const childNodes = Array.from(textRef.current.childNodes);
-    // console.log('childNodes', childNodes)
-    // console.log('textRef.current', textRef.current)
+    e.preventDefault(); // 모든 키 입력을 막음
 
-    // 영역을 넘는 엔터키 방지
-    if(!item.resizable) {
-      let _height;
-      const lines = extractLines();
-      if (lines[lines.length-1] === '') {
-        _height = item.fontSize * item.lineHeight * (lines.length - 1);
-      } else {
-        _height = item.fontSize * item.lineHeight * (lines.length);
-      }
+    // // console.log('onKeydown called', e.keyCode);
+    // const childNodes = Array.from(textRef.current.childNodes);
+    // // console.log('childNodes', childNodes)
+    // // console.log('textRef.current', textRef.current)
 
-      if (_height === item.height && e.keyCode === 13) {
-        e.preventDefault();
-        return;
-      }
-    }
+    // // 영역을 넘는 엔터키 방지
+    // if(!item.resizable) {
+    //   let _height;
+    //   const lines = extractLines();
+    //   if (lines[lines.length-1] === '') {
+    //     _height = item.fontSize * item.lineHeight * (lines.length - 1);
+    //   } else {
+    //     _height = item.fontSize * item.lineHeight * (lines.length);
+    //   }
 
-    if (e.keyCode === 13) {
-      // prevent default adding div behavior
-      e.preventDefault();
-      const selection = window.getSelection();
-      const focusNode = selection.focusNode;
-      const focusOffset = selection.focusOffset;
-      // the caret is at an empty line
-      if (focusNode === textRef.current) {
-        textRef.current.insertBefore(
-          document.createElement("br"),
-          childNodes[focusOffset]
-        );
-      } else if (focusNode instanceof HTMLBRElement) {
-        textRef.current.insertBefore(document.createElement("br"), focusNode);
-      }
-      // the caret is at a text line but not end
-      else if (focusNode.textContent.length !== focusOffset) {
-        document.execCommand("insertHTML", false, "<br>");
-        // the carat is at the end of a text line
-      } else {
-        let br = focusNode.nextSibling;
-        if (br) {
-          textRef.current.insertBefore(document.createElement("br"), br);
-        } else {
-          br = textRef.current.appendChild(document.createElement("br"));
-          br = textRef.current.appendChild(document.createElement("br"));
-        }
-        // set selection to new line
-        selection.collapse(br, 0);
-      }
-    }
+    //   if (_height === item.height && e.keyCode === 13) {
+    //     e.preventDefault();
+    //     return;
+    //   }
+    // }
+
+    // if (e.keyCode === 13) {
+    //   // prevent default adding div behavior
+    //   e.preventDefault();
+    //   const selection = window.getSelection();
+    //   const focusNode = selection.focusNode;
+    //   const focusOffset = selection.focusOffset;
+    //   // the caret is at an empty line
+    //   if (focusNode === textRef.current) {
+    //     textRef.current.insertBefore(
+    //       document.createElement("br"),
+    //       childNodes[focusOffset]
+    //     );
+    //   } else if (focusNode instanceof HTMLBRElement) {
+    //     textRef.current.insertBefore(document.createElement("br"), focusNode);
+    //   }
+    //   // the caret is at a text line but not end
+    //   else if (focusNode.textContent.length !== focusOffset) {
+    //     document.execCommand("insertHTML", false, "<br>");
+    //     // the carat is at the end of a text line
+    //   } else {
+    //     let br = focusNode.nextSibling;
+    //     if (br) {
+    //       textRef.current.insertBefore(document.createElement("br"), br);
+    //     } else {
+    //       br = textRef.current.appendChild(document.createElement("br"));
+    //       br = textRef.current.appendChild(document.createElement("br"));
+    //     }
+    //     // set selection to new line
+    //     selection.collapse(br, 0);
+    //   }
+    // }
   }
 
   const onInput = (e) => {
@@ -462,13 +432,13 @@ const Text = ({item, deleteItem, updateItem, pageSize, pagesScale, scaleDirectio
     //   }
     // }
   }
-
+/*
   const onDoubleClick = (e) => {
     console.log('onDoubleClick called');
     e.stopPropagation();
     textRef.current.focus();
   }
-
+*/
   const onClick = (e) => {
     console.log('onClick called');
     e.stopPropagation();
@@ -482,44 +452,35 @@ const Text = ({item, deleteItem, updateItem, pageSize, pagesScale, scaleDirectio
   }
 
   const onKeyUp = (e) => {
-    console.log('onKeyUp called');
-    e.stopPropagation();
 
-    // 텍스트가 없는 경우 background 에 컬러 추가
-    // console.log('innerHTML', textRef.current.innerHTML.replaceAll('<br>', ''));
-    // console.log('innerHTML length', textRef.current.innerHTML.replaceAll('<br>', '').trim().length);
-    textRef.current.innerHTML.replaceAll('<br>', '').length > 0 ? setIsText(true) : setIsText(false);
-
-    // console.log('lines', extractLines());
-
-    // height 계산하여 적용
-    let _height;
-    if (extractLines()[extractLines().length - 1] === '') {
-      _height = item.fontSize * item.lineHeight * (extractLines().length - 1);
-    } else {
-      _height = item.fontSize * item.lineHeight * (extractLines().length);
-    }
-
-    // console.log('item.height', item.height)
+    e.preventDefault(); // 모든 키 입력을 막음
     
-    setTransform((prevTransform) => ({
-      ...prevTransform,
-      height: Math.max(item.height, _height)
-    }));
+    // console.log('onKeyUp called');
+    // e.stopPropagation();
 
-    updateItem(item.id, {lines : extractLines(), height: Math.max(item.height, _height)}); 
-  }
+    // // 텍스트가 없는 경우 background 에 컬러 추가
+    // // console.log('innerHTML', textRef.current.innerHTML.replaceAll('<br>', ''));
+    // // console.log('innerHTML length', textRef.current.innerHTML.replaceAll('<br>', '').trim().length);
+    // textRef.current.innerHTML.replaceAll('<br>', '').length > 0 ? setIsText(true) : setIsText(false);
 
-  const onPaste = (e) => {
-    e.preventDefault();
-    const clipboardData = e.clipboardData || window.clipboardData;
-    let text = clipboardData.getData('text');
+    // // console.log('lines', extractLines());
 
-    // 줄바꿈 문자를 <br>로 바꿔서 붙여넣기
-    text = text.replace(/\r\n|\r|\n/g, '<br>');
+    // // height 계산하여 적용
+    // let _height;
+    // if (extractLines()[extractLines().length - 1] === '') {
+    //   _height = item.fontSize * item.lineHeight * (extractLines().length - 1);
+    // } else {
+    //   _height = item.fontSize * item.lineHeight * (extractLines().length);
+    // }
 
-    // 현재 커서 위치에 HTML 삽입
-    document.execCommand('insertHTML', false, text);
+    // // console.log('item.height', item.height)
+    
+    // setTransform((prevTransform) => ({
+    //   ...prevTransform,
+    //   height: Math.max(item.height, _height)
+    // }));
+
+    // updateItem(item.id, {lines : extractLines(), height: Math.max(item.height, _height)}); 
   }
 
   // const onChangeFontSize = (obj) => {
@@ -599,7 +560,7 @@ const Text = ({item, deleteItem, updateItem, pageSize, pagesScale, scaleDirectio
       onMove={onMove}
       onEnd={onEnd}
       // onDoubleClick={onDoubleClick}
-      onClick={onClick}
+      onClick={onDivClick}
       onKeyUp={onKeyUp}
       onBlur={onBlur}
       // onSelect={onSelect}
@@ -612,6 +573,7 @@ const Text = ({item, deleteItem, updateItem, pageSize, pagesScale, scaleDirectio
         border: `1px ${drag ? 'none' : 'solid'} ${item.borderColor ? item.borderColor : (disabled ? '#e2e2e2' : '#78bce6')}`,
         position: 'absolute',
         background: isText || disabled ? 'transparent' : 'rgba(186, 224, 255, 0.5)',
+        height: `${transformRef.current.height+2}px`,
         zIndex:editing?10:0   // 컴포넌트 편집시 더 상위에 보이도록 처리
       }}
       // className={'cursor-pointer'}
@@ -635,19 +597,18 @@ const Text = ({item, deleteItem, updateItem, pageSize, pagesScale, scaleDirectio
   
       <div
         ref={textRef}
-        placeholder={item.placeholder ? item.placeholder : ""}  //disable 이면 placeholder 숨기기
-        onFocus={onFocus}
+        //placeholder={item.label? item.label : (item.placeholder ? item.placeholder : "")}  //disable 이면 placeholder 숨기기
+        //onClick={onDivClick}
         // onBlur={onBlur}
         onKeyDown={onKeydown}
         onInput={onInput}
         // onMouseDown={() => console.log('onMouseDown #2')} 
         // on:paste|preventDefault={onPaste}
-        onPaste={onPaste}
-        contentEditable="true"
+        contentEditable="false"
         // contentEditable={item.editable ? item.editable : true}  // not working ...
         spellCheck="false"
         class="outline-none whitespace-no-wrap"
-        style={{fontSize: `${fontSize}px`, fontFamily: `${item.fontFamily}, serif`, lineHeight: `${item.lineHeight}`, WebkitUserSelect: 'text', textAlign: textAlign, height: `${transformRef.current.height}px`, wordBreak: 'break-all' }}
+        style={{backgroundColor: selectedLine === "" ? "#DCEFFF" : "#fff", fontSize: `${fontSize}px`, fontFamily: `${item.fontFamily}, serif`, lineHeight: `${item.lineHeight}`, WebkitUserSelect: 'text', textAlign: textAlign, height: `${transformRef.current.height}px`, wordBreak: 'break-all' }}
         />
 
       {/* 하단 가로 라인 */}
@@ -689,12 +650,33 @@ const Text = ({item, deleteItem, updateItem, pageSize, pagesScale, scaleDirectio
             {/* <div class='w-7 bg-gray-300'>aaabbb</div> */}
             {/* <div class='w-full bg-gray-200' style={{width:'100px'}}>Option <Button style={{alignContent:'right'}} icon={<CloseSquareOutlined />}></Button></div> */}
             <EditorArea>
-              
+              {/*Dropdown 시작*/}
+              <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+                {inputOptions.map((placeholder, index) => (
+                  <button
+                    key={index}
+                    style={{
+                      padding: "2px 5px",
+                      margin: "2px",
+                      border: "1px solid #ccc",
+                      cursor: "pointer",
+                      backgroundColor: selectedLine === placeholder ? "#ddd" : "#fff",
+                      minHeight : "26px"
+                    }}
+                    onClick={() => handleSelect(placeholder)}
+                  >
+                    {placeholder}
+                  </button>
+                ))}
+              </div>
+              {/*Dropdown 종료*/}
+              <br/>
+              <Button size='small' style={{minWidth:'90px', marginTop:'3px'}} onClick={(e)=>{e.stopPropagation();setEditing(false);}}>닫기</Button>
               {/* <Button type="text" style={{marginTop:'2px'}}> */}
-              <InputNumber style={{ maxWidth:'90px', marginTop:'4px'}} addonBefore={<Icon component={SvgTextSize} style={{verticalAlign:'middle'}} />} min={10} max={30} step={1} size="small" onChange={onChangeFontSize} defaultValue={fontSize} />
+              {/*<InputNumber style={{ maxWidth:'90px', marginTop:'4px'}} addonBefore={<Icon component={SvgTextSize} style={{verticalAlign:'middle'}} />} min={10} max={30} step={1} size="small" onChange={onChangeFontSize} defaultValue={fontSize} />*/}
               {/* </Button> */}
               {/* <Button type="text" style={{marginTop:'-5px'}}> */}
-              <br></br>
+              {/*<br></br>
               <Segmented
                 style={{marginTop:'3px'}}
                 size='small'
@@ -714,13 +696,12 @@ const Text = ({item, deleteItem, updateItem, pageSize, pagesScale, scaleDirectio
                   },
                 ]}
               />
-              <br></br>
+              <br></br>*/}
               {/* </Button> */}
 
               {/* <Switch style={{marginTop:'3px'}} checkedChildren="필수 입력" unCheckedChildren="필수 입력" checked={item.required} onChange={(checked) => {
                 updateItem(item.id, {required : checked});
               }} /> */}
-              
             </EditorArea>
 
             
@@ -742,4 +723,4 @@ const Text = ({item, deleteItem, updateItem, pageSize, pagesScale, scaleDirectio
   );
 };
 
-export default React.memo(Text);
+export default React.memo(DropDown);

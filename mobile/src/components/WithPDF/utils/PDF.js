@@ -10,15 +10,17 @@ import
   setLineJoin,
   LineCapStyle,
   LineJoinStyle,
-  degrees, } from 'pdf-lib';
+  degrees, 
+  rgb } from 'pdf-lib';
 import fontkit from '@pdf-lib/fontkit';
 // import fontUrl from '../assets/font/NotoSansKR-Light.otf';
 import { Fonts } from './Fonts';
-import { TYPE_SIGN, TYPE_TEXT, TYPE_BOX, TYPE_IMAGE, TYPE_CHECKBOX } from '../Common/Constants';
+import { TYPE_SIGN, TYPE_TEXT, TYPE_BOX, TYPE_IMAGE, TYPE_CHECKBOX, TYPE_DROPDOWN } from '../Common/Constants';
 import download from 'downloadjs';
 
 import icon_checked from '../assets/images/checked.png';
 import icon_unchecked from '../assets/images/unchecked.png';
+import { gray } from 'tailwindcss/colors.js';
 
 // rotation 적용하여 좌표값 리턴 
 const compensateRotation = (pageRotation, x, y, scale, dimensions, fontSize) => {
@@ -69,7 +71,7 @@ const compensateRotation = (pageRotation, x, y, scale, dimensions, fontSize) => 
   return { x: drawX, y: drawY };
 };
 
-export async function save(pdfFile, pdfUrl, objects, name, isDownload) {
+export async function save(pdfFile, pdfUrl, objects, name, isDownload, waterMark) {
   // const PDFLib = await getAsset('PDFLib');
   // const download = await getAsset('download');
   // const makeTextPDF = await getAsset('makeTextPDF');
@@ -91,20 +93,155 @@ export async function save(pdfFile, pdfUrl, objects, name, isDownload) {
 
   // text가 없으면 customFont를 추가하여 용량을 증가시킬 필요가 없다.
   let font;
-  if (objects.some(el => el.type === TYPE_TEXT)) {
+  if (objects.some(el => el.type === TYPE_TEXT || el.type === TYPE_DROPDOWN) ) {
     pdfDoc.registerFontkit(fontkit);
     const fontBytes = await fetch(Fonts['NotoSansKR'].src).then(res => res.arrayBuffer());
-    font = await pdfDoc.embedFont(fontBytes);
+    font = await pdfDoc.embedFont(fontBytes);   
   } else {
     font = await pdfDoc.embedFont(StandardFonts.TimesRoman)
   }
+  
+  // Watermark 를 텍스트로 사용하는 경우
+  // let font, fontWaterMark;
+  // if (objects.some(el => el.type === TYPE_TEXT) || waterMark) {
+  //   pdfDoc.registerFontkit(fontkit);
 
+  //   if (objects.some(el => el.type === TYPE_TEXT)) {
+  //     const fontBytes = await fetch(Fonts['NotoSansKR'].src).then(res => res.arrayBuffer());
+  //     font = await pdfDoc.embedFont(fontBytes);   
+  //   }
+
+  //   if (waterMark) {
+  //     const fontBytes = await fetch(Fonts['NotoSansKR-Regular'].src).then(res => res.arrayBuffer());
+  //     fontWaterMark = await pdfDoc.embedFont(fontBytes);
+  //   }
+
+  // } else {
+  //   font = await pdfDoc.embedFont(StandardFonts.TimesRoman)
+  // }
+
+  function createWatermarkImage(text, width=595, height=841) {
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+    canvas.width = width;
+    canvas.height = height;
+  
+    context.font = '48px NotoSansKR';
+    context.fillStyle = 'rgba(128, 128, 128, 0.2)'; // 회색 및 투명도 설정
+    context.textAlign = 'center';
+    context.textBaseline = 'middle';
+    context.translate(canvas.width / 2, canvas.height / 2);
+    context.rotate((Math.PI / 180) * -45); // 45도 회전
+    context.fillText(text, 0, 0);
+  
+    return canvas.toDataURL('image/png');
+  }
+  
   const pagesProcesses = pdfDoc.getPages().map(async (page, pageIndex) => {
+
+    // S.워터마크 추가 ------------------------------------------- 
+    if (waterMark) {
+      console.log('draw waterMark');
+      const { width, height } = page.getSize();
+
+      // CASE 1: 여러개 배치
+      // const textWidth = fontWaterMark.widthOfTextAtSize(waterMark, 18);
+      // const textHeight = fontWaterMark.heightAtSize(18);
+      // const margin = 180; // 각 워터마크 사이의 간격 (픽셀 단위)
+      // const secureText = "해당 문서는 보안 문서입니다."; // 추가할 보안 문구
+      // for (let x = 0; x < width; x += textWidth + margin) {
+      //   for (let y = 0; y < height; y += textHeight + margin) {
+      //     page.drawText((x / (textWidth + margin) + y / (textHeight + margin)) % 2 === 0 ? waterMark : secureText, {
+      //       font: fontWaterMark,
+      //       size: 18,
+      //       x: x,
+      //       y: y,
+      //       color: rgb(0.5, 0.5, 0.5),  // 회색
+      //       opacity: 0.2,               // 투명도 설정
+      //       rotate: degrees(45),        // 45도 회전
+      //     });
+      //   }
+      // }
+
+      // CASE 2: 페이지 가운데 배치 
+      // const textWidth = fontWaterMark.widthOfTextAtSize(waterMark, 48);
+      // const textHeight = fontWaterMark.heightAtSize(48);
+
+      // const centerX = (width - textWidth) / 2; 
+      // const centerY = (height - textHeight) / 2;
+
+      // page.drawText(waterMark, {
+      //   font: fontWaterMark,
+      //   size: 48,
+      //   x: centerX + 60,
+      //   y: centerY - 110,
+      //   color: rgb(0.5, 0.5, 0.5),  // 회색
+      //   opacity: 0.2,               // 투명도 설정
+      //   rotate: degrees(45),        // 45도 회전
+      // });
+
+      // CASE 3: 페이지 가운데 배치 > 이미지로 저장
+      // 텍스트를 이미지로 변환
+      // Canvas를 사용하여 워터마크 이미지 생성
+      const watermarkImageDataUrl = createWatermarkImage(waterMark, width, height);
+      const pngImageBytes = Buffer.from(watermarkImageDataUrl.split(',')[1], 'base64');
+      const watermarkImage = await pdfDoc.embedPng(pngImageBytes);
+
+      const { width: imageWidth, height: imageHeight } = watermarkImage;
+
+      const centerX = (width - imageWidth) / 2;
+      const centerY = (height - imageHeight) / 2;
+  
+      page.drawImage(watermarkImage, {
+        x: centerX,
+        y: centerY,
+        width: imageWidth,
+        height: imageHeight
+      });
+
+    }
+    // E. 워터마크 추가 ------------------------------------------- 
+
     // const pageObjects = objects[pageIndex];
     const pageObjects = objects.filter(el => el.pIdx === pageIndex);
     // 'y' starts from bottom in PDFLib, use this to calculate y
     const pageHeight = page.getHeight();
     const embedProcesses = pageObjects.map(async (object) => {
+
+      //AS-IS : 파일 기반 저장 (TYPE_IMAGE)
+      // if (object.type === TYPE_IMAGE) {  
+      //   let { file, x, y, width, height, payload } = object;
+
+      //   const correction = compensateRotation(
+      //     page.getRotation(), 
+      //     x, y, 
+      //     1, page.getSize(), height
+      //   );
+        
+      //   let img;
+      //   try {
+
+      //     if (file.type === 'image/jpeg') {
+      //       img = await pdfDoc.embedJpg(await readAsArrayBuffer(file));
+      //     } else {
+      //       img = await pdfDoc.embedPng(await readAsArrayBuffer(file));
+      //     }
+
+      //     return () =>
+      //       page.drawImage(img, {
+      //         // x,
+      //         // y: pageHeight - y - height,
+      //         x: correction.x,
+      //         y: correction.y,
+      //         width,
+      //         height,
+      //         rotate: page.getRotation()
+      //       });
+      //   } catch (e) {
+      //     console.log('Failed to embed image.', e);
+      //     return noop;
+      //   }
+      // }
 
       //TO-BE: base64 기반 저장 (TYPE_IMAGE)
       if (object.type === TYPE_IMAGE) {
@@ -151,7 +288,7 @@ export async function save(pdfFile, pdfUrl, objects, name, isDownload) {
       } else if (object.type === TYPE_SIGN) {
 
         let { x, y, width, height, payload } = object;
-        
+
         console.log('TYPE_SIGN save', payload)
         
         // console.log('page.getRotation():', page.getRotation().angle)
@@ -191,7 +328,7 @@ export async function save(pdfFile, pdfUrl, objects, name, isDownload) {
           return noop;
         }
 
-      } else if (object.type === TYPE_TEXT) {
+      } else if (object.type === TYPE_TEXT || object.type === TYPE_DROPDOWN) {
         let { x, y, lines, lineHeight, fontSize, fontFamily, width, textAlign } = object;
 
         // const correction = compensateRotation(

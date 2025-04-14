@@ -19,9 +19,10 @@ import '@ant-design/pro-card/dist/card.css';
 import { ReactComponent as IconSign} from '../../assets/images/sign.svg';
 import { ReactComponent as IconText} from '../../assets/images/text.svg';
 import { ReactComponent as IconCheckbox} from '../../assets/images/checkbox.svg';
+import { ReactComponent as IconDropDown} from '../../assets/images/dropdown.svg';
 
 import PDFViewer from "@niceharu/withpdf";
-import {TYPE_SIGN, TYPE_IMAGE, TYPE_TEXT, TYPE_BOX, TYPE_CHECKBOX, COLORS, AUTO_NAME, AUTO_JOBTITLE, AUTO_OFFICE, AUTO_DEPART, AUTO_SABUN, AUTO_DATE} from '../../common/Constants';
+import {TYPE_SIGN, TYPE_IMAGE, TYPE_TEXT, TYPE_BOX, TYPE_CHECKBOX, TYPE_DROPDOWN, COLORS, AUTO_NAME, AUTO_JOBTITLE, AUTO_OFFICE, AUTO_DEPART, AUTO_SABUN, AUTO_DATE} from '../../common/Constants';
 
 import styled from 'styled-components';
 const PageContainerStyle = styled.div`
@@ -60,7 +61,7 @@ const PrepareTemplate = () => {
 
 
   const box = assignees.map(user => {
-    return { key:user.key, sign:0, text:0, checkbox:0, auto_name:0, auto_jobtitle:0, auto_office:0, auto_depart:0, auto_sabun:0, auto_date:0, observer:(preObserver.filter(v => v === user.key).length > 0)?1:0};
+    return { key:user.key, sign:0, text:0, checkbox:0, dropdown:0, auto_name:0, auto_jobtitle:0, auto_office:0, auto_depart:0, auto_sabun:0, auto_date:0, observer:(preObserver.filter(v => v === user.key).length > 0)?1:0};
   });
   const [boxData, setBoxData] = useState(box);
   const [disableNext, setDisableNext] = useState(true);
@@ -124,6 +125,8 @@ const PrepareTemplate = () => {
           
         } else if (item.subType === TYPE_CHECKBOX) {
           member.checkbox = member.checkbox + 1;
+        } else if (item.subType === TYPE_DROPDOWN) {
+          member.dropdown = member.dropdown + 1;
         }
 
         let newBoxData = boxData.slice();
@@ -151,7 +154,7 @@ const PrepareTemplate = () => {
     // 유효성 체크 
     var check = false;
     boxData.map(box => {
-      if(box.sign === 0 && box.text === 0 && box.observer === 0) { 
+      if(box.sign === 0 && box.text === 0 && box.observer === 0 && box.dropdown === 0) { 
         check = true;
       }
     });
@@ -275,6 +278,8 @@ const PrepareTemplate = () => {
         
       } else if (item.subType === TYPE_CHECKBOX) {
         member.checkbox = member.checkbox + 1;
+      } else if (item.subType === TYPE_DROPDOWN) {
+        member.dropdown = member.dropdown + 1;
       }
 
       let newBoxData = boxData.slice();
@@ -308,6 +313,8 @@ const PrepareTemplate = () => {
 
       } else if (item.subType === TYPE_CHECKBOX) {
         member.checkbox = member.checkbox - 1;
+      } else if (item.subType === TYPE_DROPDOWN) {
+        member.dropdown = member.dropdown - 1;
       }
 
       let newBoxData = boxData.slice();
@@ -325,6 +332,8 @@ const PrepareTemplate = () => {
       pdfRef.current.addBox(sendType === 'B' ? 'bulk' : member.key, TYPE_TEXT, 'TEXT', 120, 25, true, color);
     } else if (type === 'CHECKBOX') {
       pdfRef.current.addBox(sendType === 'B' ? 'bulk' : member.key, TYPE_CHECKBOX, 'CHECKBOX', 25, 25, true, color);
+    } else if (type === 'DROPDOWN') {
+      pdfRef.current.addBox(sendType === 'B' ? 'bulk' : member.key, TYPE_DROPDOWN, 'DROPDOWN', 120, 25, true, color);
     } else if (type === 'AUTONAME') {
       pdfRef.current.addBox(sendType === 'B' ? 'bulk' : member.key, TYPE_TEXT, '이름', 100, 25, true, color, AUTO_NAME);
     } else if (type === 'AUTOJOBTITLE') {
@@ -393,6 +402,7 @@ const PrepareTemplate = () => {
                             member.sign = 0;
                             member.text = 0;
                             member.checkbox = 0;
+                            member.dropdown = 0;
                             const newBoxData = boxData.slice()
                             newBoxData[boxData.filter(e => e.key === item.key).index] = member 
                             setBoxData(newBoxData)
@@ -456,20 +466,26 @@ const PrepareTemplate = () => {
                       <p>
                       <Tooltip placement="right" title={'참여자가 사인을 입력할 위치에 넣어주세요.'}>
                         <Badge count={boxData.filter(e => e.key === item.key)[0].sign}>
-                          <Button style={{width:'190px', textAlign:'left'}} disabled={observers.filter(v => v === item.key).length > 0} icon={<Icon component={IconSign} style={{ fontSize: '120%'}} />} onClick={e => { addField('SIGN', {}, item, COLORS[idx]); }}>{formatMessage({id: 'input.sign'})}</Button>
+                          <Button style={{width:'91px', textAlign:'left'}} disabled={observers.filter(v => v === item.key).length > 0} icon={<Icon component={IconSign} style={{ fontSize: '120%'}} />} onClick={e => { addField('SIGN', {}, item, COLORS[idx]); }}>{formatMessage({id: 'input.sign'})}</Button>
+                        </Badge>
+                      </Tooltip>
+                      &nbsp;&nbsp;&nbsp;
+                      <Tooltip placement="right" title={(browser && browser.name.includes('chrom') && parseInt(browser.version) < 87) ? '사용중인 브라우저의 버전이 낮습니다.(버전 87 이상 지원)' : '참여자가 텍스트를 입력할 위치에 넣어주세요.'}>
+                        <Badge count={boxData.filter(e => e.key === item.key)[0].text}>
+                          <Button style={{width:'90px', textAlign:'left'}} disabled={observers.filter(v => v === item.key).length > 0 || (browser && browser.name.includes('chrom') && parseInt(browser.version) < 87)} icon={<Icon component={IconText} style={{ fontSize: '120%'}} />} onClick={e => { addField('TEXT', {}, item, COLORS[idx]); }}>{formatMessage({id: 'input.text'})}</Button>
                         </Badge>
                       </Tooltip>
                       </p>
                       <p>
                       <Tooltip placement="right" title={(browser && browser.name.includes('chrom') && parseInt(browser.version) < 87) ? '사용중인 브라우저의 버전이 낮습니다.(버전 87 이상 지원)' : '참여자가 텍스트를 입력할 위치에 넣어주세요.'}>
-                        <Badge count={boxData.filter(e => e.key === item.key)[0].text}>
-                          <Button style={{width:'91px', textAlign:'left'}} disabled={observers.filter(v => v === item.key).length > 0 || (browser && browser.name.includes('chrom') && parseInt(browser.version) < 87)} icon={<Icon component={IconText} style={{ fontSize: '120%'}} />} onClick={e => { addField('TEXT', {}, item, COLORS[idx]); }}>{formatMessage({id: 'input.text'})}</Button>
+                        <Badge count={boxData.filter(e => e.key === item.key)[0].checkbox}>
+                          <Button style={{width:'91px', textAlign:'left'}} disabled={observers.filter(v => v === item.key).length > 0 || (browser && browser.name.includes('chrom') && parseInt(browser.version) < 87)} icon={<Icon component={IconCheckbox} style={{ fontSize: '120%'}} />} onClick={e => { addField('CHECKBOX', {}, item, COLORS[idx]); }}>{formatMessage({id: 'input.checkbox'})}</Button>
                         </Badge>
                       </Tooltip>
                       &nbsp;&nbsp;&nbsp;
-                      <Tooltip placement="right" title={(browser && browser.name.includes('chrom') && parseInt(browser.version) < 87) ? '사용중인 브라우저의 버전이 낮습니다.(버전 87 이상 지원)' : '참여자가 텍스트를 입력할 위치에 넣어주세요.'}>
-                        <Badge count={boxData.filter(e => e.key === item.key)[0].checkbox}>
-                          <Button style={{width:'90px', textAlign:'left'}} disabled={observers.filter(v => v === item.key).length > 0 || (browser && browser.name.includes('chrom') && parseInt(browser.version) < 87)} icon={<Icon component={IconCheckbox} style={{ fontSize: '120%'}} />} onClick={e => { addField('CHECKBOX', {}, item, COLORS[idx]); }}>{formatMessage({id: 'input.checkbox'})}</Button>
+                      <Tooltip placement="right" title={(browser && browser.name.includes('chrom') && parseInt(browser.version) < 87) ? '사용중인 브라우저의 버전이 낮습니다.(버전 87 이상 지원)' : '참여자가 드롭다운을 선택할 위치에 넣어주세요.'}>
+                        <Badge count={boxData.filter(e => e.key === item.key)[0].dropdown}>
+                          <Button style={{width:'90px', textAlign:'left'}} disabled={observers.filter(v => v === item.key).length > 0 || (browser && browser.name.includes('chrom') && parseInt(browser.version) < 87)} icon={<Icon component={IconDropDown} style={{ fontSize: '120%'}} />} onClick={e => { addField('DROPDOWN', {}, item, COLORS[idx]); }}>{formatMessage({id: 'input.dropdown'})}</Button>
                         </Badge>
                       </Tooltip>
                       </p>

@@ -2695,10 +2695,10 @@
     prop-types "^15.7.2"
     react-is "^16.8.0 || ^17.0.0"
 
-"@niceharu/withpdf@0.8.8":
-  version "0.8.8"
-  resolved "https://npm.pkg.github.com/download/@niceharu/withpdf/0.8.8/3acd1cf348853af4d08f16c521c6f58d82976d3b#3acd1cf348853af4d08f16c521c6f58d82976d3b"
-  integrity sha512-l86+t5hJx//kbil5IwWFenp7Lg5IBHuZKtEk5oU+jIl0ZBJso2v1PEnCRKrVFKSvH0uX9BvybeBR4BIQ5Gc05w==
+"@niceharu/withpdf@0.9.7":
+  version "0.9.7"
+  resolved "https://npm.pkg.github.com/download/@niceharu/withpdf/0.9.7/b8dd60f69c01561b853d04cd945fcac2597d39ac#b8dd60f69c01561b853d04cd945fcac2597d39ac"
+  integrity sha512-GGUZwZXPc//O8UlyefVOcj4OL9dJRlNRfGTlAEJX7+JNawZoG1t2aebbaCdQVwbcFZXhC7cBZJ8vQDd1Kfx+WA==
   dependencies:
     "@craco/craco" "^6.4.3"
     "@pdf-lib/fontkit" "^1.1.1"

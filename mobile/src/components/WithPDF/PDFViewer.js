@@ -14,6 +14,7 @@ import Image from './Image.js';
 import Text from './Text.js';
 import Box from './Box.js';
 import CheckBox from './CheckBox';
+import DropDown from './DropDown.js';
 import { ggID, timeout } from "./utils/helper.js";
 // import iconImage from '../../assets/images/image.svg';
 import { v4 as uuID } from 'uuid';
@@ -24,12 +25,13 @@ import { save } from './utils/PDF.js';
 // import { ReactComponent as svgSign} from './assets/images/sign.svg';
 // import { ReactComponent as svgText} from './assets/images/text.svg';
 // import { ReactComponent as svgBox} from './assets/images/box.svg';
-import { TYPE_SIGN, TYPE_TEXT, TYPE_BOX, TYPE_IMAGE, TYPE_CHECKBOX } from './Common/Constants';
+import { TYPE_SIGN, TYPE_TEXT, TYPE_BOX, TYPE_IMAGE, TYPE_CHECKBOX, TYPE_DROPDOWN } from './Common/Constants';
 import SvgImage from './assets/svg/SvgImage.js';
 import SvgSign from './assets/svg/SvgSign.js';
 import SvgText from './assets/svg/SvgText.js';
 import SvgBox from './assets/svg/SvgBox.js';
 import SvgCheckBox from './assets/svg/SvgCheckBox';
+import SvgDropDown from './assets/svg/SvgDropDown.js';
 
 import { fetchFont, splitThroughPixel } from "./utils/Fonts.js"; 
 import 'antd/dist/antd.css';
@@ -61,7 +63,7 @@ const PDFViewer = forwardRef(({isUpload, isSave, isEditing, file, onItemChanged,
 
   console.log("PDFViewer render !");
   console.log('window.innerWidth', window.innerWidth)
-
+  
   let defaultWidth = 640; // 가로문서 640, 세로문서 840 적용 시 정상 작동
 
   const [pages, setPages] = useState([]);
@@ -84,6 +86,7 @@ const PDFViewer = forwardRef(({isUpload, isSave, isEditing, file, onItemChanged,
   const [lineHeight, setLineHeight] = useState(1.4);  // default length
   // const [editing, setEditing] = useState(false);
   const [signList, setSignList] = useState([]);  // default length
+  const [waterMark, setWaterMark] = useState();
 
   // const allObjectsRef = useRef();
   // allObjectsRef.current = allObjects;
@@ -238,12 +241,14 @@ const PDFViewer = forwardRef(({isUpload, isSave, isEditing, file, onItemChanged,
    * @function uploadPDF
    * @param {string | File} doc url string of PDF or File
    * @param {string} docSubject document title
+   * @param {string} waterMark watermark text
    */
-  const uploadPDF = async (doc, docSubject) => {
+  const uploadPDF = async (doc, docSubject, waterMark) => {
     
     try {
       setSelectedPageIndex(-1);
       setPages([]);
+      setWaterMark(waterMark);
 
       await addPDF(doc, docSubject);
     
@@ -264,9 +269,10 @@ const PDFViewer = forwardRef(({isUpload, isSave, isEditing, file, onItemChanged,
    * @param {boolean} isDownload Whether to download file locally
    * @param {boolean} isMerge Whether to merge items
    * @param {object} _items items to merge with pdf (If not, merge items on the screen)
+   * @param {string} waterMark Save PDF with Watermark
    * @return {File} Returns the pdf file that the items are merged
    */
-  const savePDF = async (isMerge, isDownload, _items) => {
+  const savePDF = async (isMerge, isDownload, _items, waterMark) => {
     console.log('save pdf');
 
     console.log('isMerge', isMerge);
@@ -283,7 +289,7 @@ const PDFViewer = forwardRef(({isUpload, isSave, isEditing, file, onItemChanged,
       if (isMerge) {
         if (_items) {
           const promises = _items.map(async _item => {
-            if (_item.type === TYPE_SIGN || _item.type === TYPE_IMAGE) {  //payload: base64 => Image Object
+          if (_item.type === TYPE_SIGN || _item.type === TYPE_IMAGE) {  //payload: base64 => Image Object
               if (_item.payload) {
                 const img = await readAsImage(_item.payload);
                 _item.payload = img;
@@ -292,12 +298,12 @@ const PDFViewer = forwardRef(({isUpload, isSave, isEditing, file, onItemChanged,
             return _item;
           })
           const newItems = await Promise.all(promises);
-          blob = await save(pdfFile, pdfUrl, newItems, pdfName, isDownload);
+          blob = await save(pdfFile, pdfUrl, newItems, pdfName, isDownload, waterMark);
         } else {
-          blob = await save(pdfFile, pdfUrl, items, pdfName, isDownload);
+          blob = await save(pdfFile, pdfUrl, items, pdfName, isDownload, waterMark);
         }
       } else {
-        blob = await save(pdfFile, pdfUrl, [], pdfName, isDownload);
+        blob = await save(pdfFile, pdfUrl, [], pdfName, isDownload, waterMark);
       }
 
       let file = new File([blob], pdfName, { type: "application/pdf" });
@@ -327,7 +333,7 @@ const PDFViewer = forwardRef(({isUpload, isSave, isEditing, file, onItemChanged,
         if (_item.payload && _item.payload.src) {
           _item.payload = _item.payload.src;
         }
-      } else if (_item.type === TYPE_TEXT) { 
+      } else if (_item.type === TYPE_TEXT || _item.type === TYPE_DROPDOWN) { 
         console.log('before lines', _item.lines)
         let newLines = []
         _item.lines.forEach(line => {
@@ -352,7 +358,7 @@ const PDFViewer = forwardRef(({isUpload, isSave, isEditing, file, onItemChanged,
 
     // 반복문 내에 await 처리가 있는 경우 map 을 활용한다.
     const promises = _items.map(async _item => {
-      if (_item.type === TYPE_TEXT) { // lines => text 변환
+      if (_item.type === TYPE_TEXT || _item.type === TYPE_DROPDOWN) { // lines => text 변환
         let newText = "";
         _item.lines.forEach((line, idx) => {
           newText = newText.concat(line);
@@ -577,6 +583,7 @@ const PDFViewer = forwardRef(({isUpload, isSave, isEditing, file, onItemChanged,
    * @param {boolean} required Whether to validate
    * @param {String} color box color: rgba(133, 50, 193, 0.3)
    * @param {String} autoInput automatic input value {NAME | JOBTITLE | OFFICE | DEPART | SABUN | DATE} 
+   * @param {String} inputs dropdown list
    */
   const addBox = async (uid, subType, text, width, height, required = true, color, autoInput) => {
     try {
@@ -594,9 +601,9 @@ const PDFViewer = forwardRef(({isUpload, isSave, isEditing, file, onItemChanged,
         type: TYPE_BOX,
         subType: subType ? subType : TYPE_SIGN,
         size: fontSize,
-        width: width ? width : 100, // recalculate after editing,
+        width: width ? width : 100, // recalculate after editing, 
         // height: height ? height : 60,
-        height: subType === TYPE_TEXT ? fontSize * lineHeight : (height ? height : 60),
+        height: subType === TYPE_TEXT || subType === TYPE_DROPDOWN ? fontSize * lineHeight : (height ? height : 60),
         lineHeight: lineHeight,
         fontSize: fontSize,
         fontFamily: fontFamily,
@@ -606,8 +613,9 @@ const PDFViewer = forwardRef(({isUpload, isSave, isEditing, file, onItemChanged,
         required : required,
         color: color,
         autoInput: autoInput,
-        label: ''
-        // label : subType === TYPE_TEXT ? 'TEXT' : (subType === TYPE_SIGN ? 'SIGN' : 'CHECKBOX')
+        label: '',
+        inputs:[]
+        // label : subType === TYPE_TEXT ? 'TEXT' : (subType === TYPE_SIGN ? 'SIGN' : 'CHECKBOX') 
       };
 
       setItems([...items, object]);
@@ -732,6 +740,10 @@ const PDFViewer = forwardRef(({isUpload, isSave, isEditing, file, onItemChanged,
           if (!item.checked) {
             validation = false;
           }
+        } else if (item.type === TYPE_DROPDOWN) {
+          if (item.lines.length < 1) {
+            validation = false;
+          }
         }
       }
     })
@@ -761,7 +773,7 @@ const PDFViewer = forwardRef(({isUpload, isSave, isEditing, file, onItemChanged,
   const updateItem = (itemId, payload) => {
 
     console.log('updateItem called', payload);
-    
+
     setItems((prevItems) => (
       prevItems.map(item => item.id === itemId ? { ...item, ...payload} : item )
     ))
@@ -789,7 +801,7 @@ const PDFViewer = forwardRef(({isUpload, isSave, isEditing, file, onItemChanged,
     itemsRef.current.forEach(item => {
       if (item.required && !item.disable && !item.hidden) {
         // console.log('item', item);
-        if (item.type === TYPE_TEXT) {
+        if (item.type === TYPE_TEXT || item.type === TYPE_DROPDOWN) {
           // console.log('item.lines', item.lines)
 
           let lines = []
@@ -1045,7 +1057,7 @@ const PDFViewer = forwardRef(({isUpload, isSave, isEditing, file, onItemChanged,
             <Divider type="vertical" hidden={!isEditing} />
 
             <Button type="primary" loading={saving} hidden={!isSave} onClick={()=> {
-              savePDF(true, true);
+              savePDF(true, true, null, waterMark);
             }}>Save PDF</Button>
             
           </Space>
@@ -1066,7 +1078,7 @@ const PDFViewer = forwardRef(({isUpload, isSave, isEditing, file, onItemChanged,
               <div
                 className={`relative shadow-lg ${(idx === selectedPageIndex) ? 'ring-1 ring-blue-500/10' : ''}`} //ring-offset-2 ring-2
               >
-              <PDFPage key={idx} page={page} idx={idx} setPagesScale={setPagesScale} setPagesSize={setPagesSize} pagesScale={pagesScale}></PDFPage>
+              <PDFPage key={idx} page={page} idx={idx} setPagesScale={setPagesScale} setPagesSize={setPagesSize} pagesScale={pagesScale} waterMark={waterMark}></PDFPage>
               
               {/* ISSUE : scale 을 밖에서 처리하면 마우스 이동이 컴포넌트보다 느림 */}
               {/* <div
@@ -1083,6 +1095,7 @@ const PDFViewer = forwardRef(({isUpload, isSave, isEditing, file, onItemChanged,
                       {(item.type === TYPE_TEXT) && <Text key={item.id} item={item} deleteItem={deleteItem} updateItem={updateItem} pageSize={pagesSize.filter(el => el.idx === idx)[0]} pagesScale={pagesScale} scaleDirection={scaleDirection} />}
                       {(item.type === TYPE_BOX) && <Box key={item.id} item={item} deleteItem={deleteItem} updateItem={updateItem} pageSize={pagesSize.filter(el => el.idx === idx)[0]} pagesScale={pagesScale} scaleDirection={scaleDirection}  />}
                       {(item.type === TYPE_CHECKBOX) && <CheckBox key={item.id} item={item} deleteItem={deleteItem} updateItem={updateItem} pageSize={pagesSize.filter(el => el.idx === idx)[0]} pagesScale={pagesScale} scaleDirection={scaleDirection}  />}
+                      {(item.type === TYPE_DROPDOWN) && <DropDown key={item.id} item={item} deleteItem={deleteItem} updateItem={updateItem} pageSize={pagesSize.filter(el => el.idx === idx)[0]} pagesScale={pagesScale} scaleDirection={scaleDirection} />}
                       </div>
                     )
                   })
@@ -1100,7 +1113,7 @@ const PDFViewer = forwardRef(({isUpload, isSave, isEditing, file, onItemChanged,
 
       </main>
 
-      <SignModal visibleModal={visibleModal} setVisibleModal={setVisibleModal} signComplete={signComplete} signList={signList}  />
+      <SignModal visibleModal={visibleModal} setVisibleModal={setVisibleModal} signComplete={signComplete} signList={signList} />
       
     </div>
 
