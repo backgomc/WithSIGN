@@ -1,5 +1,5 @@
 import React from 'react';
-import { FileProtectOutlined, CustomerServiceOutlined, TeamOutlined, CopyOutlined, FileAddOutlined, SettingOutlined, FileTextOutlined, HighlightOutlined, FolderOpenOutlined , DashboardOutlined, QrcodeOutlined } from '@ant-design/icons';
+import { FileProtectOutlined, CustomerServiceOutlined, TeamOutlined, CopyOutlined, FileAddOutlined, SettingOutlined, FileTextOutlined, HighlightOutlined, FolderOpenOutlined , DashboardOutlined, QrcodeOutlined, LinkOutlined } from '@ant-design/icons';
 
 export default function Menus(formatMessage) {
   const data = {
@@ -26,6 +26,11 @@ export default function Menus(formatMessage) {
           name: formatMessage({id: 'document.bulk'}),
           icon: <TeamOutlined />,
         },
+        {
+          path: '/linkList',
+          name: formatMessage({id: 'document.link'}),
+          icon: <LinkOutlined />,
+        },        
         // {
         //   path: '/qrList',
         //   name: formatMessage({id: 'document.qr'}),

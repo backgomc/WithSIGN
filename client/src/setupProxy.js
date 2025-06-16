@@ -5,6 +5,7 @@ module.exports = function(app) {
     '/api',
     createProxyMiddleware({
       target: 'http://localhost:5000',
+      //target: 'http://34.64.93.94:5001',
       changeOrigin: true,
     })
   );
@@ -13,6 +14,7 @@ module.exports = function(app) {
     '/storage',
     createProxyMiddleware({
       target: 'http://localhost:5000',
+      //target: 'http://34.64.93.94:5001',
       changeOrigin: true,
     })
   );
@@ -21,6 +23,7 @@ module.exports = function(app) {
     '/block',
     createProxyMiddleware({
       target: 'http://localhost:3003',
+      //target: 'http://34.64.93.94:3003',
       changeOrigin: true,
     })
   );

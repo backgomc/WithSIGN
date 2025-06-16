@@ -20,6 +20,7 @@ import AssignTemplate from './components/PrepareTemplate/AssignTemplate';
 import PrepareTemplate from './components/PrepareTemplate/PrepareTemplate';
 import BulkList from './components/Bulk/BulkList';
 import BulkDetail from './components/Bulk/BulkDetail';
+import LinkList from './components/Link/LinkList';
 //import QRList from './components/QR/QRList';
 //import QRDetail from './components/QR/QRDetail';
 import BoardList from './components/Board/BoardList';
@@ -249,6 +250,7 @@ const App = () => {
       <PrepareTemplate path="/prepareTemplate" />
       <BulkList path="/bulkList" />
       <BulkDetail path="/bulkDetail" />
+      <LinkList path="/linkList" />
       
 
       <InFolder path="/inFolder" />

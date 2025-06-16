@@ -1,3 +1,5 @@
+console.log('🔥 NODE_ENV =', process.env.NODE_ENV);
+
 const express = require("express");
 const app = express();
 const path = require("path");
