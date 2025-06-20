@@ -14,7 +14,7 @@ import { navigate } from '@reach/router';
 //   SelectList,
 // } from 'gestalt';
 import { Upload, message, Badge, Button, Row, Col, List, Card, Checkbox, Tooltip, Tag, Divider, Spin, Typography } from 'antd';
-import Icon, { InboxOutlined, HighlightOutlined, PlusOutlined, ArrowLeftOutlined, ArrowRightOutlined, SendOutlined } from '@ant-design/icons';
+import Icon, { InboxOutlined, HighlightOutlined, PlusOutlined, ArrowLeftOutlined, SendOutlined } from '@ant-design/icons';
 import { selectDocumentTempPath, 
          resetAssignAll,
          selectAssignees, 
@@ -928,45 +928,14 @@ const PrepareDocument = ({location}) => {
           ],
         },
         extra: [
-          <Button key="3" icon={<ArrowLeftOutlined />} onClick={() => {
-            if (sendType === 'L') {
-              navigate(`/uploadDocument`, { state: {attachFiles: attachFiles, documentFile: documentFile} });
-            } else {
-              navigate(`/assign`, { state: {attachFiles: attachFiles, documentFile: documentFile} });
-            }
-          }}></Button>,
-          
-          // 링크서명인 경우 "다음" 버튼, 그 외는 "보내기" 버튼
-          sendType === 'L' ? (
-            <Button key="2" icon={<ArrowRightOutlined />} type="primary" onClick={async () => {
-              let items = await pdfRef.current.exportItems();
-              navigate('/linkSetting', { 
-                state: {
-                  attachFiles: attachFiles, 
-                  documentFile: documentFile,
-                  items: items
-                } 
-              });
-            }} disabled={disableNext}>
-              다음
-            </Button>
-          ) : (
-            <Button key="2" icon={<SendOutlined />} type="primary" onClick={send} disabled={disableNext} loading={loading}>
-              {formatMessage({id: 'Send'})}
-            </Button>
-          )
+          <Button key="3" icon={<ArrowLeftOutlined />} onClick={() => {navigate(`/assign`, { state: {attachFiles: attachFiles, documentFile: documentFile} });}}></Button>,,
+          <Button key="2" icon={<SendOutlined />} type="primary" onClick={send} disabled={disableNext} loading={loading}>
+            {formatMessage({id: 'Send'})}
+          </Button>,
         ],
       }}
       style={{height:`calc(100vh + 200px)`}}
-      content= { 
-        <ProCard style={{ background: '#ffffff'}} layout="center">
-          <StepWrite 
-            current={sendType === 'L' ? 1 : 2}  // 🔥 링크서명은 1, 일반/대량은 2
-            documentFile={documentFile} 
-            attachFiles={attachFiles} 
-          />
-        </ProCard> 
-      }
+      content= { <ProCard style={{ background: '#ffffff'}} layout="center"><StepWrite current={2} documentFile={documentFile} attachFiles={attachFiles} /></ProCard> }
       // footer={[
       // ]}
       // loading={loading}

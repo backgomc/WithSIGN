@@ -22,6 +22,7 @@ import BulkList from './components/Bulk/BulkList';
 import BulkDetail from './components/Bulk/BulkDetail';
 import LinkList from './components/Link/LinkList';
 import LinkDetail from './components/Link/LinkDetail';
+import PrepareLinkDocument from './components/Link/PrepareLinkDocument';
 import LinkSetting from './components/Link/LinkSetting';
 //import QRList from './components/QR/QRList';
 //import QRDetail from './components/QR/QRDetail';
@@ -254,6 +255,7 @@ const App = () => {
       <BulkDetail path="/bulkDetail" />
       <LinkList path="/linkList" />
       <LinkDetail path="/linkDetail" />
+      <PrepareLinkDocument path="/prepareLinkDocument" />
       <LinkSetting path="/linkSetting" />       
 
       <InFolder path="/inFolder" />

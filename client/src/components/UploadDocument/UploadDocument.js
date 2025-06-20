@@ -262,11 +262,10 @@ const UploadDocument = ({location}) => {
   
     // 링크서명인 경우 참여자 설정 스킵하고 바로 입력 설정으로 이동
     if (sendType === 'L') {
-      navigate('/prepareDocument', { 
+      navigate('/prepareLinkDocument', { 
         state: {
           attachFiles: attachFiles, 
-          documentFile: documentFile,
-          skipAssign: true  // 참여자 설정을 건너뛰었다는 표시
+          documentFile: documentFile
         } 
       })
     } else {
@@ -286,11 +285,10 @@ const UploadDocument = ({location}) => {
     
     // 링크서명인 경우 참여자 설정 스킵
     if (sendType === 'L') {
-      navigate('/prepareDocument', { 
+      navigate('/prepareLinkDocument', { 
         state: {
           attachFiles: attachFiles, 
-          documentFile: documentFile,
-          skipAssign: true
+          documentFile: documentFile
         } 
       })
     } else {
