@@ -54,23 +54,23 @@ const LinkList = () => {
 
   const fetch = (params = {}) => {
     setLoading(true);
-
-    axiosInterceptor.post('/api/bulk/bulks', params).then(response => {
-
-      console.log(response)
-      if (response.data.success) {
-        const bulks = response.data.bulks;
-
-        setPagination({...params.pagination, total:response.data.total});
-        setData(bulks);
+  
+    axiosInterceptor.post('/api/link/list', params)
+      .then(response => {
+        if (response.data.success) {
+          const links = response.data.links;
+          setPagination({ ...params.pagination, total: response.data.total });
+          setData(links);
+        } else {
+          console.error("링크서명 목록 조회 실패:", response.data.error);
+        }
+      })
+      .catch(error => {
+        console.error("링크서명 목록 조회 중 오류:", error);
+      })
+      .finally(() => {
         setLoading(false);
-
-      } else {
-          setLoading(false);
-          alert(response.data.error)
-      }
-
-    });
+      });
   };
 
   const getColumnSearchProps = dataIndex => ({
@@ -113,7 +113,7 @@ const LinkList = () => {
       </div>
     ),
     filterIcon: filtered => <SearchOutlined style={{ color: filtered ? '#1890ff' : undefined }} />,
-    // DB 필터링 사용 시는 주석처리
+    // DB 필터링 사용 시는 주석처리
     // onFilter: (value, record) =>
     //   record[dataIndex]
     //     ? record[dataIndex].toString().toLowerCase().includes(value.toLowerCase())
@@ -162,137 +162,157 @@ const LinkList = () => {
   );
   }
   
-  const columns = [
-    {
-      title: '문서명',
-      dataIndex: 'docTitle',
-      sorter: true,
-      key: 'docTitle',
-      ...getColumnSearchProps('docTitle'),
-      expandable: true,
-      render: (text,row) => <div style={{ wordWrap: 'break-word', wordBreak: 'break-word' }}><FileOutlined /> {text}</div>, // 여러 필드 동시 표시에 사용
-    },
-    {
-      title: '진행 건수',
-      dataIndex: 'total',
-      sorter: true,
-      key: 'total',
-      responsive: ["xs"],
-      width: '77px',
-      expandable: true,
-      render: (text,row) => <div>({filterCompleted(row['docs']).length} / {row['docs'].length})</div>
-    },
-    {
-      title: '진행 건수',
-      dataIndex: 'total',
-      sorter: true,
-      key: 'total',
-      responsive: ["sm"],
-      width: '135px',
-      expandable: true,
-      render: (text,row) => <div>({filterCompleted(row['docs']).length} / {row['docs'].length})</div>
-    },
-    {
-      title: '요청자',
-      dataIndex: ['user', 'name'],
-      sorter: (a, b) => a.user.name.localeCompare(b.user.name),
-      key: 'name',
-      responsive: ["xs"],
-      width: '50px',
-      ...getColumnSearchProps('name'),
-      onFilter: (value, record) =>
-      record['user']['name']
-        ? record['user']['name'].toString().toLowerCase().includes(value.toLowerCase())
-        : '',
-      render: (text, row) => {
-        return (
-          <React.Fragment>
-          {row['user']['name']} {row['user']['JOB_TITLE']}
-          </React.Fragment>
-        )
-      } 
-    },
-    {
-      title: '요청자',
-      dataIndex: ['user', 'name'],
-      sorter: (a, b) => a.user.name.localeCompare(b.user.name),
-      key: 'name',
-      responsive: ["sm"],
-      width: '105px',
-      ...getColumnSearchProps('name'),
-      onFilter: (value, record) =>
-      record['user']['name']
-        ? record['user']['name'].toString().toLowerCase().includes(value.toLowerCase())
-        : '',
-      render: (text, row) => {
-        return (
-          <React.Fragment>
-          {row['user']['name']} {row['user']['JOB_TITLE']}
-          </React.Fragment>
-        )
-      } 
-    },
-    {
-      title: '요청 일시',
-      dataIndex: 'requestedTime',
-      sorter: true,
-      key: 'requestedTime',
-      responsive: ["xs"],
-      width: '77px',
-      render: (text, row) => {
-        return (<font color='#787878'>{moment(row["requestedTime"]).fromNow()}</font>)
-      } 
-    },
-    {
-      title: '요청 일시',
-      dataIndex: 'requestedTime',
-      sorter: true,
-      key: 'requestedTime',
-      responsive: ["sm"],
-      width: '105px',
-      render: (text, row) => {
-        return (<font color='#787878'>{moment(row["requestedTime"]).fromNow()}</font>)
-      } 
-    },
-    {
-      title: '',
-      // dataIndex: 'docRef',
-      key: 'action',
-      responsive: ["sm"],
-      width: '50px',
-      render: (_,row) => {
-        return (
-          <Button
-            icon={<ProfileOutlined />}
-            onClick={() => {        
-            // const docId = row["_id"]
-            // const docRef = row["docRef"]
-            // dispatch(setDocToView({ docRef, docId }));
-            navigate(`/bulkDetail`, { state: { bulk: row } } );
-          }}>상세</Button>
-        )
-      }
-    },
-    {
-      title: '',
-      // dataIndex: 'docRef',
-      key: 'action',
-      responsive: ["xs"],
-      width: '30px',
-      render: (_,row) => {
-        return (
-          <Button
-            icon={<ProfileOutlined />}
-            onClick={() => {        
-            // const docId = row["_id"]
-            // const docRef = row["docRef"]
-            // dispatch(setDocToView({ docRef, docId }));
-            navigate(`/bulkDetail`, { state: { bulk: row } } );
-          }}></Button>
-        )
+const columns = [
+  {
+    title: '링크 제목',
+    dataIndex: 'linkTitle',
+    sorter: true,
+    key: 'linkTitle',
+    ...getColumnSearchProps('linkTitle'),
+    expandable: true,
+    render: (text,row) => <div style={{ wordWrap: 'break-word', wordBreak: 'break-word' }}><FileOutlined /> {text}</div>,
+  },
+  {
+    title: '외부 서명자',
+    dataIndex: 'externalEmails',
+    key: 'externalEmails', 
+    responsive: ["xs"],
+    width: '60px',
+    render: (externalEmails, row) => <div>{(externalEmails || []).length} 명</div>
+  },
+  {
+    title: '외부 서명자',
+    dataIndex: 'externalEmails',
+    key: 'externalEmails',
+    responsive: ["sm"], 
+    width: '100px',
+    render: (externalEmails, row) => <div>{(externalEmails || []).length} 명</div>
+  },
+  {
+    title: '상태',
+    dataIndex: 'signed',
+    key: 'status',
+    responsive: ["xs"],
+    width: '50px',
+    render: (signed, row) => {
+      if (row.canceled) {
+        return <span style={{color: 'red'}}>취소</span>;
+      } else if (signed) {
+        return <span style={{color: 'green'}}>완료</span>;
+      } else {
+        return <span style={{color: 'orange'}}>진행중</span>;
       }
     }
-  ];
+  },
+  {
+    title: '상태',
+    dataIndex: 'signed',
+    key: 'status',
+    responsive: ["sm"],
+    width: '80px', 
+    render: (signed, row) => {
+      if (row.canceled) {
+        return <span style={{color: 'red'}}>취소됨</span>;
+      } else if (signed) {
+        return <span style={{color: 'green'}}>완료</span>;
+      } else {
+        return <span style={{color: 'orange'}}>진행중</span>;
+      }
+    }
+  },
+  {
+    title: '요청자',
+    dataIndex: ['user', 'name'],
+    sorter: (a, b) => a.user?.name?.localeCompare(b.user?.name || '') || 0,
+    key: 'user',
+    responsive: ["xs"],
+    width: '50px',
+    ...getColumnSearchProps('name'),
+    render: (text, row) => {
+      return (
+        <React.Fragment>
+        {row?.user?.name || ''} {row?.user?.JOB_TITLE || ''}
+        </React.Fragment>
+      )
+    } 
+  },
+  {
+    title: '요청자',
+    dataIndex: ['user', 'name'],
+    sorter: (a, b) => a.user?.name?.localeCompare(b.user?.name || '') || 0,
+    key: 'user',
+    responsive: ["sm"],
+    width: '105px',
+    ...getColumnSearchProps('name'),
+    render: (text, row) => {
+      return (
+        <React.Fragment>
+        {row?.user?.name || ''} {row?.user?.JOB_TITLE || ''}
+        </React.Fragment>
+      )
+    } 
+  },
+  {
+    title: '요청 일시',
+    dataIndex: 'requestedTime',
+    sorter: true,
+    key: 'requestedTime',
+    responsive: ["xs"],
+    width: '70px',
+    render: (text, row) => {
+      return (<font color='#787878'>{moment(row["requestedTime"]).fromNow()}</font>)
+    } 
+  },
+  {
+    title: '요청 일시',
+    dataIndex: 'requestedTime',
+    sorter: true,
+    key: 'requestedTime',
+    responsive: ["sm"],
+    width: '120px',
+    render: (text, row) => {
+      return (<font color='#787878'>{moment(row["requestedTime"]).fromNow()}</font>)
+    } 
+  },
+  {
+    title: '',
+    // dataIndex: 'docRef',
+    key: 'action',
+    responsive: ["sm"],
+    width: '50px',
+    render: (_,row) => {
+      return (
+        <Button
+          icon={<ProfileOutlined />}
+          onClick={() => {        
+          // const docId = row["_id"]
+          // const docRef = row["docRef"]
+          // dispatch(setDocToView({ docRef, docId }));
+          navigate(`/linkDetail`, { state: { link: row } } );
+        }}>상세</Button>
+      )
+    }
+  },
+  {
+    title: '',
+    // dataIndex: 'docRef',
+    key: 'action',
+    responsive: ["xs"],
+    width: '30px',
+    render: (_,row) => {
+      return (
+        <Button
+          icon={<ProfileOutlined />}
+          onClick={() => {        
+          // const docId = row["_id"]
+          // const docRef = row["docRef"]
+          // dispatch(setDocToView({ docRef, docId }));
+          navigate(`/linkDetail`, { state: { link: row } } );
+        }}></Button>
+      )
+    }
+  }
+];
 
 
   const rowSelection = {
@@ -343,7 +363,7 @@ const LinkList = () => {
           extra: [           
           <Button type="primary" icon={<FileAddOutlined />} onClick={() => {
             dispatch(resetAssignAll());
-            dispatch(setSendType('B'));
+            dispatch(setSendType('L'));
             navigate('/uploadDocument');
             }}>
             링크 서명 생성

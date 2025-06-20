@@ -21,6 +21,8 @@ import PrepareTemplate from './components/PrepareTemplate/PrepareTemplate';
 import BulkList from './components/Bulk/BulkList';
 import BulkDetail from './components/Bulk/BulkDetail';
 import LinkList from './components/Link/LinkList';
+import LinkDetail from './components/Link/LinkDetail';
+import LinkSetting from './components/Link/LinkSetting';
 //import QRList from './components/QR/QRList';
 //import QRDetail from './components/QR/QRDetail';
 import BoardList from './components/Board/BoardList';
@@ -251,7 +253,8 @@ const App = () => {
       <BulkList path="/bulkList" />
       <BulkDetail path="/bulkDetail" />
       <LinkList path="/linkList" />
-      
+      <LinkDetail path="/linkDetail" />
+      <LinkSetting path="/linkSetting" />       
 
       <InFolder path="/inFolder" />
       <MyFolder path="/myFolder" />

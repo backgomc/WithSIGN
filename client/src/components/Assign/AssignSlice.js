@@ -13,7 +13,7 @@ export const AssignSlice = createSlice({
     templateTitle: null,
     documentType: "PC",
     templateType: null,
-    sendType: "G",  // G:일반, B:벌크방식, default: G
+    sendType: "G",  // G:일반, B:벌크방식, L:링크서명, default: G
     orderType: "A", // A: 동차, S: 순차, default: A
     hasRequester: false,
     isWithPDF: false 

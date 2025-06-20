@@ -255,22 +255,53 @@ const UploadDocument = ({location}) => {
     }
   }, [file]);
 
-
   const onFinish = (values) => {
     console.log(values)
-
     dispatch(setDocumentType('PC'))
     dispatch(setDocumentTitle(values.documentTitle))
-
-    // navigate('/assign')
-    navigate('/assign', { state: {attachFiles: attachFiles, documentFile: documentFile} })
-
+  
+    // 링크서명인 경우 참여자 설정 스킵하고 바로 입력 설정으로 이동
+    if (sendType === 'L') {
+      navigate('/prepareDocument', { 
+        state: {
+          attachFiles: attachFiles, 
+          documentFile: documentFile,
+          skipAssign: true  // 참여자 설정을 건너뛰었다는 표시
+        } 
+      })
+    } else {
+      // 기존 흐름: 참여자 설정으로 이동
+      // navigate('/assign')
+      navigate('/assign', { 
+        state: {
+          attachFiles: attachFiles, 
+          documentFile: documentFile
+        } 
+      })
+    }
   }
 
   const templateNext = () => {
     dispatch(setTemplateTitle(templateTitle));
-    // navigate('/assign');
-    navigate('/assign', { state: {attachFiles: attachFiles, documentFile: documentFile} })
+    
+    // 링크서명인 경우 참여자 설정 스킵
+    if (sendType === 'L') {
+      navigate('/prepareDocument', { 
+        state: {
+          attachFiles: attachFiles, 
+          documentFile: documentFile,
+          skipAssign: true
+        } 
+      })
+    } else {
+      // navigate('/assign');
+      navigate('/assign', { 
+        state: {
+          attachFiles: attachFiles, 
+          documentFile: documentFile
+        } 
+      })
+    }
   }
 
   const templateChanged = (template) => {
@@ -320,7 +351,21 @@ const UploadDocument = ({location}) => {
   //   }
   // };
 
-  const fileAttachment = (
+  const fileAttachment = sendType === 'L' ? (
+    // 링크서명용 첨부파일 (비활성화)
+    <div style={{ marginBottom: '24px' }}>
+      <label style={{ marginBottom: '8px', display: 'block', fontWeight: '600' }}>첨부파일</label>
+      <p style={{ 
+        color: '#8c8c8c',
+        fontSize: '14px',
+        margin: 0,
+        lineHeight: '1.5'
+      }}>
+        링크 서명은 보안 정책상 첨부파일 기능을 사용할 수 없습니다.
+      </p>
+    </div>
+  ) : (
+    // 기존 첨부파일 기능 (주석 포함해서 완전히 유지)
     <ProFormUploadButton
       name="attachFile"
       label="첨부파일"
@@ -349,7 +394,7 @@ const UploadDocument = ({location}) => {
       <PageContainer
       // ghost
       header={{
-        title: (sendType == 'B') ? '서명 요청(대량 전송)' : '서명 요청',
+        title: sendType === 'L' ? '서명 요청(링크 서명)' : (sendType == 'B') ? '서명 요청(대량 전송)' : '서명 요청',
         ghost: true,
         breadcrumb: {
           routes: [
