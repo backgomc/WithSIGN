@@ -8,7 +8,7 @@ import { selectUser } from '../../app/infoSlice';
 import 'antd/dist/antd.css';
 import { Tabs, Upload, message, Input, Space, Form, Button } from 'antd';
 // import { InboxOutlined, CheckOutlined } from '@ant-design/icons';
-// 수정 위치 1: StepWrite → StepLinkWrite로 변경
+// StepWrite → StepLinkWrite로 변경
 import StepLinkWrite from './StepLinkWrite';
 import { useIntl } from "react-intl";
 import { setSignees, resetSignee, setObservers, setDocumentFile, setDocumentTitle, selectDocumentTitle, setDocumentTempPath, selectDocumentFile, setTemplate, setTemplateType, setDocumentType, selectDocumentType, selectTemplate, selectTemplateTitle, setTemplateTitle, selectSendType, selectTemplateType, resetTemplate, resetTemplateTitle } from '../Assign/AssignSlice';
@@ -54,7 +54,7 @@ function stringifyFile(files) {
   return JSON.stringify(myArray);
 }
 
-// 수정 위치 2: 컴포넌트명 변경
+// 컴포넌트명 변경
 const UploadLinkDocument = ({location}) => {
 
   const dispatch = useDispatch();
@@ -78,11 +78,11 @@ const UploadLinkDocument = ({location}) => {
 
   const documentTitle = useSelector(selectDocumentTitle);
   // const documentFile = useSelector(selectDocumentFile);
-  // 수정 위치 3: location.state에서 저장된 데이터 가져오기
+  // location.state에서 저장된 데이터 가져오기
   const [documentFile, setDocumentFile] = useState(location?.state?.documentFile ? location?.state?.documentFile : null);
   const [attachFiles, setAttachFiles] = useState(location?.state?.attachFiles ? location?.state?.attachFiles : []);
   
-  // 추가 위치 4: 저장된 PDF 데이터 가져오기
+  // 저장된 PDF 데이터 가져오기
   const savedPdfItems = location?.state?.savedPdfItems || [];
   const savedPageCount = location?.state?.savedPageCount || 0;
   const savedThumbnail = location?.state?.savedThumbnail || null;
@@ -264,7 +264,7 @@ const UploadLinkDocument = ({location}) => {
   }, [file]);
 
 
-  // 수정 위치 5: onFinish 함수 수정 (링크서명은 바로 입력설정으로 이동)
+  // nFinish 함수 수정 (링크서명은 바로 입력설정으로 이동)
   const onFinish = (values) => {
     console.log(values)
 
@@ -286,7 +286,7 @@ const UploadLinkDocument = ({location}) => {
 
   }
 
-  // 수정 위치 6: templateNext 함수 수정 (링크서명은 바로 입력설정으로 이동)
+  // templateNext 함수 수정 (링크서명은 바로 입력설정으로 이동)
   const templateNext = () => {
     dispatch(setTemplateTitle(templateTitle));
     
@@ -351,7 +351,7 @@ const UploadLinkDocument = ({location}) => {
   //   }
   // };
 
-  // 수정 위치 7: fileAttachment 수정 (링크서명용 첨부파일 비활성화)
+  // fileAttachment 수정 (링크서명용 첨부파일 비활성화)
   const fileAttachment = (
     <div style={{ marginBottom: '24px' }}>
       <label style={{ marginBottom: '8px', display: 'block', fontWeight: '600' }}>첨부파일</label>
@@ -378,7 +378,7 @@ const UploadLinkDocument = ({location}) => {
       <PageContainer
       // ghost
       header={{
-        // 수정 위치 8: title 수정
+        // title 수정
         title: '서명 요청(링크 서명)',
         ghost: true,
         breadcrumb: {
@@ -400,17 +400,17 @@ const UploadLinkDocument = ({location}) => {
           </Button>,
         ],
       }}
-      // 수정 위치 9: content에서 StepLinkWrite 사용
+      // content에서 StepLinkWrite 사용
       content= { 
         <ProCard style={{ background: '#ffffff' }} layout="center">
           <StepLinkWrite 
             current={0} 
             documentFile={documentFile} 
             attachFiles={attachFiles} 
-            location={location}        // 🔥 추가!
-            pdfRef={null}             // 🔥 추가 (1단계에는 pdfRef 없음)
-            pageCount={0}             // 🔥 추가
-            boxData={[]}              // 🔥 추가
+            location={location}
+            pdfRef={null}
+            pageCount={0}
+            boxData={[]}
             savedPdfItems={savedPdfItems} 
             savedPageCount={savedPageCount} 
             savedThumbnail={savedThumbnail} 
@@ -594,5 +594,5 @@ const UploadLinkDocument = ({location}) => {
 
 };
 
-// 수정 위치 10: export명 변경
+// export명 변경
 export default UploadLinkDocument;

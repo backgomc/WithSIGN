@@ -5,7 +5,7 @@ const { Link } = require("../models/Link");
 const { Document } = require("../models/Document");
 const { ValidateToken } = require('../middleware/auth');
 
-// 신규 링크서명 등록 (bulk.js의 addBulk 참고)
+// 신규 링크서명 등록
 router.post('/addLink', ValidateToken, (req, res) => {
 
     if (!req.body.user) {
@@ -23,7 +23,7 @@ router.post('/addLink', ValidateToken, (req, res) => {
     })
 })
 
-// 링크서명 목록 조회 (bulk.js의 bulks와 완전 동일한 구조)
+// 링크서명 목록 조회
 router.post('/list', ValidateToken, (req, res) => {
 
   const user = req.body.systemId

@@ -279,9 +279,6 @@ const PrepareLinkDocument = ({location}) => {
   }
 
   useEffect(() => {
-    console.log('🔥 PrepareLinkDocument 마운트됨');
-    console.log('🔥 받은 savedPdfItems:', savedPdfItems);
-    console.log('🔥 받은 location.state:', location?.state);    
     // 링크서명에서는 observers 처리 안함
     // if (sendType !== 'B') {
     //   setObservers(preObserver.filter((value) => {
@@ -295,7 +292,6 @@ const PrepareLinkDocument = ({location}) => {
 
       // 저장된 PDF 항목들이 있으면 복원
       if (savedPdfItems.length > 0) {
-        console.log('PDF 항목들 복원:', savedPdfItems);
         await pdfRef.current.importItems(savedPdfItems);
       }
     };
@@ -332,20 +328,6 @@ const PrepareLinkDocument = ({location}) => {
 
     return year + month + day;
   }
-
-  // 링크서명에서는 사용하지 않는 함수이지만 기존 로직 유지
-  const send = async () => {
-    console.log('send called - but not used in link signature')
-    // 링크서명에서는 이 함수를 사용하지 않고 다음 버튼으로 linkSetting으로 이동
-    return;
-  }
-
-  // 링크서명에서는 사용하지 않는 함수이지만 기존 로직 유지
-  const uploadForSigning = async () => {
-    console.log('uploadForSigning called - but not used in link signature')
-    // 링크서명에서는 이 함수를 사용하지 않고 다음 버튼으로 linkSetting으로 이동
-    return;
-  };
 
   const dragOver = e => {
     e.preventDefault();
@@ -506,7 +488,7 @@ const PrepareLinkDocument = ({location}) => {
       pageCount: pageCount,
       thumbnail: _thumbnail,
 
-      // 🔥 추가: 현재 PDF 상태들 저장
+      // 현재 PDF 상태들 저장
       savedPdfItems: items,
       savedPageCount: pageCount,
       savedThumbnail: _thumbnail,
@@ -536,7 +518,7 @@ const PrepareLinkDocument = ({location}) => {
         },
         extra: [
             <Button key="3" icon={<ArrowLeftOutlined />} onClick={async () => {
-                // ⭐ 현재 상태를 추출해서 저장
+                // 현재 상태를 추출해서 저장
                 const items = await pdfRef.current.exportItems();
                 const _thumbnail = await pdfRef.current.getThumbnail(0, 0.6);
                 
@@ -545,7 +527,7 @@ const PrepareLinkDocument = ({location}) => {
                   state: {
                     attachFiles: attachFiles, 
                     documentFile: documentFile,
-                    // ⭐ 현재 PDF 상태들 저장
+                    // 현재 PDF 상태들 저장
                     savedPdfItems: items,
                     savedPageCount: pageCount,
                     savedThumbnail: _thumbnail,
@@ -568,9 +550,9 @@ const PrepareLinkDocument = ({location}) => {
             documentFile={documentFile} 
             attachFiles={attachFiles}
             location={location} 
-            pdfRef={pdfRef}        // 🔥 추가
-            pageCount={pageCount}  // 🔥 추가
-            boxData={boxData}      // 🔥 추가            
+            pdfRef={pdfRef}
+            pageCount={pageCount}
+            boxData={boxData}
           />
         </ProCard> 
       }

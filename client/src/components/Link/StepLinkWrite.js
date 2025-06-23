@@ -28,7 +28,7 @@ const StepLinkWrite = (props) => {
     const onChange = async (current) => {
         console.log('🔥 onChange 호출됨:', current);
         if (current == 0) {
-            // 🔥 2단계에서 1단계로 네비게이션 클릭 시 현재 PDF 상태 저장
+            // 2단계에서 1단계로 네비게이션 클릭 시 현재 PDF 상태 저장
             let currentItems = [];
             let currentThumbnail = null;
             

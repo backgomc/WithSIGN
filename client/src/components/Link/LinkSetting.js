@@ -87,7 +87,7 @@ const LinkSetting = (props) => {
       state: { 
         attachFiles, 
         documentFile,
-        // 🔥 3단계에서 받은 PDF 데이터들 그대로 전달
+        // 3단계에서 받은 PDF 데이터들 그대로 전달
         savedPdfItems: props.location?.state?.savedPdfItems,
         savedPageCount: props.location?.state?.savedPageCount,
         savedThumbnail: props.location?.state?.savedThumbnail,
