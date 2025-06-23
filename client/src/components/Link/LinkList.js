@@ -364,7 +364,7 @@ const columns = [
           <Button type="primary" icon={<FileAddOutlined />} onClick={() => {
             dispatch(resetAssignAll());
             dispatch(setSendType('L'));
-            navigate('/uploadDocument');
+            navigate('/uploadLinkDocument');
             }}>
             링크 서명 생성
           </Button>

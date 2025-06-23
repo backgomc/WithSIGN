@@ -8,7 +8,8 @@ import { selectUser } from '../../app/infoSlice';
 import 'antd/dist/antd.css';
 import { Tabs, Upload, message, Input, Space, Form, Button } from 'antd';
 // import { InboxOutlined, CheckOutlined } from '@ant-design/icons';
-import StepWrite from '../Step/StepWrite';
+// 수정 위치 1: StepWrite → StepLinkWrite로 변경
+import StepLinkWrite from './StepLinkWrite';
 import { useIntl } from "react-intl";
 import { setSignees, resetSignee, setObservers, setDocumentFile, setDocumentTitle, selectDocumentTitle, setDocumentTempPath, selectDocumentFile, setTemplate, setTemplateType, setDocumentType, selectDocumentType, selectTemplate, selectTemplateTitle, setTemplateTitle, selectSendType, selectTemplateType, resetTemplate, resetTemplateTitle } from '../Assign/AssignSlice';
 import { PageContainer } from '@ant-design/pro-layout';
@@ -53,7 +54,8 @@ function stringifyFile(files) {
   return JSON.stringify(myArray);
 }
 
-const UploadDocument = ({location}) => {
+// 수정 위치 2: 컴포넌트명 변경
+const UploadLinkDocument = ({location}) => {
 
   const dispatch = useDispatch();
   const { formatMessage } = useIntl();
@@ -76,9 +78,15 @@ const UploadDocument = ({location}) => {
 
   const documentTitle = useSelector(selectDocumentTitle);
   // const documentFile = useSelector(selectDocumentFile);
-  const [documentFile, setDocumentFile] = useState(location?.state.documentFile ? location?.state.documentFile : null);
-  const [attachFiles, setAttachFiles] = useState(location?.state.attachFiles ? location?.state.attachFiles : []);
+  // 수정 위치 3: location.state에서 저장된 데이터 가져오기
+  const [documentFile, setDocumentFile] = useState(location?.state?.documentFile ? location?.state?.documentFile : null);
+  const [attachFiles, setAttachFiles] = useState(location?.state?.attachFiles ? location?.state?.attachFiles : []);
   
+  // 추가 위치 4: 저장된 PDF 데이터 가져오기
+  const savedPdfItems = location?.state?.savedPdfItems || [];
+  const savedPageCount = location?.state?.savedPageCount || 0;
+  const savedThumbnail = location?.state?.savedThumbnail || null;
+  const savedBoxData = location?.state?.savedBoxData || [];
 
   const documentType = useSelector(selectDocumentType);
   const template = useSelector(selectTemplate);
@@ -256,21 +264,44 @@ const UploadDocument = ({location}) => {
   }, [file]);
 
 
+  // 수정 위치 5: onFinish 함수 수정 (링크서명은 바로 입력설정으로 이동)
   const onFinish = (values) => {
     console.log(values)
 
     dispatch(setDocumentType('PC'))
     dispatch(setDocumentTitle(values.documentTitle))
 
-    // navigate('/assign')
-    navigate('/assign', { state: {attachFiles: attachFiles, documentFile: documentFile} })
+    // 링크서명은 참여자 설정 스킵하고 바로 입력설정으로 이동
+    navigate('/prepareLinkDocument', { 
+      state: {
+        attachFiles: attachFiles, 
+        documentFile: documentFile,
+        // 저장된 PDF 데이터가 있으면 함께 전달
+        savedPdfItems: savedPdfItems,
+        savedPageCount: savedPageCount,
+        savedThumbnail: savedThumbnail,
+        savedBoxData: savedBoxData
+      } 
+    });
 
   }
 
+  // 수정 위치 6: templateNext 함수 수정 (링크서명은 바로 입력설정으로 이동)
   const templateNext = () => {
     dispatch(setTemplateTitle(templateTitle));
-    // navigate('/assign');
-    navigate('/assign', { state: {attachFiles: attachFiles, documentFile: documentFile} })
+    
+    // 링크서명은 참여자 설정 스킵하고 바로 입력설정으로 이동
+    navigate('/prepareLinkDocument', { 
+      state: {
+        attachFiles: attachFiles, 
+        documentFile: documentFile,
+        // 저장된 PDF 데이터가 있으면 함께 전달
+        savedPdfItems: savedPdfItems,
+        savedPageCount: savedPageCount,
+        savedThumbnail: savedThumbnail,
+        savedBoxData: savedBoxData
+      } 
+    });
   }
 
   const templateChanged = (template) => {
@@ -320,22 +351,20 @@ const UploadDocument = ({location}) => {
   //   }
   // };
 
+  // 수정 위치 7: fileAttachment 수정 (링크서명용 첨부파일 비활성화)
   const fileAttachment = (
-    <ProFormUploadButton
-      name="attachFile"
-      label="첨부파일"
-      title="가져오기"
-      tooltip="해당 문서에 파일을 첨부하는 경우 사용"
-      max={3}
-      fieldProps={{
-        name: 'file',
-        // listType: 'picture-card',
-        ...propsAttach
-      }}
-      // action="/upload.do"
-      extra="최대 파일수 3개, 최대 용량 20MB"
-    />
-  )
+    <div style={{ marginBottom: '24px' }}>
+      <label style={{ marginBottom: '8px', display: 'block', fontWeight: '600' }}>첨부파일</label>
+      <p style={{ 
+        color: '#8c8c8c',
+        fontSize: '14px',
+        margin: 0,
+        lineHeight: '1.5'
+      }}>
+        링크 서명은 보안 정책상 첨부파일 기능을 사용할 수 없습니다.
+      </p>
+    </div>
+  );
 
 
   return (
@@ -349,7 +378,8 @@ const UploadDocument = ({location}) => {
       <PageContainer
       // ghost
       header={{
-        title: (sendType == 'B') ? '서명 요청(대량 전송)' : '서명 요청',
+        // 수정 위치 8: title 수정
+        title: '서명 요청(링크 서명)',
         ghost: true,
         breadcrumb: {
           routes: [
@@ -370,7 +400,24 @@ const UploadDocument = ({location}) => {
           </Button>,
         ],
       }}
-      content= { <ProCard style={{ background: '#ffffff' }} layout="center"><StepWrite current={0} documentFile={documentFile} attachFiles={attachFiles} /></ProCard> }
+      // 수정 위치 9: content에서 StepLinkWrite 사용
+      content= { 
+        <ProCard style={{ background: '#ffffff' }} layout="center">
+          <StepLinkWrite 
+            current={0} 
+            documentFile={documentFile} 
+            attachFiles={attachFiles} 
+            location={location}        // 🔥 추가!
+            pdfRef={null}             // 🔥 추가 (1단계에는 pdfRef 없음)
+            pageCount={0}             // 🔥 추가
+            boxData={[]}              // 🔥 추가
+            savedPdfItems={savedPdfItems} 
+            savedPageCount={savedPageCount} 
+            savedThumbnail={savedThumbnail} 
+            savedBoxData={savedBoxData} 
+          />
+        </ProCard> 
+      }
       footer={[
         // <Button key="3" onClick={() => form.resetFields()}>초기화</Button>,
         // <Button key="2" type="primary" onClick={() => (tab === "tab1") ? form.submit() : templateNext()} disabled={disableNext}>
@@ -547,4 +594,5 @@ const UploadDocument = ({location}) => {
 
 };
 
-export default UploadDocument;
+// 수정 위치 10: export명 변경
+export default UploadLinkDocument;

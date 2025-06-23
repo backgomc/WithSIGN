@@ -39,7 +39,7 @@ import { selectDocumentTempPath,
 import { selectDirectTempPath, selectDirectTitle } from '../SignDirect/DirectSlice';
 import { selectUser } from '../../app/infoSlice';
 import './PrepareLinkDocument.css';
-import StepWrite from '../Step/StepWrite'
+import StepLinkWrite from './StepLinkWrite';
 import { useIntl } from 'react-intl';
 import RcResizeObserver from 'rc-resize-observer';
 import { PageContainer } from '@ant-design/pro-layout';
@@ -74,13 +74,20 @@ const { detect } = require('detect-browser');
 const browser = detect();
 
 const PrepareLinkDocument = ({location}) => {
+  // location.state에서 저장된 PDF 데이터 가져오기
+  const savedPdfItems = location?.state?.savedPdfItems || [];
+  const savedPageCount = location?.state?.savedPageCount || 0;
+  const savedThumbnail = location?.state?.savedThumbnail || null;
+  const savedBoxData = location?.state?.savedBoxData || [];
+
   const [instance, setInstance] = useState(null);
   const [dropPoint, setDropPoint] = useState(null);
   // const [fileName, setFileName] = useState(null);
   const [loading, setLoading] = useState(false);
   const [responsive, setResponsive] = useState(false);
-  const [thumbnail, setThumbnail] = useState(null);
-  const [pageCount, setPageCount] = useState(0);
+  // 저장된 데이터로 초기화
+  const [thumbnail, setThumbnail] = useState(savedThumbnail);
+  const [pageCount, setPageCount] = useState(savedPageCount);
   const [observers, setObservers] = useState([]);
   // const [inputValue, _setInputValue] = useState([new Map()]);
 
@@ -123,7 +130,8 @@ const PrepareLinkDocument = ({location}) => {
   
   // 링크서명은 항상 bulk 처리
   const box_bulk = [{key:'bulk', sign:0, text:0, checkbox:0, dropdown:0, auto_name:0, auto_jobtitle:0, auto_office:0, auto_depart:0, auto_sabun:0, auto_date:0}]
-  const [boxData, setBoxData] = useState(box_bulk); // 링크서명은 항상 bulk
+  // 저장된 boxData가 있으면 사용, 없으면 기본값
+  const [boxData, setBoxData] = useState(savedBoxData.length > 0 ? savedBoxData : box_bulk);
 
   // let initialAssignee =
   //   assigneesValues.length > 0 ? assigneesValues[0].value : '';
@@ -271,13 +279,28 @@ const PrepareLinkDocument = ({location}) => {
   }
 
   useEffect(() => {
+    console.log('🔥 PrepareLinkDocument 마운트됨');
+    console.log('🔥 받은 savedPdfItems:', savedPdfItems);
+    console.log('🔥 받은 location.state:', location?.state);    
     // 링크서명에서는 observers 처리 안함
     // if (sendType !== 'B') {
     //   setObservers(preObserver.filter((value) => {
     //     return assignees.some(v => value == v.key);
     //   }));
     // }
-    initWithPDF();
+
+    // 저장된 데이터 복원 로직 추가
+    const initializeData = async () => {
+      await initWithPDF();
+
+      // 저장된 PDF 항목들이 있으면 복원
+      if (savedPdfItems.length > 0) {
+        console.log('PDF 항목들 복원:', savedPdfItems);
+        await pdfRef.current.importItems(savedPdfItems);
+      }
+    };
+
+    initializeData();
   }, []);
 
   // observers.filter(v => v == box.key).count === 0
@@ -482,6 +505,12 @@ const PrepareLinkDocument = ({location}) => {
       items: items,
       pageCount: pageCount,
       thumbnail: _thumbnail,
+
+      // 🔥 추가: 현재 PDF 상태들 저장
+      savedPdfItems: items,
+      savedPageCount: pageCount,
+      savedThumbnail: _thumbnail,
+      savedBoxData: boxData,      
       
       // 기타 설정들
       documentType: documentType,
@@ -506,10 +535,24 @@ const PrepareLinkDocument = ({location}) => {
           ],
         },
         extra: [
-          <Button key="3" icon={<ArrowLeftOutlined />} onClick={() => {
-            // 링크서명인 경우 문서등록으로 이동
-            navigate(`/uploadDocument`, { state: {attachFiles: attachFiles, documentFile: documentFile} });
-          }}></Button>,
+            <Button key="3" icon={<ArrowLeftOutlined />} onClick={async () => {
+                // ⭐ 현재 상태를 추출해서 저장
+                const items = await pdfRef.current.exportItems();
+                const _thumbnail = await pdfRef.current.getThumbnail(0, 0.6);
+                
+                // 링크서명인 경우 문서등록으로 이동
+                navigate(`/uploadLinkDocument`, { 
+                  state: {
+                    attachFiles: attachFiles, 
+                    documentFile: documentFile,
+                    // ⭐ 현재 PDF 상태들 저장
+                    savedPdfItems: items,
+                    savedPageCount: pageCount,
+                    savedThumbnail: _thumbnail,
+                    savedBoxData: boxData
+                  } 
+                });
+              }}></Button>,
           
           // 링크서명은 "다음" 버튼
           <Button key="2" icon={<ArrowRightOutlined />} type="primary" onClick={handleNextToLinkSetting} disabled={disableNext}>
@@ -520,10 +563,14 @@ const PrepareLinkDocument = ({location}) => {
       style={{height:`calc(100vh + 200px)`}}
       content= { 
         <ProCard style={{ background: '#ffffff'}} layout="center">
-          <StepWrite 
+          <StepLinkWrite 
             current={1}  // 링크서명은 1단계(입력설정)
             documentFile={documentFile} 
-            attachFiles={attachFiles} 
+            attachFiles={attachFiles}
+            location={location} 
+            pdfRef={pdfRef}        // 🔥 추가
+            pageCount={pageCount}  // 🔥 추가
+            boxData={boxData}      // 🔥 추가            
           />
         </ProCard> 
       }

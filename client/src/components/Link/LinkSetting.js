@@ -29,7 +29,7 @@ import {
   EyeOutlined,
   EyeInvisibleOutlined
 } from '@ant-design/icons';
-import StepWrite from '../Step/StepWrite';
+import StepLinkWrite from './StepLinkWrite';
 import { selectSendType, selectDocumentTitle, setDocumentTitle } from '../Assign/AssignSlice';
 import { selectUser } from '../../app/infoSlice';
 
@@ -83,8 +83,16 @@ const LinkSetting = (props) => {
 
   // 이전 단계로
   const handlePrevious = () => {
-    navigate('/prepareDocument', { 
-      state: { attachFiles, documentFile } 
+    navigate('/prepareLinkDocument', { 
+      state: { 
+        attachFiles, 
+        documentFile,
+        // 🔥 3단계에서 받은 PDF 데이터들 그대로 전달
+        savedPdfItems: props.location?.state?.savedPdfItems,
+        savedPageCount: props.location?.state?.savedPageCount,
+        savedThumbnail: props.location?.state?.savedThumbnail,
+        savedBoxData: props.location?.state?.savedBoxData
+      } 
     });
   };
 
@@ -193,9 +201,9 @@ const LinkSetting = (props) => {
           ]
         }}
         content={
-          <ProCard style={{ background: '#ffffff' }} layout="center">
-            <StepWrite current={2} documentFile={documentFile} attachFiles={attachFiles} />
-          </ProCard>
+            <ProCard style={{ background: '#ffffff' }} layout="center">
+              <StepLinkWrite current={2} documentFile={documentFile} attachFiles={attachFiles} location={props.location} />
+            </ProCard>
         }
       >
         <Row gutter={[32, 24]} style={{ alignItems: 'stretch' }}>

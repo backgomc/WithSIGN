@@ -24,6 +24,7 @@ import LinkList from './components/Link/LinkList';
 import LinkDetail from './components/Link/LinkDetail';
 import PrepareLinkDocument from './components/Link/PrepareLinkDocument';
 import LinkSetting from './components/Link/LinkSetting';
+import UploadLinkDocument from './components/Link/UploadLinkDocument';
 //import QRList from './components/QR/QRList';
 //import QRDetail from './components/QR/QRDetail';
 import BoardList from './components/Board/BoardList';
@@ -243,6 +244,7 @@ const App = () => {
       <Assign path="/assign" />
       <AssignSort path="/assignSort" />
       <UploadDocument path="/uploadDocument" />
+      <UploadLinkDocument path="/uploadLinkDocument" />
       <PrepareDocument path="/prepareDocument" />
       <SignList path="/signList" />
       <SignedList path="/signedList" />
