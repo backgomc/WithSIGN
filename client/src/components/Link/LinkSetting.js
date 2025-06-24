@@ -35,6 +35,13 @@ import { selectUser } from '../../app/infoSlice';
 
 const { Title, Text } = Typography;
 
+// CSS 스타일 추가
+const customStyles = `
+  .ant-form-vertical .ant-form-item-label {
+    padding: 0 0 4px !important;
+  }
+`;
+
 const LinkSetting = (props) => {
   const dispatch = useDispatch();
   const sendType = useSelector(selectSendType);
@@ -54,7 +61,8 @@ const LinkSetting = (props) => {
   const [accessPassword, setAccessPassword] = useState('');
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [passwordError, setPasswordError] = useState('');
-  const [expiryDays, setExpiryDays] = useState(14);
+  const [expiryDays, setExpiryDays] = useState(7);
+  const [expiryDaysError, setExpiryDaysError] = useState('');
   const [passwordHint, setPasswordHint] = useState('');
   const [selectedApprover, setSelectedApprover] = useState(null);
 
@@ -68,12 +76,12 @@ const LinkSetting = (props) => {
   useEffect(() => {
     // 기본값 설정
     form.setFieldsValue({
-      expiryDays: 14,
+      expiryDays: 7,
       accessPassword: '',
       passwordHint: ''
     });
     setAccessPassword('');
-    setExpiryDays(14);
+    setExpiryDays(7);
   }, [form]);
 
   // 패스워드 가시성 토글
@@ -165,6 +173,7 @@ const LinkSetting = (props) => {
 
   return (
     <div>
+      <style dangerouslySetInnerHTML={{ __html: customStyles }} />
       <PageContainer
         header={{
           title: <Typography.Title 
@@ -214,60 +223,63 @@ const LinkSetting = (props) => {
                 form={form}
                 layout="vertical"
                 autoComplete="off"
-                autoCorrect="off"
-                autoCapitalize="off"
-                spellCheck="false"
                 initialValues={{
-                  expiryDays: 14,
+                  expiryDays: 7,
                   passwordHint: ''
                 }}
               >
                 {/* 서명 유효기간 설정 */}
                 <Form.Item
-                  label="서명 유효기간 설정"
+                  label={<span><span style={{ color: '#ff4d4f' }}>*</span> 서명 유효기간 설정</span>}
                   name="expiryDays"
-                  rules={[
-                    { required: true, message: '유효기간을 입력해주세요.' },
-                    { type: 'number', min: 1, max: 365, message: '1일 이상 365일 이하로 설정해주세요.' }
-                  ]}
+                  validateStatus={expiryDaysError ? 'error' : ''}
                   style={{ marginBottom: '20px' }}
                 >
+                  <div style={{ marginLeft: '10px', marginBottom: '10px', color: '#8c8c8c', fontSize: '14px' }}>
+                    이 서명은 {expiryDays || 0}일 이내에 완료하지 않으면 자동으로 폐기됩니다.
+                  </div>
                   <InputNumber 
-                    style={{ width: '100%' }}
+                    style={{ width: 'calc(100% - 20px)', marginLeft: '10px', marginRight: '10px' }}
                     placeholder="유효기간 입력"
                     min={1}
                     max={365}
                     value={expiryDays}
-                    onChange={(value) => setExpiryDays(value)}
+                    onChange={(value) => {
+                      setExpiryDays(value);
+                      form.setFieldsValue({ expiryDays: value });
+                      
+                      // 실시간 검증
+                      if (!value || value === null) {
+                        setExpiryDaysError('서명 유효기간은 필수 입력 사항입니다.');
+                      } else if (value < 1 || value > 365) {
+                        setExpiryDaysError('유효기간은 1일 이상 365일 이하로 설정해주세요.');
+                      } else {
+                        setExpiryDaysError('');
+                      }
+                    }}
                     addonAfter="일"
                     autoComplete="off"
-                    autoCorrect="off"
-                    autoCapitalize="off"
-                    spellCheck="false"
-                    data-form-type="other"
-                    data-lpignore="true"
                   />
-                  <div style={{ marginTop: '8px', paddingLeft: '11px', color: '#8c8c8c', fontSize: '14px' }}>
-                    이 서명은 {expiryDays}일 이내에 완료하지 않으면 자동으로 폐기됩니다. (기본값: 14일)
-                  </div>
+                  {expiryDaysError && (
+                    <div style={{ marginTop: '4px', paddingLeft: '11px', color: '#ff4d4f', fontSize: '14px' }}>
+                      {expiryDaysError}
+                    </div>
+                  )}
                 </Form.Item>
 
                 <Divider />
 
                 {/* 접근 암호 설정 */}
                 <Form.Item
-                  label="접근 암호 설정"
+                  label={<span><span style={{ color: '#ff4d4f' }}>*</span> 접근 암호 설정</span>}
                   name="accessPassword"
-                  rules={[
-                    { required: true, message: '접근 암호는 필수입니다.' },
-                    { min: 6, message: '접근 암호는 최소 6자 이상이어야 합니다.' },
-                    { max: 20, message: '접근 암호는 최대 20자 이하로 설정해주세요.' }
-                  ]}
                   validateStatus={passwordError ? 'error' : ''}
-                  help={passwordError}
                   style={{ marginBottom: '20px' }}
                 >
-                  <Input.Group compact style={{ display: 'flex', alignItems: 'center' }}>
+                  <div style={{ marginLeft: '10px', marginBottom: '10px', color: '#8c8c8c', fontSize: '14px' }}>
+                    서명자가 링크 접근 시 입력해야 하는 암호입니다.
+                  </div>
+                  <Input.Group compact style={{ display: 'flex', alignItems: 'center', marginLeft: '10px', marginRight: '10px', width: 'calc(100% - 20px)' }}>
                     <Input
                       style={{ flex: 1 }}
                       type={passwordVisible ? 'text' : 'password'}
@@ -279,7 +291,7 @@ const LinkSetting = (props) => {
                         
                         // 실시간 검증
                         if (filtered.length === 0) {
-                          setPasswordError('접근 암호는 필수입니다.');
+                          setPasswordError('접근 암호는 필수 입력 사항입니다.');
                         } else if (filtered.length < 6) {
                           setPasswordError('접근 암호는 최소 6자 이상이어야 합니다.');
                         } else {
@@ -298,6 +310,7 @@ const LinkSetting = (props) => {
                       }}
                       placeholder="영문/숫자만 6자 이상 20자 이하로 입력해주세요"
                       maxLength={20}
+                      autoComplete="new-password"
                     />
                     <Button
                       style={{
@@ -314,34 +327,30 @@ const LinkSetting = (props) => {
                       {passwordVisible ? '숨기기' : '암호 보기'}
                     </Button>
                   </Input.Group>
-                  <div style={{ marginTop: '8px', paddingLeft: '11px', color: '#8c8c8c', fontSize: '14px' }}>
-                    서명자가 링크 접근 시 입력해야 하는 암호입니다.
-                  </div>
+                  {passwordError && (
+                    <div style={{ marginTop: '4px', paddingLeft: '11px', color: '#ff4d4f', fontSize: '14px' }}>
+                      {passwordError}
+                    </div>
+                  )}
                 </Form.Item>
 
                 {/* 접근 암호 힌트 */}
                 <Form.Item
-                  label="접근 암호 힌트 (선택사항)"
+                  label={<span style={{ marginLeft: '10px' }}>접근 암호 힌트 (선택사항)</span>}
                   name="passwordHint"
                   style={{ marginBottom: '20px' }}
                 >
+                  <div style={{ marginLeft: '10px', marginBottom: '10px', color: '#8c8c8c', fontSize: '14px' }}>
+                    서명자가 암호를 쉽게 기억할 수 있도록 힌트를 제공할 수 있습니다.
+                  </div>
                   <Input
+                    style={{ marginLeft: '10px', marginRight: '10px', width: 'calc(100% - 20px)' }}
                     value={passwordHint}
                     onChange={(e) => setPasswordHint(e.target.value)}
                     placeholder="예: 회사 설립연도 4자리"
                     maxLength={50}
                     autoComplete="off"
-                    autoCorrect="off"
-                    autoCapitalize="off"
-                    spellCheck="false"
-                    data-form-type="other"
-                    data-lpignore="true"
-                    data-1p-ignore="true"
-                    data-bwignore="true"
                   />
-                  <div style={{ marginTop: '8px', paddingLeft: '11px', color: '#8c8c8c', fontSize: '14px' }}>
-                    서명자가 암호를 쉽게 기억할 수 있도록 힌트를 제공할 수 있습니다.
-                  </div>
                 </Form.Item>
 
                 {/* 암호 관련 안내사항 */}
@@ -357,7 +366,7 @@ const LinkSetting = (props) => {
                   }
                   type="info"
                   showIcon
-                  style={{ marginBottom: 0 }}
+                  style={{ marginBottom: 0, marginLeft: '10px', marginRight: '10px' }}
                 />
               </Form>
             </Card>
@@ -367,38 +376,35 @@ const LinkSetting = (props) => {
           <Col xs={24} lg={12} style={{ display: 'flex', flexDirection: 'column' }}>
             {/* 책임자 승인 선택 */}
             <Card title="책임자 승인 선택" bordered={false} style={{ marginBottom: 24, flex: 1 }}>
-              <Form.Item
-                label="승인 책임자"
-                extra="외부 링크서명을 위한 내부 통제자를 지정해주세요."
-              >
-                <Select
-                  placeholder="책임자를 선택해주세요"
-                  value={selectedApprover}
-                  onChange={setSelectedApprover}
-                  options={approvers}
-                  style={{ width: '100%' }}
-                  allowClear={false}
-                  autoComplete="off"
-                  data-lpignore="true"
-                  data-1p-ignore="true"
-                  data-bwignore="true"
-                />
-              </Form.Item>
+              <div style={{ marginBottom: '4px' }}>
+                <span style={{ color: '#ff4d4f' }}>*</span> 승인 책임자
+              </div>
+              <div style={{ marginLeft: '10px', marginBottom: '10px', color: '#8c8c8c', fontSize: '14px' }}>
+                외부 링크서명을 위한 내부 통제자를 지정해주세요.
+              </div>
+              <Select
+                placeholder="책임자를 선택해주세요"
+                value={selectedApprover}
+                onChange={setSelectedApprover}
+                options={approvers}
+                style={{ width: 'calc(100% - 20px)', marginLeft: '10px', marginRight: '10px' }}
+                allowClear={false}
+              />
             </Card>
 
             {/* 설정 요약 */}
             <Card title="설정 요약" bordered={false} style={{ flex: 1, backgroundColor: '#ffffff' }}>
               <Space direction="vertical" style={{ width: '100%' }}>
-                <Text><strong>문서명:</strong> {localDocTitle}</Text>
-                <Text><strong>요청자:</strong> {name}</Text>
-                <Text><strong>유효기간:</strong> {expiryDays}일</Text>
-                <Text><strong>접근암호:</strong> {
+                <Text style={{ marginLeft: '10px' }}><strong>문서명 :</strong> {localDocTitle}</Text>
+                <Text style={{ marginLeft: '10px' }}><strong>요청자 :</strong> {name}</Text>
+                <Text style={{ marginLeft: '10px' }}><strong>유효기간 :</strong> {expiryDays ? `${expiryDays}일` : <span style={{ color: '#ff4d4f' }}>미입력</span>}</Text>
+                <Text style={{ marginLeft: '10px' }}><strong>접근암호 :</strong> {
                   accessPassword ? 
-                    (passwordVisible ? accessPassword : accessPassword.replace(/./g, '●')) : 
-                    '미입력'
+                    (passwordVisible ? accessPassword : accessPassword.replace(/./g, '•')) : 
+                    <span style={{ color: '#ff4d4f' }}>미입력</span>
                 }</Text>
-                {passwordHint && <Text><strong>암호힌트:</strong> {passwordHint}</Text>}
-                <Text><strong>승인자:</strong> {
+                {passwordHint && <Text style={{ marginLeft: '10px' }}><strong>암호힌트 :</strong> {passwordHint}</Text>}
+                <Text style={{ marginLeft: '10px' }}><strong>승인자 :</strong> {
                   approvers.find(a => a.value === selectedApprover)?.label || 
                   <span style={{ color: '#ff4d4f' }}>미선택</span>
                 }</Text>
@@ -408,7 +414,7 @@ const LinkSetting = (props) => {
                   description="서명자는 접근 암호를 입력한 다음 휴대폰 본인인증을 완료해야만 문서 열람 및 서명이 가능합니다."
                   type="success"
                   showIcon
-                  style={{ fontSize: '12px' }}
+                  style={{ fontSize: '12px', marginLeft: '10px', marginRight: '10px' }}
                 />
               </Space>
             </Card>

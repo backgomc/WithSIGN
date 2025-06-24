@@ -294,7 +294,7 @@ const PrepareLinkDocument = ({location}) => {
       if (savedPdfItems.length > 0) {
         await pdfRef.current.importItems(savedPdfItems);
 
-        // ⭐ 복원 후 boxData 재계산
+        // 복원 후 boxData 재계산
         const newBoxData = [{key:'bulk', sign:0, text:0, checkbox:0, dropdown:0, auto_name:0, auto_jobtitle:0, auto_office:0, auto_depart:0, auto_sabun:0, auto_date:0}];
         
         savedPdfItems.forEach(item => {
