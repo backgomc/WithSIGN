@@ -293,6 +293,37 @@ const PrepareLinkDocument = ({location}) => {
       // 저장된 PDF 항목들이 있으면 복원
       if (savedPdfItems.length > 0) {
         await pdfRef.current.importItems(savedPdfItems);
+
+        // ⭐ 복원 후 boxData 재계산
+        const newBoxData = [{key:'bulk', sign:0, text:0, checkbox:0, dropdown:0, auto_name:0, auto_jobtitle:0, auto_office:0, auto_depart:0, auto_sabun:0, auto_date:0}];
+        
+        savedPdfItems.forEach(item => {
+        if (item.subType === TYPE_SIGN) {
+            newBoxData[0].sign += 1;
+        } else if (item.subType === TYPE_TEXT) {
+            if (item.autoInput === AUTO_NAME) {
+            newBoxData[0].auto_name += 1;
+            } else if (item.autoInput === AUTO_JOBTITLE) {
+            newBoxData[0].auto_jobtitle += 1;
+            } else if (item.autoInput === AUTO_OFFICE) {
+            newBoxData[0].auto_office += 1;
+            } else if (item.autoInput === AUTO_DEPART) {
+            newBoxData[0].auto_depart += 1;
+            } else if (item.autoInput === AUTO_SABUN) {
+            newBoxData[0].auto_sabun += 1;
+            } else if (item.autoInput === AUTO_DATE) {
+            newBoxData[0].auto_date += 1;
+            } else {
+            newBoxData[0].text += 1;
+            }
+        } else if (item.subType === TYPE_CHECKBOX) {
+            newBoxData[0].checkbox += 1;
+        } else if (item.subType === TYPE_DROPDOWN) {
+            newBoxData[0].dropdown += 1;
+        }
+        });
+        
+        setBoxData(newBoxData);
       }
     };
 

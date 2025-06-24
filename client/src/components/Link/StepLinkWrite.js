@@ -26,7 +26,6 @@ const StepLinkWrite = (props) => {
     const [curr, setCurr] = useState(0);
     
     const onChange = async (current) => {
-        console.log('🔥 onChange 호출됨:', current);
         if (current == 0) {
             // 2단계에서 1단계로 네비게이션 클릭 시 현재 PDF 상태 저장
             let currentItems = [];
@@ -36,9 +35,7 @@ const StepLinkWrite = (props) => {
                 try {
                     currentItems = await pdfRef.current.exportItems();
                     currentThumbnail = await pdfRef.current.getThumbnail(0, 0.6);
-                    console.log('🔥 네비게이션 클릭 - 추출된 items:', currentItems);
                 } catch (error) {
-                    console.log('🔥 추출 실패, 기존 데이터 사용');
                     currentItems = location?.state?.savedPdfItems || [];
                 }
             } else {

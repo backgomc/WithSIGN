@@ -234,7 +234,7 @@ const UploadLinkDocument = ({location}) => {
       }
     }
 
-  }, [documentTitle, documentFile, documentType, templateTitle, templateRef_C, templateRef_M]);
+  }, [documentTitle, documentFile, documentType, templateTitle, templateRef_C, templateRef_M, tab]);
 
   // useEffect(() => {
   //   console.log('useEffect:' + tab)
@@ -253,6 +253,21 @@ const UploadLinkDocument = ({location}) => {
   // useDidMountEffect(() => {
   //   console.log('useEffect:' + tab)
   // }, [tab]);
+
+  useEffect(() => {
+    console.log('useEffect[tab change] called', { 
+      tab, documentType, documentTitle, documentFile, templateTitle, template 
+    });
+    
+    if (tab === "tab1" && documentType === 'PC') {
+      const shouldEnable = documentTitle && documentFile;
+      setDisableNext(!shouldEnable);
+    } else if ((tab === "tab2" || tab === "tab3") && 
+               (documentType === 'TEMPLATE' || documentType === 'TEMPLATE_CUSTOM')) {
+      const shouldEnable = templateTitle && template;
+      setDisableNext(!shouldEnable);
+    }
+  }, [tab, documentType, documentTitle, documentFile, templateTitle, template]);
 
   useEffect(() => {
     console.log('useEffect[file] called')
@@ -443,12 +458,33 @@ const UploadLinkDocument = ({location}) => {
                 dispatch(resetTemplateTitle());
                 dispatch(resetSignee());
 
+                // 핵심 수정: form의 현재 값을 Redux에 동기화
+                const currentFormTitle = form.getFieldValue("documentTitle");
+                if (currentFormTitle) {
+                dispatch(setDocumentTitle(currentFormTitle));
+                }
+                
+                // 즉시 버튼 상태 체크
+                setTimeout(() => {
+                const formTitle = form.getFieldValue("documentTitle");
+                const shouldEnable = formTitle && documentFile;
+                console.log('탭1 버튼 체크:', { formTitle, documentFile, shouldEnable });
+                setDisableNext(!shouldEnable);
+                }, 100);
+
               } else if (activeKey === "tab2") {
+                // 템플릿 탭으로 이동 시 현재 form 값을 저장
+                const currentFormTitle = form.getFieldValue("documentTitle");
+                if (currentFormTitle) {
+                dispatch(setDocumentTitle(currentFormTitle));
+                }
+
                 dispatch(setDocumentType('TEMPLATE'))
                 dispatch(setTemplateType('M'))
 
                 dispatch(resetTemplate());
                 dispatch(resetTemplateTitle());
+                setDisableNext(true); // 템플릿 선택 전까지 비활성화
 
                 // UI 변경은 렌더링이 완료된 후에 해야 하므로 useEffect (tab) 에서 처리함
                 setTimeout(() => {
@@ -461,6 +497,7 @@ const UploadLinkDocument = ({location}) => {
 
                 dispatch(resetTemplate());
                 dispatch(resetTemplateTitle());
+                setDisableNext(true); // 템플릿 선택 전까지 비활성화
 
                 // UI 변경은 렌더링이 완료된 후에 해야 하므로 useEffect (tab) 에서 처리함
                 // templateRef_C.current.resetSelect();
@@ -489,16 +526,14 @@ const UploadLinkDocument = ({location}) => {
                 }
               }}
               onValuesChange={(changeValues) => {
-                console.log("onValuesChange called")
-                console.log(changeValues)
-                console.log(form.getFieldValue("dragger"))
-                console.log(form.getFieldValue("documentTitle"))
-                if (form.getFieldValue("dragger") && form.getFieldValue("documentTitle").length > 0) {
+                
+                const currentFile = form.getFieldValue("dragger");
+                const currentTitle = form.getFieldValue("documentTitle");                
+
+                if (currentFile && currentFile.length > 0 && currentTitle && currentTitle.length > 0) {
                   setDisableNext(false)
-                  console.log("AA")
                 } else {
                   setDisableNext(true)
-                  console.log("BB")
                 }
               }}
             >
@@ -518,6 +553,9 @@ const UploadLinkDocument = ({location}) => {
                         documentTitle: "",
                       })
                       setDisableNext(true)
+                      
+                      //파일 삭제 시 null 
+                      setDocumentFile(null);
                     }
                   },
                   beforeUpload: file => {
