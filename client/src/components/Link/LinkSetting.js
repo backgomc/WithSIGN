@@ -72,12 +72,9 @@ const LinkSetting = (props) => {
   const [linkId, setLinkId] = useState('');
   const [expiryDate, setExpiryDate] = useState(null);
 
-  // 임시 승인자 목록 (실제로는 API에서 가져와야 함)
-  const [approvers] = useState([
-    { value: 'manager1', label: '김부장 (개발팀 부장)' },
-    { value: 'manager2', label: '이차장 (기획팀 차장)' },
-    { value: 'manager3', label: '박과장 (보안팀 과장)' }
-  ]);
+  // 승인자 목록
+  const [approvers, setApprovers] = useState([]); // 빈 배열로 시작
+  const [loadingApprovers, setLoadingApprovers] = useState(false);
 
   useEffect(() => {
     // 기본값 설정
@@ -88,6 +85,9 @@ const LinkSetting = (props) => {
     });
     setAccessPassword('');
     setExpiryDays(7);
+
+    // 팀원 목록 불러오기
+    fetchTeamMembers();
   }, [form]);
 
   // 패스워드 가시성 토글
@@ -109,6 +109,37 @@ const LinkSetting = (props) => {
       } 
     });
   };
+
+  // 🔥 여기에 팀원 조회 함수 추가!
+  const fetchTeamMembers = async () => {
+      setLoadingApprovers(true);
+      
+      try {
+        const response = await axiosInterceptor.post('/api/link/teamMembers');
+  
+        if (response.data.success) {
+          const teamOptions = response.data.teamMembers.map(member => ({
+            value: member._id,
+            label: `${member.name} (${member.JOB_TITLE || '직급없음'})`
+          }));
+  
+          setApprovers(teamOptions);
+  
+          if (teamOptions.length === 0) {
+            message.info('동일 팀에 승인 가능한 팀원이 없습니다.');
+          }
+        } else {
+          message.error('팀원 목록을 불러오는데 실패했습니다: ' + response.data.message);
+          setApprovers([]);
+        }
+      } catch (error) {
+        console.error('팀원 조회 오류:', error);
+        message.error('팀원 목록 조회 중 오류가 발생했습니다.');
+        setApprovers([]);
+      } finally {
+        setLoadingApprovers(false);
+      }
+    };
 
   // 링크 생성 (실제 API 호출)
   const handleCreateLink = async () => {

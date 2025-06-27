@@ -3,6 +3,7 @@ const express = require('express');
 const router = express.Router();
 const { Link } = require("../models/Link");
 const { Document } = require("../models/Document");
+const { User } = require("../models/User");
 const { ValidateToken } = require('../middleware/auth');
 
 // 신규 링크서명 등록 (파일 첨부 없이)
@@ -631,5 +632,48 @@ router.post('/verifyPassword', async (req, res) => {
         });
     }
 });
+
+// 팀원 목록 조회 (링크서명 승인자 선택용)
+router.post('/teamMembers', ValidateToken, async (req, res) => {
+    try {
+      const userId = req.body.systemId;
+      
+      if (!userId) {
+        return res.json({ success: false, message: 'systemId is required' });
+      }
+  
+      // 현재 사용자 정보 조회
+      const { User } = require("../models/User"); // User 모델 import 추가 필요
+      const currentUser = await User.findById(userId).select('DEPART_CODE');
+      if (!currentUser || !currentUser.DEPART_CODE) {
+        return res.json({ success: false, message: '사용자 부서 정보를 찾을 수 없습니다.' });
+      }
+  
+      // 같은 팀원들 조회 (본인 제외)
+      const teamMembers = await User.find({
+        DEPART_CODE: currentUser.DEPART_CODE,
+        _id: { $ne: userId }, // 본인 제외
+        use: true // 활성 사용자만
+      }, {
+        _id: 1,
+        name: 1,
+        JOB_TITLE: 1,
+        DEPART_CODE: 1
+      }).sort({ JOB_CODE: 'asc' }); // 직급 순서대로 정렬
+  
+      return res.json({ 
+        success: true, 
+        teamMembers: teamMembers,
+        total: teamMembers.length 
+      });
+  
+    } catch (error) {
+      console.error('팀원 조회 오류:', error);
+      return res.json({ 
+        success: false, 
+        message: '팀원 조회 중 오류가 발생했습니다.' 
+      });
+    }
+  });
 
 module.exports = router;
