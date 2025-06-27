@@ -7,10 +7,40 @@ const linkSchema = mongoose.Schema({
         ref: 'User'
     },
     linkTitle: {
-        type: String
+        type: String,
+        required: true
+    },
+    docTitle: {
+        type: String,
+        required: true
     },
     description: {
         type: String
+    },
+    accessPassword: {
+        type: String,
+        required: true
+    },
+    passwordHint: {
+        type: String
+    },
+    expiryDays: {
+        type: Number,
+        required: true
+    },
+    expiryDate: {
+        type: Date,
+        required: true
+    },
+    approver: {
+        type: String
+    },
+    items: [{
+        type: Schema.Types.Mixed
+    }],
+    isActive: {
+        type: Boolean,
+        required: true
     },
     externalEmails: [{
         email: { type: String },
@@ -24,50 +54,23 @@ const linkSchema = mongoose.Schema({
     linkUrl: {
         type: String
     },
-    expiryDate: {
-        type: Date
-    },
-    requireAuth: {
-        type: Boolean,
-        default: true
-    },
-    authMethod: {
-        type: String,
-        enum: ['email', 'sms', 'both'],
-        default: 'email'
-    },
-    allowDownload: {
-        type: Boolean,
-        default: false
-    },
-    canceled: {
-        type: Boolean,
-        default: false
-    },
-    signed: {
-        type: Boolean,
-        default: false
-    },
     deleted: {
-        type: Boolean,
-        default: false
+        type: Boolean
     },
     requestedTime: {
         type: Date, 
         default: Date.now
     },
-    completedTime: {
-        type: Date
-    },
-    canceledBy: [{
-        user: { type: String },
-        canceledTime: { type: Date },
-        message: { type: String }
-    }],
     deletedBy: [{
         user: { type: String },
         deletedTime: { type: Date }
-    }]
+    }],
+    statusUpdatedBy: {
+        type: String
+    },
+    statusUpdatedTime: {
+        type: Date
+    }
 })
 
 const Link = mongoose.model('Link', linkSchema)

@@ -11,11 +11,13 @@ import {
   ArrowLeftOutlined,
   BellFilled,
   FileExcelOutlined,
-  LinkOutlined
+  LinkOutlined,
+  QrcodeOutlined
 } from '@ant-design/icons';
 import { PageContainer } from '@ant-design/pro-layout';
 import 'antd/dist/antd.css';
 import { useIntl } from "react-intl";
+import LinkInfoModal from './LinkInfoModal';
 
 const { confirm } = Modal;
 
@@ -29,6 +31,7 @@ const LinkDetail = ({location}) => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [pagination, setPagination] = useState({current:1, pageSize:10});
+  const [showInfoModal, setShowInfoModal] = useState(false);
 
   const { formatMessage } = useIntl();
 
@@ -50,6 +53,11 @@ const LinkDetail = ({location}) => {
     navigator.clipboard.writeText(linkUrl).then(() => {
       message.success('링크가 클립보드에 복사되었습니다!');
     });
+  };
+
+  // 링크 정보 보기 함수
+  const showLinkInfo = () => {
+    setShowInfoModal(true);
   };
 
   // 알림 발송 기능
@@ -141,7 +149,6 @@ const LinkDetail = ({location}) => {
   ];
 
   useEffect(() => {
-    console.log('LinkDetail loaded:', link);
     setData(link.docs || []);
   }, []);
 
@@ -150,11 +157,19 @@ const LinkDetail = ({location}) => {
       <PageContainer
         ghost
         header={{
-          title: link.docTitle,
+          title: link.linkTitle || link.docTitle,
           ghost: false,
           extra: [
-            <Space>
+            <Space key="buttons">
               <Button 
+                key="linkInfo"
+                icon={<QrcodeOutlined />}
+                onClick={showLinkInfo}
+              >
+                링크 정보 보기
+              </Button>
+              <Button 
+                key="list"
                 icon={<ArrowLeftOutlined />} 
                 onClick={() => navigate('/linkList')}
               >
@@ -162,6 +177,7 @@ const LinkDetail = ({location}) => {
               </Button>
               {filterProcessing().length > 0 && (
                 <Button 
+                  key="notify"
                   icon={<BellFilled />} 
                   onClick={sendNotification}
                   loading={loading}
@@ -170,6 +186,7 @@ const LinkDetail = ({location}) => {
                 </Button>
               )}
               <Button 
+                key="excel"
                 icon={<FileExcelOutlined />} 
                 onClick={() => {
                   // 엑셀 다운로드 로직
@@ -212,6 +229,17 @@ const LinkDetail = ({location}) => {
           dataSource={data}
           pagination={pagination}
           loading={loading}
+        />
+
+        {/* 링크 정보 모달 */}
+        <LinkInfoModal
+          visible={showInfoModal}
+          onClose={() => setShowInfoModal(false)}
+          linkUrl={`http://localhost:3333/sign/link/${link._id}`}
+          accessPassword={link.accessPassword}
+          expiryDays={link.expiryDays}
+          expiryDate={link.expiryDate}
+          title="링크서명 정보"
         />
 
       </PageContainer>

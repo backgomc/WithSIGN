@@ -396,7 +396,6 @@ const PrepareLinkDocument = ({location}) => {
   };
 
   const handleItemChanged = (action, item) => {
-    console.log(action, item);
 
     if (action === 'add') {
       let member = boxData.filter(e => e.key === item.uid)[0];

@@ -1,5 +1,5 @@
 // client/src/components/Link/LinkSetting.js
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { navigate } from '@reach/router';
 import { 
@@ -24,16 +24,16 @@ import {
 import { 
   ArrowLeftOutlined, 
   LinkOutlined,
-  QrcodeOutlined,
-  SecurityScanOutlined,
   EyeOutlined,
   EyeInvisibleOutlined
 } from '@ant-design/icons';
 import StepLinkWrite from './StepLinkWrite';
 import { selectSendType, selectDocumentTitle, setDocumentTitle } from '../Assign/AssignSlice';
 import { selectUser } from '../../app/infoSlice';
+import axiosInterceptor from '../../config/AxiosConfig';
+import LinkInfoModal from './LinkInfoModal';
 
-const { Title, Text } = Typography;
+const { Text } = Typography;
 
 // CSS 스타일 추가
 const customStyles = `
@@ -65,6 +65,12 @@ const LinkSetting = (props) => {
   const [expiryDaysError, setExpiryDaysError] = useState('');
   const [passwordHint, setPasswordHint] = useState('');
   const [selectedApprover, setSelectedApprover] = useState(null);
+
+  // 링크 생성 관련 상태
+  const [showLinkModal, setShowLinkModal] = useState(false);
+  const [generatedLink, setGeneratedLink] = useState('');
+  const [linkId, setLinkId] = useState('');
+  const [expiryDate, setExpiryDate] = useState(null);
 
   // 임시 승인자 목록 (실제로는 API에서 가져와야 함)
   const [approvers] = useState([
@@ -104,7 +110,7 @@ const LinkSetting = (props) => {
     });
   };
 
-  // 링크 생성 (다음 단계)
+  // 링크 생성 (실제 API 호출)
   const handleCreateLink = async () => {
     try {
       // 수동 검증
@@ -140,35 +146,51 @@ const LinkSetting = (props) => {
 
       setLoading(true);
 
-      // TODO: API 호출로 링크서명 생성
+      // 실제 API 호출
       const linkData = {
-        user: _id,
+        linkTitle: localDocTitle,
         docTitle: localDocTitle,
         accessPassword: accessPassword,
         passwordHint: passwordHint,
         expiryDays: expiryDays,
         approver: selectedApprover,
-        items: items,
-        attachFiles: attachFiles,
-        documentFile: documentFile
+        items: JSON.stringify(items || [])
       };
-
-      console.log('링크서명 생성 데이터:', linkData);
       
-      // 임시로 성공 처리
-      setTimeout(() => {
-        setLoading(false);
-        message.success('링크서명이 생성되었습니다!');
+      const response = await axiosInterceptor.post('/api/link/addLink', linkData);
+      
+      setLoading(false);
+
+      if (response.data.success) {
+        // 성공 시 링크 정보 저장
+        const newLinkId = response.data.linkId;
+        const linkUrl = response.data.linkUrl;
+        const expiryDate = response.data.expiryDate;
         
-        // TODO: 링크/QR코드 생성 팝업 표시
-        // 일단은 링크서명 목록으로 이동
-        navigate('/linkList');
-      }, 1000);
+        setLinkId(newLinkId);
+        setGeneratedLink(linkUrl);
+        setExpiryDate(expiryDate);
+        
+        // 팝업만 표시 (navigate는 확인 버튼 누를 때까지 하지 않음)
+        setShowLinkModal(true);
+        
+        message.success('링크서명이 성공적으로 생성되었습니다!');
+      } else {
+        message.error('링크서명 생성에 실패했습니다: ' + (response.data.message || '알 수 없는 오류'));
+      }
 
     } catch (error) {
       console.error('링크 생성 실패:', error);
       setLoading(false);
+      message.error('링크 생성 중 오류가 발생했습니다: ' + (error.response?.data?.message || error.message));
     }
+  };
+
+  // 모달 닫기 함수 (확인 버튼)
+  const handleModalConfirm = () => {
+    setShowLinkModal(false);
+    // 확인 버튼을 눌렀을 때 링크서명 목록으로 이동
+    navigate('/linkList');
   };
 
   return (
@@ -310,7 +332,10 @@ const LinkSetting = (props) => {
                       }}
                       placeholder="영문/숫자만 6자 이상 20자 이하로 입력해주세요"
                       maxLength={20}
-                      autoComplete="new-password"
+                      autoComplete="off"
+                      autoCorrect="off"
+                      autoCapitalize="off"
+                      spellCheck="false"
                     />
                     <Button
                       style={{
@@ -420,6 +445,18 @@ const LinkSetting = (props) => {
             </Card>
           </Col>
         </Row>
+
+        {/* 링크 정보 모달 */}
+        <LinkInfoModal
+          visible={showLinkModal}
+          onClose={handleModalConfirm}
+          linkUrl={generatedLink}
+          accessPassword={accessPassword}
+          expiryDays={expiryDays}
+          expiryDate={expiryDate}
+          title="링크서명 생성 완료"
+        />
+
       </PageContainer>
     </div>
   );
