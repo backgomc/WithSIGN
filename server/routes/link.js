@@ -48,47 +48,46 @@ router.post('/addLink', ValidateToken, async (req, res) => {
         expiryDate.setDate(expiryDate.getDate() + (parseInt(expiryDays) || 7));
         expiryDate.setHours(23, 59, 59, 999); // 해당 날짜 23:59:59까지 유효
 
-        // Link 데이터 준비
-        const linkData = {
+        // ✅ 1단계: 먼저 Link 객체만 생성 (아직 저장 안함)
+        const link = new Link({
             user: userId,
-            linkTitle: linkTitle || docTitle, // linkTitle이 없으면 docTitle 사용
+            linkTitle: linkTitle || docTitle,
             docTitle: docTitle,
             accessPassword: accessPassword,
             passwordHint: passwordHint || '',
             expiryDays: parseInt(expiryDays) || 7,
             expiryDate: expiryDate,
             approver: approver,
-            items: items ? (typeof items === 'string' ? JSON.parse(items) : items) : [], // 서명 항목들
+            items: items ? (typeof items === 'string' ? JSON.parse(items) : items) : [],
             requestedTime: new Date(),
             deleted: false,
-            isActive: true, // 기본값: 진행중 상태
-            docs: [] // 연결될 문서들 (링크서명에서는 빈 배열)
-        };
-
-        console.log('저장할 Link 데이터:', {
-            ...linkData,
-            accessPassword: '***' // 로그에서는 암호 숨김
+            isActive: true,
+            docs: []
         });
 
-        // Link 생성 및 저장
-        const link = new Link(linkData);
-        const savedLink = await link.save();
+        // ✅ 2단계: 생성된 _id로 linkUrl 만들기
+        const linkUrl = `${config.linkBaseUrl}/sign/link/${link._id}`;
+        
+        // ✅ 3단계: linkUrl을 Link 객체에 추가
+        link.linkUrl = linkUrl;
+
+        // ✅ 4단계: 완전한 데이터로 DB에 저장
+        const savedLink = await link.save(); // linkUrl도 함께 저장됨!
         
         console.log('Link 생성 완료:', savedLink._id);
+        console.log('링크 URL:', linkUrl);
 
-        // 응답 데이터 준비
-        const linkUrl = `${config.linkBaseUrl}/sign/link/${savedLink._id}`;
-        
         res.status(200).json({
             success: true,
             message: '링크서명이 성공적으로 생성되었습니다.',
             linkId: savedLink._id,
-            linkUrl: linkUrl,
+            linkUrl: savedLink.linkUrl, // ✅ DB에 저장된 linkUrl 사용
             expiryDate: savedLink.expiryDate,
             link: {
                 _id: savedLink._id,
                 linkTitle: savedLink.linkTitle,
                 docTitle: savedLink.docTitle,
+                linkUrl: savedLink.linkUrl, // ✅ DB에 저장된 linkUrl
                 expiryDays: savedLink.expiryDays,
                 expiryDate: savedLink.expiryDate,
                 requestedTime: savedLink.requestedTime,
