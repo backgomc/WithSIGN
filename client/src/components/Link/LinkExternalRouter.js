@@ -92,28 +92,15 @@ const SignDocumentError = () => {
 
 const LinkExternalRouter = () => {
   return (
-    <div style={{ 
-      width: '100vw', 
-      height: '100vh', 
-      margin: 0, 
-      padding: 0,
-      overflow: 'hidden',
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      zIndex: 9999,
-      backgroundColor: '#fff'
-    }}>
+    <div>
       <Router primary={false}>
-        {/* 정상적인 링크 접속 */}
         <LinkAccess path="/sign/link/:linkId" />
         <LinkSignDocument path="/sign-document/:linkId" />
         
-        {/* 예외 처리 */}
-        <SignDocumentError path="/sign-document" />  {/* linkId 없는 경우 */}
-        <LinkNotFound path="/sign/link" />           {/* linkId 없는 경우 */}
-        <LinkNotFound path="/sign" />                {/* 잘못된 경로 */}
-        <LinkNotFound default />                     {/* 기타 모든 경우 */}
+        <SignDocumentError path="/sign-document" />
+        <LinkNotFound path="/sign/link" />
+        <LinkNotFound path="/sign" />
+        <LinkNotFound default />
       </Router>
     </div>
   );
