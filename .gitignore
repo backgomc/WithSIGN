@@ -17,3 +17,4 @@ server/package-lock.json
 ./TODO.md
 .DS_Store
 docker.env
+push.sh
