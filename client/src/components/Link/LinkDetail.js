@@ -18,6 +18,7 @@ import { PageContainer } from '@ant-design/pro-layout';
 import 'antd/dist/antd.css';
 import { useIntl } from "react-intl";
 import LinkInfoModal from './LinkInfoModal';
+import { LINK_BASE_URL } from '../../config/Config';
 
 const { confirm } = Modal;
 
@@ -235,7 +236,7 @@ const LinkDetail = ({location}) => {
         <LinkInfoModal
           visible={showInfoModal}
           onClose={() => setShowInfoModal(false)}
-          linkUrl={`http://localhost:3333/sign/link/${link._id}`}
+          linkUrl={`${LINK_BASE_URL}/sign/link/${link._id}`}
           accessPassword={link.accessPassword}
           expiryDays={link.expiryDays}
           expiryDate={link.expiryDate}
