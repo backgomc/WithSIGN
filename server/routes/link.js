@@ -1,6 +1,7 @@
 // server/routes/link.js
 const express = require('express');
 const router = express.Router();
+const config = require('../config/key');
 const { Link } = require("../models/Link");
 const { Document } = require("../models/Document");
 const { User } = require("../models/User");
@@ -76,7 +77,7 @@ router.post('/addLink', ValidateToken, async (req, res) => {
         console.log('Link 생성 완료:', savedLink._id);
 
         // 응답 데이터 준비
-        const linkUrl = `http://localhost:3333/sign/link/${savedLink._id}`;
+        const linkUrl = `${config.linkBaseUrl}/sign/link/${savedLink._id}`;
         
         res.status(200).json({
             success: true,

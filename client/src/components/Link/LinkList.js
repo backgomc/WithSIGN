@@ -15,6 +15,7 @@ import { resetAssignAll, setSendType } from '../Assign/AssignSlice';
 import 'antd/dist/antd.css';
 import { useIntl } from "react-intl";
 import LinkInfoModal from './LinkInfoModal';
+import { LINK_BASE_URL } from '../../config/Config';
 
 const { confirm } = Modal;
 
@@ -537,7 +538,7 @@ const columns = [
             setShowInfoModal(false);
             setSelectedLink(null);
           }}
-          linkUrl={`http://localhost:3333/sign/link/${selectedLink._id}`}
+          linkUrl={`${LINK_BASE_URL}/sign/link/${selectedLink._id}`}
           accessPassword={selectedLink.accessPassword}
           expiryDays={selectedLink.expiryDays}
           expiryDate={selectedLink.expiryDate}

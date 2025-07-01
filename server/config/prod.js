@@ -16,5 +16,7 @@ module.exports = {
     withsignURI: "http://10.220.141.91:3001",
     blockURI: "http://10.220.141.92:3003",
     gotenbergURI: "http://10.220.141.91:3018",
-    withsignMobileURI: "https://with.nonghyupit.com:3003"
+    withsignMobileURI: "https://with.nonghyupit.com:3003",
+    // 운영환경용 링크서명 베이스 URL
+    linkBaseUrl: "https://with.nonghyupit.com:3005"  // 임시 포트, 추후 협의 필요
 }

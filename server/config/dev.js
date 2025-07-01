@@ -1,7 +1,7 @@
 module.exports = {
     // mongoURI: "mongodb://mongo/nhsign",
     //mongoURI: "mongodb://localhost/nhsign",
-    mongoURI: "mongodb://nhit:nacf1234!@sign.nhitlab.com:9017/nhsign?authSource=admin",
+    mongoURI: "mongodb://nhit:nacf1234!@10.146.0.4:9017/nhsign?authSource=admin",
     storageDIR: "storage/",
     documentDIR: "documents/",
     thumbnailDIR: "thumbnails/",
@@ -20,5 +20,7 @@ module.exports = {
     withsignURI: "http://10.220.141.91:3001",
     blockURI: "http://localhost:3003",
     gotenbergURI: "http://localhost:3018",
-    withsignMobileURI: "http://sign.nhitlab.com:3004"
+    withsignMobileURI: "http://sign.nhitlab.com:3004",
+    // 개발환경용 GCP 링크 베이스 URL
+    linkBaseUrl: "http://34.64.93.94:3000"
 }

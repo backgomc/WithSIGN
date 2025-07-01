@@ -25,6 +25,7 @@ import LinkDetail from './components/Link/LinkDetail';
 import PrepareLinkDocument from './components/Link/PrepareLinkDocument';
 import LinkSetting from './components/Link/LinkSetting';
 import UploadLinkDocument from './components/Link/UploadLinkDocument';
+import LinkExternalRouter from './components/Link/LinkExternalRouter';
 //import QRList from './components/QR/QRList';
 //import QRDetail from './components/QR/QRDetail';
 import BoardList from './components/Board/BoardList';
@@ -87,6 +88,10 @@ const App = () => {
 
   // const [pathname, setPathname] = useState('/');
   const pathname = useSelector(selectPathname);
+
+  // 🆕 외부 서명자 경로 체크
+  const isExternalSignPath = window.location.pathname.startsWith('/sign/link/') || 
+                            window.location.pathname.startsWith('/sign-document/');
 
   useEffect(() => {
 
@@ -155,6 +160,11 @@ const App = () => {
     });
     return () => {} // cleanup
   }, []);
+
+  // 🆕 외부 서명자 경로인 경우 완전히 독립적인 컴포넌트 렌더링
+  if (isExternalSignPath) {
+    return <LinkExternalRouter />;
+  }
 
   return user ? (
 
@@ -258,7 +268,7 @@ const App = () => {
       <LinkList path="/linkList" />
       <LinkDetail path="/linkDetail" />
       <PrepareLinkDocument path="/prepareLinkDocument" />
-      <LinkSetting path="/linkSetting" />       
+      <LinkSetting path="/linkSetting" />
 
       <InFolder path="/inFolder" />
       <MyFolder path="/myFolder" />
