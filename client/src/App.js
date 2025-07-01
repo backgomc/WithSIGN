@@ -97,6 +97,16 @@ const App = () => {
 
     console.log('App called')
 
+    // 외부 서명자 경로 체크
+    const isExternalSignPath = window.location.pathname.startsWith('/sign/link/') || 
+                              window.location.pathname.startsWith('/sign-document/');
+    
+    // 외부 서명자는 로그인 체크 건너뛰기
+    if (isExternalSignPath) {
+      console.log('외부 서명자 경로 - 로그인 체크 건너뛰기');
+      return; // 로그인 체크 없이 바로 종료
+    }    
+
     axios.get('/api/users/auth').then(response => {
       console.log('/api/users/auth called!');
       console.log(response);

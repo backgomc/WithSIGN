@@ -48,7 +48,6 @@ router.post('/addLink', ValidateToken, async (req, res) => {
         expiryDate.setDate(expiryDate.getDate() + (parseInt(expiryDays) || 7));
         expiryDate.setHours(23, 59, 59, 999); // 해당 날짜 23:59:59까지 유효
 
-        // ✅ 1단계: 먼저 Link 객체만 생성 (아직 저장 안함)
         const link = new Link({
             user: userId,
             linkTitle: linkTitle || docTitle,
@@ -65,29 +64,22 @@ router.post('/addLink', ValidateToken, async (req, res) => {
             docs: []
         });
 
-        // ✅ 2단계: 생성된 _id로 linkUrl 만들기
         const linkUrl = `${config.linkBaseUrl}/sign/link/${link._id}`;
-        
-        // ✅ 3단계: linkUrl을 Link 객체에 추가
         link.linkUrl = linkUrl;
 
-        // ✅ 4단계: 완전한 데이터로 DB에 저장
-        const savedLink = await link.save(); // linkUrl도 함께 저장됨!
-        
-        console.log('Link 생성 완료:', savedLink._id);
-        console.log('링크 URL:', linkUrl);
+        const savedLink = await link.save();
 
         res.status(200).json({
             success: true,
             message: '링크서명이 성공적으로 생성되었습니다.',
             linkId: savedLink._id,
-            linkUrl: savedLink.linkUrl, // ✅ DB에 저장된 linkUrl 사용
+            linkUrl: savedLink.linkUrl,
             expiryDate: savedLink.expiryDate,
             link: {
                 _id: savedLink._id,
                 linkTitle: savedLink.linkTitle,
                 docTitle: savedLink.docTitle,
-                linkUrl: savedLink.linkUrl, // ✅ DB에 저장된 linkUrl
+                linkUrl: savedLink.linkUrl,
                 expiryDays: savedLink.expiryDays,
                 expiryDate: savedLink.expiryDate,
                 requestedTime: savedLink.requestedTime,
