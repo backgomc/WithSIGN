@@ -4,8 +4,7 @@ module.exports = function(app) {
   app.use(
     '/api',
     createProxyMiddleware({
-      target: 'http://localhost:5001',
-      //target: 'http://34.64.93.94:5001',
+      target: 'http://nhsign-server:5000', // ✅ 여기 변경
       changeOrigin: true,
     })
   );
@@ -13,8 +12,7 @@ module.exports = function(app) {
   app.use(
     '/storage',
     createProxyMiddleware({
-      target: 'http://localhost:5001',
-      //target: 'http://34.64.93.94:5001',
+      target: 'http://nhsign-server:5000', // ✅ 여기도
       changeOrigin: true,
     })
   );
@@ -22,8 +20,7 @@ module.exports = function(app) {
   app.use(
     '/block',
     createProxyMiddleware({
-      target: 'http://localhost:3003',
-      //target: 'http://34.64.93.94:3003',
+      target: 'http://nhsign-broker:4001', // ✅ 이건 broker 컨테이너 기준
       changeOrigin: true,
     })
   );
