@@ -53,6 +53,7 @@
     "postinstall-postinstall": "^2.1.0",
     "prismjs": "^1.25.0",
     "proxy-polyfill": "^0.3.2",
+    "qrcode": "^1.5.4",
     "rc-field-form": "^1.22.1",
     "react": "^16.13.1",
     "react-app-polyfill": "^2.0.0",
