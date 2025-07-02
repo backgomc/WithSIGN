@@ -19,3 +19,4 @@ server/package-lock.json
 docker.env
 push.sh
 deploy.sh
+client/.npmrc

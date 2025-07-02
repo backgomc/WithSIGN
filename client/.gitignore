@@ -27,3 +27,4 @@ yarn-error.log*
 /public/SelfServeWebFontsV2
 
 .eslintcache
+.npmrc
