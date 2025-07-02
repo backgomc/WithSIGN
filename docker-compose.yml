@@ -1,82 +1,74 @@
 services:
   admin:
-     build: # Dockerfile 빌드
-       context: ./admin # Dockerfile 빌드 경로
+     build:
+       context: ./admin
      image: nhsign-admin:2.2.5
-     container_name: nhsign-admin # 컨테이너 명
+     container_name: nhsign-admin
      restart: always
      ports:
        - 4002:3002
-     volumes: # 볼륨 설정
+     volumes:
+       - ./admin:/app                    # 실시간 반영 추가
+       - /app/node_modules
        - ./admin/build:/app/build
 
   broker:
-    build: # Dockerfile 빌드
-      context: ./broker # Dockerfile 빌드 경로
+    build:
+      context: ./broker
       args:
       - SERVER_MODE=REAL
       - JAR_VERSION=broker-0.0.2.jar
-    container_name: nhsign_broker # 컨테이너 명
+    container_name: nhsign_broker
     restart: always
     ports:
       - 4001:4001
-    volumes: # 볼륨 설정
+    volumes:
       - ./broker/fsdinit/:/app/fsdinit
       - ./server/storage/:/app/storage
 
   web:
-    build: # Dockerfile 빌드
-      context: ./client # Dockerfile 빌드 경로
+    build:
+      context: ./client
     image: nhsign-client:2.2.7
-    container_name: nhsign-client # 컨테이너 명
+    container_name: nhsign-client
     restart: "on-failure"
     ports:
       - 3000:3000
-    # volumes: # 볼륨 설정
-      # - ./client/build:/app/build
-    # image: nginx:latest # nginx 이미지
-    # container_name: nhsign-client # 컨테이너 명
-    # restart: "on-failure" # 구동 실패 시 재시작
-    # ports:
-    #   - 80:80
-    # volumes: # 볼륨 설정
-    #   - ./nginx/nginx.conf:/etc/nginx/nginx.conf
-    #   - ./client/build:/usr/share/nginx/html
+    volumes:                            # 실시간 반영 추가
+      - ./client:/app
+      - /app/node_modules
     environment:
-      - NODE_ENV=production
-  
+      - NODE_ENV=development            # production → development
+      - CHOKIDAR_USEPOLLING=true
+
   mobile:
-    build: # Dockerfile 빌드
-      context: ./mobile # Dockerfile 빌드 경로
+    build:
+      context: ./mobile
     image: nhsign-mobile:2.2.7
-    container_name: nhsign-mobile # 컨테이너 명
+    container_name: nhsign-mobile
     restart: "on-failure"
     ports:
       - 3004:3004
- 
+    volumes:                            # 실시간 반영 추가
+      - ./mobile:/app
+      - /app/node_modules
+
   server:
-    build: # Dockerfile 빌드
-      context: ./server # Dockerfile 빌드 경로
+    build:
+      context: ./server
     image: nhsign-server:2.2.6
-    container_name: nhsign-server # 컨테이너 명
+    container_name: nhsign-server
     restart: "on-failure"
-    # expose:
-    #   - 5000 # 도커 내부적 포트
     ports:
       - 5001:5000
     depends_on:
       - mongo
-    volumes: # 볼륨 설정
+    volumes:
+      - ./server:/app                   # 주석 해제!
+      - /app/node_modules               # 주석 해제!
       - ./server/storage/:/app/storage
-      # - ./server:/app
-      # - '/app/node_modules' 
-      # - type: bind 
-        # source: /Users/niceharu/Dev/Data/storage # local 경로
-        # target: /app/storage  # container 내부에서의 경로
-        # source: /Users/niceharu/Dev/nhsign-docker/server # local 경로
-        # target: /app  # container 내부에서의 경로
-    environment: # 환경변수 설정
-      - NODE_ENV=production
+    environment:
+      - NODE_ENV=development            # production → development
       - CHOKIDAR_USEPOLLING=true
     stdin_open: true
     tty: true
@@ -87,6 +79,7 @@ services:
     ports:
       - 27027:27017
     volumes:
-    - type: bind 
-      source: /Users/niceharu/Dev/Data/mongodb # local 경로
-      target: /data/db  # container 내부에서의 경로
+      - mongodb_data:/data/db           # Docker 볼륨 사용
+
+volumes:
+  mongodb_data:                         # Docker 볼륨 정의
