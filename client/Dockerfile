@@ -1,12 +1,7 @@
-FROM nginx:stable-alpine
-
-WORKDIR /app 
-RUN mkdir ./build
-ADD ./build ./build
-COPY ./nginx/nginx.conf /etc/nginx/nginx.conf
-RUN chmod 755 -R ./build/webfonts 
-
+FROM node:16
+WORKDIR /app
+COPY package.json yarn.lock .npmrc ./
+RUN yarn install --ignore-engines
+COPY . .
 EXPOSE 3000
-
-# 실행 명령어
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["yarn", "start"]
