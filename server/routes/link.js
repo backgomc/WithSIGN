@@ -58,6 +58,7 @@ router.post('/addLink', ValidateToken, async (req, res) => {
             expiryDate: expiryDate,
             approver: approver,
             items: items ? (typeof items === 'string' ? JSON.parse(items) : items) : [],
+            docRef: req.body.docRef,
             requestedTime: new Date(),
             deleted: false,
             isActive: true,

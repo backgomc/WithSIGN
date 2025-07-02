@@ -500,37 +500,65 @@ const PrepareLinkDocument = ({location}) => {
 
   // 링크서명용 다음 버튼 핸들러
   const handleNextToLinkSetting = async () => {
-    // PDF 항목들 추출
-    let items = await pdfRef.current.exportItems();
-    
-    // 썸네일 생성
-    let _thumbnail = await pdfRef.current.getThumbnail(0, 0.6);
-    
-    // 필요한 데이터들 준비
-    const linkSettingData = {
-      // 기본 정보
-      attachFiles: attachFiles,
-      documentFile: documentFile,
-      docTitle: docTitle,
+    try {
+      setLoading(true);
+  
+      // 1. PDF 파일 저장
+      const filename = `${_id}${Date.now()}.pdf`;
+      const path = `linkdocuments/${getToday()}/`;
+      const file = await pdfRef.current.savePDF(false, false);
+      const formData = new FormData();
+      formData.append('path', path);
+      formData.append('file', file, filename);
       
-      // PDF 관련
-      items: items,
-      pageCount: pageCount,
-      thumbnail: _thumbnail,
-
-      // 현재 PDF 상태들 저장
-      savedPdfItems: items,
-      savedPageCount: pageCount,
-      savedThumbnail: _thumbnail,
-      savedBoxData: boxData,      
+      const res = await axiosInterceptor.post(`/api/storage/upload`, formData);
       
-      // 기타 설정들
-      documentType: documentType,
-      templateTitle: templateTitle,
-      documentTempPath: documentTempPath
-    };
-    
-    navigate('/linkSetting', { state: linkSettingData });
+      let docRef = '';
+      if (res.data.success) {
+        docRef = res.data.file.path;
+      } else {
+        throw new Error('PDF 저장 실패');
+      }
+  
+      // 2. PDF 항목들 추출
+      let items = await pdfRef.current.exportItems();
+      
+      // 3. 썸네일 생성
+      let _thumbnail = await pdfRef.current.getThumbnail(0, 0.6);
+      
+      // 4. 필요한 데이터들 준비
+      const linkSettingData = {
+        // 기본 정보
+        attachFiles: attachFiles,
+        documentFile: documentFile,
+        docTitle: docTitle,
+        
+        // PDF 관련
+        items: items,
+        pageCount: pageCount,
+        thumbnail: _thumbnail,
+        docRef: docRef,  // ← 추가!
+  
+        // 현재 PDF 상태들 저장
+        savedPdfItems: items,
+        savedPageCount: pageCount,
+        savedThumbnail: _thumbnail,
+        savedBoxData: boxData,      
+        
+        // 기타 설정들
+        documentType: documentType,
+        templateTitle: templateTitle,
+        documentTempPath: documentTempPath
+      };
+      
+      setLoading(false);
+      navigate('/linkSetting', { state: linkSettingData });
+  
+    } catch (error) {
+      console.error('PDF 저장 오류:', error);
+      message.error('PDF 저장 중 오류가 발생했습니다.');
+      setLoading(false);
+    }
   };
 
   return (

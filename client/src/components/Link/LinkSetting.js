@@ -185,7 +185,8 @@ const LinkSetting = (props) => {
         passwordHint: passwordHint,
         expiryDays: expiryDays,
         approver: selectedApprover,
-        items: JSON.stringify(items || [])
+        items: JSON.stringify(items || []),
+        docRef: props.location?.state?.docRef
       };
       
       const response = await axiosInterceptor.post('/api/link/addLink', linkData);
