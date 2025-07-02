@@ -1,5 +1,5 @@
 // client/src/components/Link/LinkSignDocument.js
-// 기존 코드와 완전히 독립적인 외부 서명자용 서명 화면
+// PDF 뷰어 연결 버전
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, navigate } from '@reach/router';
@@ -62,42 +62,62 @@ const LinkSignDocument = (props) => {
     try {
       setLoading(true);
 
-      // 임시로 linkInfo를 documentData로 사용 (나중에 실제 API로 교체)
-      const tempDocumentData = {
-        _id: linkInfo._id,
-        linkTitle: linkInfo.linkTitle,
-        docTitle: linkInfo.docTitle,
-        items: [], // 서명 항목들 (실제로는 API에서 가져와야 함)
-        // docRef: 실제 PDF 파일 경로 (실제로는 API에서 가져와야 함)
-      };
-      
-      setDocumentData(tempDocumentData);
-      
-      // PDF 뷰어 초기화는 실제 PDF 파일이 있을 때 수행
-      // setTimeout(() => {
-      //   initializePDFViewer(tempDocumentData);
-      // }, 100);
+      // 실제 API 호출로 문서 데이터 가져오기
+      const response = await axios.post('/api/link/getSignDocument', {
+        linkId: linkId
+      });
+
+      if (response.data.success) {
+        const documentData = response.data.document;
+        setDocumentData(documentData);
+        
+        // PDF 뷰어 초기화
+        setTimeout(() => {
+          initializePDFViewer(documentData);
+        }, 100);
+      } else {
+        throw new Error(response.data.message || '문서를 불러올 수 없습니다.');
+      }
       
     } catch (error) {
       console.error('문서 로드 오류:', error);
       message.error('문서 로드 중 오류가 발생했습니다.');
-      navigate(`/sign/link/${linkId}`);
+      
+      // API가 없는 경우 임시 데이터로 테스트
+      console.log('임시 데이터로 테스트 진행');
+      const tempDocumentData = {
+        _id: linkInfo._id,
+        linkTitle: linkInfo.linkTitle,
+        docTitle: linkInfo.docTitle,
+        items: [], // 서명 항목들
+        docRef: null, // PDF 파일 경로 (실제 파일이 있을 때)
+      };
+      
+      setDocumentData(tempDocumentData);
     } finally {
       setLoading(false);
     }
   };
 
-  // PDF 뷰어 초기화 (실제 PDF 파일이 있을 때 사용)
+  // PDF 뷰어 초기화
   const initializePDFViewer = async (document) => {
     try {
-      if (pdfRef.current && document.docRef) {
-        // PDF 로드
-        await pdfRef.current.uploadPDF(document.docRef);
+      if (pdfRef.current) {
+        console.log('PDF 뷰어 초기화 시작:', document);
         
-        // 서명 항목들 로드
+        // PDF 파일이 있는 경우 로드
+        if (document.docRef) {
+          console.log('PDF 파일 로드:', document.docRef);
+          await pdfRef.current.uploadPDF(document.docRef);
+        }
+        
+        // 서명 항목들이 있는 경우 로드
         if (document.items && document.items.length > 0) {
+          console.log('서명 항목 로드:', document.items);
           await pdfRef.current.importItems(document.items);
         }
+        
+        console.log('PDF 뷰어 초기화 완료');
       }
     } catch (error) {
       console.error('PDF 뷰어 초기화 오류:', error);
@@ -108,18 +128,40 @@ const LinkSignDocument = (props) => {
   // 서명 항목 변경 시 호출
   const handleItemChanged = (action, item, validation) => {
     console.log('서명 항목 변경:', action, item);
-    // setDisableComplete(!validation);
+    // 실시간 유효성 검사 결과 반영
+    setDisableComplete(!validation);
   };
 
   // 유효성 검사 변경 시 호출
   const handleValidationChanged = (validation) => {
     console.log('유효성 검사 결과:', validation);
-    // setDisableComplete(!validation);
+    setDisableComplete(!validation);
   };
 
-  // 서명 완료 시작 (임시로 모달만 표시)
-  const startCompleteSign = () => {
-    setShowSignerInfoModal(true);
+  // 서명 완료 시작
+  const startCompleteSign = async () => {
+    try {
+      // PDF에서 최종 항목들 추출
+      if (pdfRef.current) {
+        const items = await pdfRef.current.exportItems();
+        console.log('서명 완료 시 추출된 항목들:', items);
+        
+        // 모든 필수 서명이 완료되었는지 검사
+        const hasEmptySignature = items.some(item => 
+          item.type === 'SIGN' && (!item.value || item.value.trim() === '')
+        );
+        
+        if (hasEmptySignature) {
+          message.warning('모든 서명 항목을 완료해주세요.');
+          return;
+        }
+      }
+      
+      setShowSignerInfoModal(true);
+    } catch (error) {
+      console.error('서명 완료 준비 오류:', error);
+      message.error('서명 완료 준비 중 오류가 발생했습니다.');
+    }
   };
 
   // 뒤로 가기
@@ -127,7 +169,7 @@ const LinkSignDocument = (props) => {
     navigate(`/sign/link/${linkId}`);
   };
 
-  // 서명 완료 처리 (임시 구현)
+  // 서명 완료 처리
   const completeSign = async () => {
     if (!signerName.trim() || !signerPhone.trim()) {
       message.error('서명자 이름과 연락처를 입력해주세요.');
@@ -137,18 +179,43 @@ const LinkSignDocument = (props) => {
     try {
       setSigningLoading(true);
 
-      // 임시로 성공 처리
-      message.success('서명이 완료되었습니다!');
-      setShowSignerInfoModal(false);
-      
-      // 완료 페이지로 이동 (나중에 구현)
-      setTimeout(() => {
-        message.info('서명 완료! 이 창을 닫으셔도 됩니다.');
-      }, 1000);
+      // PDF에서 최종 서명 데이터 추출
+      let signedItems = [];
+      if (pdfRef.current) {
+        signedItems = await pdfRef.current.exportItems();
+      }
+
+      // 서명 완료 API 호출
+      const response = await axios.post('/api/link/completeSign', {
+        linkId: linkId,
+        signerName: signerName.trim(),
+        signerPhone: signerPhone.trim(),
+        signerEmail: signerEmail.trim(),
+        signedItems: signedItems
+      });
+
+      if (response.data.success) {
+        message.success('서명이 완료되었습니다!');
+        setShowSignerInfoModal(false);
+        
+        // 완료 메시지 표시 후 창 닫기 안내
+        setTimeout(() => {
+          Modal.success({
+            title: '서명 완료',
+            content: '서명이 성공적으로 완료되었습니다. 이 창을 닫으셔도 됩니다.',
+            onOk: () => {
+              // 브라우저 탭 닫기 시도 (보안상 제한될 수 있음)
+              window.close();
+            }
+          });
+        }, 1000);
+      } else {
+        throw new Error(response.data.message || '서명 완료에 실패했습니다.');
+      }
       
     } catch (error) {
       console.error('서명 완료 오류:', error);
-      message.error('서명 완료 중 오류가 발생했습니다.');
+      message.error('서명 완료 중 오류가 발생했습니다: ' + error.message);
     } finally {
       setSigningLoading(false);
     }
@@ -173,7 +240,7 @@ const LinkSignDocument = (props) => {
     );
   }
 
-  // 메인 서명 화면 (기존 WithSIGN 레이아웃 없이 독립적)
+  // 메인 서명 화면
   return (
     <div style={{ 
       height: '100vh', 
@@ -181,7 +248,7 @@ const LinkSignDocument = (props) => {
       flexDirection: 'column',
       background: '#fff'
     }}>
-      {/* 상단 헤더 (간단한 헤더) */}
+      {/* 상단 헤더 */}
       <div style={{ 
         padding: '16px 24px',
         borderBottom: '1px solid #f0f0f0',
@@ -208,7 +275,7 @@ const LinkSignDocument = (props) => {
           <Button 
             type="primary" 
             icon={<CheckCircleOutlined />}
-            disabled={false} // 임시로 항상 활성화
+            disabled={disableComplete}
             onClick={startCompleteSign}
           >
             서명 완료
@@ -224,37 +291,18 @@ const LinkSignDocument = (props) => {
       }}>
         <Text style={{ color: '#666' }}>
           💡 문서의 서명 필드를 클릭하여 서명을 입력해주세요. 
-          모든 필수 서명이 완료되면 "서명 완료" 버튼을 클릭하세요.
+          모든 필수 서명이 완료되면 "서명 완료" 버튼이 활성화됩니다.
         </Text>
       </div>
 
       {/* PDF 뷰어 영역 */}
       <div style={{ 
         flex: 1, 
-        padding: '24px',
-        overflow: 'auto',
+        overflow: 'hidden',
         background: '#f5f5f5'
       }}>
-        <Card style={{ height: '100%', minHeight: '600px' }}>
-          {/* 임시 내용 - 실제로는 PDF 뷰어가 들어갈 자리 */}
-          <div style={{ 
-            height: '100%', 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'center',
-            flexDirection: 'column',
-            color: '#8c8c8c'
-          }}>
-            <FileTextOutlined style={{ fontSize: '64px', marginBottom: '16px' }} />
-            <Title level={4} type="secondary">문서 뷰어</Title>
-            <Text type="secondary">
-              실제 PDF 문서가 여기에 표시됩니다.<br/>
-              현재는 API 연동 전 임시 화면입니다.
-            </Text>
-          </div>
-          
-          {/* 실제 PDF 뷰어 (나중에 활성화)
-          <Spin tip="처리 중..." spinning={loading}>
+        {documentData ? (
+          <div style={{ height: '100%', padding: '0' }}>
             <PDFViewer 
               ref={pdfRef} 
               isUpload={false} 
@@ -264,10 +312,22 @@ const LinkSignDocument = (props) => {
               onValidationChanged={handleValidationChanged}
               defaultScale={1.0}
               headerSpace={0}
+              style={{ height: '100%' }}
             />
-          </Spin>
-          */}
-        </Card>
+          </div>
+        ) : (
+          <div style={{ 
+            height: '100%', 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center',
+            flexDirection: 'column',
+            color: '#8c8c8c'
+          }}>
+            <FileTextOutlined style={{ fontSize: '64px', marginBottom: '16px' }} />
+            <Title level={4} type="secondary">문서를 불러오는 중...</Title>
+          </div>
+        )}
       </div>
 
       {/* 서명자 정보 입력 모달 */}

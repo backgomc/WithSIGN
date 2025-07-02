@@ -668,4 +668,169 @@ router.post('/teamMembers', ValidateToken, async (req, res) => {
     }
   });
 
+// 링크서명 문서 데이터 조회 (외부 사용자용)
+router.post('/getSignDocument', async (req, res) => {
+    try {
+        const { linkId } = req.body;
+
+        if (!linkId) {
+            return res.json({ success: false, message: "링크 ID가 필요합니다!" });
+        }
+
+        const link = await Link.findById(linkId)
+            .select('linkTitle docTitle isActive deleted expiryDate items')
+            .populate('docs'); // 연결된 문서들 조회
+
+        if (!link) {
+            return res.json({ 
+                success: false, 
+                message: "링크를 찾을 수 없습니다." 
+            });
+        }
+
+        // 삭제된 링크 체크
+        if (link.deleted) {
+            return res.json({ 
+                success: false, 
+                message: "삭제된 링크입니다." 
+            });
+        }
+
+        // 비활성화된 링크 체크
+        if (!link.isActive) {
+            return res.json({ 
+                success: false, 
+                message: "비활성화된 링크입니다." 
+            });
+        }
+
+        // 만료 체크
+        const now = new Date();
+        const expiryDate = new Date(link.expiryDate);
+        if (now > expiryDate) {
+            return res.json({ 
+                success: false, 
+                message: "만료된 링크입니다." 
+            });
+        }
+
+        // 서명 문서 데이터 구성
+        const documentData = {
+            _id: link._id,
+            linkTitle: link.linkTitle,
+            docTitle: link.docTitle,
+            items: link.items || [], // 서명 항목들
+            // docs: link.docs, // 연결된 문서들 (필요시)
+            // 실제 PDF 파일 경로는 나중에 추가
+            docRef: null // TODO: 실제 PDF 파일 경로 설정
+        };
+
+        res.json({
+            success: true,
+            document: documentData
+        });
+
+    } catch (error) {
+        console.error('링크서명 문서 조회 에러:', error);
+        res.json({
+            success: false,
+            message: '문서 조회 중 오류가 발생했습니다.',
+            error: error.message
+        });
+    }
+});
+
+// 링크서명 완료 처리 (외부 사용자용)
+router.post('/completeSign', async (req, res) => {
+    try {
+        const { linkId, signerName, signerPhone, signerEmail, signedItems } = req.body;
+
+        if (!linkId || !signerName || !signerPhone) {
+            return res.json({ 
+                success: false, 
+                message: "필수 정보가 누락되었습니다!" 
+            });
+        }
+
+        const link = await Link.findById(linkId);
+
+        if (!link) {
+            return res.json({ 
+                success: false, 
+                message: "링크를 찾을 수 없습니다." 
+            });
+        }
+
+        // 링크 상태 체크
+        if (link.deleted) {
+            return res.json({ 
+                success: false, 
+                message: "삭제된 링크입니다." 
+            });
+        }
+
+        if (!link.isActive) {
+            return res.json({ 
+                success: false, 
+                message: "비활성화된 링크입니다." 
+            });
+        }
+
+        // 만료 체크
+        const now = new Date();
+        const expiryDate = new Date(link.expiryDate);
+        if (now > expiryDate) {
+            return res.json({ 
+                success: false, 
+                message: "만료된 링크입니다." 
+            });
+        }
+
+        // 서명 완료 데이터 저장
+        const signatureData = {
+            linkId: linkId,
+            signerName: signerName.trim(),
+            signerPhone: signerPhone.trim(),
+            signerEmail: signerEmail ? signerEmail.trim() : '',
+            signedItems: signedItems || [],
+            signedTime: new Date(),
+            ipAddress: req.ip || req.connection.remoteAddress
+        };
+
+        // TODO: 실제로는 별도 SignatureRecord 컬렉션에 저장하거나
+        // Link 문서에 서명 기록을 추가해야 함
+        
+        // 임시로 Link 문서에 서명 완료 상태 업데이트
+        await Link.findByIdAndUpdate(linkId, {
+            $push: {
+                signatures: signatureData
+            },
+            $set: {
+                lastSignedTime: new Date()
+            }
+        });
+
+        console.log('링크서명 완료:', {
+            linkId,
+            signerName,
+            signerPhone,
+            signedTime: signatureData.signedTime
+        });
+
+        res.json({
+            success: true,
+            message: '서명이 성공적으로 완료되었습니다.',
+            signatureId: signatureData.signedTime.getTime() // 임시 ID
+        });
+
+    } catch (error) {
+        console.error('링크서명 완료 에러:', error);
+        res.json({
+            success: false,
+            message: '서명 완료 중 오류가 발생했습니다.',
+            error: error.message
+        });
+    }
+});  
+
 module.exports = router;
