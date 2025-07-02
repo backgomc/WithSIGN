@@ -97,6 +97,12 @@ const App = () => {
 
     console.log('App called')
 
+    // ✅ 외부 서명자는 로그인 체크를 건너뛰기
+    if (isExternalSignPath) {
+      console.log('🎯 외부 서명자 경로 - 로그인 체크 건너뛰기');
+      return;
+    }    
+
     axios.get('/api/users/auth').then(response => {
       console.log('/api/users/auth called!');
       console.log(response);
