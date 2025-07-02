@@ -678,7 +678,7 @@ router.post('/getSignDocument', async (req, res) => {
         }
 
         const link = await Link.findById(linkId)
-            .select('linkTitle docTitle isActive deleted expiryDate items')
+            .select('linkTitle docTitle isActive deleted expiryDate items docRef')
             .populate('docs'); // 연결된 문서들 조회
 
         if (!link) {
@@ -719,10 +719,8 @@ router.post('/getSignDocument', async (req, res) => {
             _id: link._id,
             linkTitle: link.linkTitle,
             docTitle: link.docTitle,
-            items: link.items || [], // 서명 항목들
-            // docs: link.docs, // 연결된 문서들 (필요시)
-            // 실제 PDF 파일 경로는 나중에 추가
-            docRef: null // TODO: 실제 PDF 파일 경로 설정
+            items: link.items || [],
+            docRef: link.docRef
         };
 
         res.json({
