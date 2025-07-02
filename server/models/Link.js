@@ -38,6 +38,10 @@ const linkSchema = mongoose.Schema({
     items: [{
         type: Schema.Types.Mixed
     }],
+    // PDF 파일 경로
+    docRef: {
+        type: String
+    },    
     isActive: {
         type: Boolean,
         required: true
