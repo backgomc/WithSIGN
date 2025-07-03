@@ -102,28 +102,41 @@ const LinkSignDocument = (props) => {
   // PDF 뷰어 초기화
   const initializePDFViewer = async (document) => {
     try {
-      if (pdfRef.current) {
-        console.log('PDF 뷰어 초기화 시작:', document);
-        
-        // PDF 파일이 있는 경우 로드
-        if (document.docRef) {
-          console.log('PDF 파일 로드:', document.docRef);
-          await pdfRef.current.uploadPDF(document.docRef);
+        if (pdfRef.current) {
+            console.log('🔍 PDF 뷰어 초기화 시작:', document);
+            
+            if (document.docRef) {
+                console.log('📄 PDF 경로:', document.docRef);
+                console.log('🌐 전체 URL:', `http://34.64.93.94:5001/${document.docRef}`);
+                
+                try {
+                    // 절대 URL로 시도
+                    const fullUrl = `http://34.64.93.94:5001/${document.docRef}`;
+                    await pdfRef.current.uploadPDF(fullUrl);
+                    console.log('✅ PDF 로드 성공 (전체 URL)');
+                } catch (urlError) {
+                    console.log('❌ 전체 URL 실패, 상대 경로 시도');
+                    try {
+                        await pdfRef.current.uploadPDF(document.docRef);
+                        console.log('✅ PDF 로드 성공 (상대 경로)');
+                    } catch (relativeError) {
+                        console.error('❌ 모든 경로 시도 실패:', relativeError);
+                        throw relativeError;
+                    }
+                }
+            }
+            
+            // 서명 항목들 로드
+            if (document.items && document.items.length > 0) {
+                console.log('📝 서명 항목 로드:', document.items);
+                await pdfRef.current.importItems(document.items);
+            }
         }
-        
-        // 서명 항목들이 있는 경우 로드
-        if (document.items && document.items.length > 0) {
-          console.log('서명 항목 로드:', document.items);
-          await pdfRef.current.importItems(document.items);
-        }
-        
-        console.log('PDF 뷰어 초기화 완료');
-      }
     } catch (error) {
-      console.error('PDF 뷰어 초기화 오류:', error);
-      message.error('문서 뷰어 초기화에 실패했습니다.');
+        console.error('💥 PDF 뷰어 초기화 오류:', error);
+        message.error('문서 뷰어 초기화에 실패했습니다: ' + error.message);
     }
-  };
+};
 
   // 서명 항목 변경 시 호출
   const handleItemChanged = (action, item, validation) => {
