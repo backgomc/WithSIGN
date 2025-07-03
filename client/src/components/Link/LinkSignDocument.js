@@ -338,15 +338,50 @@ const LinkSignDocument = (props) => {
       style={{height:`calc(100vh - 72px)`}}
     >
       <Spin tip="로딩중..." spinning={loading}>
-        <PDFViewer 
-          ref={pdfRef} 
-          isUpload={false} 
-          isSave={false} 
-          isEditing={false} 
-          onItemChanged={handleItemChanged} 
-          onValidationChanged={handleValidationChanged}  
-          defaultScale={1.0} 
-          headerSpace={128}
+      <PDFViewer 
+        ref={pdfRef} 
+        isUpload={false} 
+        isSave={false} 
+        isEditing={false}
+        readOnly={false}           // 추가
+        editMode={false}           // 추가  
+        mode="sign"               // 추가
+        signMode={true}           // 추가
+        disableEdit={true}        // 추가
+        enableEdit={false}        // 추가
+        onItemChanged={handleItemChanged} 
+        onValidationChanged={handleValidationChanged}  
+        defaultScale={1.0} 
+        headerSpace={128}
+        onReady={(instance) => {   // 추가
+            setWebViewInstance(instance);
+            
+            // 강제로 서명모드 설정
+            setTimeout(() => {
+            if (instance && instance.UI) {
+                const { UI, Core } = instance;
+                const { documentViewer } = Core;
+                
+                // 모든 편집 도구 비활성화
+                UI.disableElements([
+                'toolbarGroup-Edit',
+                'toolbarGroup-Insert', 
+                'toolbarGroup-Annotate',
+                'editButton',
+                'insertButton'
+                ]);
+                
+                // 서명 도구만 활성화
+                UI.enableElements(['signatureButton']);
+                
+                // 강제로 서명 모드 설정
+                const signTool = documentViewer.getTool('AnnotationCreateSignature');
+                documentViewer.setToolMode(signTool);
+                
+                console.log('🔥 강제 서명모드 설정 완료');
+            }
+            }, 3000);
+        }}
         />
       </Spin>
 
