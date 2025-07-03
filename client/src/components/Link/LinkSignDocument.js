@@ -115,7 +115,7 @@ const LinkSignDocument = (props) => {
           let processedItems = newItems.map(item => {
             if (item.uid === 'bulk') {
               // 서명 항목 설정
-              if (item.subType === TYPE_SIGN) {
+              if (item.Type === TYPE_SIGN) {
                 item.movable = true;
                 item.resizable = true;
                 item.required = true;
@@ -144,11 +144,6 @@ const LinkSignDocument = (props) => {
 
           await pdfRef.current.importItems(processedItems);
           console.log('서명 항목 로드 완료');
-
-          // 편집모드 강제 해제
-          if (pdfRef.current.setEditingMode) {
-            pdfRef.current.setEditingMode(false);
-          }
         }
 
         // 서명 목록 초기화 (외부 사용자는 빈 목록)
