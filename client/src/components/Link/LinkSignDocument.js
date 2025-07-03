@@ -44,7 +44,6 @@ const LinkSignDocument = (props) => {
 
   // 서명 관련 상태
   const [signModal, setSignModal] = useState(false);
-  const [signList, setSignList] = useState([]);
   const [webViewInstance, setWebViewInstance] = useState(null);
 
   // PDF 뷰어 ref
@@ -256,19 +255,6 @@ const LinkSignDocument = (props) => {
     }
   };
 
-  // 서명 카드 컴포넌트
-  const signCard = (sign) => {
-    return (
-      <CheckCard 
-        key={uuidv4()} 
-        style={{width:'auto', height: 'auto'}} 
-        value={sign.signData} 
-        avatar={sign.signData} 
-        className="customSignCardCSS"
-      />
-    );
-  };
-
   // 로딩 화면
   if (loading) {
     return (
@@ -356,6 +342,7 @@ const LinkSignDocument = (props) => {
               isEditing={false}
               onReady={(instance) => setWebViewInstance(instance)}
               onItemChanged={handleItemChanged}
+              signaturePromptText="직접 서명해주세요"
               onValidationChanged={handleValidationChanged}
               defaultScale={1.0}
               headerSpace={0}
@@ -420,26 +407,6 @@ const LinkSignDocument = (props) => {
             여기에 서명해주세요
           </div>
         </div>
-
-        {/* 기존 서명 선택 영역 (외부 사용자는 보통 비어있음) */}
-        {signList.length > 0 && (
-          <CheckCard.Group 
-            style={{
-              width: '100%', 
-              margin: '0px', 
-              padding: '0px', 
-              whiteSpace: 'nowrap', 
-              overflow: 'auto', 
-              textAlign: 'center'
-            }}
-            onChange={(value) => {
-              sigCanvas.current.clear();
-              if (value) sigCanvas.current.fromDataURL(value);
-            }}
-          >
-            {signList.map((sign) => signCard(sign))}
-          </CheckCard.Group>
-        )}
       </Modal>
     </div>
   );
