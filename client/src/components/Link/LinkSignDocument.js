@@ -169,15 +169,6 @@ const LinkSignDocument = (props) => {
     setDisableComplete(!validation);
   };
 
-  const handleItemClick = (item) => {
-    console.log('서명 항목 클릭됨:', item);
-    
-    // TYPE_SIGN이고 외부 사용자(bulk) 항목인 경우에만 서명 모달 띄우기
-    if (item.Type === TYPE_SIGN && item.uid === 'bulk') {
-      setSignModal(true);
-    }
-  };
-
   // 서명 모달 관련 함수들
   const clear = () => {
     sigCanvas.current.clear();
@@ -362,11 +353,10 @@ const LinkSignDocument = (props) => {
               ref={pdfRef} 
               isUpload={false} 
               isSave={false} 
-              isEditing={true}
+              isEditing={false}
               onReady={(instance) => setWebViewInstance(instance)}
               onItemChanged={handleItemChanged}
               onValidationChanged={handleValidationChanged}
-              onItemClick={handleItemClick}
               defaultScale={1.0}
               headerSpace={0}
               style={{ height: '100%' }}

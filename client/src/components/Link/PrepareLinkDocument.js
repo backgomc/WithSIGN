@@ -521,7 +521,8 @@ const PrepareLinkDocument = ({location}) => {
       }
   
       // 2. PDF 항목들 추출
-      let items = await pdfRef.current.exportItems();
+      const items = await pdfRef.current.convertBoxToComponent();
+      console.log('converted items', items);
       
       // 3. 썸네일 생성
       let _thumbnail = await pdfRef.current.getThumbnail(0, 0.6);
