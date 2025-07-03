@@ -142,6 +142,24 @@ const LinkSignDocument = (props) => {
 
       await pdfRef.current.importItems(renewItems);
 
+      // 강제로 편집모드 해제 시도
+      setTimeout(() => {
+          if (pdfRef.current) {
+          // 가능한 모든 방법 시도
+          if (pdfRef.current.setEditingMode) {
+              pdfRef.current.setEditingMode(false);
+          }
+          if (pdfRef.current.setMode) {
+              pdfRef.current.setMode('view');
+          }
+          if (pdfRef.current.disableEdit) {
+              pdfRef.current.disableEdit();
+          }
+        
+          console.log('편집모드 해제 시도 완료');
+          }
+      }, 1000);
+
       // 서명 목록 설정 (외부 사용자는 빈 목록)
       pdfRef.current.setSigns([]);
     } catch (error) {
