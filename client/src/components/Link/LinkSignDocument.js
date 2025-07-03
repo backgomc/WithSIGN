@@ -45,6 +45,7 @@ const LinkSignDocument = (props) => {
   // 서명 관련 상태
   const [signModal, setSignModal] = useState(false);
   const [signList, setSignList] = useState([]);
+  const [webViewInstance, setWebViewInstance] = useState(null);
 
   // PDF 뷰어 ref
   const pdfRef = useRef();
@@ -175,14 +176,14 @@ const LinkSignDocument = (props) => {
     if (chkObj && chkObj[0]) chkObj[0].click();
   };
 
-  const handleSignOk = () => {
-    if (!sigCanvas.current.isEmpty()) {
-      // 서명 데이터를 base64로 변환하여 저장
-      const signatureData = sigCanvas.current.toDataURL('image/png');
-      console.log('서명 생성 완료:', signatureData);
-      
-      // 여기서 실제 서명을 PDF에 적용하는 로직이 필요
-      // WithPDF 라이브러리의 서명 적용 메소드 호출
+  const handleSignOk = async () => {
+    if (!sigCanvas.current.isEmpty() && webViewInstance) {
+      const { Core, UI } = webViewInstance;
+      const { documentViewer } = Core;
+      const signatureTool = documentViewer.getTool('AnnotationCreateSignature');
+      await signatureTool.setSignature(sigCanvas.current.toDataURL('image/png'));
+      signatureTool.addSignature();
+      UI.disableElements(['signatureModal', 'toolbarGroup-Insert']);
     }
     setSignModal(false);
     clear();
@@ -353,6 +354,7 @@ const LinkSignDocument = (props) => {
               isUpload={false} 
               isSave={false} 
               isEditing={false}
+              onReady={(instance) => setWebViewInstance(instance)}
               onItemChanged={handleItemChanged}
               onValidationChanged={handleValidationChanged}
               defaultScale={1.0}
