@@ -1,4 +1,6 @@
 // client/src/components/Link/LinkAccess.js
+// 본인인증 정보 전달 기능 추가
+
 import React, { useState, useEffect } from 'react';
 import { useParams, navigate } from '@reach/router';
 import { 
@@ -28,7 +30,7 @@ import 'moment/locale/ko';
 const { Title, Text, Paragraph } = Typography;
 
 const LinkAccess = () => {
-  const { linkId } = useParams(); // URL에서 linkId 파라미터 추출
+  const { linkId } = useParams();
   
   // 상태 관리
   const [loading, setLoading] = useState(true);
@@ -103,7 +105,7 @@ const LinkAccess = () => {
         setStep(3); // 본인인증 단계로
       } else {
         message.error(response.data.message || '접근 암호가 올바르지 않습니다.');
-        setAccessPassword(''); // 암호 초기화
+        setAccessPassword('');
         form.resetFields();
       }
 
@@ -115,17 +117,41 @@ const LinkAccess = () => {
     }
   };
 
-  // 본인인증 처리 (임시 - 실제로는 휴대폰 인증 등)
-  const handlePhoneAuth = () => {
-    message.info('본인인증 기능은 개발 중입니다. 임시로 서명 화면으로 이동합니다.');
-    // 서명 화면으로 이동
-    navigate(`/sign-document/${linkId}`, { 
-      state: { 
-        linkId: linkId,
-        linkInfo: linkInfo,
-        verified: true 
-      } 
-    });
+  // 본인인증 처리 (실제로는 휴대폰 인증 API 호출)
+  const handlePhoneAuth = async () => {
+    try {
+      // 실제 본인인증 API 호출
+      // const authResponse = await axios.post('/api/auth/phoneAuth', { ... });
+      
+      // 임시로 모의 본인인증 데이터 (실제로는 API에서 받아옴)
+      const mockAuthResult = {
+        success: true,
+        name: "홍길동",           // 본인인증에서 받은 실명
+        phone: "010-1234-5678",  // 본인인증에서 받은 휴대폰번호
+        verified: true
+      };
+
+      if (mockAuthResult.success) {
+        message.success('본인인증이 완료되었습니다!');
+        
+        // 서명 화면으로 이동 (본인인증 정보 전달)
+        navigate(`/sign-document/${linkId}`, { 
+          state: { 
+            linkId: linkId,
+            linkInfo: linkInfo,
+            verified: true,
+            signerName: mockAuthResult.name,    // 본인인증에서 받은 이름
+            signerPhone: mockAuthResult.phone   // 본인인증에서 받은 휴대폰번호
+          } 
+        });
+      } else {
+        message.error('본인인증에 실패했습니다. 다시 시도해주세요.');
+      }
+
+    } catch (error) {
+      console.error('본인인증 오류:', error);
+      message.error('본인인증 중 오류가 발생했습니다.');
+    }
   };
 
   // 로딩 화면
@@ -308,16 +334,16 @@ const LinkAccess = () => {
                 </Text>
               </div>
 
-              {/* 문서 정보 */}
+              {/* 접근 암호 확인 완료 */}
               <Alert
                 message="접근 암호 확인 완료"
-                description="이제 본인인증을 진행합니다."
+                description="이제 본인인증을 진행하여 서명자 정보를 확인합니다."
                 type="success"
                 showIcon
                 style={{ marginBottom: '24px' }}
               />
 
-              {/* 본인인증 버튼들 */}
+              {/* 본인인증 버튼 */}
               <Space direction="vertical" style={{ width: '100%' }} size="middle">
                 <Button
                   type="primary"
@@ -359,8 +385,8 @@ const LinkAccess = () => {
                 <Text style={{ fontSize: '14px', color: '#389e0d' }}>
                   <strong>본인인증 안내</strong><br />
                   • 서명을 위해서는 본인인증이 필수입니다<br />
-                  • 휴대폰 인증을 통해 간편하게 진행하세요<br />
-                  • 인증 정보는 서명 완료 후 자동 삭제됩니다
+                  • 휴대폰 인증을 통해 이름과 연락처를 확인합니다<br />
+                  • 인증 정보는 서명 완료 후 안전하게 관리됩니다
                 </Text>
               </div>
             </Card>

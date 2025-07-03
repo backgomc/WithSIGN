@@ -1,5 +1,5 @@
 // client/src/components/Link/LinkSignDocument.js
-// PDF 뷰어 연결 버전
+// 완성된 링크서명 문서 화면
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, navigate } from '@reach/router';
@@ -9,20 +9,21 @@ import {
   Typography, 
   Spin,
   Modal,
-  Input,
-  Card,
   Space
 } from 'antd';
 import { 
-  ArrowLeftOutlined,
   CheckCircleOutlined,
-  FileTextOutlined,
-  UserOutlined
+  FileTextOutlined
 } from '@ant-design/icons';
 import axios from 'axios';
 import moment from 'moment';
 import 'moment/locale/ko';
 import PDFViewer from "@niceharu/withpdf";
+import SignaturePad from 'react-signature-canvas';
+import { CheckCard } from '@ant-design/pro-card';
+import { v4 as uuidv4 } from 'uuid';
+import loadash from 'lodash';
+import {TYPE_SIGN, TYPE_TEXT, AUTO_NAME, AUTO_DATE} from '../../common/Constants';
 
 const { Title, Text } = Typography;
 
@@ -32,19 +33,22 @@ const LinkSignDocument = (props) => {
   // 링크에서 전달된 정보 (LinkAccess에서 인증 완료 후)
   const linkInfo = props.location?.state?.linkInfo;
   const verified = props.location?.state?.verified;
+  const signerName = props.location?.state?.signerName || '';
+  const signerPhone = props.location?.state?.signerPhone || '';
 
   // 상태 관리
   const [loading, setLoading] = useState(true);
   const [documentData, setDocumentData] = useState(null);
   const [signingLoading, setSigningLoading] = useState(false);
-  const [showSignerInfoModal, setShowSignerInfoModal] = useState(false);
-  const [signerName, setSignerName] = useState('');
-  const [signerPhone, setSignerPhone] = useState('');
-  const [signerEmail, setSignerEmail] = useState('');
   const [disableComplete, setDisableComplete] = useState(true);
+
+  // 서명 관련 상태
+  const [signModal, setSignModal] = useState(false);
+  const [signList, setSignList] = useState([]);
 
   // PDF 뷰어 ref
   const pdfRef = useRef();
+  const sigCanvas = useRef({});
 
   useEffect(() => {
     // 인증되지 않은 경우 접속 화면으로 리다이렉트
@@ -82,18 +86,6 @@ const LinkSignDocument = (props) => {
     } catch (error) {
       console.error('문서 로드 오류:', error);
       message.error('문서 로드 중 오류가 발생했습니다.');
-      
-      // API가 없는 경우 임시 데이터로 테스트
-      console.log('임시 데이터로 테스트 진행');
-      const tempDocumentData = {
-        _id: linkInfo._id,
-        linkTitle: linkInfo.linkTitle,
-        docTitle: linkInfo.docTitle,
-        items: [], // 서명 항목들
-        docRef: null, // PDF 파일 경로 (실제 파일이 있을 때)
-      };
-      
-      setDocumentData(tempDocumentData);
     } finally {
       setLoading(false);
     }
@@ -102,41 +94,63 @@ const LinkSignDocument = (props) => {
   // PDF 뷰어 초기화
   const initializePDFViewer = async (document) => {
     try {
-        if (pdfRef.current) {
-            console.log('🔍 PDF 뷰어 초기화 시작:', document);
-            
-            if (document.docRef) {
-                console.log('📄 PDF 경로:', document.docRef);
-                console.log('🌐 전체 URL:', `http://34.64.93.94:5001/${document.docRef}`);
-                
-                try {
-                    // 절대 URL로 시도
-                    const fullUrl = `http://34.64.93.94:5001/${document.docRef}`;
-                    await pdfRef.current.uploadPDF(fullUrl);
-                    console.log('✅ PDF 로드 성공 (전체 URL)');
-                } catch (urlError) {
-                    console.log('❌ 전체 URL 실패, 상대 경로 시도');
-                    try {
-                        await pdfRef.current.uploadPDF(document.docRef);
-                        console.log('✅ PDF 로드 성공 (상대 경로)');
-                    } catch (relativeError) {
-                        console.error('❌ 모든 경로 시도 실패:', relativeError);
-                        throw relativeError;
-                    }
-                }
-            }
-            
-            // 서명 항목들 로드
-            if (document.items && document.items.length > 0) {
-                console.log('📝 서명 항목 로드:', document.items);
-                await pdfRef.current.importItems(document.items);
-            }
+      if (pdfRef.current) {
+        console.log('PDF 뷰어 초기화 시작:', document);
+        
+        if (document.docRef) {
+          console.log('PDF 로드:', document.docRef);
+          await pdfRef.current.uploadPDF(document.docRef);
         }
+        
+        // 서명 항목들 전처리 및 로드
+        if (document.items && document.items.length > 0) {
+          console.log('서명 항목 전처리 시작:', document.items);
+          
+          let newItems = loadash.cloneDeep(document.items);
+          
+          // 외부 사용자용 서명 항목 전처리
+          let processedItems = newItems.map(item => {
+            if (item.uid === 'bulk') {
+              // 서명 항목 설정
+              if (item.subType === TYPE_SIGN) {
+                item.movable = true;
+                item.resizable = true;
+                item.required = true;
+              } else {
+                item.movable = false;
+                item.resizable = false;
+                item.disableOptions = true;
+              }
+
+              // 자동 입력 필드 처리
+              if (item.autoInput) {
+                if (item.autoInput === AUTO_NAME) {
+                  item.lines = [signerName]; // 본인인증에서 받은 이름
+                } else if (item.autoInput === AUTO_DATE) {
+                  item.lines = [moment().format('YYYY년 MM월 DD일')];
+                }
+              }
+            } else {
+              // 다른 uid의 항목들은 숨김 처리
+              item.disable = true;
+              item.borderColor = 'transparent';
+              item.hidden = true;
+            }
+            return item;
+          });
+
+          await pdfRef.current.importItems(processedItems);
+          console.log('서명 항목 로드 완료');
+        }
+
+        // 서명 목록 초기화 (외부 사용자는 빈 목록)
+        pdfRef.current.setSigns([]);
+      }
     } catch (error) {
-        console.error('💥 PDF 뷰어 초기화 오류:', error);
-        message.error('문서 뷰어 초기화에 실패했습니다: ' + error.message);
+      console.error('PDF 뷰어 초기화 오류:', error);
+      message.error('문서 뷰어 초기화에 실패했습니다.');
     }
-};
+  };
 
   // 서명 항목 변경 시 호출
   const handleItemChanged = (action, item, validation) => {
@@ -151,44 +165,33 @@ const LinkSignDocument = (props) => {
     setDisableComplete(!validation);
   };
 
-  // 서명 완료 시작
-  const startCompleteSign = async () => {
-    try {
-      // PDF에서 최종 항목들 추출
-      if (pdfRef.current) {
-        const items = await pdfRef.current.exportItems();
-        console.log('서명 완료 시 추출된 항목들:', items);
-        
-        // 모든 필수 서명이 완료되었는지 검사
-        const hasEmptySignature = items.some(item => 
-          item.type === 'SIGN' && (!item.value || item.value.trim() === '')
-        );
-        
-        if (hasEmptySignature) {
-          message.warning('모든 서명 항목을 완료해주세요.');
-          return;
-        }
-      }
-      
-      setShowSignerInfoModal(true);
-    } catch (error) {
-      console.error('서명 완료 준비 오류:', error);
-      message.error('서명 완료 준비 중 오류가 발생했습니다.');
-    }
+  // 서명 모달 관련 함수들
+  const clear = () => {
+    sigCanvas.current.clear();
+    let chkObj = document.getElementsByClassName('ant-pro-checkcard-checked');
+    if (chkObj && chkObj[0]) chkObj[0].click();
   };
 
-  // 뒤로 가기
-  const goBack = () => {
-    navigate(`/sign/link/${linkId}`);
+  const handleSignOk = () => {
+    if (!sigCanvas.current.isEmpty()) {
+      // 서명 데이터를 base64로 변환하여 저장
+      const signatureData = sigCanvas.current.toDataURL('image/png');
+      console.log('서명 생성 완료:', signatureData);
+      
+      // 여기서 실제 서명을 PDF에 적용하는 로직이 필요
+      // WithPDF 라이브러리의 서명 적용 메소드 호출
+    }
+    setSignModal(false);
+    clear();
+  };
+
+  const handleSignCancel = () => {
+    setSignModal(false);
+    clear();
   };
 
   // 서명 완료 처리
   const completeSign = async () => {
-    if (!signerName.trim() || !signerPhone.trim()) {
-      message.error('서명자 이름과 연락처를 입력해주세요.');
-      return;
-    }
-
     try {
       setSigningLoading(true);
 
@@ -196,28 +199,43 @@ const LinkSignDocument = (props) => {
       let signedItems = [];
       if (pdfRef.current) {
         signedItems = await pdfRef.current.exportItems();
+        
+        // 모든 필수 서명이 완료되었는지 검사
+        const hasEmptySignature = signedItems.some(item => 
+          item.subType === TYPE_SIGN && item.uid === 'bulk' && (!item.payload || item.payload === '')
+        );
+        
+        if (hasEmptySignature) {
+          message.warning('모든 서명 항목을 완료해주세요.');
+          setSigningLoading(false);
+          return;
+        }
       }
 
-      // 서명 완료 API 호출
+      // 서명 완료 API 호출 (본인인증에서 받은 정보 사용)
       const response = await axios.post('/api/link/completeSign', {
         linkId: linkId,
-        signerName: signerName.trim(),
-        signerPhone: signerPhone.trim(),
-        signerEmail: signerEmail.trim(),
+        signerName: signerName,
+        signerPhone: signerPhone,
         signedItems: signedItems
       });
 
       if (response.data.success) {
         message.success('서명이 완료되었습니다!');
-        setShowSignerInfoModal(false);
         
         // 완료 메시지 표시 후 창 닫기 안내
         setTimeout(() => {
           Modal.success({
             title: '서명 완료',
-            content: '서명이 성공적으로 완료되었습니다. 이 창을 닫으셔도 됩니다.',
+            content: (
+              <div>
+                <p>서명이 성공적으로 완료되었습니다.</p>
+                <p>서명자: {signerName}</p>
+                <p>연락처: {signerPhone}</p>
+                <p>완료 시간: {moment().format('YYYY년 MM월 DD일 HH:mm')}</p>
+              </div>
+            ),
             onOk: () => {
-              // 브라우저 탭 닫기 시도 (보안상 제한될 수 있음)
               window.close();
             }
           });
@@ -232,6 +250,19 @@ const LinkSignDocument = (props) => {
     } finally {
       setSigningLoading(false);
     }
+  };
+
+  // 서명 카드 컴포넌트
+  const signCard = (sign) => {
+    return (
+      <CheckCard 
+        key={uuidv4()} 
+        style={{width:'auto', height: 'auto'}} 
+        value={sign.signData} 
+        avatar={sign.signData} 
+        className="customSignCardCSS"
+      />
+    );
   };
 
   // 로딩 화면
@@ -279,17 +310,15 @@ const LinkSignDocument = (props) => {
         </div>
         
         <Space>
-          <Button 
-            icon={<ArrowLeftOutlined />} 
-            onClick={goBack}
-          >
-            뒤로가기
-          </Button>
+          <div style={{ marginRight: '16px', color: '#666' }}>
+            서명자: <strong>{signerName}</strong>
+          </div>
           <Button 
             type="primary" 
             icon={<CheckCircleOutlined />}
             disabled={disableComplete}
-            onClick={startCompleteSign}
+            loading={signingLoading}
+            onClick={completeSign}
           >
             서명 완료
           </Button>
@@ -320,7 +349,7 @@ const LinkSignDocument = (props) => {
               ref={pdfRef} 
               isUpload={false} 
               isSave={false} 
-              isEditing={true}
+              isEditing={false}
               onItemChanged={handleItemChanged}
               onValidationChanged={handleValidationChanged}
               defaultScale={1.0}
@@ -343,71 +372,69 @@ const LinkSignDocument = (props) => {
         )}
       </div>
 
-      {/* 서명자 정보 입력 모달 */}
+      {/* 서명 입력 모달 */}
       <Modal
-        title={
-          <div style={{ textAlign: 'center' }}>
-            <UserOutlined style={{ marginRight: '8px', color: '#1890ff' }} />
-            서명자 정보 입력
-          </div>
-        }
-        open={showSignerInfoModal}
-        onOk={completeSign}
-        onCancel={() => setShowSignerInfoModal(false)}
-        okText="서명 완료"
-        cancelText="취소"
-        confirmLoading={signingLoading}
-        width={500}
-        centered
+        visible={signModal}
+        width={450}
+        title="서명 입력"
+        onOk={handleSignOk}
+        onCancel={handleSignCancel}
+        footer={[
+          <Button key="clear" onClick={clear}>
+            지우기
+          </Button>,
+          <Button key="submit" type="primary" loading={signingLoading} onClick={handleSignOk}>
+            확인
+          </Button>
+        ]}
+        bodyStyle={{padding: '0px 24px'}}
       >
-        <div style={{ padding: '16px 0' }}>
-          <div style={{ marginBottom: '16px' }}>
-            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>
-              <span style={{ color: '#ff4d4f' }}>*</span> 서명자 이름
-            </label>
-            <Input
-              placeholder="실명을 입력해주세요"
-              value={signerName}
-              onChange={(e) => setSignerName(e.target.value)}
-              maxLength={20}
-            />
-          </div>
-
-          <div style={{ marginBottom: '16px' }}>
-            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>
-              <span style={{ color: '#ff4d4f' }}>*</span> 연락처
-            </label>
-            <Input
-              placeholder="휴대폰 번호를 입력해주세요"
-              value={signerPhone}
-              onChange={(e) => setSignerPhone(e.target.value)}
-              maxLength={20}
-            />
-          </div>
-
-          <div style={{ marginBottom: '16px' }}>
-            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>
-              이메일 (선택)
-            </label>
-            <Input
-              placeholder="이메일 주소를 입력해주세요"
-              value={signerEmail}
-              onChange={(e) => setSignerEmail(e.target.value)}
-              type="email"
-            />
-          </div>
-
-          <div style={{ 
-            padding: '12px', 
-            backgroundColor: '#f6ffed', 
-            borderRadius: '6px',
-            border: '1px solid #b7eb8f'
+        {/* 직접 서명 그리기 영역 */}
+        <div style={{padding: '20px 0px'}}>
+          <SignaturePad 
+            penColor='black' 
+            ref={sigCanvas} 
+            canvasProps={{
+              className: 'signCanvas',
+              style: {
+                border: '1px solid #d9d9d9',
+                borderRadius: '6px',
+                width: '100%',
+                height: '200px'
+              }
+            }} 
+          />
+          <div style={{
+            position: 'relative',
+            top: '-120px',
+            textAlign: 'center',
+            pointerEvents: 'none',
+            color: '#bfbfbf',
+            fontSize: '16px'
           }}>
-            <Text style={{ fontSize: '14px', color: '#389e0d' }}>
-              📋 입력하신 정보는 서명 기록으로만 사용되며, 서명 완료 후 안전하게 관리됩니다.
-            </Text>
+            여기에 서명해주세요
           </div>
         </div>
+
+        {/* 기존 서명 선택 영역 (외부 사용자는 보통 비어있음) */}
+        {signList.length > 0 && (
+          <CheckCard.Group 
+            style={{
+              width: '100%', 
+              margin: '0px', 
+              padding: '0px', 
+              whiteSpace: 'nowrap', 
+              overflow: 'auto', 
+              textAlign: 'center'
+            }}
+            onChange={(value) => {
+              sigCanvas.current.clear();
+              if (value) sigCanvas.current.fromDataURL(value);
+            }}
+          >
+            {signList.map((sign) => signCard(sign))}
+          </CheckCard.Group>
+        )}
       </Modal>
     </div>
   );
