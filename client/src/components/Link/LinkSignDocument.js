@@ -362,7 +362,7 @@ const LinkSignDocument = (props) => {
               ref={pdfRef} 
               isUpload={false} 
               isSave={false} 
-              isEditing={false}
+              isEditing={true}
               onReady={(instance) => setWebViewInstance(instance)}
               onItemChanged={handleItemChanged}
               onValidationChanged={handleValidationChanged}
