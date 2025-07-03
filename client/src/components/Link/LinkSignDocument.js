@@ -98,8 +98,11 @@ const LinkSignDocument = (props) => {
         console.log('PDF 뷰어 초기화 시작:', document);
         
         if (document.docRef) {
-          console.log('PDF 로드:', document.docRef);
-          await pdfRef.current.uploadPDF(document.docRef);
+            console.log('PDF 로드:', document.docRef);
+            // 루트 기준 상대경로로 변환
+            const rootPath = `/${document.docRef}`;
+            console.log('PDF 루트 경로:', rootPath);
+            await pdfRef.current.uploadPDF(rootPath);
         }
         
         // 서명 항목들 전처리 및 로드
