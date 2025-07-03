@@ -144,21 +144,24 @@ const LinkSignDocument = (props) => {
 
       // 강제로 편집모드 해제 시도
       setTimeout(() => {
-          if (pdfRef.current) {
-          // 가능한 모든 방법 시도
-          if (pdfRef.current.setEditingMode) {
-              pdfRef.current.setEditingMode(false);
+        if (pdfRef.current && webViewInstance) {
+          const { Core } = webViewInstance;
+          const { documentViewer } = Core;
+          
+          // 모든 가능한 편집모드 해제 시도
+          documentViewer.setReadOnly(true);
+          documentViewer.getAnnotationManager().disableAnnotations();
+          documentViewer.getToolModeMap().setToolMode(documentViewer.getTool('Pan'));
+          
+          // 서명 도구로 강제 전환
+          const signTool = documentViewer.getTool('AnnotationCreateSignature');
+          if (signTool) {
+            documentViewer.setToolMode(signTool);
           }
-          if (pdfRef.current.setMode) {
-              pdfRef.current.setMode('view');
-          }
-          if (pdfRef.current.disableEdit) {
-              pdfRef.current.disableEdit();
-          }
-        
-          console.log('편집모드 해제 시도 완료');
-          }
-      }, 1000);
+          
+          console.log('강제 서명모드 전환 완료');
+        }
+      }, 2000); // 더 긴 지연시간
 
       // 서명 목록 설정 (외부 사용자는 빈 목록)
       pdfRef.current.setSigns([]);
