@@ -118,7 +118,7 @@ const LinkSignDocument = (props) => {
               if (item.subType === TYPE_SIGN) {
                 item.movable = true;
                 item.resizable = true;
-                item.required = true;
+                //item.required = true;
               } else {
                 item.movable = false;
                 item.resizable = false;
