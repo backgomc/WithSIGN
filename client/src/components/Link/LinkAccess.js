@@ -396,7 +396,7 @@ const LinkAccess = () => {
                     <div style={{ marginBottom: '8px' }}>
                       <Text type="secondary">
                         <InfoCircleOutlined style={{ marginRight: '4px' }} />
-                        힌트: {linkInfo.passwordHint}
+                        암호 힌트: {linkInfo.passwordHint}
                       </Text>
                     </div>
                   )}
