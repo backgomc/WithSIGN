@@ -1,5 +1,5 @@
 // client/src/components/Link/LinkSignDocument.js
-// 완성된 링크서명 문서 화면
+// 기존 WithSIGN 패턴을 따른 링크서명 문서 화면
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, navigate } from '@reach/router';
@@ -20,7 +20,6 @@ import moment from 'moment';
 import 'moment/locale/ko';
 import PDFViewer from "@niceharu/withpdf";
 import SignaturePad from 'react-signature-canvas';
-import { CheckCard } from '@ant-design/pro-card';
 import { v4 as uuidv4 } from 'uuid';
 import loadash from 'lodash';
 import {TYPE_SIGN, TYPE_TEXT, AUTO_NAME, AUTO_DATE} from '../../common/Constants';
@@ -66,7 +65,6 @@ const LinkSignDocument = (props) => {
     try {
       setLoading(true);
 
-      // 실제 API 호출로 문서 데이터 가져오기
       const response = await axios.post('/api/link/getSignDocument', {
         linkId: linkId
       });
@@ -84,34 +82,26 @@ const LinkSignDocument = (props) => {
       }
       
     } catch (error) {
-      console.error('문서 로드 오류:', error);
       message.error('문서 로드 중 오류가 발생했습니다.');
     } finally {
       setLoading(false);
     }
   };
 
-  // PDF 뷰어 초기화
+  // PDF 뷰어 초기화 (기존 WithSIGN의 initWithPDF 패턴)
   const initializePDFViewer = async (document) => {
     try {
       if (pdfRef.current) {
-        console.log('PDF 뷰어 초기화 시작:', document);
-        
+        // PDF 로드
         if (document.docRef) {
-            console.log('PDF 로드:', document.docRef);
-            // 루트 기준 상대경로로 변환
-            const rootPath = `/${document.docRef}`;
-            console.log('PDF 루트 경로:', rootPath);
-            await pdfRef.current.uploadPDF(rootPath);
+          const rootPath = `/${document.docRef}`;
+          await pdfRef.current.uploadPDF(rootPath);
         }
         
-        // 서명 항목들 전처리 및 로드
+        // 서명 항목들 전처리 및 로드 (기존 WithSIGN 패턴)
         if (document.items && document.items.length > 0) {
-          console.log('서명 항목 전처리 시작:', document.items);
-          
           let newItems = loadash.cloneDeep(document.items);
           
-          // 외부 사용자용 서명 항목 전처리
           let processedItems = newItems.map(item => {
             if (item.uid === 'bulk') {
               // 서명 항목 설정
@@ -128,13 +118,13 @@ const LinkSignDocument = (props) => {
               // 자동 입력 필드 처리
               if (item.autoInput) {
                 if (item.autoInput === AUTO_NAME) {
-                  item.lines = [signerName]; // 본인인증에서 받은 이름
+                  item.lines = [signerName];
                 } else if (item.autoInput === AUTO_DATE) {
                   item.lines = [moment().format('YYYY년 MM월 DD일')];
                 }
               }
             } else {
-              // 다른 uid의 항목들은 숨김 처리
+              // 다른 uid의 항목들은 숨김 처리 (기존 WithSIGN 패턴)
               item.disable = true;
               item.borderColor = 'transparent';
               item.hidden = true;
@@ -143,114 +133,28 @@ const LinkSignDocument = (props) => {
           });
 
           await pdfRef.current.importItems(processedItems);
-          console.log('서명 항목 로드 완료');
         }
 
         // 서명 목록 초기화 (외부 사용자는 빈 목록)
         pdfRef.current.setSigns([]);
       }
     } catch (error) {
-      console.error('PDF 뷰어 초기화 오류:', error);
       message.error('문서 뷰어 초기화에 실패했습니다.');
     }
   };
 
-  // 서명 항목 변경 시 호출 - 수정됨
+  // 서명 항목 변경 시 호출 (기존 WithSIGN 패턴 - 로깅만)
   const handleItemChanged = (action, item, validation) => {
-    console.log('🔥 서명 항목 변경:', action, item, 'validation:', validation);
-    
-    // ✅ validation 값이 있으면 즉시 버튼 상태 업데이트
-    if (typeof validation === 'boolean') {
-      console.log('🎯 validation 값으로 버튼 상태 업데이트:', validation);
-      setDisableComplete(!validation);
-    }
+    // 기존 WithSIGN처럼 로깅만 하고 버튼 상태는 건드리지 않음
+    console.log(action, item);
   };
 
-  // 유효성 검사 변경 시 호출 - 로그 추가
+  // 유효성 검사 변경 시 호출 (기존 WithSIGN 패턴)
   const handleValidationChanged = (validation) => {
-    console.log('🔥 유효성 검사 결과 (onValidationChanged):', validation);
     setDisableComplete(!validation);
   };
 
-  // 수동 유효성 검사 함수 - 더 상세한 로그 추가
-  const manualValidationCheck = async () => {
-    try {
-      if (pdfRef.current) {
-        const items = await pdfRef.current.exportItems();
-        
-        console.log('🔍 전체 항목들:', items);
-        
-        // ✅ 모든 입력 필드 타입 포함 (서명란 타입 추가)
-        const inputFields = items.filter(item => {
-          const validTypes = ['SIGN', 'sign', 'TEXT', 'text', 'dropdown', 'checkbox'];
-          const hasValidType = validTypes.includes(item.type) || validTypes.includes(item.subType);
-          
-          console.log(`필드 ${item.id}: type="${item.type}", subType="${item.subType}", 유효=${hasValidType}`);
-          
-          return hasValidType;
-        });
-        
-        console.log('🔍 입력 필드들:', inputFields);
-        
-        // 각 필드의 값 확인 (서명란의 경우 다른 속성 확인)
-        const fieldStatus = inputFields.map(item => {
-          let value = '';
-          let isEmpty = true;
-          
-          // 필드 타입별로 값 확인 방식 다름
-          if (item.type === 'SIGN' || item.subType === 'SIGN') {
-            // 서명란: value 또는 signatureData 확인
-            value = item.value || item.signatureData || item.signature || '';
-            isEmpty = !value;
-          } else if (item.type === 'checkbox') {
-            // 체크박스: checked 상태 확인
-            value = item.checked ? 'checked' : '';
-            isEmpty = !item.checked;
-          } else {
-            // 텍스트, 드롭다운: value 또는 text 확인
-            value = item.value || item.text || '';
-            isEmpty = !value;
-          }
-          
-          return {
-            id: item.id,
-            type: item.type || item.subType,
-            value: value,
-            isEmpty: isEmpty
-          };
-        });
-        
-        console.log('🔍 수동 검증 - 필드 상태:', fieldStatus);
-        
-        // 비어있는 필수 필드가 있는지 확인
-        const emptyFields = fieldStatus.filter(field => field.isEmpty);
-        const isValid = emptyFields.length === 0 && inputFields.length > 0;
-        
-        console.log('🔍 수동 검증 결과:', {
-          총필드수: inputFields.length,
-          비어있는필드수: emptyFields.length,
-          비어있는필드들: emptyFields.map(f => f.id),
-          최종유효성: isValid
-        });
-        
-        setDisableComplete(!isValid);
-        
-        return isValid;
-      }
-    } catch (error) {
-      console.error('수동 유효성 검사 오류:', error);
-      return false;
-    }
-  };
-  
-  // ✅ 디버깅용 - 버튼 클릭으로 수동 검증
-  const debugValidation = async () => {
-    console.log('🐛 디버그 검증 시작');
-    const result = await manualValidationCheck();
-    console.log('🐛 디버그 검증 완료:', result);
-  };
-
-  // 서명 모달 관련 함수들
+  // 서명 모달 관련 함수들 (기존 WithSIGN 패턴)
   const clear = () => {
     sigCanvas.current.clear();
     let chkObj = document.getElementsByClassName('ant-pro-checkcard-checked');
@@ -271,38 +175,36 @@ const LinkSignDocument = (props) => {
   };
 
   const handleSignCancel = () => {
+    if (webViewInstance) {
+      const { UI } = webViewInstance;
+      UI.disableElements(['signatureModal', 'toolbarGroup-Insert']);
+    }
     setSignModal(false);
     clear();
   };
 
-  // 서명 완료 처리
+  // 서명 완료 처리 (기존 WithSIGN의 send 함수 패턴)
   const completeSign = async () => {
     try {
       setSigningLoading(true);
 
       // PDF에서 최종 서명 데이터 추출
-      let signedItems = [];
-      if (pdfRef.current) {
-        signedItems = await pdfRef.current.exportItems();
-        
-        // 모든 필수 서명이 완료되었는지 검사
-        const hasEmptySignature = signedItems.some(item => 
-          item.subType === TYPE_SIGN && item.uid === 'bulk' && (!item.payload || item.payload === '')
-        );
-        
-        if (hasEmptySignature) {
-          message.warning('모든 서명 항목을 완료해주세요.');
-          setSigningLoading(false);
-          return;
-        }
-      }
+      const exportItems = await pdfRef.current.exportItems();
 
-      // 서명 완료 API 호출 (본인인증에서 받은 정보 사용)
+      // 본인 컴포넌트만 업데이트 (기존 WithSIGN 패턴)
+      let updateItems = [];
+      exportItems.forEach(item => {
+        if (item.uid === 'bulk') {
+          updateItems.push(item);
+        }
+      });
+
+      // 서명 완료 API 호출
       const response = await axios.post('/api/link/completeSign', {
         linkId: linkId,
         signerName: signerName,
         signerPhone: signerPhone,
-        signedItems: signedItems
+        signedItems: updateItems
       });
 
       if (response.data.success) {
@@ -330,7 +232,6 @@ const LinkSignDocument = (props) => {
       }
       
     } catch (error) {
-      console.error('서명 완료 오류:', error);
       message.error('서명 완료 중 오류가 발생했습니다: ' + error.message);
     } finally {
       setSigningLoading(false);
@@ -394,7 +295,6 @@ const LinkSignDocument = (props) => {
           >
             서명 완료
           </Button>
-          <Button onClick={debugValidation}>디버그 검증</Button>
         </Space>
       </div>
 
@@ -446,7 +346,7 @@ const LinkSignDocument = (props) => {
         )}
       </div>
 
-      {/* 서명 입력 모달 */}
+      {/* 서명 입력 모달 (기존 WithSIGN 패턴) */}
       <Modal
         visible={signModal}
         width={450}
@@ -463,7 +363,6 @@ const LinkSignDocument = (props) => {
         ]}
         bodyStyle={{padding: '0px 24px'}}
       >
-        {/* 직접 서명 그리기 영역 */}
         <div style={{padding: '20px 0px'}}>
           <SignaturePad 
             penColor='black' 
