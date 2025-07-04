@@ -362,6 +362,7 @@ const LinkAccess = () => {
                   onFinish={verifyPassword}
                   layout="vertical"
                   size="large"
+                  style={{ marginTop: '14px' }}
                 >
                   <Form.Item
                     name="accessPassword"
@@ -369,12 +370,7 @@ const LinkAccess = () => {
                     rules={[
                       { required: true, message: '접근 암호를 입력해주세요!' }
                     ]}
-                    style={{ 
-                        marginBottom: '16px',
-                        '& .ant-form-item-label': {
-                          paddingBottom: '2px'  // 기본값 4px → 2px
-                        }
-                      }}
+                    style={{ marginBottom: '8px' }}
                   >
                     <Input.Password
                       prefix={<LockOutlined />}
@@ -389,7 +385,7 @@ const LinkAccess = () => {
 
                   {/* 암호 힌트 표시 */}
                   {linkInfo?.passwordHint && (
-                    <div style={{ marginBottom: '16px' }}>
+                    <div style={{ marginBottom: '8px' }}>
                       <Text type="secondary">
                         <InfoCircleOutlined style={{ marginRight: '4px' }} />
                         힌트: {linkInfo.passwordHint}
@@ -397,7 +393,10 @@ const LinkAccess = () => {
                     </div>
                   )}
 
-                  <Form.Item style={{ marginBottom: 0 }}>
+                  <Form.Item style={{ 
+                    marginBottom: 0,
+                    marginTop: linkInfo?.passwordHint ? '8px' : '16px'
+                    }}>
                     <Button
                       type="primary"
                       htmlType="submit"
