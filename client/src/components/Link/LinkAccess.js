@@ -240,13 +240,13 @@ const LinkAccess = () => {
         
         {/* 오버레이 */}
         <div style={overlayStyle}>
-          <Row justify="center" style={{ width: '100%', maxWidth: '600px' }}>
+          <Row justify="center" style={{ width: '100%', maxWidth: '500px' }}>
             <Col span={24}>
               <Card 
                 style={{ 
                   borderRadius: '8px',
                   border: '1px solid #d9d9d9',
-                  padding: '32px 40px' // PC에서 내부 여백 증가
+                  padding: '0px 15px'
                 }}
               >
                 {/* 헤더 (모바일 대응으로 간격 축소) */}
