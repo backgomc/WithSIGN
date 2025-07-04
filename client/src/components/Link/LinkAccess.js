@@ -1,5 +1,5 @@
 // client/src/components/Link/LinkAccess.js
-// 본인인증 정보 전달 기능 추가
+// WithSIGN 브랜딩 및 UI 개선 버전
 
 import React, { useState, useEffect } from 'react';
 import { useParams, navigate } from '@reach/router';
@@ -21,11 +21,13 @@ import {
   SafetyOutlined, 
   FileTextOutlined,
   CheckCircleOutlined,
-  InfoCircleOutlined
+  InfoCircleOutlined,
+  UserOutlined
 } from '@ant-design/icons';
 import axios from 'axios';
 import moment from 'moment';
 import 'moment/locale/ko';
+import logo_withsign from '../../assets/images/logo_withsign.png';
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -35,6 +37,7 @@ const LinkAccess = () => {
   // 상태 관리
   const [loading, setLoading] = useState(true);
   const [linkInfo, setLinkInfo] = useState(null);
+  const [requestorInfo, setRequestorInfo] = useState(null); // 서명 요청자 정보
   const [accessPassword, setAccessPassword] = useState('');
   const [passwordLoading, setPasswordLoading] = useState(false);
   const [step, setStep] = useState(1); // 1: 링크체크, 2: 암호입력, 3: 본인인증, 4: 서명화면
@@ -57,6 +60,9 @@ const LinkAccess = () => {
       if (response.data.success) {
         const link = response.data.link;
         setLinkInfo(link);
+        
+        // 서명 요청자 정보도 받아오기 (API에서 추가로 전달받을 예정)
+        setRequestorInfo(response.data.requestor || { name: '서명 요청자', email: 'admin@company.com' });
 
         // 링크 상태별 처리
         if (!link.isActive) {
@@ -154,17 +160,21 @@ const LinkAccess = () => {
     }
   };
 
+  // 공통 배경 스타일 (통일된 배경색)
+  const backgroundStyle = {
+    minHeight: '100vh', 
+    background: '#f5f5f5', // 깔끔한 회색 배경으로 통일
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '20px'
+  };
+
   // 로딩 화면
   if (loading) {
     return (
-      <div style={{ 
-        height: '100vh', 
-        display: 'flex', 
-        alignItems: 'center', 
-        justifyContent: 'center',
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-      }}>
-        <Card style={{ textAlign: 'center', minWidth: '300px' }}>
+      <div style={backgroundStyle}>
+        <Card style={{ textAlign: 'center', minWidth: '300px', borderRadius: '12px' }}>
           <Spin size="large" />
           <div style={{ marginTop: 16 }}>
             <Text>링크 확인 중...</Text>
@@ -177,22 +187,48 @@ const LinkAccess = () => {
   // 2단계: 접근 암호 입력
   if (step === 2) {
     return (
-      <div style={{ 
-        minHeight: '100vh', 
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '20px'
-      }}>
+      <div style={backgroundStyle}>
         <Row justify="center" style={{ width: '100%', maxWidth: '500px' }}>
           <Col span={24}>
             <Card 
               style={{ 
                 borderRadius: '12px', 
-                boxShadow: '0 10px 30px rgba(0,0,0,0.3)' 
+                boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                border: 'none'
               }}
             >
+              {/* WithSIGN 로고 */}
+              <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+                <img 
+                  src={logo_withsign} 
+                  alt="WithSIGN" 
+                  style={{ height: '40px', marginBottom: '16px' }} 
+                />
+              </div>
+
+              {/* 서명 요청자 정보 */}
+              <div style={{ 
+                textAlign: 'center', 
+                marginBottom: '24px',
+                padding: '12px',
+                backgroundColor: '#f8f9fa',
+                borderRadius: '8px',
+                border: '1px solid #e9ecef'
+              }}>
+                <Text style={{ fontSize: '14px', color: '#666' }}>서명을 시작합니다</Text>
+                <div style={{ marginTop: '4px' }}>
+                  <Text strong style={{ fontSize: '16px' }}>
+                    {linkInfo?.linkTitle || linkInfo?.docTitle}
+                  </Text>
+                </div>
+                <div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <UserOutlined style={{ marginRight: '6px', color: '#666' }} />
+                  <Text style={{ fontSize: '14px', color: '#666' }}>
+                    서명 요청자: <strong>{requestorInfo?.name}</strong> ({requestorInfo?.email})
+                  </Text>
+                </div>
+              </div>
+
               {/* 헤더 */}
               <div style={{ textAlign: 'center', marginBottom: '32px' }}>
                 <SafetyOutlined style={{ fontSize: '48px', color: '#1890ff', marginBottom: '16px' }} />
@@ -209,15 +245,10 @@ const LinkAccess = () => {
                 message={
                   <div>
                     <FileTextOutlined style={{ marginRight: '8px' }} />
-                    <strong>{linkInfo?.linkTitle || linkInfo?.docTitle}</strong>
-                  </div>
-                }
-                description={
-                  <div>
-                    만료일: {linkInfo?.expiryDate ? 
+                    <strong>만료일: {linkInfo?.expiryDate ? 
                       moment(linkInfo.expiryDate).format('YYYY년 MM월 DD일') : 
                       `${linkInfo?.expiryDays}일 후`
-                    }
+                    }</strong>
                   </div>
                 }
                 type="info"
@@ -307,22 +338,25 @@ const LinkAccess = () => {
   // 3단계: 본인인증
   if (step === 3) {
     return (
-      <div style={{ 
-        minHeight: '100vh', 
-        background: 'linear-gradient(135deg, #52c41a 0%, #389e0d 100%)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '20px'
-      }}>
+      <div style={backgroundStyle}>
         <Row justify="center" style={{ width: '100%', maxWidth: '500px' }}>
           <Col span={24}>
             <Card 
               style={{ 
                 borderRadius: '12px', 
-                boxShadow: '0 10px 30px rgba(0,0,0,0.3)' 
+                boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                border: 'none'
               }}
             >
+              {/* WithSIGN 로고 */}
+              <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+                <img 
+                  src={logo_withsign} 
+                  alt="WithSIGN" 
+                  style={{ height: '40px', marginBottom: '16px' }} 
+                />
+              </div>
+
               {/* 헤더 */}
               <div style={{ textAlign: 'center', marginBottom: '32px' }}>
                 <CheckCircleOutlined style={{ fontSize: '48px', color: '#52c41a', marginBottom: '16px' }} />
