@@ -115,7 +115,7 @@ const LinkSignDocument = (props) => {
           let processedItems = newItems.map(item => {
             if (item.uid === 'bulk') {
               // 서명 항목 설정
-              if (item.Type === TYPE_SIGN) {
+              if (item.type === TYPE_SIGN) {
                 item.movable = true;
                 item.resizable = true;
                 item.required = true;
