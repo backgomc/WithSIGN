@@ -29,6 +29,12 @@ import moment from 'moment';
 import 'moment/locale/ko';
 import logo_withsign from '../../assets/images/logo_withsign.png';
 
+const customStyles = `
+  .custom-password-form .ant-form-item-label {
+    padding-bottom: 0px !important;
+  }
+`;
+
 const { Title, Text, Paragraph } = Typography;
 
 const LinkAccess = () => {
@@ -228,6 +234,8 @@ const LinkAccess = () => {
   // 2단계: 접근 암호 입력
   if (step === 2) {
     return (
+     <>
+      <style>{customStyles}</style>
       <div style={backgroundStyle}>
         {/* 헤더 */}
         <div style={headerStyle}>
@@ -361,6 +369,7 @@ const LinkAccess = () => {
                   onFinish={verifyPassword}
                   layout="vertical"
                   size="large"
+                  className="custom-password-form"
                   style={{ marginTop: '6px' }}
                 >
                   <Form.Item
@@ -369,12 +378,7 @@ const LinkAccess = () => {
                     rules={[
                       { required: true, message: '접근 암호를 입력해주세요!' }
                     ]}
-                    style={{ 
-                        marginBottom: '4px',
-                        '& .ant-form-item-label': {
-                          paddingBottom: '0px'
-                        }
-                      }}
+                    style={{ marginBottom: '4px' }}
                   >
                     <Input.Password
                       prefix={<LockOutlined />}
@@ -437,6 +441,7 @@ const LinkAccess = () => {
           </Row>
         </div>
       </div>
+     </>
     );
   }
 
