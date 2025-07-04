@@ -248,7 +248,7 @@ const LinkAccess = () => {
                 }}
               >
                 {/* 헤더 (모바일 대응으로 간격 축소) */}
-                <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+                <div style={{ textAlign: 'center', marginBottom: '10px' }}>
                   <SafetyOutlined style={{ fontSize: '40px', color: '#1890ff', marginBottom: '12px' }} />
                   <Title level={3} style={{ margin: 0, color: '#262626', marginBottom: '8px' }}>
                     보안 인증
