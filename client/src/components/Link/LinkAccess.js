@@ -361,7 +361,7 @@ const LinkAccess = () => {
                   onFinish={verifyPassword}
                   layout="vertical"
                   size="large"
-                  //style={{ marginTop: '14px' }}
+                  style={{ marginTop: '6px' }}
                 >
                   <Form.Item
                     name="accessPassword"
