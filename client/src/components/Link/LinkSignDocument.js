@@ -155,17 +155,74 @@ const LinkSignDocument = (props) => {
     }
   };
 
-  // 서명 항목 변경 시 호출
+  // 서명 항목 변경 시 호출 - 수정됨
   const handleItemChanged = (action, item, validation) => {
-    console.log('서명 항목 변경:', action, item);
-    // 실시간 유효성 검사 결과 반영
+    console.log('🔥 서명 항목 변경:', action, item, 'validation:', validation);
+    
+    // ✅ validation 값이 있으면 즉시 버튼 상태 업데이트
+    if (typeof validation === 'boolean') {
+      console.log('🎯 validation 값으로 버튼 상태 업데이트:', validation);
+      setDisableComplete(!validation);
+    }
+    
+    // ✅ 추가로 수동 검증도 실행 (백업용)
+    setTimeout(() => {
+      manualValidationCheck();
+    }, 100);
+  };
+
+  // 유효성 검사 변경 시 호출 - 로그 추가
+  const handleValidationChanged = (validation) => {
+    console.log('🔥 유효성 검사 결과 (onValidationChanged):', validation);
     setDisableComplete(!validation);
   };
 
-  // 유효성 검사 변경 시 호출
-  const handleValidationChanged = (validation) => {
-    console.log('유효성 검사 결과:', validation);
-    setDisableComplete(!validation);
+  // 수동 유효성 검사 함수 - 더 상세한 로그 추가
+  const manualValidationCheck = async () => {
+    try {
+      if (pdfRef.current) {
+        const items = await pdfRef.current.exportItems();
+        
+        // 서명 필드들만 필터링
+        const signatureFields = items.filter(item => 
+          item.type === 'SIGN' || item.type === 'text' || item.type === 'dropdown' || item.type === 'checkbox'
+        );
+        
+        // 각 필드의 값 확인
+        const fieldStatus = signatureFields.map(item => ({
+          id: item.id,
+          type: item.type,
+          value: item.value || item.text || '',
+          isEmpty: !item.value && !item.text
+        }));
+        
+        console.log('🔍 수동 검증 - 필드 상태:', fieldStatus);
+        
+        // 비어있는 필수 필드가 있는지 확인
+        const emptyFields = fieldStatus.filter(field => field.isEmpty);
+        const isValid = emptyFields.length === 0 && signatureFields.length > 0;
+        
+        console.log('🔍 수동 검증 결과:', {
+          총필드수: signatureFields.length,
+          비어있는필드수: emptyFields.length,
+          최종유효성: isValid
+        });
+        
+        setDisableComplete(!isValid);
+        
+        return isValid;
+      }
+    } catch (error) {
+      console.error('수동 유효성 검사 오류:', error);
+      return false;
+    }
+  };
+  
+  // ✅ 디버깅용 - 버튼 클릭으로 수동 검증
+  const debugValidation = async () => {
+    console.log('🐛 디버그 검증 시작');
+    const result = await manualValidationCheck();
+    console.log('🐛 디버그 검증 완료:', result);
   };
 
   // 서명 모달 관련 함수들
@@ -312,6 +369,7 @@ const LinkSignDocument = (props) => {
           >
             서명 완료
           </Button>
+          <Button onClick={debugValidation}>디버그 검증</Button>
         </Space>
       </div>
 
