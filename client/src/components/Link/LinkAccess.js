@@ -248,7 +248,7 @@ const LinkAccess = () => {
                 }}
               >
                 {/* 헤더 (모바일 대응으로 간격 축소) */}
-                <div style={{ textAlign: 'center', marginBottom: '10px' }}>
+                <div style={{ textAlign: 'center', marginBottom: '12px' }}>
                   <SafetyOutlined style={{ fontSize: '40px', color: '#1890ff', marginBottom: '12px' }} />
                   <Title level={3} style={{ margin: 0, color: '#262626', marginBottom: '8px' }}>
                     보안 인증
@@ -369,7 +369,7 @@ const LinkAccess = () => {
                     rules={[
                       { required: true, message: '접근 암호를 입력해주세요!' }
                     ]}
-                    style={{ marginBottom: '8px' }}
+                    style={{ marginBottom: '4px' }}
                   >
                     <Input.Password
                       prefix={<LockOutlined />}
