@@ -245,8 +245,7 @@ const LinkAccess = () => {
               <Card 
                 style={{ 
                   borderRadius: '8px',
-                  border: '1px solid #d9d9d9',
-                  padding: '0px 15px'
+                  border: '1px solid #d9d9d9'
                 }}
               >
                 {/* 헤더 (모바일 대응으로 간격 축소) */}
@@ -423,8 +422,7 @@ const LinkAccess = () => {
                   <Text type="secondary" style={{ fontSize: '13px' }}>
                     <strong>안내사항</strong><br />
                     • 서명 담당자로부터 전달받은 접근 암호를 입력해주세요<br />
-                    • 암호 입력 후 본인인증을 진행합니다<br />
-                    • 문제가 있을 경우 서명 요청자에게 문의해주세요
+                    • 암호 입력 후 본인인증을 진행합니다
                   </Text>
                 </div>
               </Card>
