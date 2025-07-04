@@ -634,60 +634,29 @@ const PrepareLinkDocument = ({location}) => {
             {/* 링크서명 발송 - 항상 bulk 처리 */}
             <div>
               <Card size="small" type="inner" title="서명 참여자" style={{ width: '220px' }}>
-                    <Tooltip block placement="right" title={'참여자가 사인을 입력할 위치에 넣어주세요.'}>
-                      <Badge count={boxData.filter(e => e.key === 'bulk')[0] ? boxData.filter(e => e.key === 'bulk')[0].sign : 0}>
-                        <Button style={{width:'91px', textAlign:'left'}} icon={<Icon component={IconSign} style={{ fontSize: '120%'}} />} onClick={e => { addField('SIGN', {}, {key: 'bulk'}); }}>{formatMessage({id: 'input.sign'})}</Button>
-                      </Badge>
-                    </Tooltip>
-                    &nbsp;&nbsp;&nbsp;
-                    <Tooltip placement="right" title={'참여자가 텍스트를 입력할 위치에 넣어주세요.'}>
-                      <Badge count={boxData.filter(e => e.key === 'bulk')[0] ? boxData.filter(e => e.key === 'bulk')[0].text : 0}>
-                        <Button style={{width:'90px', textAlign:'left'}} icon={<Icon component={IconText} style={{ fontSize: '120%'}} />} onClick={e => { addField('TEXT', {}, {key: 'bulk'}); }}>{formatMessage({id: 'input.text'})}</Button>
-                      </Badge>
-                    </Tooltip>
-                    <p></p>
-                    <Tooltip placement="right" title={'참여자가 체크박스를 입력할 위치에 넣어주세요.'}>
-                      <Badge count={boxData.filter(e => e.key === 'bulk')[0] ? boxData.filter(e => e.key === 'bulk')[0].checkbox : 0}>
-                        <Button style={{width:'91px', textAlign:'left'}} icon={<Icon component={IconCheckbox} style={{ fontSize: '120%'}} />} onClick={e => { addField('CHECKBOX', {}, {key: 'bulk'}); }}>{formatMessage({id: 'input.checkbox'})}</Button>
-                      </Badge>
-                    </Tooltip>
-                    &nbsp;&nbsp;&nbsp;
-                    <Tooltip placement="right" title={'참여자가 드롭다운을 선택할 위치에 넣어주세요.'}>
-                      <Badge count={boxData.filter(e => e.key === 'bulk')[0] ? boxData.filter(e => e.key === 'bulk')[0].dropdown : 0}>
-                        <Button style={{width:'90px', textAlign:'left'}} icon={<Icon component={IconDropDown} style={{ fontSize: '120%'}} />} onClick={e => { addField('DROPDOWN', {}, {key: 'bulk'}); }}>{formatMessage({id: 'input.dropdown'})}</Button>
-                      </Badge>
-                    </Tooltip>
-
-                    <div>
-                      <Divider plain>자동 입력</Divider>
-                      <p>
-                      <Badge count={boxData.filter(e => e.key === 'bulk')[0]?.auto_name}>
-                        <Button style={{width:'90px', textAlign:'left'}} icon={<Icon component={IconText} style={{ fontSize: '120%'}} />} onClick={e => { addField('AUTONAME', {}, {key: 'bulk', type: 'AUTONAME', name: "이름"}); }}>{formatMessage({id: 'name'})}</Button>
-                      </Badge>
-                      &nbsp;&nbsp;&nbsp;
-                      <Badge count={boxData.filter(e => e.key === 'bulk')[0]?.auto_jobtitle}>
-                        <Button style={{width:'90px', textAlign:'left'}} icon={<Icon component={IconText} style={{ fontSize: '120%'}} />} onClick={e => { addField('AUTOJOBTITLE', {}, {key: 'bulk', type: 'AUTOJOBTITLE', name: "직급"}); }}>{formatMessage({id: 'jobtitle'})}</Button>
-                      </Badge>
-                      </p>
-                      <p>
-                      <Badge count={boxData.filter(e => e.key === 'bulk')[0]?.auto_office}>
-                        <Button style={{width:'90px', textAlign:'left'}} icon={<Icon component={IconText} style={{ fontSize: '120%'}} />} onClick={e => { addField('AUTOOFFICE', {}, {key: 'bulk', type: 'AUTOOFFICE', name: "회사명"}); }}>{formatMessage({id: 'office'})}</Button>
-                      </Badge>
-                      &nbsp;&nbsp;&nbsp;
-                      <Badge count={boxData.filter(e => e.key === 'bulk')[0]?.auto_depart}>
-                        <Button style={{width:'90px', textAlign:'left'}} icon={<Icon component={IconText} style={{ fontSize: '120%'}} />} onClick={e => { addField('AUTODEPART', {}, {key: 'bulk', type: 'AUTODEPART', name: "팀명"}); }}>{formatMessage({id: 'depart'})}</Button>
-                      </Badge>
-                      </p>
-                      <p>
-                      <Badge count={boxData.filter(e => e.key === 'bulk')[0]?.auto_sabun}>
-                        <Button style={{width:'90px', textAlign:'left'}} icon={<Icon component={IconText} style={{ fontSize: '120%'}} />} onClick={e => { addField('AUTOSABUN', {}, {key: 'bulk', type: 'AUTOSABUN', name: "사번"}); }}>{formatMessage({id: 'sabun'})}</Button>
-                      </Badge>
-                      &nbsp;&nbsp;&nbsp;
-                      <Badge count={boxData.filter(e => e.key === 'bulk')[0]?.auto_date}>
-                        <Button style={{width:'90px', textAlign:'left'}} icon={<Icon component={IconText} style={{ fontSize: '120%'}} />} onClick={e => { addField('AUTODATE', {}, {key: 'bulk', type: 'AUTODATE', name: "날짜"}); }}>{formatMessage({id: 'date'})}</Button>
-                      </Badge>
-                      </p>
-                    </div>
+                <Tooltip block placement="right" title={'참여자가 사인을 입력할 위치에 넣어주세요.'}>
+                    <Badge count={boxData.filter(e => e.key === 'bulk')[0] ? boxData.filter(e => e.key === 'bulk')[0].sign : 0}>
+                    <Button style={{width:'91px', textAlign:'left'}} icon={<Icon component={IconSign} style={{ fontSize: '120%'}} />} onClick={e => { addField('SIGN', {}, {key: 'bulk'}); }}>{formatMessage({id: 'input.sign'})}</Button>
+                    </Badge>
+                </Tooltip>
+                &nbsp;&nbsp;&nbsp;
+                <Tooltip placement="right" title={'참여자가 텍스트를 입력할 위치에 넣어주세요.'}>
+                    <Badge count={boxData.filter(e => e.key === 'bulk')[0] ? boxData.filter(e => e.key === 'bulk')[0].text : 0}>
+                    <Button style={{width:'90px', textAlign:'left'}} icon={<Icon component={IconText} style={{ fontSize: '120%'}} />} onClick={e => { addField('TEXT', {}, {key: 'bulk'}); }}>{formatMessage({id: 'input.text'})}</Button>
+                    </Badge>
+                </Tooltip>
+                <p></p>
+                <Tooltip placement="right" title={'참여자가 체크박스를 입력할 위치에 넣어주세요.'}>
+                    <Badge count={boxData.filter(e => e.key === 'bulk')[0] ? boxData.filter(e => e.key === 'bulk')[0].checkbox : 0}>
+                    <Button style={{width:'91px', textAlign:'left'}} icon={<Icon component={IconCheckbox} style={{ fontSize: '120%'}} />} onClick={e => { addField('CHECKBOX', {}, {key: 'bulk'}); }}>{formatMessage({id: 'input.checkbox'})}</Button>
+                    </Badge>
+                </Tooltip>
+                &nbsp;&nbsp;&nbsp;
+                <Tooltip placement="right" title={'참여자가 드롭다운을 선택할 위치에 넣어주세요.'}>
+                    <Badge count={boxData.filter(e => e.key === 'bulk')[0] ? boxData.filter(e => e.key === 'bulk')[0].dropdown : 0}>
+                    <Button style={{width:'90px', textAlign:'left'}} icon={<Icon component={IconDropDown} style={{ fontSize: '120%'}} />} onClick={e => { addField('DROPDOWN', {}, {key: 'bulk'}); }}>{formatMessage({id: 'input.dropdown'})}</Button>
+                    </Badge>
+                </Tooltip>
               </Card>
             </div>
 

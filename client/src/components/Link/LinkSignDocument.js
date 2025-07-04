@@ -342,7 +342,6 @@ const LinkSignDocument = (props) => {
               isEditing={false}
               onReady={(instance) => setWebViewInstance(instance)}
               onItemChanged={handleItemChanged}
-              signaturePromptText="직접 서명해주세요"
               onValidationChanged={handleValidationChanged}
               defaultScale={1.0}
               headerSpace={0}
