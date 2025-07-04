@@ -249,21 +249,6 @@ const LinkAccess = () => {
                   padding: '32px 40px' // PC에서 내부 여백 증가
                 }}
               >
-                {/* 서명 요청자 정보 (상단에 간단히) */}
-                <div style={{ 
-                  marginBottom: '24px',
-                  paddingBottom: '16px',
-                  borderBottom: '1px solid #f0f0f0'
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
-                    <UserOutlined style={{ marginRight: '8px', color: '#666' }} />
-                    <Text style={{ fontSize: '14px', color: '#666' }}>서명 요청자</Text>
-                  </div>
-                  <Text strong style={{ fontSize: '16px' }}>
-                    {requestorInfo?.name} ({requestorInfo?.email})
-                  </Text>
-                </div>
-
                 {/* 헤더 (모바일 대응으로 간격 축소) */}
                 <div style={{ textAlign: 'center', marginBottom: '20px' }}>
                   <SafetyOutlined style={{ fontSize: '40px', color: '#1890ff', marginBottom: '12px' }} />
