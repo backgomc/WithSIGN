@@ -164,11 +164,6 @@ const LinkSignDocument = (props) => {
       console.log('🎯 validation 값으로 버튼 상태 업데이트:', validation);
       setDisableComplete(!validation);
     }
-    
-    // ✅ 추가로 수동 검증도 실행 (백업용)
-    setTimeout(() => {
-      manualValidationCheck();
-    }, 100);
   };
 
   // 유효성 검사 변경 시 호출 - 로그 추가
@@ -183,28 +178,58 @@ const LinkSignDocument = (props) => {
       if (pdfRef.current) {
         const items = await pdfRef.current.exportItems();
         
-        // 서명 필드들만 필터링
-        const signatureFields = items.filter(item => 
-          item.type === 'SIGN' || item.type === 'text' || item.type === 'dropdown' || item.type === 'checkbox'
-        );
+        console.log('🔍 전체 항목들:', items);
         
-        // 각 필드의 값 확인
-        const fieldStatus = signatureFields.map(item => ({
-          id: item.id,
-          type: item.type,
-          value: item.value || item.text || '',
-          isEmpty: !item.value && !item.text
-        }));
+        // ✅ 모든 입력 필드 타입 포함 (서명란 타입 추가)
+        const inputFields = items.filter(item => {
+          const validTypes = ['SIGN', 'sign', 'TEXT', 'text', 'dropdown', 'checkbox'];
+          const hasValidType = validTypes.includes(item.type) || validTypes.includes(item.subType);
+          
+          console.log(`필드 ${item.id}: type="${item.type}", subType="${item.subType}", 유효=${hasValidType}`);
+          
+          return hasValidType;
+        });
+        
+        console.log('🔍 입력 필드들:', inputFields);
+        
+        // 각 필드의 값 확인 (서명란의 경우 다른 속성 확인)
+        const fieldStatus = inputFields.map(item => {
+          let value = '';
+          let isEmpty = true;
+          
+          // 필드 타입별로 값 확인 방식 다름
+          if (item.type === 'SIGN' || item.subType === 'SIGN') {
+            // 서명란: value 또는 signatureData 확인
+            value = item.value || item.signatureData || item.signature || '';
+            isEmpty = !value;
+          } else if (item.type === 'checkbox') {
+            // 체크박스: checked 상태 확인
+            value = item.checked ? 'checked' : '';
+            isEmpty = !item.checked;
+          } else {
+            // 텍스트, 드롭다운: value 또는 text 확인
+            value = item.value || item.text || '';
+            isEmpty = !value;
+          }
+          
+          return {
+            id: item.id,
+            type: item.type || item.subType,
+            value: value,
+            isEmpty: isEmpty
+          };
+        });
         
         console.log('🔍 수동 검증 - 필드 상태:', fieldStatus);
         
         // 비어있는 필수 필드가 있는지 확인
         const emptyFields = fieldStatus.filter(field => field.isEmpty);
-        const isValid = emptyFields.length === 0 && signatureFields.length > 0;
+        const isValid = emptyFields.length === 0 && inputFields.length > 0;
         
         console.log('🔍 수동 검증 결과:', {
-          총필드수: signatureFields.length,
+          총필드수: inputFields.length,
           비어있는필드수: emptyFields.length,
+          비어있는필드들: emptyFields.map(f => f.id),
           최종유효성: isValid
         });
         
