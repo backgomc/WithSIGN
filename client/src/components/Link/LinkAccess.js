@@ -361,7 +361,7 @@ const LinkAccess = () => {
                   onFinish={verifyPassword}
                   layout="vertical"
                   size="large"
-                  style={{ marginTop: '14px' }}
+                  //style={{ marginTop: '14px' }}
                 >
                   <Form.Item
                     name="accessPassword"
@@ -369,6 +369,7 @@ const LinkAccess = () => {
                     rules={[
                       { required: true, message: '접근 암호를 입력해주세요!' }
                     ]}
+                    style={{ marginBottom: '8px' }}
                   >
                     <Input.Password
                       prefix={<LockOutlined />}
