@@ -1,5 +1,5 @@
 // client/src/components/Link/LinkAccess.js
-// WithSIGN 브랜딩 및 UI 개선 버전
+// WithSIGN 기존 시스템과 어울리는 디자인
 
 import React, { useState, useEffect } from 'react';
 import { useParams, navigate } from '@reach/router';
@@ -160,26 +160,63 @@ const LinkAccess = () => {
     }
   };
 
-  // 공통 배경 스타일 (통일된 배경색)
+  // WithSIGN 시스템 배경색 (기존 목록 화면과 동일)
   const backgroundStyle = {
-    minHeight: '100vh', 
-    background: '#f5f5f5', // 깔끔한 회색 배경으로 통일
+    minHeight: '100vh',
+    background: '#f0f2f5', // WithSIGN 기존 시스템 배경색
+    position: 'relative'
+  };
+
+  // 헤더 스타일 (서명 화면처럼)
+  const headerStyle = {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '64px',
+    background: '#fff',
+    borderBottom: '1px solid #f0f0f0',
+    display: 'flex',
+    alignItems: 'center',
+    paddingLeft: '24px',
+    zIndex: 999,
+    boxShadow: '0 2px 8px rgba(0,0,0,0.06)'
+  };
+
+  // 오버레이 스타일 (모달 배경)
+  const overlayStyle = {
+    position: 'fixed',
+    top: '64px',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    background: 'rgba(0, 0, 0, 0.45)', // 어두운 블러 배경
+    backdropFilter: 'blur(4px)', // 블러 효과
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: '20px'
+    padding: '20px',
+    zIndex: 1000
   };
 
   // 로딩 화면
   if (loading) {
     return (
       <div style={backgroundStyle}>
-        <Card style={{ textAlign: 'center', minWidth: '300px', borderRadius: '12px' }}>
-          <Spin size="large" />
-          <div style={{ marginTop: 16 }}>
-            <Text>링크 확인 중...</Text>
-          </div>
-        </Card>
+        {/* 헤더 */}
+        <div style={headerStyle}>
+          <img src={logo_withsign} alt="WithSIGN" style={{ height: '32px' }} />
+        </div>
+        
+        {/* 오버레이 */}
+        <div style={overlayStyle}>
+          <Card style={{ textAlign: 'center', minWidth: '300px', borderRadius: '8px' }}>
+            <Spin size="large" />
+            <div style={{ marginTop: 16 }}>
+              <Text>링크 확인 중...</Text>
+            </div>
+          </Card>
+        </div>
       </div>
     );
   }
@@ -188,149 +225,147 @@ const LinkAccess = () => {
   if (step === 2) {
     return (
       <div style={backgroundStyle}>
-        <Row justify="center" style={{ width: '100%', maxWidth: '500px' }}>
-          <Col span={24}>
-            <Card 
-              style={{ 
-                borderRadius: '12px', 
-                boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                border: 'none'
-              }}
-            >
-              {/* WithSIGN 로고 */}
-              <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-                <img 
-                  src={logo_withsign} 
-                  alt="WithSIGN" 
-                  style={{ height: '40px', marginBottom: '16px' }} 
-                />
-              </div>
-
-              {/* 서명 요청자 정보 */}
-              <div style={{ 
-                textAlign: 'center', 
-                marginBottom: '24px',
-                padding: '12px',
-                backgroundColor: '#f8f9fa',
-                borderRadius: '8px',
-                border: '1px solid #e9ecef'
-              }}>
-                <Text style={{ fontSize: '14px', color: '#666' }}>서명을 시작합니다</Text>
-                <div style={{ marginTop: '4px' }}>
-                  <Text strong style={{ fontSize: '16px' }}>
-                    {linkInfo?.linkTitle || linkInfo?.docTitle}
-                  </Text>
-                </div>
-                <div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <UserOutlined style={{ marginRight: '6px', color: '#666' }} />
-                  <Text style={{ fontSize: '14px', color: '#666' }}>
-                    서명 요청자: <strong>{requestorInfo?.name}</strong> ({requestorInfo?.email})
-                  </Text>
-                </div>
-              </div>
-
-              {/* 헤더 */}
-              <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-                <SafetyOutlined style={{ fontSize: '48px', color: '#1890ff', marginBottom: '16px' }} />
-                <Title level={3} style={{ margin: 0, color: '#262626' }}>
-                  보안 인증
-                </Title>
-                <Text type="secondary" style={{ fontSize: '16px' }}>
-                  문서 접근을 위해 암호를 입력해주세요
-                </Text>
-              </div>
-
-              {/* 문서 정보 */}
-              <Alert
-                message={
-                  <div>
-                    <FileTextOutlined style={{ marginRight: '8px' }} />
-                    <strong>만료일: {linkInfo?.expiryDate ? 
-                      moment(linkInfo.expiryDate).format('YYYY년 MM월 DD일') : 
-                      `${linkInfo?.expiryDays}일 후`
-                    }</strong>
-                  </div>
-                }
-                type="info"
-                showIcon={false}
+        {/* 헤더 */}
+        <div style={headerStyle}>
+          <img src={logo_withsign} alt="WithSIGN" style={{ height: '32px' }} />
+          <div style={{ marginLeft: '16px', color: '#262626', fontSize: '16px', fontWeight: '500' }}>
+            전자서명 서비스
+          </div>
+        </div>
+        
+        {/* 오버레이 */}
+        <div style={overlayStyle}>
+          <Row justify="center" style={{ width: '100%', maxWidth: '500px' }}>
+            <Col span={24}>
+              <Card 
                 style={{ 
-                  marginBottom: '24px',
                   borderRadius: '8px',
-                  backgroundColor: '#f6f8fa'
+                  border: '1px solid #d9d9d9'
                 }}
-              />
-
-              {/* 암호 입력 폼 */}
-              <Form
-                form={form}
-                onFinish={verifyPassword}
-                layout="vertical"
-                size="large"
               >
-                <Form.Item
-                  name="accessPassword"
-                  label="접근 암호"
-                  rules={[
-                    { required: true, message: '접근 암호를 입력해주세요!' }
-                  ]}
-                >
-                  <Input.Password
-                    prefix={<LockOutlined />}
-                    placeholder="접근 암호를 입력하세요"
-                    value={accessPassword}
-                    onChange={(e) => setAccessPassword(e.target.value)}
-                    onPressEnter={verifyPassword}
-                    autoComplete="off"
-                    style={{ borderRadius: '6px' }}
-                  />
-                </Form.Item>
-
-                {/* 암호 힌트 표시 */}
-                {linkInfo?.passwordHint && (
-                  <div style={{ marginBottom: '16px' }}>
-                    <Text type="secondary">
-                      <InfoCircleOutlined style={{ marginRight: '4px' }} />
-                      힌트: {linkInfo.passwordHint}
-                    </Text>
+                {/* 서명 요청자 정보 (상단에 간단히) */}
+                <div style={{ 
+                  marginBottom: '24px',
+                  paddingBottom: '16px',
+                  borderBottom: '1px solid #f0f0f0'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
+                    <UserOutlined style={{ marginRight: '8px', color: '#666' }} />
+                    <Text style={{ fontSize: '14px', color: '#666' }}>서명 요청자</Text>
                   </div>
-                )}
+                  <Text strong style={{ fontSize: '16px' }}>
+                    {requestorInfo?.name} ({requestorInfo?.email})
+                  </Text>
+                </div>
 
-                <Form.Item style={{ marginBottom: 0 }}>
-                  <Button
-                    type="primary"
-                    htmlType="submit"
-                    loading={passwordLoading}
-                    block
-                    style={{ 
-                      height: '48px', 
-                      borderRadius: '6px',
-                      fontSize: '16px',
-                      fontWeight: 'bold'
-                    }}
+                {/* 헤더 (기존 디자인 유지) */}
+                <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+                  <SafetyOutlined style={{ fontSize: '48px', color: '#1890ff', marginBottom: '16px' }} />
+                  <Title level={3} style={{ margin: 0, color: '#262626' }}>
+                    보안 인증
+                  </Title>
+                  <Text type="secondary" style={{ fontSize: '16px' }}>
+                    문서 접근을 위해 암호를 입력해주세요
+                  </Text>
+                </div>
+
+                {/* 문서 정보 (기존 디자인 유지) */}
+                <Alert
+                  message={
+                    <div>
+                      <FileTextOutlined style={{ marginRight: '8px' }} />
+                      <strong>{linkInfo?.linkTitle || linkInfo?.docTitle}</strong>
+                    </div>
+                  }
+                  description={
+                    <div>
+                      만료일: {linkInfo?.expiryDate ? 
+                        moment(linkInfo.expiryDate).format('YYYY년 MM월 DD일') : 
+                        `${linkInfo?.expiryDays}일 후`
+                      }
+                    </div>
+                  }
+                  type="info"
+                  showIcon={false}
+                  style={{ 
+                    marginBottom: '24px',
+                    borderRadius: '6px',
+                    backgroundColor: '#f6f8fa'
+                  }}
+                />
+
+                {/* 암호 입력 폼 (기존 디자인 유지) */}
+                <Form
+                  form={form}
+                  onFinish={verifyPassword}
+                  layout="vertical"
+                  size="large"
+                >
+                  <Form.Item
+                    name="accessPassword"
+                    label="접근 암호"
+                    rules={[
+                      { required: true, message: '접근 암호를 입력해주세요!' }
+                    ]}
                   >
-                    확인
-                  </Button>
-                </Form.Item>
-              </Form>
+                    <Input.Password
+                      prefix={<LockOutlined />}
+                      placeholder="접근 암호를 입력하세요"
+                      value={accessPassword}
+                      onChange={(e) => setAccessPassword(e.target.value)}
+                      onPressEnter={verifyPassword}
+                      autoComplete="off"
+                      style={{ borderRadius: '6px' }}
+                    />
+                  </Form.Item>
 
-              {/* 안내사항 */}
-              <div style={{ 
-                marginTop: '24px', 
-                padding: '16px', 
-                backgroundColor: '#f9f9f9', 
-                borderRadius: '6px',
-                border: '1px solid #e8e8e8'
-              }}>
-                <Text type="secondary" style={{ fontSize: '14px' }}>
-                  <strong>안내사항</strong><br />
-                  • 서명 담당자로부터 전달받은 접근 암호를 입력해주세요<br />
-                  • 암호 입력 후 본인인증을 진행합니다<br />
-                  • 문제가 있을 경우 서명 요청자에게 문의해주세요
-                </Text>
-              </div>
-            </Card>
-          </Col>
-        </Row>
+                  {/* 암호 힌트 표시 */}
+                  {linkInfo?.passwordHint && (
+                    <div style={{ marginBottom: '16px' }}>
+                      <Text type="secondary">
+                        <InfoCircleOutlined style={{ marginRight: '4px' }} />
+                        힌트: {linkInfo.passwordHint}
+                      </Text>
+                    </div>
+                  )}
+
+                  <Form.Item style={{ marginBottom: 0 }}>
+                    <Button
+                      type="primary"
+                      htmlType="submit"
+                      loading={passwordLoading}
+                      block
+                      style={{ 
+                        height: '48px', 
+                        borderRadius: '6px',
+                        fontSize: '16px',
+                        fontWeight: 'bold'
+                      }}
+                    >
+                      확인
+                    </Button>
+                  </Form.Item>
+                </Form>
+
+                {/* 안내사항 (기존 디자인 유지) */}
+                <div style={{ 
+                  marginTop: '24px', 
+                  padding: '16px', 
+                  backgroundColor: '#f9f9f9', 
+                  borderRadius: '6px',
+                  border: '1px solid #e8e8e8'
+                }}>
+                  <Text type="secondary" style={{ fontSize: '14px' }}>
+                    <strong>안내사항</strong><br />
+                    • 서명 담당자로부터 전달받은 접근 암호를 입력해주세요<br />
+                    • 암호 입력 후 본인인증을 진행합니다<br />
+                    • 문제가 있을 경우 서명 요청자에게 문의해주세요
+                  </Text>
+                </div>
+              </Card>
+            </Col>
+          </Row>
+        </div>
       </div>
     );
   }
@@ -339,93 +374,94 @@ const LinkAccess = () => {
   if (step === 3) {
     return (
       <div style={backgroundStyle}>
-        <Row justify="center" style={{ width: '100%', maxWidth: '500px' }}>
-          <Col span={24}>
-            <Card 
-              style={{ 
-                borderRadius: '12px', 
-                boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                border: 'none'
-              }}
-            >
-              {/* WithSIGN 로고 */}
-              <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-                <img 
-                  src={logo_withsign} 
-                  alt="WithSIGN" 
-                  style={{ height: '40px', marginBottom: '16px' }} 
+        {/* 헤더 */}
+        <div style={headerStyle}>
+          <img src={logo_withsign} alt="WithSIGN" style={{ height: '32px' }} />
+          <div style={{ marginLeft: '16px', color: '#262626', fontSize: '16px', fontWeight: '500' }}>
+            전자서명 서비스
+          </div>
+        </div>
+        
+        {/* 오버레이 */}
+        <div style={overlayStyle}>
+          <Row justify="center" style={{ width: '100%', maxWidth: '500px' }}>
+            <Col span={24}>
+              <Card 
+                style={{ 
+                  borderRadius: '8px',
+                  border: '1px solid #d9d9d9'
+                }}
+              >
+                {/* 헤더 */}
+                <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+                  <CheckCircleOutlined style={{ fontSize: '48px', color: '#52c41a', marginBottom: '16px' }} />
+                  <Title level={3} style={{ margin: 0, color: '#262626' }}>
+                    본인인증
+                  </Title>
+                  <Text type="secondary" style={{ fontSize: '16px' }}>
+                    서명을 위해 본인인증을 진행해주세요
+                  </Text>
+                </div>
+
+                {/* 접근 암호 확인 완료 */}
+                <Alert
+                  message="접근 암호 확인 완료"
+                  description="이제 본인인증을 진행하여 서명자 정보를 확인합니다."
+                  type="success"
+                  showIcon
+                  style={{ marginBottom: '24px' }}
                 />
-              </div>
 
-              {/* 헤더 */}
-              <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-                <CheckCircleOutlined style={{ fontSize: '48px', color: '#52c41a', marginBottom: '16px' }} />
-                <Title level={3} style={{ margin: 0, color: '#262626' }}>
-                  본인인증
-                </Title>
-                <Text type="secondary" style={{ fontSize: '16px' }}>
-                  서명을 위해 본인인증을 진행해주세요
-                </Text>
-              </div>
+                {/* 본인인증 버튼 */}
+                <Space direction="vertical" style={{ width: '100%' }} size="middle">
+                  <Button
+                    type="primary"
+                    size="large"
+                    block
+                    onClick={handlePhoneAuth}
+                    style={{ 
+                      height: '56px', 
+                      borderRadius: '6px',
+                      fontSize: '16px',
+                      fontWeight: 'bold'
+                    }}
+                  >
+                    휴대폰 본인인증
+                  </Button>
+                  
+                  <Button
+                    size="large"
+                    block
+                    disabled
+                    style={{ 
+                      height: '56px', 
+                      borderRadius: '6px',
+                      fontSize: '16px'
+                    }}
+                  >
+                    공동인증서 (준비중)
+                  </Button>
+                </Space>
 
-              {/* 접근 암호 확인 완료 */}
-              <Alert
-                message="접근 암호 확인 완료"
-                description="이제 본인인증을 진행하여 서명자 정보를 확인합니다."
-                type="success"
-                showIcon
-                style={{ marginBottom: '24px' }}
-              />
-
-              {/* 본인인증 버튼 */}
-              <Space direction="vertical" style={{ width: '100%' }} size="middle">
-                <Button
-                  type="primary"
-                  size="large"
-                  block
-                  onClick={handlePhoneAuth}
-                  style={{ 
-                    height: '56px', 
-                    borderRadius: '6px',
-                    fontSize: '16px',
-                    fontWeight: 'bold'
-                  }}
-                >
-                  휴대폰 본인인증
-                </Button>
-                
-                <Button
-                  size="large"
-                  block
-                  disabled
-                  style={{ 
-                    height: '56px', 
-                    borderRadius: '6px',
-                    fontSize: '16px'
-                  }}
-                >
-                  공동인증서 (준비중)
-                </Button>
-              </Space>
-
-              {/* 안내사항 */}
-              <div style={{ 
-                marginTop: '24px', 
-                padding: '16px', 
-                backgroundColor: '#f6ffed', 
-                borderRadius: '6px',
-                border: '1px solid #b7eb8f'
-              }}>
-                <Text style={{ fontSize: '14px', color: '#389e0d' }}>
-                  <strong>본인인증 안내</strong><br />
-                  • 서명을 위해서는 본인인증이 필수입니다<br />
-                  • 휴대폰 인증을 통해 이름과 연락처를 확인합니다<br />
-                  • 인증 정보는 서명 완료 후 안전하게 관리됩니다
-                </Text>
-              </div>
-            </Card>
-          </Col>
-        </Row>
+                {/* 안내사항 */}
+                <div style={{ 
+                  marginTop: '24px', 
+                  padding: '16px', 
+                  backgroundColor: '#f6ffed', 
+                  borderRadius: '6px',
+                  border: '1px solid #b7eb8f'
+                }}>
+                  <Text style={{ fontSize: '14px', color: '#389e0d' }}>
+                    <strong>본인인증 안내</strong><br />
+                    • 서명을 위해서는 본인인증이 필수입니다<br />
+                    • 휴대폰 인증을 통해 이름과 연락처를 확인합니다<br />
+                    • 인증 정보는 서명 완료 후 안전하게 관리됩니다
+                  </Text>
+                </div>
+              </Card>
+            </Col>
+          </Row>
+        </div>
       </div>
     );
   }
