@@ -260,7 +260,6 @@ const LinkAccess = () => {
 
                 {/* 문서 정보 테이블 형태 (모두싸인 스타일) */}
                 <div style={{ 
-                  marginBottom: '20px',
                   border: '1px solid #1890ff', // 팝업과 동일한 색상
                   borderRadius: '6px',
                   overflow: 'hidden'
@@ -370,7 +369,6 @@ const LinkAccess = () => {
                     rules={[
                       { required: true, message: '접근 암호를 입력해주세요!' }
                     ]}
-                    style={{ marginBottom: '8px' }}
                   >
                     <Input.Password
                       prefix={<LockOutlined />}
