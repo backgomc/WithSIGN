@@ -167,20 +167,20 @@ const LinkAccess = () => {
     position: 'relative'
   };
 
-  // 헤더 스타일 (서명 화면처럼)
+  // 헤더 스타일 (WithSIGN 좌측 메뉴 색상)
   const headerStyle = {
     position: 'fixed',
     top: 0,
     left: 0,
     right: 0,
     height: '64px',
-    background: '#fff',
-    borderBottom: '1px solid #f0f0f0',
+    background: '#001529', // WithSIGN 좌측 메뉴 색상
+    borderBottom: '1px solid #002140',
     display: 'flex',
     alignItems: 'center',
     paddingLeft: '24px',
     zIndex: 999,
-    boxShadow: '0 2px 8px rgba(0,0,0,0.06)'
+    boxShadow: '0 2px 8px rgba(0,0,0,0.15)'
   };
 
   // 오버레이 스타일 (모달 배경)
@@ -228,7 +228,7 @@ const LinkAccess = () => {
         {/* 헤더 */}
         <div style={headerStyle}>
           <img src={logo_withsign} alt="WithSIGN" style={{ height: '32px' }} />
-          <div style={{ marginLeft: '16px', color: '#262626', fontSize: '16px', fontWeight: '500' }}>
+          <div style={{ marginLeft: '16px', color: '#fff', fontSize: '16px', fontWeight: '500' }}>
             전자서명 서비스
           </div>
         </div>
@@ -258,43 +258,106 @@ const LinkAccess = () => {
                   </Text>
                 </div>
 
-                {/* 헤더 (기존 디자인 유지) */}
-                <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-                  <SafetyOutlined style={{ fontSize: '48px', color: '#1890ff', marginBottom: '16px' }} />
-                  <Title level={3} style={{ margin: 0, color: '#262626' }}>
+                {/* 헤더 (모바일 대응으로 간격 축소) */}
+                <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+                  <SafetyOutlined style={{ fontSize: '40px', color: '#1890ff', marginBottom: '12px' }} />
+                  <Title level={3} style={{ margin: 0, color: '#262626', marginBottom: '8px' }}>
                     보안 인증
                   </Title>
-                  <Text type="secondary" style={{ fontSize: '16px' }}>
+                  <Text type="secondary" style={{ fontSize: '15px' }}>
                     문서 접근을 위해 암호를 입력해주세요
                   </Text>
                 </div>
 
-                {/* 문서 정보 (기존 디자인 유지) */}
-                <Alert
-                  message={
-                    <div>
-                      <FileTextOutlined style={{ marginRight: '8px' }} />
-                      <strong>{linkInfo?.linkTitle || linkInfo?.docTitle}</strong>
+                {/* 문서 정보 테이블 형태 (모두싸인 스타일) */}
+                <div style={{ 
+                  marginBottom: '20px',
+                  border: '1px solid #e8e8e8',
+                  borderRadius: '6px',
+                  overflow: 'hidden'
+                }}>
+                  {/* 문서명 */}
+                  <div style={{ 
+                    display: 'flex',
+                    borderBottom: '1px solid #f0f0f0'
+                  }}>
+                    <div style={{ 
+                      width: '80px',
+                      padding: '12px',
+                      backgroundColor: '#fafafa',
+                      borderRight: '1px solid #f0f0f0',
+                      fontSize: '14px',
+                      color: '#666',
+                      fontWeight: '500'
+                    }}>
+                      문서명
                     </div>
-                  }
-                  description={
-                    <div>
-                      만료일: {linkInfo?.expiryDate ? 
+                    <div style={{ 
+                      flex: 1,
+                      padding: '12px',
+                      fontSize: '14px',
+                      fontWeight: '500'
+                    }}>
+                      <FileTextOutlined style={{ marginRight: '6px', color: '#1890ff' }} />
+                      {linkInfo?.linkTitle || linkInfo?.docTitle}
+                    </div>
+                  </div>
+                  
+                  {/* 서명 요청자 */}
+                  <div style={{ 
+                    display: 'flex',
+                    borderBottom: '1px solid #f0f0f0'
+                  }}>
+                    <div style={{ 
+                      width: '80px',
+                      padding: '12px',
+                      backgroundColor: '#fafafa',
+                      borderRight: '1px solid #f0f0f0',
+                      fontSize: '14px',
+                      color: '#666',
+                      fontWeight: '500'
+                    }}>
+                      요청자
+                    </div>
+                    <div style={{ 
+                      flex: 1,
+                      padding: '12px',
+                      fontSize: '14px'
+                    }}>
+                      <UserOutlined style={{ marginRight: '6px', color: '#666' }} />
+                      {requestorInfo?.name} ({requestorInfo?.email})
+                    </div>
+                  </div>
+                  
+                  {/* 만료일 */}
+                  <div style={{ 
+                    display: 'flex'
+                  }}>
+                    <div style={{ 
+                      width: '80px',
+                      padding: '12px',
+                      backgroundColor: '#fafafa',
+                      borderRight: '1px solid #f0f0f0',
+                      fontSize: '14px',
+                      color: '#666',
+                      fontWeight: '500'
+                    }}>
+                      만료일
+                    </div>
+                    <div style={{ 
+                      flex: 1,
+                      padding: '12px',
+                      fontSize: '14px'
+                    }}>
+                      {linkInfo?.expiryDate ? 
                         moment(linkInfo.expiryDate).format('YYYY년 MM월 DD일') : 
                         `${linkInfo?.expiryDays}일 후`
                       }
                     </div>
-                  }
-                  type="info"
-                  showIcon={false}
-                  style={{ 
-                    marginBottom: '24px',
-                    borderRadius: '6px',
-                    backgroundColor: '#f6f8fa'
-                  }}
-                />
+                  </div>
+                </div>
 
-                {/* 암호 입력 폼 (기존 디자인 유지) */}
+                {/* 암호 입력 폼 (모바일 대응으로 간격 축소) */}
                 <Form
                   form={form}
                   onFinish={verifyPassword}
@@ -307,6 +370,7 @@ const LinkAccess = () => {
                     rules={[
                       { required: true, message: '접근 암호를 입력해주세요!' }
                     ]}
+                    style={{ marginBottom: '16px' }}
                   >
                     <Input.Password
                       prefix={<LockOutlined />}
@@ -336,7 +400,7 @@ const LinkAccess = () => {
                       loading={passwordLoading}
                       block
                       style={{ 
-                        height: '48px', 
+                        height: '44px', 
                         borderRadius: '6px',
                         fontSize: '16px',
                         fontWeight: 'bold'
@@ -347,15 +411,15 @@ const LinkAccess = () => {
                   </Form.Item>
                 </Form>
 
-                {/* 안내사항 (기존 디자인 유지) */}
+                {/* 안내사항 (모바일 대응으로 간격 축소) */}
                 <div style={{ 
-                  marginTop: '24px', 
-                  padding: '16px', 
+                  marginTop: '20px', 
+                  padding: '14px', 
                   backgroundColor: '#f9f9f9', 
                   borderRadius: '6px',
                   border: '1px solid #e8e8e8'
                 }}>
-                  <Text type="secondary" style={{ fontSize: '14px' }}>
+                  <Text type="secondary" style={{ fontSize: '13px' }}>
                     <strong>안내사항</strong><br />
                     • 서명 담당자로부터 전달받은 접근 암호를 입력해주세요<br />
                     • 암호 입력 후 본인인증을 진행합니다<br />
@@ -377,7 +441,7 @@ const LinkAccess = () => {
         {/* 헤더 */}
         <div style={headerStyle}>
           <img src={logo_withsign} alt="WithSIGN" style={{ height: '32px' }} />
-          <div style={{ marginLeft: '16px', color: '#262626', fontSize: '16px', fontWeight: '500' }}>
+          <div style={{ marginLeft: '16px', color: '#fff', fontSize: '16px', fontWeight: '500' }}>
             전자서명 서비스
           </div>
         </div>
