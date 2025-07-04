@@ -246,7 +246,7 @@ const LinkAccess = () => {
                 style={{ 
                   borderRadius: '8px',
                   border: '1px solid #d9d9d9',
-                  margin: '0 40px' // PC에서 좌우 여백 추가
+                  padding: '32px 40px' // PC에서 내부 여백 증가
                 }}
               >
                 {/* 서명 요청자 정보 (상단에 간단히) */}
@@ -271,7 +271,7 @@ const LinkAccess = () => {
                     보안 인증
                   </Title>
                   <Text type="secondary" style={{ fontSize: '15px' }}>
-                    문서 접근을 위해 암호를 입력해주세요
+                    서명 문서 접근을 위해 암호를 입력해주세요
                   </Text>
                 </div>
 
@@ -308,7 +308,6 @@ const LinkAccess = () => {
                       fontSize: '14px',
                       fontWeight: '500'
                     }}>
-                      <FileTextOutlined style={{ marginRight: '6px', color: '#1890ff' }} />
                       {linkInfo?.linkTitle || linkInfo?.docTitle}
                     </div>
                   </div>
@@ -338,7 +337,6 @@ const LinkAccess = () => {
                       padding: '12px',
                       fontSize: '14px'
                     }}>
-                      <UserOutlined style={{ marginRight: '6px', color: '#666' }} />
                       {requestorInfo?.company} {requestorInfo?.department} {requestorInfo?.name} {requestorInfo?.position}
                     </div>
                   </div>
