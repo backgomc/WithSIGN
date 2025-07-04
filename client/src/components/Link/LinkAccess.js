@@ -369,7 +369,12 @@ const LinkAccess = () => {
                     rules={[
                       { required: true, message: '접근 암호를 입력해주세요!' }
                     ]}
-                    style={{ marginBottom: '6px' }}
+                    style={{ 
+                        marginBottom: '16px',
+                        '& .ant-form-item-label': {
+                          paddingBottom: '2px'  // 기본값 4px → 2px
+                        }
+                      }}
                   >
                     <Input.Password
                       prefix={<LockOutlined />}
