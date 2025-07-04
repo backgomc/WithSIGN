@@ -1,5 +1,5 @@
 // client/src/components/Link/LinkAccess.js
-// WithSIGN 기존 시스템과 어울리는 디자인
+// 헤더 오른쪽 정렬, 애니메이션, PC/모바일 padding 분리
 
 import React, { useState, useEffect } from 'react';
 import { useParams, navigate } from '@reach/router';
@@ -33,6 +33,42 @@ const customStyles = `
   .custom-password-form .ant-form-item-label {
     padding-bottom: 0px !important;
   }
+  
+  /* 팝업 애니메이션 */
+  .popup-enter {
+    opacity: 0;
+    transform: scale(0.8) translateY(-20px);
+  }
+  
+  .popup-enter-active {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+  
+  .popup-exit {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+  
+  .popup-exit-active {
+    opacity: 0;
+    transform: scale(0.8) translateY(20px);
+    transition: all 0.3s cubic-bezier(0.55, 0.06, 0.68, 0.19);
+  }
+  
+  /* PC와 모바일 padding 분리 */
+  @media (min-width: 768px) {
+    .pc-padding {
+      padding: 32px 40px !important;
+    }
+  }
+  
+  @media (max-width: 767px) {
+    .mobile-padding {
+      padding: 24px 20px !important;
+    }
+  }
 `;
 
 const { Title, Text, Paragraph } = Typography;
@@ -47,6 +83,7 @@ const LinkAccess = () => {
   const [accessPassword, setAccessPassword] = useState('');
   const [passwordLoading, setPasswordLoading] = useState(false);
   const [step, setStep] = useState(1); // 1: 링크체크, 2: 암호입력, 3: 본인인증, 4: 서명화면
+  const [animationClass, setAnimationClass] = useState(''); // 애니메이션 클래스
   const [form] = Form.useForm();
 
   // 컴포넌트 마운트 시 링크 유효성 체크
@@ -89,6 +126,7 @@ const LinkAccess = () => {
 
         // 정상적인 링크면 암호 입력 단계로
         setStep(2);
+        setAnimationClass('popup-enter popup-enter-active');
       } else {
         message.error(response.data.message || '링크에 접속할 수 없습니다.');
       }
@@ -118,7 +156,14 @@ const LinkAccess = () => {
 
       if (response.data.success) {
         message.success('접근 암호가 확인되었습니다!');
-        setStep(3); // 본인인증 단계로
+        
+        // 애니메이션으로 자연스럽게 전환
+        setAnimationClass('popup-exit popup-exit-active');
+        setTimeout(() => {
+          setStep(3); // 본인인증 단계로
+          setAnimationClass('popup-enter popup-enter-active');
+        }, 300);
+        
       } else {
         message.error(response.data.message || '접근 암호가 올바르지 않습니다.');
         setAccessPassword('');
@@ -188,7 +233,9 @@ const LinkAccess = () => {
     borderBottom: '1px solid #002140',
     display: 'flex',
     alignItems: 'center',
+    justifyContent: 'space-between', // 좌우 정렬을 위해 space-between 사용
     paddingLeft: '24px',
+    paddingRight: '24px', // 오른쪽 패딩 추가
     zIndex: 999,
     boxShadow: '0 2px 8px rgba(0,0,0,0.15)'
   };
@@ -216,6 +263,9 @@ const LinkAccess = () => {
         {/* 헤더 */}
         <div style={headerStyle}>
           <img src={logo_withsign} alt="WithSIGN" style={{ height: '32px' }} />
+          <div style={{ color: '#fff', fontSize: '16px', fontWeight: '500' }}>
+            전자서명 서비스
+          </div>
         </div>
         
         {/* 오버레이 */}
@@ -240,7 +290,7 @@ const LinkAccess = () => {
         {/* 헤더 */}
         <div style={headerStyle}>
           <img src={logo_withsign} alt="WithSIGN" style={{ height: '32px' }} />
-          <div style={{ marginLeft: '16px', color: '#fff', fontSize: '16px', fontWeight: '500' }}>
+          <div style={{ color: '#fff', fontSize: '16px', fontWeight: '500' }}>
             전자서명 서비스
           </div>
         </div>
@@ -250,6 +300,7 @@ const LinkAccess = () => {
           <Row justify="center" style={{ width: '100%', maxWidth: '500px' }}>
             <Col span={24}>
               <Card 
+                className={`pc-padding mobile-padding ${animationClass}`}
                 style={{ 
                   borderRadius: '8px',
                   border: '1px solid #d9d9d9'
@@ -448,96 +499,100 @@ const LinkAccess = () => {
   // 3단계: 본인인증
   if (step === 3) {
     return (
-      <div style={backgroundStyle}>
-        {/* 헤더 */}
-        <div style={headerStyle}>
-          <img src={logo_withsign} alt="WithSIGN" style={{ height: '32px' }} />
-          <div style={{ marginLeft: '16px', color: '#fff', fontSize: '16px', fontWeight: '500' }}>
-            전자서명 서비스
+      <>
+        <style>{customStyles}</style>
+        <div style={backgroundStyle}>
+          {/* 헤더 */}
+          <div style={headerStyle}>
+            <img src={logo_withsign} alt="WithSIGN" style={{ height: '32px' }} />
+            <div style={{ color: '#fff', fontSize: '16px', fontWeight: '500' }}>
+              전자서명 서비스
+            </div>
+          </div>
+          
+          {/* 오버레이 */}
+          <div style={overlayStyle}>
+            <Row justify="center" style={{ width: '100%', maxWidth: '500px' }}>
+              <Col span={24}>
+                <Card 
+                  className={`pc-padding mobile-padding ${animationClass}`}
+                  style={{ 
+                    borderRadius: '8px',
+                    border: '1px solid #d9d9d9'
+                  }}
+                >
+                  {/* 헤더 */}
+                  <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+                    <CheckCircleOutlined style={{ fontSize: '48px', color: '#52c41a', marginBottom: '16px' }} />
+                    <Title level={3} style={{ margin: 0, color: '#262626' }}>
+                      본인인증
+                    </Title>
+                    <Text type="secondary" style={{ fontSize: '16px' }}>
+                      서명을 위해 본인인증을 진행해주세요
+                    </Text>
+                  </div>
+
+                  {/* 접근 암호 확인 완료 */}
+                  <Alert
+                    message="접근 암호 확인 완료"
+                    description="이제 본인인증을 진행하여 서명자 정보를 확인합니다."
+                    type="success"
+                    showIcon
+                    style={{ marginBottom: '24px' }}
+                  />
+
+                  {/* 본인인증 버튼 */}
+                  <Space direction="vertical" style={{ width: '100%' }} size="middle">
+                    <Button
+                      type="primary"
+                      size="large"
+                      block
+                      onClick={handlePhoneAuth}
+                      style={{ 
+                        height: '56px', 
+                        borderRadius: '6px',
+                        fontSize: '16px',
+                        fontWeight: 'bold'
+                      }}
+                    >
+                      휴대폰 본인인증
+                    </Button>
+                    
+                    <Button
+                      size="large"
+                      block
+                      disabled
+                      style={{ 
+                        height: '56px', 
+                        borderRadius: '6px',
+                        fontSize: '16px'
+                      }}
+                    >
+                      공동인증서 (준비중)
+                    </Button>
+                  </Space>
+
+                  {/* 안내사항 */}
+                  <div style={{ 
+                    marginTop: '24px', 
+                    padding: '16px', 
+                    backgroundColor: '#f6ffed', 
+                    borderRadius: '6px',
+                    border: '1px solid #b7eb8f'
+                  }}>
+                    <Text style={{ fontSize: '14px', color: '#389e0d' }}>
+                      <strong>본인인증 안내</strong><br />
+                      • 서명을 위해서는 본인인증이 필수입니다<br />
+                      • 휴대폰 인증을 통해 이름과 연락처를 확인합니다<br />
+                      • 인증 정보는 서명 완료 후 안전하게 관리됩니다
+                    </Text>
+                  </div>
+                </Card>
+              </Col>
+            </Row>
           </div>
         </div>
-        
-        {/* 오버레이 */}
-        <div style={overlayStyle}>
-          <Row justify="center" style={{ width: '100%', maxWidth: '500px' }}>
-            <Col span={24}>
-              <Card 
-                style={{ 
-                  borderRadius: '8px',
-                  border: '1px solid #d9d9d9'
-                }}
-              >
-                {/* 헤더 */}
-                <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-                  <CheckCircleOutlined style={{ fontSize: '48px', color: '#52c41a', marginBottom: '16px' }} />
-                  <Title level={3} style={{ margin: 0, color: '#262626' }}>
-                    본인인증
-                  </Title>
-                  <Text type="secondary" style={{ fontSize: '16px' }}>
-                    서명을 위해 본인인증을 진행해주세요
-                  </Text>
-                </div>
-
-                {/* 접근 암호 확인 완료 */}
-                <Alert
-                  message="접근 암호 확인 완료"
-                  description="이제 본인인증을 진행하여 서명자 정보를 확인합니다."
-                  type="success"
-                  showIcon
-                  style={{ marginBottom: '24px' }}
-                />
-
-                {/* 본인인증 버튼 */}
-                <Space direction="vertical" style={{ width: '100%' }} size="middle">
-                  <Button
-                    type="primary"
-                    size="large"
-                    block
-                    onClick={handlePhoneAuth}
-                    style={{ 
-                      height: '56px', 
-                      borderRadius: '6px',
-                      fontSize: '16px',
-                      fontWeight: 'bold'
-                    }}
-                  >
-                    휴대폰 본인인증
-                  </Button>
-                  
-                  <Button
-                    size="large"
-                    block
-                    disabled
-                    style={{ 
-                      height: '56px', 
-                      borderRadius: '6px',
-                      fontSize: '16px'
-                    }}
-                  >
-                    공동인증서 (준비중)
-                  </Button>
-                </Space>
-
-                {/* 안내사항 */}
-                <div style={{ 
-                  marginTop: '24px', 
-                  padding: '16px', 
-                  backgroundColor: '#f6ffed', 
-                  borderRadius: '6px',
-                  border: '1px solid #b7eb8f'
-                }}>
-                  <Text style={{ fontSize: '14px', color: '#389e0d' }}>
-                    <strong>본인인증 안내</strong><br />
-                    • 서명을 위해서는 본인인증이 필수입니다<br />
-                    • 휴대폰 인증을 통해 이름과 연락처를 확인합니다<br />
-                    • 인증 정보는 서명 완료 후 안전하게 관리됩니다
-                  </Text>
-                </div>
-              </Card>
-            </Col>
-          </Row>
-        </div>
-      </div>
+      </>
     );
   }
 
