@@ -62,7 +62,12 @@ const LinkAccess = () => {
         setLinkInfo(link);
         
         // 서명 요청자 정보도 받아오기 (API에서 추가로 전달받을 예정)
-        setRequestorInfo(response.data.requestor || { name: '서명 요청자', email: 'admin@company.com' });
+        setRequestorInfo(response.data.requestor || { 
+          company: '농협정보시스템', 
+          department: 'AI융합팀', 
+          name: '최서익', 
+          position: '책임' 
+        });
 
         // 링크 상태별 처리
         if (!link.isActive) {
@@ -190,7 +195,7 @@ const LinkAccess = () => {
     left: 0,
     right: 0,
     bottom: 0,
-    background: 'rgba(0, 0, 0, 0.45)', // 어두운 블러 배경
+    background: 'rgba(0, 0, 0, 0.6)', // 60% 어두운 배경
     backdropFilter: 'blur(4px)', // 블러 효과
     display: 'flex',
     alignItems: 'center',
@@ -235,12 +240,13 @@ const LinkAccess = () => {
         
         {/* 오버레이 */}
         <div style={overlayStyle}>
-          <Row justify="center" style={{ width: '100%', maxWidth: '500px' }}>
+          <Row justify="center" style={{ width: '100%', maxWidth: '600px' }}>
             <Col span={24}>
               <Card 
                 style={{ 
                   borderRadius: '8px',
-                  border: '1px solid #d9d9d9'
+                  border: '1px solid #d9d9d9',
+                  margin: '0 40px' // PC에서 좌우 여백 추가
                 }}
               >
                 {/* 서명 요청자 정보 (상단에 간단히) */}
@@ -272,7 +278,7 @@ const LinkAccess = () => {
                 {/* 문서 정보 테이블 형태 (모두싸인 스타일) */}
                 <div style={{ 
                   marginBottom: '20px',
-                  border: '1px solid #e8e8e8',
+                  border: '1px solid #1890ff', // 팝업과 동일한 색상
                   borderRadius: '6px',
                   overflow: 'hidden'
                 }}>
@@ -288,7 +294,11 @@ const LinkAccess = () => {
                       borderRight: '1px solid #f0f0f0',
                       fontSize: '14px',
                       color: '#666',
-                      fontWeight: '500'
+                      fontWeight: '500',
+                      textAlign: 'center', // 가운데 정렬
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
                     }}>
                       문서명
                     </div>
@@ -315,7 +325,11 @@ const LinkAccess = () => {
                       borderRight: '1px solid #f0f0f0',
                       fontSize: '14px',
                       color: '#666',
-                      fontWeight: '500'
+                      fontWeight: '500',
+                      textAlign: 'center', // 가운데 정렬
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
                     }}>
                       요청자
                     </div>
@@ -325,7 +339,7 @@ const LinkAccess = () => {
                       fontSize: '14px'
                     }}>
                       <UserOutlined style={{ marginRight: '6px', color: '#666' }} />
-                      {requestorInfo?.name} ({requestorInfo?.email})
+                      {requestorInfo?.company} {requestorInfo?.department} {requestorInfo?.name} {requestorInfo?.position}
                     </div>
                   </div>
                   
@@ -340,7 +354,11 @@ const LinkAccess = () => {
                       borderRight: '1px solid #f0f0f0',
                       fontSize: '14px',
                       color: '#666',
-                      fontWeight: '500'
+                      fontWeight: '500',
+                      textAlign: 'center', // 가운데 정렬
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
                     }}>
                       만료일
                     </div>
