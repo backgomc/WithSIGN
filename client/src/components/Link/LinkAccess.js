@@ -424,8 +424,8 @@ const LinkAccess = () => {
 
                 {/* 안내사항 (모바일 대응으로 간격 축소) */}
                 <div style={{ 
-                  marginTop: '20px', 
-                  padding: '14px', 
+                  marginTop: '14px', 
+                  padding: '12px', 
                   backgroundColor: '#f9f9f9', 
                   borderRadius: '6px',
                   border: '1px solid #e8e8e8'
