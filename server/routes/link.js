@@ -1,6 +1,7 @@
 // server/routes/link.js
 const express = require('express');
 const router = express.Router();
+const bcrypt = require('bcryptjs');
 const config = require('../config/key');
 const { Link } = require("../models/Link");
 const { Document } = require("../models/Document");
@@ -603,13 +604,18 @@ router.post('/verifyPassword', async (req, res) => {
             });
         }
 
+        // ✅ bcrypt로 암호 확인 (기존 평문 비교 대신 암호화 비교)
+        const isMatch = await bcrypt.compare(accessPassword, link.accessPassword);        
+
         // 암호 확인
-        if (link.accessPassword === accessPassword) {
+        if (isMatch) {
+            console.log('접근 암호 검증 성공 - 링크ID:', linkId);
             res.json({
                 success: true,
                 message: '접근 암호가 확인되었습니다.'
             });
         } else {
+            console.log('접근 암호 검증 실패 - 링크ID:', linkId);
             res.json({
                 success: false,
                 message: '접근 암호가 올바르지 않습니다.'

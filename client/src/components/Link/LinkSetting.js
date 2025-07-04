@@ -32,6 +32,7 @@ import { selectSendType, selectDocumentTitle, setDocumentTitle } from '../Assign
 import { selectUser } from '../../app/infoSlice';
 import axiosInterceptor from '../../config/AxiosConfig';
 import LinkInfoModal from './LinkInfoModal';
+import bcrypt from 'bcryptjs';
 
 const { Text } = Typography;
 
@@ -177,11 +178,18 @@ const LinkSetting = (props) => {
 
       setLoading(true);
 
+      // ✅ 접근 암호 암호화 처리 (추가된 부분)
+      const saltRounds = 10;
+      const hashedPassword = await bcrypt.hash(accessPassword, saltRounds);
+    
+      console.log('원본 암호:', accessPassword);
+      console.log('암호화된 암호:', hashedPassword);      
+
       // 실제 API 호출
       const linkData = {
         linkTitle: localDocTitle,
         docTitle: localDocTitle,
-        accessPassword: accessPassword,
+        accessPassword: hashedPassword,
         passwordHint: passwordHint,
         expiryDays: expiryDays,
         approver: selectedApprover,
