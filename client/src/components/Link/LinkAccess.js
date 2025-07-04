@@ -369,7 +369,7 @@ const LinkAccess = () => {
                     rules={[
                       { required: true, message: '접근 암호를 입력해주세요!' }
                     ]}
-                    style={{ marginBottom: '8px' }}
+                    style={{ marginBottom: '6px' }}
                   >
                     <Input.Password
                       prefix={<LockOutlined />}
